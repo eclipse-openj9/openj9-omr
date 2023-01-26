@@ -971,123 +971,132 @@ TR_Debug::nodePrintAllFlags(TR::Node *node, TR_PrettyPrinterString &output)
       output.appends(" ");
       }
 
-   char *format = "%s";
+#define FLAG_IF(cond, text) do { if (cond) output.appends(text " "); } while (false)
+#define FLAG(query, text) FLAG_IF(node->query(), text)
 
-   output.appendf(format, node->printHasFoldedImplicitNULLCHK());
-   output.appendf(format, node->printIsHighWordZero());
-   output.appendf(format, node->printIsUnsigned());
-   output.appendf(format, node->printIsClassPointerConstant());
-   output.appendf(format, node->printIsMethodPointerConstant());
-   output.appendf(format, node->printIsSafeToSkipTableBoundCheck());
-   output.appendf(format, node->printIsProfilingCode());
-   output.appendf(format, node->printIsZero());
-   output.appendf(format, node->printIsNonZero());
-   output.appendf(format, node->printIsNonNegative());
-   output.appendf(format, node->printIsNonPositive());
-   output.appendf(format, node->printPointsToNull());
-   output.appendf(format, node->printRequiresConditionCodes());
-   output.appendf(format, node->printIsUnneededConversion());
-   output.appendf(format, node->printParentSupportsLazyClobber());
-   output.appendf(format, node->printIsFPStrictCompliant());
-   output.appendf(format, node->printCannotOverflow());
-   output.appendf(format, node->printPointsToNonNull());
+   FLAG(chkFoldedImplicitNULLCHK, "foldedImplicitNULLCHK");
+   FLAG(chkHighWordZero, "highWordZero");
+   FLAG(chkUnsigned, "Unsigned");
+   FLAG(chkClassPointerConstant, "classPointerConstant");
+   FLAG(chkMethodPointerConstant, "methodPointerConstant");
+   FLAG(chkSafeToSkipTableBoundCheck, "safeToSkipTblBndChk");
+   FLAG(isProfilingCode, "profilingCode");
+   FLAG(isZero, "X==0");
+   FLAG(isNonZero, "X!=0");
+   FLAG(isNonNegative, "X>=0");
+   FLAG(isNonPositive, "X<=0");
+   FLAG(chkPointsToNull, "*X==null");
+   FLAG(nodeRequiresConditionCodes, "requiresConditionCodes");
+   FLAG(isUnneededConversion, "unneededConv");
+   FLAG(parentSupportsLazyClobber, "lazyClobber");
+   FLAG(isFPStrictCompliant, "FPPrecise");
+   FLAG(chkCannotOverflow, "cannotOverflow");
+   FLAG(chkPointsToNonNull, "nodePointsToNonNull");
 
-   output.appendf(format, node->printIsInvalid8BitGlobalRegister());
-   output.appendf(format, node->printIsDirectMemoryUpdate());
-   output.appendf(format, node->printIsTheVirtualCallNodeForAGuardedInlinedCall());
-   output.appendf(format, node->printIsDontTransformArrayCopyCall());
-   output.appendf(format, node->printIsNodeRecognizedArrayCopyCall());
-   output.appendf(format, node->printCanDesynchronizeCall());
-   output.appendf(format, node->printContainsCompressionSequence());
-   output.appendf(format, node->printIsInternalPointer());
-   output.appendf(format, node->printIsMaxLoopIterationGuard());
-   output.appendf(format, node->printVFTEntryIsInBounds());
-   output.appendf(format, node->printIsByteToByteTranslate());
-   output.appendf(format, node->printIsByteToCharTranslate());
-   output.appendf(format, node->printIsCharToByteTranslate());
-   output.appendf(format, node->printIsCharToCharTranslate());
-   output.appendf(format, node->printSetSourceIsByteArrayTranslate() );
-   output.appendf(format, node->printSetTargetIsByteArrayTranslate() );
-   output.appendf(format, node->printSetTermCharNodeIsHint()         );
-   output.appendf(format, node->printSetTableBackedByRawStorage()    );
-   output.appendf(format, node->printIsForwardArrayCopy());
-   output.appendf(format, node->printIsBackwardArrayCopy());
-   output.appendf(format, node->printIsRarePathForwardArrayCopy());
-   output.appendf(format, node->printIsNoArrayStoreCheckArrayCopy());
-   output.appendf(format, node->printIsReferenceArrayCopy());
-   output.appendf(format, node->printIsHalfWordElementArrayCopy());
-   output.appendf(format, node->printIsWordElementArrayCopy());
-   output.appendf(format, node->printIsHeapObjectWrtBar());
-   output.appendf(format, node->printIsNonHeapObjectWrtBar());
-   output.appendf(format, node->printIsSkipWrtBar());
-   output.appendf(format, node->printIsArrayChkPrimitiveArray1());
-   output.appendf(format, node->printIsArrayChkReferenceArray1());
-   output.appendf(format, node->printIsArrayChkPrimitiveArray2());
-   output.appendf(format, node->printIsArrayChkReferenceArray2());
-   output.appendf(format, node->printIsSignExtendedTo32BitAtSource());
-   output.appendf(format, node->printIsSignExtendedTo64BitAtSource());
-   output.appendf(format, node->printIsZeroExtendedTo32BitAtSource());
-   output.appendf(format, node->printIsZeroExtendedTo64BitAtSource());
-   output.appendf(format, node->printNeedsSignExtension());
-   output.appendf(format, node->printSkipSignExtension());
-   output.appendf(format, node->printSetUseSignExtensionMode());
-   output.appendf(format, node->printIsSeenRealReference());
-   output.appendf(format, node->printNormalizeNanValues());
-   output.appendf(format, node->printCannotTrackLocalUses());
-   output.appendf(format, node->printIsSkipSync());
-   output.appendf(format, node->printIsReadMonitor());
-   output.appendf(format, node->printIsLocalObjectMonitor());
-   output.appendf(format, node->printIsPrimitiveLockedRegion());
-   output.appendf(format, node->printIsSyncMethodMonitor());
-   output.appendf(format, node->printIsStaticMonitor());
-   output.appendf(format, node->printIsNormalizedShift());
-   output.appendf(format, node->printIsSimpleDivCheck());
-   output.appendf(format, node->printIsOmitSync());
-   output.appendf(format, node->printIsNOPLongStore());
-   output.appendf(format, node->printIsStoredValueIsIrrelevant());
-   output.appendf(format, node->printIsThrowInsertedByOSR());
-   output.appendf(format, node->printCanSkipZeroInitialization());
-   output.appendf(format, node->printIsDontMoveUnderBranch());
-   output.appendf(format, node->printIsPrivatizedInlinerArg());
-   output.appendf(format, node->printArrayCmpLen());
-   output.appendf(format, node->printArrayCmpSign());
-   output.appendf(format, node->printXorBitOpMem());
-   output.appendf(format, node->printOrBitOpMem());
-   output.appendf(format, node->printAndBitOpMem());
+   FLAG(isInvalid8BitGlobalRegister, "invalid8BitGlobalRegister");
+   FLAG(isDirectMemoryUpdate, "directMemoryUpdate");
+   FLAG(chkTheVirtualCallNodeForAGuardedInlinedCall, "virtualCallNodeForAGuardedInlinedCall");
+   FLAG(chkDontTransformArrayCopyCall, "dontTransformArrayCopyCall");
+   FLAG(chkNodeRecognizedArrayCopyCall, "nodeRecognizedArrayCopyCall");
+   FLAG(chkDesynchronizeCall, "desynchronizeCall");
+   FLAG(chkCompressionSequence, "compressionSequence");
+   FLAG(isInternalPointer, "internalPtr");
+   FLAG(isMaxLoopIterationGuard, "maxLoopIternGuard");
+   FLAG_IF(guard != NULL && node->vftEntryIsInBounds(), "vftEntryIsInBounds");
+   FLAG(childrenWereSwapped, "swappedChildren");
+   FLAG(isVersionableIfWithMaxExpr, "versionableIfWithMaxExpr");
+   FLAG(isVersionableIfWithMinExpr, "versionableIfWithMinExpr");
+   FLAG(chkByteToByteTranslate, "byte2byteXlate");
+   FLAG(chkByteToCharTranslate, "byte2charXlate");
+   FLAG(chkCharToByteTranslate, "char2byteXlate");
+   FLAG(chkCharToCharTranslate, "char2charXlate");
+   FLAG(chkSourceByteArrayTranslate, "sourceIsByteArrayTranslate");
+   FLAG(chkTargetByteArrayTranslate, "byteArrayXlate");
+   FLAG(chkTermCharNodeIsHint, "termCharNodeIsHint");
+   FLAG(chkTableBackedByRawStorage, "tableBackedByRawStorage");
+   FLAG(chkForwardArrayCopy, "forwardArrayCopy");
+   FLAG(chkBackwardArrayCopy, "backwardArrayCopy");
+   FLAG(chkRarePathForwardArrayCopy, "rarePathFwdArrayCopy");
+   FLAG(chkNoArrayStoreCheckArrayCopy, "noArrayStoreCheckArrayCopy");
+   FLAG(chkReferenceArrayCopy, "referenceArrayCopy");
+   FLAG(chkHalfWordElementArrayCopy, "halfWordElementArrayCopy");
+   FLAG(chkWordElementArrayCopy, "wordElementArrayCopy");
+   FLAG(chkHeapObjectWrtBar, "heapObjectWrtBar");
+   FLAG(chkNonHeapObjectWrtBar, "nonHeapObjectWrtBar");
+   FLAG(chkSkipWrtBar, "skipWrtBar");
+   FLAG(chkArrayChkPrimitiveArray1, "arrayChkPrimitiveArray1");
+   FLAG(chkArrayChkReferenceArray1, "arrayChkReferenceArray1");
+   FLAG(chkArrayChkPrimitiveArray2, "arrayChkPrimitiveArray2");
+   FLAG(chkArrayChkReferenceArray2, "arrayChkReferenceArray2");
+   FLAG(isSignExtendedTo32BitAtSource, "signExtendedTo32BitAtSource");
+   FLAG(isSignExtendedTo64BitAtSource, "signExtendedTo64BitAtSource");
+   FLAG(isZeroExtendedTo32BitAtSource, "zeroExtendTo32BitAtSource");
+   FLAG(isZeroExtendedTo64BitAtSource, "zeroExtendTo64BitAtSource");
+   FLAG(needsSignExtension, "NeedsSignExt");
+   FLAG(skipSignExtension, "SkipSignExt");
+   FLAG(useSignExtensionMode, "SignExtMode");
+   FLAG(chkSeenRealReference, "SeenRealReference");
+   FLAG(chkNormalizeNanValues, "mustNormalizeNanValues");
+   FLAG(chkCannotTrackLocalUses, "cannotTrackLocalUses");
+   FLAG(chkSkipSync, "skipSync");
+   FLAG(chkReadMonitor, "readMonitor");
+   FLAG(chkLocalObjectMonitor, "localObjectMonitor");
+   FLAG(chkPrimitiveLockedRegion, "primitiveLockedRegion");
+   FLAG(chkSyncMethodMonitor, "syncMethodMonitor");
+   FLAG(chkStaticMonitor, "staticMonitor");
+   FLAG(chkNormalizedShift, "normalizedShift");
+   FLAG(chkSimpleDivCheck, "simpleDivCheck");
+   FLAG(chkOmitSync, "omitSync");
+   FLAG(chkNOPLongStore, "NOPLongStore");
+   FLAG(chkStoredValueIsIrrelevant, "StoredValueIsIrrelevant");
+   FLAG(chkThrowInsertedByOSR, "ThrowInsertedByOSR");
+   FLAG(chkSkipZeroInitialization, "skipZeroInit");
+   FLAG(chkDontMoveUnderBranch, "dontMoveUnderBranch");
+   FLAG(chkIsPrivatizedInlinerArg, "privatizedInlinerArg");
+   FLAG(chkArrayCmpLen, "arrayCmpLen");
+   FLAG(chkArrayCmpSign, "arrayCmpSign");
+   FLAG(chkXorBitOpMem, "SubOp=XOR");
+   FLAG(chkOrBitOpMem, "SubOp=OR");
+   FLAG(chkAndBitOpMem, "SubOp=AND");
 #ifdef J9_PROJECT_SPECIFIC
-   output.appendf(format, node->printSkipCopyOnStore());
-   output.appendf(format, node->printSkipCopyOnLoad());
-   output.appendf(format, node->printSkipPadByteClearing());
-   output.appendf(format, node->printUseStoreAsAnAccumulator());
-   output.appendf(format, node->printCleanSignInPDStoreEvaluator());
+   FLAG(chkSkipCopyOnStore, "skipCopyOnStore");
+   FLAG(chkSkipCopyOnLoad, "skipCopyOnLoad");
+   FLAG(chkSkipPadByteClearing, "skipPadByteClearing");
+   FLAG(chkUseStoreAsAnAccumulator, "useStoreAsAnAccumulator");
+   FLAG(chkCleanSignInPDStoreEvaluator, "cleanSignInPDStoreEvaluator");
 #endif
-   output.appendf(format, node->printUseCallForFloatToFixedConversion());
+   FLAG(chkUseCallForFloatToFixedConversion, "useCallForFloatToFixedConv");
 #ifdef J9_PROJECT_SPECIFIC
-   output.appendf(format, node->printCleanSignDuringPackedLeftShift());
-   output.appendf(format, node->printIsInMemoryCopyProp());
+   FLAG(chkCleanSignDuringPackedLeftShift, "cleanSignDuringPackedLeftShift");
+   FLAG(chkIsInMemoryCopyProp, "IsInMemoryCopyProp");
 #endif
-   output.appendf(format, node->printAllocationCanBeRemoved());
-   output.appendf(format, node->printArrayTRT());
-   output.appendf(format, node->printCannotTrackLocalStringUses());
-   output.appendf(format, node->printCharArrayTRT());
-   output.appendf(format, node->printEscapesInColdBlock());
+   FLAG(chkAllocationCanBeRemoved, "allocationCanBeRemoved");
+   FLAG(chkArrayTRT, "arrayTRT");
+   FLAG(chkCannotTrackLocalStringUses, "cannotTrackLocalStringUses");
+   FLAG(chkCharArrayTRT, "charArrayTRT");
+   FLAG(chkEscapesInColdBlock, "escapesInColdBlock");
 #ifdef J9_PROJECT_SPECIFIC
-   output.appendf(format, node->printIsDontInlineUnsafePutOrderedCall());
+   FLAG(chkDontInlineUnsafePutOrderedCall, "dontInlineUnsafePutOrderedCall");
 #endif
-   output.appendf(format, node->printIsHeapificationStore());
-   output.appendf(format, node->printIsHeapificationAlloc());
-   output.appendf(format, node->printIsIdentityless());
-   output.appendf(format, node->printIsLiveMonitorInitStore());
-   output.appendf(format, node->printReturnIsDummy());
+   FLAG(chkHeapificationStore, "HeapificationStore");
+   FLAG(chkHeapificationAlloc, "HeapificationAlloc");
+   FLAG(chkIdentityless, "Identityless");
+   FLAG(chkLiveMonitorInitStore, "liveMonitorInitStore");
+   FLAG(chkReturnIsDummy, "returnIsDummy");
 #ifdef J9_PROJECT_SPECIFIC
-   output.appendf(format, node->printSharedMemory());
+   FLAG_IF(node->getType().isAddress() && node->chkSharedMemory(), "sharedMemory");
 #endif
-   output.appendf(format, node->printSourceCellIsTermChar());
+   FLAG(chkSourceCellIsTermChar, "sourceCellIsTermChar");
 #ifdef J9_PROJECT_SPECIFIC
-   output.appendf(format, node->printSpineCheckWithArrayElementChild());
+   FLAG(chkSpineCheckWithArrayElementChild, "spineCHKWithArrayElementChild");
 #endif
-   output.appendf(format, node->printStoreAlreadyEvaluated());
-   output.appendf(format, node->printCopyToNewVirtualRegister());
+   FLAG(chkStoreAlreadyEvaluated, "storeAlreadyEvaluated");
+   FLAG(isCopyToNewVirtualRegister, "copyToNewVirtualRegister");
+   FLAG(chkNodeCreatedByPRE, "createdByPRE");
+   FLAG(chkIsReferenceNonNull, "referenceIsNonNull");
+
+#undef FLAG
+#undef FLAG_IF
    }
 
 

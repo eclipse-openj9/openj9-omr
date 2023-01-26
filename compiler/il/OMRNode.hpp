@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2022 IBM Corp. and others
+ * Copyright (c) 2000, 2023 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -650,7 +650,6 @@ public:
 
    bool                   isReferenceArrayCopy();
    bool                   chkReferenceArrayCopy();
-   const char *           printIsReferenceArrayCopy();
 
    // CS2 Alias Interface:
    // implemented in base/AliasSetInterface.hpp right now.
@@ -707,9 +706,6 @@ public:
     */
    void setSignExtendTo64BitAtSource(bool b);
 
-   const char* printIsSignExtendedTo32BitAtSource();
-   const char* printIsSignExtendedTo64BitAtSource();
-
    /** \brief
     *     Determines whether this node should be zero extended to 32-bits at the point of evaluation (source).
     */
@@ -735,9 +731,6 @@ public:
     *     Determines whether the respective flag should be active.
     */
    void setZeroExtendTo64BitAtSource(bool b);
-
-   const char* printIsZeroExtendedTo32BitAtSource();
-   const char* printIsZeroExtendedTo64BitAtSource();
 
    /**
     * Node field functions
@@ -1032,11 +1025,9 @@ public:
 
    bool isZero();
    void setIsZero(bool v);
-   const char * printIsZero();
 
    bool isNonZero();
    void setIsNonZero(bool v);
-   const char * printIsNonZero();
 
    bool isNull();
    void setIsNull(bool v);
@@ -1051,17 +1042,14 @@ public:
    // Value is in a global register which cannot be used on an 8 bit instruction
    bool isInvalid8BitGlobalRegister();
    void setIsInvalid8BitGlobalRegister(bool v);
-   const char * printIsInvalid8BitGlobalRegister();
 
    // Result of this node is being stored into the same location as its left child
    bool isDirectMemoryUpdate();
    void setDirectMemoryUpdate(bool v);
-   const char * printIsDirectMemoryUpdate();
 
    // Used prior to codegen phase
    bool isProfilingCode();
    void setIsProfilingCode();
-   const char * printIsProfilingCode();
 
    // Used only during codegen phase
    bool hasBeenVisitedForHints();
@@ -1069,11 +1057,9 @@ public:
 
    bool isNonNegative();
    void setIsNonNegative(bool v);
-   const char * printIsNonNegative();
 
    bool isNonPositive();
    void setIsNonPositive(bool v);
-   const char * printIsNonPositive();
 
    inline bool isNegative();
    inline bool isPositive();
@@ -1084,87 +1070,72 @@ public:
    bool cannotOverflow();
    void setCannotOverflow(bool v);
    bool chkCannotOverflow();
-   const char * printCannotOverflow();
 
    // Flag used by TR::table nodes
    bool isSafeToSkipTableBoundCheck();
    void setIsSafeToSkipTableBoundCheck(bool b);
    bool chkSafeToSkipTableBoundCheck();
-   const char * printIsSafeToSkipTableBoundCheck();
 
    // Flag used by TR::lstore and TR::lstorei nodes
    bool isNOPLongStore();
    void setNOPLongStore(bool v);
    bool chkNOPLongStore();
-   const char * printIsNOPLongStore();
 
    // Flag for store nodes storing to stack slots
    bool storedValueIsIrrelevant();
    void setStoredValueIsIrrelevant(bool v);
    bool chkStoredValueIsIrrelevant();
-   const char * printIsStoredValueIsIrrelevant();
 
    // Flags used by TR::astore nodes
    bool isHeapificationStore();
    void setHeapificationStore(bool v);
    bool chkHeapificationStore();
-   const char * printIsHeapificationStore();
 
    // Flags only used for isNew() opcodes
    bool isHeapificationAlloc();
    void setHeapificationAlloc(bool v);
    bool chkHeapificationAlloc();
-   const char * printIsHeapificationAlloc();
 
    bool isIdentityless();
    void setIdentityless(bool v);
    bool chkIdentityless();
-   const char * printIsIdentityless();
 
    bool isLiveMonitorInitStore();
    void setLiveMonitorInitStore(bool v);
    bool chkLiveMonitorInitStore();
-   const char * printIsLiveMonitorInitStore();
 
    // Flag used by TR::iload nodes
    bool useSignExtensionMode();
    void setUseSignExtensionMode(bool b);
-   const char * printSetUseSignExtensionMode();
 
    // Flag used by TR::BNDCHK nodes
    bool hasFoldedImplicitNULLCHK();
    void setHasFoldedImplicitNULLCHK(bool v);
    bool chkFoldedImplicitNULLCHK();
-   const char * printHasFoldedImplicitNULLCHK();
 
    // Flag used by TR::athrow nodes
    bool throwInsertedByOSR();
    void setThrowInsertedByOSR(bool v);
    bool chkThrowInsertedByOSR();
-   const char * printIsThrowInsertedByOSR();
 
    // Flags used by call nodes
    bool isTheVirtualCallNodeForAGuardedInlinedCall();
    void setIsTheVirtualCallNodeForAGuardedInlinedCall();
    void resetIsTheVirtualCallNodeForAGuardedInlinedCall();
    bool chkTheVirtualCallNodeForAGuardedInlinedCall();
-   const char * printIsTheVirtualCallNodeForAGuardedInlinedCall();
 
    bool isArrayCopyCall();
    bool isDontTransformArrayCopyCall();
    void setDontTransformArrayCopyCall();
    bool chkDontTransformArrayCopyCall();
-   const char * printIsDontTransformArrayCopyCall();
 
    bool isNodeRecognizedArrayCopyCall();
    void setNodeIsRecognizedArrayCopyCall(bool v);
    bool chkNodeRecognizedArrayCopyCall();
-   const char * printIsNodeRecognizedArrayCopyCall();
 
    bool canDesynchronizeCall();
    void setDesynchronizeCall(bool v);
    bool chkDesynchronizeCall();
-   const char * printCanDesynchronizeCall();
 
    bool isPreparedForDirectJNI();
    void setPreparedForDirectJNI();
@@ -1176,33 +1147,27 @@ public:
    bool containsCompressionSequence();
    void setContainsCompressionSequence(bool v);
    bool chkCompressionSequence();
-   const char * printContainsCompressionSequence();
 
    // Flag used by TR::aiadd and TR::aladd
    bool isInternalPointer();
    void setIsInternalPointer(bool v);
-   const char * printIsInternalPointer();
 
    // Flags used by TR::arraytranslate and TR::arraytranslateAndTest
    bool isArrayTRT();
    void setArrayTRT(bool v);
    bool chkArrayTRT();
-   const char * printArrayTRT();
 
    bool isCharArrayTRT();
    void setCharArrayTRT(bool v);
    bool chkCharArrayTRT();
-   const char * printCharArrayTRT();
 
    bool isSourceByteArrayTranslate();
    void setSourceIsByteArrayTranslate(bool v);
    bool chkSourceByteArrayTranslate();
-   const char * printSetSourceIsByteArrayTranslate();
 
    bool isTargetByteArrayTranslate();
    void setTargetIsByteArrayTranslate(bool v);
    bool chkTargetByteArrayTranslate();
-   const char * printSetTargetIsByteArrayTranslate();
 
    bool isByteToByteTranslate();
    bool isByteToCharTranslate();
@@ -1212,67 +1177,52 @@ public:
    bool chkByteToCharTranslate();
    bool chkCharToByteTranslate();
    bool chkCharToCharTranslate();
-   const char * printIsByteToByteTranslate();
-   const char * printIsByteToCharTranslate();
-   const char * printIsCharToByteTranslate();
-   const char * printIsCharToCharTranslate();
 
    bool getTermCharNodeIsHint();
    void setTermCharNodeIsHint(bool v);
    bool chkTermCharNodeIsHint();
-   const char * printSetTermCharNodeIsHint();
 
    bool getSourceCellIsTermChar();
    void setSourceCellIsTermChar(bool v);
    bool chkSourceCellIsTermChar();
-   const char * printSourceCellIsTermChar();
 
    bool getTableBackedByRawStorage();
    void setTableBackedByRawStorage(bool v);
    bool chkTableBackedByRawStorage();
-   const char * printSetTableBackedByRawStorage();
 
    // Flags used by TR::arraycmp
    bool isArrayCmpLen();
    void setArrayCmpLen(bool v);
    bool chkArrayCmpLen();
-   const char * printArrayCmpLen();
 
    bool isArrayCmpSign();
    void setArrayCmpSign(bool v);
    bool chkArrayCmpSign();
-   const char * printArrayCmpSign();
 
    // Flags used by TR::arraycopy
    bool isHalfWordElementArrayCopy();
    void setHalfWordElementArrayCopy(bool v);
    bool chkHalfWordElementArrayCopy();
-   const char * printIsHalfWordElementArrayCopy();
 
    bool isWordElementArrayCopy();
    void setWordElementArrayCopy(bool v);
    bool chkWordElementArrayCopy();
-   const char * printIsWordElementArrayCopy();
 
    bool isForwardArrayCopy();
    void setForwardArrayCopy(bool v);
    bool chkForwardArrayCopy();
-   const char * printIsForwardArrayCopy();
 
    bool isBackwardArrayCopy();
    void setBackwardArrayCopy(bool v);
    bool chkBackwardArrayCopy();
-   const char * printIsBackwardArrayCopy();
 
    bool isRarePathForwardArrayCopy();
    void setRarePathForwardArrayCopy(bool v);
    bool chkRarePathForwardArrayCopy();
-   const char * printIsRarePathForwardArrayCopy();
 
    bool isNoArrayStoreCheckArrayCopy();
    void setNoArrayStoreCheckArrayCopy(bool v);
    bool chkNoArrayStoreCheckArrayCopy();
-   const char * printIsNoArrayStoreCheckArrayCopy();
 
    bool isArraysetLengthMultipleOfPointerSize();
    void setArraysetLengthMultipleOfPointerSize(bool v);
@@ -1281,44 +1231,36 @@ public:
    bool isXorBitOpMem();
    void setXorBitOpMem(bool v);
    bool chkXorBitOpMem();
-   const char * printXorBitOpMem();
 
    bool isOrBitOpMem();
    void setOrBitOpMem(bool v);
    bool chkOrBitOpMem();
-   const char * printOrBitOpMem();
 
    bool isAndBitOpMem();
    void setAndBitOpMem(bool v);
    bool chkAndBitOpMem();
-   const char * printAndBitOpMem();
 
    // Flags used by TR::ArrayCHK
    bool isArrayChkPrimitiveArray1();
    void setArrayChkPrimitiveArray1(bool v);
    bool chkArrayChkPrimitiveArray1();
-   const char * printIsArrayChkPrimitiveArray1();
 
    bool isArrayChkReferenceArray1();
    void setArrayChkReferenceArray1(bool v);
    bool chkArrayChkReferenceArray1();
-   const char * printIsArrayChkReferenceArray1();
 
    bool isArrayChkPrimitiveArray2();
    void setArrayChkPrimitiveArray2(bool v);
    bool chkArrayChkPrimitiveArray2();
-   const char * printIsArrayChkPrimitiveArray2();
 
    bool isArrayChkReferenceArray2();
    void setArrayChkReferenceArray2(bool v);
    bool chkArrayChkReferenceArray2();
-   const char * printIsArrayChkReferenceArray2();
 
    // Flags used by TR::awrtbar and TR::awrtbari
    bool skipWrtBar();
    void setSkipWrtBar(bool v);
    bool chkSkipWrtBar();
-   const char * printIsSkipWrtBar();
 
    bool isLikelyStackWrtBar();
    void setLikelyStackWrtBar(bool v);
@@ -1326,12 +1268,10 @@ public:
    bool isHeapObjectWrtBar();
    void setIsHeapObjectWrtBar(bool v);
    bool chkHeapObjectWrtBar();
-   const char * printIsHeapObjectWrtBar();
 
    bool isNonHeapObjectWrtBar();
    void setIsNonHeapObjectWrtBar(bool v);
    bool chkNonHeapObjectWrtBar();
-   const char * printIsNonHeapObjectWrtBar();
 
    bool isUnsafeStaticWrtBar();
    void setIsUnsafeStaticWrtBar(bool v);
@@ -1339,12 +1279,10 @@ public:
    // Flag used by TR::istore/TR::iRegStore
    bool needsSignExtension();
    void setNeedsSignExtension(bool b);
-   const char * printNeedsSignExtension();
 
    // Flag used by TR::iload/TR::iRegLoad
    bool skipSignExtension();
    void setSkipSignExtension(bool b);
-   const char * printSkipSignExtension();
 
    // Flag used by TR_if or TR::istore/TR::iRegStore or TR::iadd, TR::ladd, TR::isub, TR::lsub
    bool isUseBranchOnCount();
@@ -1354,7 +1292,6 @@ public:
    bool isDontMoveUnderBranch();
    void setIsDontMoveUnderBranch(bool v);
    bool chkDontMoveUnderBranch();
-   const char * printIsDontMoveUnderBranch();
 
    // Flag used by TR_xload
    bool canChkNodeCreatedByPRE();
@@ -1362,18 +1299,15 @@ public:
    void setIsNodeCreatedByPRE();
    void resetIsNodeCreatedByPRE();
    bool chkNodeCreatedByPRE();
-   const char * printIsNodeCreatedByPRE();
 
    // Flag used by TR::xstore
    bool isPrivatizedInlinerArg();
    void setIsPrivatizedInlinerArg(bool v);
    bool chkIsPrivatizedInlinerArg();
-   const char *printIsPrivatizedInlinerArg();
 
    // Flags used by TR_if
    bool isMaxLoopIterationGuard();
    void setIsMaxLoopIterationGuard(bool v);
-   const char * printIsMaxLoopIterationGuard();
 
    bool isStopTheWorldGuard();
 
@@ -1385,7 +1319,6 @@ public:
 
    bool vftEntryIsInBounds();
    void setVFTEntryIsInBounds(bool inBounds);
-   const char * printVFTEntryIsInBounds();
 
    bool isGuardOfKind(TR_VirtualGuardKind kind)
       {
@@ -1420,42 +1353,35 @@ public:
    bool isStoreAlreadyEvaluated();
    void setStoreAlreadyEvaluated(bool b);
    bool chkStoreAlreadyEvaluated();
-   const char * printStoreAlreadyEvaluated();
 
    // Flags used by regLoad
    bool isSeenRealReference();
    void setSeenRealReference(bool b);
    bool chkSeenRealReference();
-   const char * printIsSeenRealReference();
 
    // Flags used by TR::fbits2i and TR::dbits2l
    bool normalizeNanValues();
    void setNormalizeNanValues(bool v);
    bool chkNormalizeNanValues();
-   const char * printNormalizeNanValues();
 
    // Flag used by node of datatype TR_[US]Int64
    bool isHighWordZero();
    void setIsHighWordZero(bool b);
    bool chkHighWordZero();
-   const char * printIsHighWordZero();
 
    // Flag used by node of datatype which isn't TR_[US]Int64
    bool isUnsigned();
    void setUnsigned(bool b);
    bool chkUnsigned();
-   const char * printIsUnsigned();
 
    // Flags used by aconst and iaload (on s390 iaload can be used after dynamic lit pool)
    bool isClassPointerConstant();
    void setIsClassPointerConstant(bool b);
    bool chkClassPointerConstant();
-   const char * printIsClassPointerConstant();
 
    bool isMethodPointerConstant();
    void setIsMethodPointerConstant(bool b);
    bool chkMethodPointerConstant();
-   const char * printIsMethodPointerConstant();
 
    bool isUnneededIALoad();
    void setUnneededIALoad(bool v);
@@ -1464,32 +1390,26 @@ public:
    bool canSkipSync();
    void setSkipSync(bool v);
    bool chkSkipSync();
-   const char * printIsSkipSync();
 
    bool isStaticMonitor();
    void setStaticMonitor(bool v);
    bool chkStaticMonitor();
-   const char * printIsStaticMonitor();
 
    bool isSyncMethodMonitor();
    void setSyncMethodMonitor(bool v);
    bool chkSyncMethodMonitor();
-   const char * printIsSyncMethodMonitor();
 
    bool isReadMonitor();
    void setReadMonitor(bool v);
    bool chkReadMonitor();
-   const char * printIsReadMonitor();
 
    bool isLocalObjectMonitor();
    void setLocalObjectMonitor(bool v);
    bool chkLocalObjectMonitor();
-   const char * printIsLocalObjectMonitor();
 
    bool isPrimitiveLockedRegion();
    void setPrimitiveLockedRegion(bool v = true);
    bool chkPrimitiveLockedRegion();
-   const char * printIsPrimitiveLockedRegion();
 
    bool hasMonitorClassInNode();
    void setHasMonitorClassInNode(bool v);
@@ -1498,12 +1418,10 @@ public:
    bool markedAllocationCanBeRemoved();
    void setAllocationCanBeRemoved(bool v);
    bool chkAllocationCanBeRemoved();
-   const char * printAllocationCanBeRemoved();
 
    bool canSkipZeroInitialization();
    void setCanSkipZeroInitialization(bool v);
    bool chkSkipZeroInitialization();
-   const char * printCanSkipZeroInitialization();
 
    // Flag used by TR::imul
    bool isAdjunct();
@@ -1513,59 +1431,48 @@ public:
    bool pointsToNull();
    void setPointsToNull(bool v);
    bool chkPointsToNull();
-   const char * printPointsToNull();
 
    bool pointsToNonNull();
    void setPointsToNonNull(bool v);
    bool chkPointsToNonNull();
-   const char * printPointsToNonNull();
 
    bool cannotTrackLocalUses();
    void setCannotTrackLocalUses(bool v);
    bool chkCannotTrackLocalUses();
-   const char * printCannotTrackLocalUses();
 
    bool escapesInColdBlock();
    void setEscapesInColdBlock(bool v);
    bool chkEscapesInColdBlock();
-   const char * printEscapesInColdBlock();
 
    bool cannotTrackLocalStringUses();
    void setCannotTrackLocalStringUses(bool v);
    bool chkCannotTrackLocalStringUses();
-   const char * printCannotTrackLocalStringUses();
 
    // Flag used by TR::allocationFence
    bool canOmitSync();
    void setOmitSync(bool v);
    bool chkOmitSync();
-   const char * printIsOmitSync();
 
    // Flag used by div and rem
    bool isSimpleDivCheck();
    void setSimpleDivCheck(bool v);
    bool chkSimpleDivCheck();
-   const char * printIsSimpleDivCheck();
 
    // Flag used by shl and shr
    bool isNormalizedShift();
    void setNormalizedShift(bool v);
    bool chkNormalizedShift();
-   const char * printIsNormalizedShift();
 
    // Flag used by operator nodes
    bool isFPStrictCompliant();
    void setIsFPStrictCompliant(bool v);
-   const char * printIsFPStrictCompliant();
 
    // Flags used by conversion nodes
    bool isUnneededConversion();
    void setUnneededConversion(bool v);
-   const char * printIsUnneededConversion();
 
    bool parentSupportsLazyClobber();
    void setParentSupportsLazyClobber(bool v);
-   const char * printParentSupportsLazyClobber();
    /// Helpful function that's simpler to call than setParentSupportsLazyClobber.
    /// A tree evaluator that supports lazy clobbering (meaning checks the
    /// register's node count before clobbering a child node's register) can
@@ -1577,7 +1484,6 @@ public:
    bool useCallForFloatToFixedConversion();
    void setUseCallForFloatToFixedConversion(bool v = true);
    bool chkUseCallForFloatToFixedConversion();
-   const char * printUseCallForFloatToFixedConversion();
 
    // Flags for TR::fence
    bool isLoadFence();
@@ -1591,13 +1497,11 @@ public:
    inline bool          isReferenceNonNull();
    inline void          setReferenceIsNonNull(bool v = true);
    inline bool          chkIsReferenceNonNull();
-   inline const char *  printIsReferenceNonNull();
 
    // Flag used by TR::Return
    bool isReturnDummy();
    void setReturnIsDummy();
    bool chkReturnIsDummy();
-   const char * printReturnIsDummy();
 
    // Flag used by ilload nodes for DFP
    bool isBigDecimalLoad();
@@ -1614,13 +1518,11 @@ public:
    // Flag used by TR_PassThrough
    bool isCopyToNewVirtualRegister();
    void setCopyToNewVirtualRegister(bool v = true);
-   const char * printCopyToNewVirtualRegister();
 
    // zEmulator only?
    bool nodeRequiresConditionCodes();
    void setNodeRequiresConditionCodes(bool v);
    bool chkOpsNodeRequiresConditionCodes();
-   const char *printRequiresConditionCodes();
 
    // Clear out relevant flags and properties set on the node.
    void resetFlagsAndPropertiesForCodeMotion();

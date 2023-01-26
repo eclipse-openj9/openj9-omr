@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2022 IBM Corp. and others
+ * Copyright (c) 2000, 2023 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -3962,14 +3962,6 @@ OMR::Node::chkReferenceArrayCopy()
    return self()->getOpCodeValue() == TR::arraycopy && self()->isReferenceArrayCopy();
    }
 
-const char *
-OMR::Node::printIsReferenceArrayCopy()
-   {
-   return self()->chkReferenceArrayCopy() ? "referenceArrayCopy " : "";
-   }
-
-
-
 // OMR::Node::setOpCodeValue is now private, and deprecated. Use OMR::Node::recreate instead.
 TR::ILOpCodes
 OMR::Node::setOpCodeValue(TR::ILOpCodes op)
@@ -4039,18 +4031,6 @@ OMR::Node::setSignExtendTo64BitAtSource(bool v)
       }
    }
 
-const char*
-OMR::Node::printIsSignExtendedTo32BitAtSource()
-   {
-   return self()->isSignExtendedTo32BitAtSource() ? "signExtendedTo32BitAtSource " : "";
-   }
-
-const char*
-OMR::Node::printIsSignExtendedTo64BitAtSource()
-   {
-   return self()->isSignExtendedTo64BitAtSource() ? "signExtendedTo64BitAtSource " : "";
-   }
-
 bool
 OMR::Node::isZeroExtendedTo32BitAtSource()
    {
@@ -4083,18 +4063,6 @@ OMR::Node::setZeroExtendTo64BitAtSource(bool v)
       {
       _flags.set(zeroExtendTo64BitAtSource, v);
       }
-   }
-
-const char*
-OMR::Node::printIsZeroExtendedTo32BitAtSource()
-   {
-   return self()->isZeroExtendedTo32BitAtSource() ? "zeroExtendTo32BitAtSource " : "";
-   }
-
-const char*
-OMR::Node::printIsZeroExtendedTo64BitAtSource()
-   {
-   return self()->isZeroExtendedTo64BitAtSource() ? "zeroExtendTo64BitAtSource " : "";
    }
 
 /**
@@ -5275,14 +5243,6 @@ OMR::Node::setIsZero(bool v)
       _flags.set(nodeIsZero, v);
    }
 
-const char *
-OMR::Node::printIsZero()
-   {
-   return self()->isZero() ? "X==0 " : "";
-   }
-
-
-
 bool
 OMR::Node::isNonZero()
    {
@@ -5296,14 +5256,6 @@ OMR::Node::setIsNonZero(bool v)
    if (performNodeTransformation2(c, "O^O NODE FLAGS: Setting nodeIsNonZero flag on node %p to %d\n", self(), v))
       _flags.set(nodeIsNonZero, v);
    }
-
-const char *
-OMR::Node::printIsNonZero()
-   {
-   return self()->isNonZero() ? "X!=0 " : "";
-   }
-
-
 
 bool
 OMR::Node::isNull()
@@ -5362,14 +5314,6 @@ OMR::Node::chkPointsToNull()
    return self()->getOpCodeValue() == TR::loadaddr && _flags.testAny(nodePointsToNull);
    }
 
-const char *
-OMR::Node::printPointsToNull()
-   {
-   return self()->chkPointsToNull() ? "*X==null " : "";
-   }
-
-
-
 bool
 OMR::Node::pointsToNonNull()
    {
@@ -5390,14 +5334,6 @@ OMR::Node::chkPointsToNonNull()
    {
    return self()->getOpCodeValue() == TR::loadaddr && _flags.testAny(nodePointsToNonNull);
    }
-
-const char *
-OMR::Node::printPointsToNonNull()
-   {
-   return self()->chkPointsToNonNull() ? "nodePointsToNonNull " : "";
-   }
-
-
 
 bool
 OMR::Node::containsCall()
@@ -5429,12 +5365,6 @@ OMR::Node::setIsInvalid8BitGlobalRegister(bool v)
 #endif
    }
 
-const char *
-OMR::Node::printIsInvalid8BitGlobalRegister()
-   {
-   return self()->isInvalid8BitGlobalRegister() ? "invalid8BitGlobalRegister " : "";
-   }
-
 bool
 OMR::Node::isDirectMemoryUpdate()
    {
@@ -5449,14 +5379,6 @@ OMR::Node::setDirectMemoryUpdate(bool v)
       _flags.set(directMemoryUpdate, v);
    }
 
-const char *
-OMR::Node::printIsDirectMemoryUpdate()
-   {
-      return self()->isDirectMemoryUpdate() ? "directMemoryUpdate " : "";
-   }
-
-
-
 bool
 OMR::Node::isProfilingCode()
    {
@@ -5470,14 +5392,6 @@ OMR::Node::setIsProfilingCode()
    if (performNodeTransformation1(c, "O^O NODE FLAGS: Setting profilingCode flag on node %p\n", self()))
       _flags.set(profilingCode);
    }
-
-const char *
-OMR::Node::printIsProfilingCode()
-   {
-   return self()->isProfilingCode() ? "profilingCode " : "";
-   }
-
-
 
 bool
 OMR::Node::hasBeenVisitedForHints()
@@ -5507,14 +5421,6 @@ OMR::Node::setIsNonNegative(bool v)
       _flags.set(nodeIsNonNegative, v);
    }
 
-const char *
-OMR::Node::printIsNonNegative()
-   {
-   return self()->isNonNegative() ? "X>=0 " : "";
-   }
-
-
-
 bool
 OMR::Node::isNonPositive()
    {
@@ -5528,14 +5434,6 @@ OMR::Node::setIsNonPositive(bool v)
    if (performNodeTransformation2(c, "O^O NODE FLAGS: Setting nodeIsNonPositive flag on node %p to %d\n", self(), v))
       _flags.set(nodeIsNonPositive, v);
    }
-
-const char *
-OMR::Node::printIsNonPositive()
-   {
-   return self()->isNonPositive() ? "X<=0 " : "";
-   }
-
-
 
 bool
 OMR::Node::isNonDegenerateArrayCopy()
@@ -5581,14 +5479,6 @@ OMR::Node::chkCannotOverflow()
       && _flags.testAny(cannotOverFlow);
    }
 
-const char *
-OMR::Node::printCannotOverflow()
-   {
-   return self()->chkCannotOverflow() ? "cannotOverflow " : "";
-   }
-
-
-
 bool
 OMR::Node::isSafeToSkipTableBoundCheck()
    {
@@ -5611,14 +5501,6 @@ OMR::Node::chkSafeToSkipTableBoundCheck()
       && _flags.testAny(canSkipTableBoundCheck);
    }
 
-const char *
-OMR::Node::printIsSafeToSkipTableBoundCheck()
-   {
-   return self()->chkSafeToSkipTableBoundCheck() ? "safeToSkipTblBndChk " : "";
-   }
-
-
-
 bool
 OMR::Node::isNOPLongStore()
    {
@@ -5640,14 +5522,6 @@ OMR::Node::chkNOPLongStore()
    {
    return self()->getOpCode().isStore() && self()->getType().isInt64() && _flags.testAny(NOPLongStore);
    }
-
-const char *
-OMR::Node::printIsNOPLongStore()
-   {
-   return self()->chkNOPLongStore() ? "NOPLongStore " : "";
-   }
-
-
 
 bool
 OMR::Node::storedValueIsIrrelevant()
@@ -5679,14 +5553,6 @@ OMR::Node::chkStoredValueIsIrrelevant()
    return c->getOption(TR_EnableOSR) && self()->getOpCode().isStore() && self()->getSymbolReference()->getSymbol()->isAutoOrParm() && _flags.testAny(StoredValueIsIrrelevant);
    }
 
-const char *
-OMR::Node::printIsStoredValueIsIrrelevant()
-   {
-   return self()->chkStoredValueIsIrrelevant() ? "StoredValueIsIrrelevant " : "";
-   }
-
-
-
 bool
 OMR::Node::isHeapificationStore()
    {
@@ -5708,14 +5574,6 @@ OMR::Node::chkHeapificationStore()
    {
    return (self()->getOpCodeValue() == TR::astore) && _flags.testAny(HeapificationStore);
    }
-
-const char *
-OMR::Node::printIsHeapificationStore()
-   {
-   return self()->chkHeapificationStore() ? "HeapificationStore " : "";
-   }
-
-
 
 bool
 OMR::Node::isHeapificationAlloc()
@@ -5739,13 +5597,6 @@ OMR::Node::chkHeapificationAlloc()
    return self()->getOpCode().isNew() && _flags.testAny(HeapificationAlloc);
    }
 
-const char *
-OMR::Node::printIsHeapificationAlloc()
-   {
-   return self()->chkHeapificationAlloc() ? "HeapificationAlloc " : "";
-   }
-
-
 bool
 OMR::Node::isIdentityless()
    {
@@ -5767,14 +5618,6 @@ OMR::Node::chkIdentityless()
    {
    return self()->getOpCode().isNew() && _flags.testAny(Identityless);
    }
-
-const char *
-OMR::Node::printIsIdentityless()
-   {
-   return self()->chkIdentityless() ? "Identityless " : "";
-   }
-
-
 
 bool
 OMR::Node::isLiveMonitorInitStore()
@@ -5799,14 +5642,6 @@ OMR::Node::chkLiveMonitorInitStore()
    return (self()->getOpCodeValue() == TR::astore) && self()->isLiveMonitorInitStore();
    }
 
-const char *
-OMR::Node::printIsLiveMonitorInitStore()
-   {
-   return self()->chkLiveMonitorInitStore() ? "liveMonitorInitStore " : "";
-   }
-
-
-
 bool
 OMR::Node::useSignExtensionMode()
    {
@@ -5823,14 +5658,6 @@ OMR::Node::setUseSignExtensionMode(bool b)
       _flags.set(SignExtensionMode, b);
       }
    }
-
-const char *
-OMR::Node::printSetUseSignExtensionMode()
-   {
-   return self()->useSignExtensionMode() ? "SignExtMode " : "";
-   }
-
-
 
 bool
 OMR::Node::hasFoldedImplicitNULLCHK()
@@ -5853,14 +5680,6 @@ OMR::Node::chkFoldedImplicitNULLCHK()
    {
    return self()->getOpCode().isBndCheck() && _flags.testAny(foldedImplicitNULLCHK);
    }
-
-const char *
-OMR::Node::printHasFoldedImplicitNULLCHK()
-   {
-   return self()->chkFoldedImplicitNULLCHK() ? "foldedImplicitNULLCHK " : "";
-   }
-
-
 
 bool
 OMR::Node::throwInsertedByOSR()
@@ -5888,14 +5707,6 @@ OMR::Node::chkThrowInsertedByOSR()
    {
    return (self()->getOpCodeValue() == TR::athrow) && _flags.testAny(ThrowInsertedByOSR);
    }
-
-const char *
-OMR::Node::printIsThrowInsertedByOSR()
-   {
-   return self()->chkThrowInsertedByOSR() ? "ThrowInsertedByOSR " : "";
-   }
-
-
 
 bool
 OMR::Node::isTheVirtualCallNodeForAGuardedInlinedCall()
@@ -5926,12 +5737,6 @@ bool
 OMR::Node::chkTheVirtualCallNodeForAGuardedInlinedCall()
    {
    return self()->getOpCode().isCall() && _flags.testAny(virtualCallNodeForAGuardedInlinedCall);
-   }
-
-const char *
-OMR::Node::printIsTheVirtualCallNodeForAGuardedInlinedCall()
-   {
-   return self()->chkTheVirtualCallNodeForAGuardedInlinedCall() ? "virtualCallNodeForAGuardedInlinedCall " : "";
    }
 
 /**
@@ -5972,14 +5777,6 @@ OMR::Node::chkDontTransformArrayCopyCall()
    return self()->isArrayCopyCall() && _flags.testAny(dontTransformArrayCopyCall);
    }
 
-const char *
-OMR::Node::printIsDontTransformArrayCopyCall()
-   {
-   return self()->chkDontTransformArrayCopyCall() ? "dontTransformArrayCopyCall " : "";
-   }
-
-
-
 bool
 OMR::Node::isNodeRecognizedArrayCopyCall()
    {
@@ -6002,14 +5799,6 @@ OMR::Node::chkNodeRecognizedArrayCopyCall()
    return self()->getOpCodeValue() == TR::call && _flags.testAny(nodeIsRecognizedArrayCopyCall);
    }
 
-const char *
-OMR::Node::printIsNodeRecognizedArrayCopyCall()
-   {
-   return self()->chkNodeRecognizedArrayCopyCall() ? "nodeRecognizedArrayCopyCall " : "";
-   }
-
-
-
 bool
 OMR::Node::canDesynchronizeCall()
    {
@@ -6031,14 +5820,6 @@ OMR::Node::chkDesynchronizeCall()
    {
    return self()->getOpCode().isCall() && _flags.testAny(desynchronizeCall);
    }
-
-const char *
-OMR::Node::printCanDesynchronizeCall()
-   {
-   return self()->chkDesynchronizeCall() ? "desynchronizeCall " : "";
-   }
-
-
 
 bool
 OMR::Node::isPreparedForDirectJNI()
@@ -6097,14 +5878,6 @@ OMR::Node::chkCompressionSequence()
       && _flags.testAny(isCompressionSequence);
    }
 
-const char *
-OMR::Node::printContainsCompressionSequence()
-   {
-   return self()->chkCompressionSequence() ? "compressionSequence " : "";
-   }
-
-
-
 bool
 OMR::Node::isInternalPointer()
    {
@@ -6120,14 +5893,6 @@ OMR::Node::setIsInternalPointer(bool v)
    if (performNodeTransformation2(c, "O^O NODE FLAGS: Setting internalPointer flag on node %p to %d\n", self(), v))
       _flags.set(internalPointer, v);
    }
-
-const char *
-OMR::Node::printIsInternalPointer()
-   {
-   return self()->isInternalPointer() ? "internalPtr " : "";
-   }
-
-
 
 bool
 OMR::Node::isArrayTRT()
@@ -6151,14 +5916,6 @@ OMR::Node::chkArrayTRT()
    return self()->getOpCodeValue() == TR::arraytranslateAndTest && _flags.testAny(arrayTRT);
    }
 
-const char *
-OMR::Node::printArrayTRT()
-   {
-   return self()->chkArrayTRT() ? "arrayTRT " : "";
-   }
-
-
-
 bool
 OMR::Node::isCharArrayTRT()
    {
@@ -6180,14 +5937,6 @@ OMR::Node::chkCharArrayTRT()
    {
    return self()->getOpCodeValue() == TR::arraytranslateAndTest && _flags.testAny(charArrayTRT);
    }
-
-const char *
-OMR::Node::printCharArrayTRT()
-   {
-   return self()->chkCharArrayTRT() ? "charArrayTRT " : "";
-   }
-
-
 
 bool
 OMR::Node::isSourceByteArrayTranslate()
@@ -6211,14 +5960,6 @@ OMR::Node::chkSourceByteArrayTranslate()
    return self()->getOpCodeValue() == TR::arraytranslate && _flags.testAny(sourceIsByteArrayTranslate);
    }
 
-const char *
-OMR::Node::printSetSourceIsByteArrayTranslate()
-   {
-   return self()->chkSourceByteArrayTranslate() ? "sourceIsByteArrayTranslate " : "";
-   }
-
-
-
 bool
 OMR::Node::isTargetByteArrayTranslate()
    {
@@ -6240,14 +5981,6 @@ OMR::Node::chkTargetByteArrayTranslate()
    {
    return self()->getOpCodeValue() == TR::arraytranslate && _flags.testAny(targetIsByteArrayTranslate);
    }
-
-const char *
-OMR::Node::printSetTargetIsByteArrayTranslate()
-   {
-   return self()->chkTargetByteArrayTranslate() ? "byteArrayXlate " : "";
-   }
-
-
 
 bool
 OMR::Node::isByteToByteTranslate()
@@ -6309,32 +6042,6 @@ OMR::Node::chkCharToCharTranslate()
       && !_flags.testAny(targetIsByteArrayTranslate);
    }
 
-const char *
-OMR::Node::printIsByteToByteTranslate()
-   {
-   return self()->chkByteToByteTranslate()  ? "byte2byteXlate " : "";
-   }
-
-const char *
-OMR::Node::printIsByteToCharTranslate()
-   {
-   return self()->chkByteToCharTranslate()  ? "byte2charXlate " : "";
-   }
-
-const char *
-OMR::Node::printIsCharToByteTranslate()
-   {
-   return self()->chkCharToByteTranslate()  ? "char2byteXlate " : "";
-   }
-
-const char *
-OMR::Node::printIsCharToCharTranslate()
-   {
-   return self()->chkCharToCharTranslate()  ? "char2charXlate " : "";
-   }
-
-
-
 bool
 OMR::Node::getTermCharNodeIsHint()
    {
@@ -6356,14 +6063,6 @@ OMR::Node::chkTermCharNodeIsHint()
    {
    return self()->getOpCodeValue() == TR::arraytranslate && _flags.testAny(termCharNodeIsHint);
    }
-
-const char *
-OMR::Node::printSetTermCharNodeIsHint()
-   {
-   return self()->chkTermCharNodeIsHint() ? "termCharNodeIsHint " : "";
-   }
-
-
 
 bool
 OMR::Node::getSourceCellIsTermChar()
@@ -6387,14 +6086,6 @@ OMR::Node::chkSourceCellIsTermChar()
    return self()->getOpCodeValue() == TR::arraytranslate && _flags.testAny(sourceCellIsTermChar);
    }
 
-const char *
-OMR::Node::printSourceCellIsTermChar()
-   {
-   return self()->chkSourceCellIsTermChar() ? "sourceCellIsTermChar " : "";
-   }
-
-
-
 bool
 OMR::Node::getTableBackedByRawStorage()
    {
@@ -6416,14 +6107,6 @@ OMR::Node::chkTableBackedByRawStorage()
    {
    return self()->getOpCodeValue() == TR::arraytranslate && _flags.testAny(tableBackedByRawStorage);
    }
-
-const char *
-OMR::Node::printSetTableBackedByRawStorage()
-   {
-   return self()->chkTableBackedByRawStorage() ? "tableBackedByRawStorage " : "";
-   }
-
-
 
 bool
 OMR::Node::isArrayCmpLen()
@@ -6447,14 +6130,6 @@ OMR::Node::chkArrayCmpLen()
    return self()->getOpCodeValue() == TR::arraycmp && _flags.testAny(arrayCmpLen);
    }
 
-const char *
-OMR::Node::printArrayCmpLen()
-   {
-   return self()->chkArrayCmpLen() ? "arrayCmpLen " : "";
-   }
-
-
-
 bool
 OMR::Node::isArrayCmpSign()
    {
@@ -6476,14 +6151,6 @@ OMR::Node::chkArrayCmpSign()
    {
    return self()->getOpCodeValue() == TR::arraycmp && _flags.testAny(arrayCmpSign);
    }
-
-const char *
-OMR::Node::printArrayCmpSign()
-   {
-   return self()->chkArrayCmpSign() ? "arrayCmpSign " : "";
-   }
-
-
 
 bool
 OMR::Node::isHalfWordElementArrayCopy()
@@ -6515,14 +6182,6 @@ OMR::Node::chkHalfWordElementArrayCopy()
    return self()->getOpCodeValue() == TR::arraycopy && self()->isHalfWordElementArrayCopy();
    }
 
-const char *
-OMR::Node::printIsHalfWordElementArrayCopy()
-   {
-   return self()->chkHalfWordElementArrayCopy() ? "halfWordElementArrayCopy " : "";
-   }
-
-
-
 bool
 OMR::Node::isWordElementArrayCopy()
    {
@@ -6552,14 +6211,6 @@ OMR::Node::chkWordElementArrayCopy()
    {
    return self()->getOpCodeValue() == TR::arraycopy && self()->isWordElementArrayCopy();
    }
-
-const char *
-OMR::Node::printIsWordElementArrayCopy()
-   {
-   return self()->chkWordElementArrayCopy() ? "wordElementArrayCopy " : "";
-   }
-
-
 
 bool
 OMR::Node::isForwardArrayCopy()
@@ -6595,14 +6246,6 @@ OMR::Node::chkForwardArrayCopy()
    return self()->getOpCodeValue() == TR::arraycopy && self()->isForwardArrayCopy();
    }
 
-const char *
-OMR::Node::printIsForwardArrayCopy()
-   {
-   return self()->chkForwardArrayCopy() ? "forwardArrayCopy " : "";
-   }
-
-
-
 bool
 OMR::Node::isBackwardArrayCopy()
    {
@@ -6635,14 +6278,6 @@ OMR::Node::chkBackwardArrayCopy()
    return self()->getOpCodeValue() == TR::arraycopy && self()->isBackwardArrayCopy();
    }
 
-const char *
-OMR::Node::printIsBackwardArrayCopy()
-   {
-   return self()->chkBackwardArrayCopy() ? "backwardArrayCopy " : "";
-   }
-
-
-
 bool
 OMR::Node::isRarePathForwardArrayCopy()
    {
@@ -6670,14 +6305,6 @@ OMR::Node::chkRarePathForwardArrayCopy()
    return self()->getOpCodeValue() == TR::arraycopy && self()->isRarePathForwardArrayCopy();
    }
 
-const char *
-OMR::Node::printIsRarePathForwardArrayCopy()
-   {
-   return self()->chkRarePathForwardArrayCopy() ? "rarePathFwdArrayCopy " : "";
-   }
-
-
-
 bool
 OMR::Node::isNoArrayStoreCheckArrayCopy()
    {
@@ -6699,14 +6326,6 @@ OMR::Node::chkNoArrayStoreCheckArrayCopy()
    {
    return self()->getOpCodeValue() == TR::arraycopy && self()->isNoArrayStoreCheckArrayCopy();
    }
-
-const char *
-OMR::Node::printIsNoArrayStoreCheckArrayCopy()
-   {
-   return self()->chkNoArrayStoreCheckArrayCopy() ? "noArrayStoreCheckArrayCopy " : "";
-   }
-
-
 
 bool
 OMR::Node::isArraysetLengthMultipleOfPointerSize()
@@ -6748,14 +6367,6 @@ OMR::Node::chkXorBitOpMem()
       && _flags.testValue(bitOpMemOPMASK, bitOpMemXOR);
    }
 
-const char *
-OMR::Node::printXorBitOpMem()
-   {
-   return self()->chkXorBitOpMem() ? "SubOp=XOR " : "";
-   }
-
-
-
 bool
 OMR::Node::isOrBitOpMem()
    {
@@ -6778,14 +6389,6 @@ OMR::Node::chkOrBitOpMem()
    return (self()->getOpCodeValue() == TR::bitOpMem)
       && _flags.testValue(bitOpMemOPMASK, bitOpMemOR);
    }
-
-const char *
-OMR::Node::printOrBitOpMem()
-   {
-   return self()->chkOrBitOpMem() ? "SubOp=OR " : "";
-   }
-
-
 
 bool
 OMR::Node::isAndBitOpMem()
@@ -6810,14 +6413,6 @@ OMR::Node::chkAndBitOpMem()
       && _flags.testValue(bitOpMemOPMASK, bitOpMemAND);
    }
 
-const char *
-OMR::Node::printAndBitOpMem()
-   {
-   return self()->chkAndBitOpMem() ? "SubOp=AND " : "";
-   }
-
-
-
 bool
 OMR::Node::isArrayChkPrimitiveArray1()
    {
@@ -6839,14 +6434,6 @@ OMR::Node::chkArrayChkPrimitiveArray1()
    {
    return self()->getOpCodeValue() == TR::ArrayCHK && _flags.testAny(arrayChkPrimitiveArray1);
    }
-
-const char *
-OMR::Node::printIsArrayChkPrimitiveArray1()
-   {
-   return self()->chkArrayChkPrimitiveArray1() ? "arrayChkPrimitiveArray1 " : "";
-   }
-
-
 
 bool
 OMR::Node::isArrayChkReferenceArray1()
@@ -6870,14 +6457,6 @@ OMR::Node::chkArrayChkReferenceArray1()
    return self()->getOpCodeValue() == TR::ArrayCHK && _flags.testAny(arrayChkReferenceArray1);
    }
 
-const char *
-OMR::Node::printIsArrayChkReferenceArray1()
-   {
-   return self()->chkArrayChkReferenceArray1() ? "arrayChkReferenceArray1 " : "";
-   }
-
-
-
 bool
 OMR::Node::isArrayChkPrimitiveArray2()
    {
@@ -6899,14 +6478,6 @@ OMR::Node::chkArrayChkPrimitiveArray2()
    {
    return self()->getOpCodeValue() == TR::ArrayCHK && _flags.testAny(arrayChkPrimitiveArray2);
    }
-
-const char *
-OMR::Node::printIsArrayChkPrimitiveArray2()
-   {
-   return self()->chkArrayChkPrimitiveArray2() ? "arrayChkPrimitiveArray2 " : "";
-   }
-
-
 
 bool
 OMR::Node::isArrayChkReferenceArray2()
@@ -6930,14 +6501,6 @@ OMR::Node::chkArrayChkReferenceArray2()
    return self()->getOpCodeValue() == TR::ArrayCHK && _flags.testAny(arrayChkReferenceArray2);
    }
 
-const char *
-OMR::Node::printIsArrayChkReferenceArray2()
-   {
-   return self()->chkArrayChkReferenceArray2() ? "arrayChkReferenceArray2 " : "";
-   }
-
-
-
 bool
 OMR::Node::skipWrtBar()
    {
@@ -6957,14 +6520,6 @@ OMR::Node::chkSkipWrtBar()
    {
    return self()->getOpCode().isWrtBar() && _flags.testAny(SkipWrtBar);
    }
-
-const char *
-OMR::Node::printIsSkipWrtBar()
-   {
-   return self()->chkSkipWrtBar() ? "skipWrtBar " : "";
-   }
-
-
 
 bool
 OMR::Node::isLikelyStackWrtBar()
@@ -7004,14 +6559,6 @@ OMR::Node::chkHeapObjectWrtBar()
    return self()->getOpCode().isWrtBar() && debug("useHeapObjectFlags") && _flags.testAny(heapObjectWrtBar);
    }
 
-const char *
-OMR::Node::printIsHeapObjectWrtBar()
-   {
-   return self()->chkHeapObjectWrtBar() ? "heapObjectWrtBar " : "";
-   }
-
-
-
 bool
 OMR::Node::isNonHeapObjectWrtBar()
    {
@@ -7033,14 +6580,6 @@ OMR::Node::chkNonHeapObjectWrtBar()
    {
    return self()->getOpCode().isWrtBar() && debug("useHeapObjectFlags") && _flags.testAny(nonHeapObjectWrtBar);
    }
-
-const char *
-OMR::Node::printIsNonHeapObjectWrtBar()
-   {
-   return self()->chkNonHeapObjectWrtBar() ? "nonHeapObjectWrtBar " : "";
-   }
-
-
 
 bool
 OMR::Node::isUnsafeStaticWrtBar()
@@ -7073,14 +6612,6 @@ OMR::Node::setNeedsSignExtension(bool b)
       _flags.set(NeedsSignExtension, b);
    }
 
-const char *
-OMR::Node::printNeedsSignExtension()
-   {
-   return self()->needsSignExtension() ? "NeedsSignExt " : "";
-   }
-
-
-
 bool
 OMR::Node::skipSignExtension()
    {
@@ -7095,12 +6626,6 @@ OMR::Node::setSkipSignExtension(bool b)
              self()->getOpCode().isLoad(), "assertion failure");
    if (performNodeTransformation2(c, "O^O NODE FLAGS: Setting skipSignExtension flag on node %p to %d\n", self(), b))
       _flags.set(SkipSignExtension, b);
-   }
-
-const char *
-OMR::Node::printSkipSignExtension()
-   {
-   return self()->skipSignExtension() ? "SkipSignExt " : "";
    }
 
 bool
@@ -7146,14 +6671,6 @@ OMR::Node::chkDontMoveUnderBranch()
    return (self()->getOpCode().isLoadReg() || self()->getOpCode().isLoadVarDirect()) && _flags.testAny(dontMoveUnderBranch);
    }
 
-const char *
-OMR::Node::printIsDontMoveUnderBranch()
-   {
-   return self()->chkDontMoveUnderBranch() ? "dontMoveUnderBranch " : "";
-   }
-
-
-
 bool
 OMR::Node::canChkNodeCreatedByPRE()
    {
@@ -7191,14 +6708,6 @@ OMR::Node::chkNodeCreatedByPRE()
    return _flags.testAny(nodeCreatedByPRE) && self()->getOpCode().isLoadVarDirect();
    }
 
-const char *
-OMR::Node::printIsNodeCreatedByPRE()
-   {
-   return self()->chkNodeCreatedByPRE() ? "createdByPRE " : "";
-   }
-
-
-
 bool
 OMR::Node::isPrivatizedInlinerArg()
    {
@@ -7219,14 +6728,6 @@ OMR::Node::chkIsPrivatizedInlinerArg()
    return self()->getOpCode().isStoreDirectOrReg() && self()->isPrivatizedInlinerArg();
    }
 
-const char *
-OMR::Node::printIsPrivatizedInlinerArg()
-   {
-   return self()->chkIsPrivatizedInlinerArg() ? "privatizedInlinerArg " : "";
-   }
-
-
-
 bool
 OMR::Node::isMaxLoopIterationGuard()
    {
@@ -7240,12 +6741,6 @@ OMR::Node::setIsMaxLoopIterationGuard(bool v)
    TR_ASSERT(self()->getOpCode().isIf(), "assertion failure");
    if (performNodeTransformation2(c, "O^O NODE FLAGS: Setting maxLoopIterationGuard flag on node %p to %d\n", self(), v))
       _flags.set(maxLoopIterationGuard, v);
-   }
-
-const char *
-OMR::Node::printIsMaxLoopIterationGuard()
-   {
-   return self()->isMaxLoopIterationGuard() ? "maxLoopIternGuard " : "";
    }
 
 bool
@@ -7325,16 +6820,6 @@ OMR::Node::setVFTEntryIsInBounds(bool inBounds)
    _flags.set(vftEntryIsInBoundsFlag, inBounds);
    }
 
-const char *
-OMR::Node::printVFTEntryIsInBounds()
-   {
-   bool show =
-      self()->isTheVirtualGuardForAGuardedInlinedCall()
-      && self()->vftEntryIsInBounds();
-
-   return show ? "vftEntryIsInBounds " : "";
-   }
-
 bool
 OMR::Node::childrenWereSwapped()
    {
@@ -7350,8 +6835,6 @@ OMR::Node::setSwappedChildren(bool v)
       _flags.set(swappedChildren, v);
    }
 
-
-
 bool
 OMR::Node::isVersionableIfWithMaxExpr()
    {
@@ -7366,8 +6849,6 @@ OMR::Node::setIsVersionableIfWithMaxExpr(TR::Compilation * c)
       _flags.set(versionIfWithMaxExpr);
    }
 
-
-
 bool
 OMR::Node::isVersionableIfWithMinExpr()
    {
@@ -7381,8 +6862,6 @@ OMR::Node::setIsVersionableIfWithMinExpr(TR::Compilation * c)
    if (performNodeTransformation1(c, "O^O NODE FLAGS: Setting versionIfWithMinExpr flag on node %p\n", self()))
       _flags.set(versionIfWithMinExpr);
    }
-
-
 
 bool
 OMR::Node::isStoreAlreadyEvaluated()
@@ -7406,14 +6885,6 @@ OMR::Node::chkStoreAlreadyEvaluated()
    return self()->getOpCode().isStore() && _flags.testAny(storeAlreadyEvaluated);
    }
 
-const char *
-OMR::Node::printStoreAlreadyEvaluated()
-   {
-   return self()->chkStoreAlreadyEvaluated() ? "storeAlreadyEvaluated " : "";
-   }
-
-
-
 bool
 OMR::Node::isSeenRealReference()
    {
@@ -7435,14 +6906,6 @@ OMR::Node::chkSeenRealReference()
    {
    return self()->getOpCode().isLoadReg() && _flags.testAny(SeenRealReference);
    }
-
-const char *
-OMR::Node::printIsSeenRealReference()
-   {
-   return self()->chkSeenRealReference() ? "SeenRealReference " : "";
-   }
-
-
 
 bool
 OMR::Node::normalizeNanValues()
@@ -7466,14 +6929,6 @@ OMR::Node::chkNormalizeNanValues()
    return (self()->getOpCodeValue() == TR::fbits2i || self()->getOpCodeValue() == TR::dbits2l) && _flags.testAny(mustNormalizeNanValues);
    }
 
-const char *
-OMR::Node::printNormalizeNanValues()
-   {
-   return self()->chkNormalizeNanValues() ? "mustNormalizeNanValues " : "";
-   }
-
-
-
 bool
 OMR::Node::isHighWordZero()
    {
@@ -7495,14 +6950,6 @@ OMR::Node::chkHighWordZero()
    {
    return (self()->getType().isInt64() || self()->getType().isAddress()) && _flags.testAny(highWordZero);
    }
-
-const char *
-OMR::Node::printIsHighWordZero()
-   {
-   return self()->chkHighWordZero() ? "highWordZero " : "";
-   }
-
-
 
 bool
 OMR::Node::isUnsigned()
@@ -7527,14 +6974,6 @@ OMR::Node::chkUnsigned()
       && _flags.testAny(Unsigned) ;
    }
 
-const char *
-OMR::Node::printIsUnsigned()
-   {
-   return self()->chkUnsigned() ? "Unsigned " : "";
-   }
-
-
-
 bool
 OMR::Node::isClassPointerConstant()
    {
@@ -7558,14 +6997,6 @@ OMR::Node::chkClassPointerConstant()
       && _flags.testAny(classPointerConstant);
    }
 
-const char *
-OMR::Node::printIsClassPointerConstant()
-   {
-   return self()->chkClassPointerConstant() ? "classPointerConstant " : "";
-   }
-
-
-
 bool
 OMR::Node::isMethodPointerConstant()
    {
@@ -7587,14 +7018,6 @@ OMR::Node::chkMethodPointerConstant()
    {
    return (self()->getOpCodeValue() == TR::aconst || self()->getOpCodeValue() == TR::aloadi) && _flags.testAny(methodPointerConstant);
    }
-
-const char *
-OMR::Node::printIsMethodPointerConstant()
-   {
-   return self()->chkMethodPointerConstant() ? "methodPointerConstant " : "";
-   }
-
-
 
 bool
 OMR::Node::isUnneededIALoad()
@@ -7635,14 +7058,6 @@ OMR::Node::chkSkipSync()
    return(self()->getOpCodeValue() == TR::monexit || self()->getOpCodeValue() == TR::monent) && _flags.testAny(skipSync);
    }
 
-const char *
-OMR::Node::printIsSkipSync()
-   {
-   return self()->chkSkipSync() ? "skipSync " : "";
-   }
-
-
-
 bool
 OMR::Node::isStaticMonitor()
    {
@@ -7664,14 +7079,6 @@ OMR::Node::chkStaticMonitor()
    {
    return (self()->getOpCodeValue() == TR::monent || self()->getOpCodeValue() == TR::monexit) && _flags.testAny(staticMonitor);
    }
-
-const char *
-OMR::Node::printIsStaticMonitor()
-   {
-   return self()->chkStaticMonitor() ? "staticMonitor " : "";
-   }
-
-
 
 bool
 OMR::Node::isSyncMethodMonitor()
@@ -7695,14 +7102,6 @@ OMR::Node::chkSyncMethodMonitor()
    return (self()->getOpCodeValue() == TR::monent || self()->getOpCodeValue() == TR::monexit) && _flags.testAny(syncMethodMonitor);
    }
 
-const char *
-OMR::Node::printIsSyncMethodMonitor()
-   {
-   return self()->chkSyncMethodMonitor() ? "syncMethodMonitor " : "";
-   }
-
-
-
 bool
 OMR::Node::isReadMonitor()
    {
@@ -7724,14 +7123,6 @@ OMR::Node::chkReadMonitor()
    {
    return (self()->getOpCodeValue() == TR::monent || self()->getOpCodeValue() == TR::monexit) && _flags.testAny(readMonitor);
    }
-
-const char *
-OMR::Node::printIsReadMonitor()
-   {
-   return self()->chkReadMonitor() ? "readMonitor " : "";
-   }
-
-
 
 bool
 OMR::Node::isLocalObjectMonitor()
@@ -7755,14 +7146,6 @@ OMR::Node::chkLocalObjectMonitor()
    return (self()->getOpCodeValue() == TR::monent || self()->getOpCodeValue() == TR::monexit) && _flags.testAny(localObjectMonitor);
    }
 
-const char *
-OMR::Node::printIsLocalObjectMonitor()
-   {
-   return self()->chkLocalObjectMonitor() ? "localObjectMonitor " : "";
-   }
-
-
-
 bool
 OMR::Node::isPrimitiveLockedRegion()
    {
@@ -7782,14 +7165,6 @@ OMR::Node::chkPrimitiveLockedRegion()
    {
    return (self()->getOpCodeValue() == TR::monent || self()->getOpCodeValue() == TR::monexit) && _flags.testAny(primitiveLockedRegion);
    }
-
-const char *
-OMR::Node::printIsPrimitiveLockedRegion()
-   {
-   return self()->chkPrimitiveLockedRegion() ? "primitiveLockedRegion " : "";
-   }
-
-
 
 bool
 OMR::Node::hasMonitorClassInNode()
@@ -7834,14 +7209,6 @@ OMR::Node::chkAllocationCanBeRemoved()
            && _flags.testAny(allocationCanBeRemoved));
    }
 
-const char *
-OMR::Node::printAllocationCanBeRemoved()
-   {
-   return self()->chkAllocationCanBeRemoved() ? "allocationCanBeRemoved " : "";
-   }
-
-
-
 bool
 OMR::Node::canSkipZeroInitialization()
    {
@@ -7873,14 +7240,6 @@ OMR::Node::chkSkipZeroInitialization()
       (self()->getOpCodeValue() == TR::New || self()->getOpCodeValue() == TR::newarray || self()->getOpCodeValue() == TR::anewarray ||
        self()->getOpCodeValue() == TR::multianewarray);
    }
-
-const char *
-OMR::Node::printCanSkipZeroInitialization()
-   {
-   return self()->chkSkipZeroInitialization() ? "skipZeroInit " : "";
-   }
-
-
 
 bool
 OMR::Node::isAdjunct()
@@ -7921,14 +7280,6 @@ OMR::Node::chkCannotTrackLocalUses()
    return self()->getOpCodeValue() == TR::loadaddr && _flags.testAny(cantTrackLocalUses);
    }
 
-const char *
-OMR::Node::printCannotTrackLocalUses()
-   {
-   return self()->chkCannotTrackLocalUses() ? "cannotTrackLocalUses " : "";
-   }
-
-
-
 bool
 OMR::Node::escapesInColdBlock()
    {
@@ -7950,14 +7301,6 @@ OMR::Node::chkEscapesInColdBlock()
    {
    return self()->getOpCodeValue() == TR::loadaddr && _flags.testAny(coldBlockEscape);
    }
-
-const char *
-OMR::Node::printEscapesInColdBlock()
-   {
-   return self()->chkEscapesInColdBlock() ? "escapesInColdBlock " : "";
-   }
-
-
 
 bool
 OMR::Node::cannotTrackLocalStringUses()
@@ -7982,14 +7325,6 @@ OMR::Node::chkCannotTrackLocalStringUses()
    return self()->getOpCodeValue() == TR::loadaddr && _flags.testAny(cantTrackLocalStringUses);
    }
 
-const char *
-OMR::Node::printCannotTrackLocalStringUses()
-   {
-   return self()->chkCannotTrackLocalStringUses() ? "cannotTrackLocalStringUses " : "";
-   }
-
-
-
 bool
 OMR::Node::canOmitSync()
    {
@@ -8011,14 +7346,6 @@ OMR::Node::chkOmitSync()
    {
    return (self()->getOpCodeValue() == TR::allocationFence) && _flags.testAny(omitSync);
    }
-
-const char *
-OMR::Node::printIsOmitSync()
-   {
-   return self()->chkOmitSync() ? "omitSync " : "";
-   }
-
-
 
 bool
 OMR::Node::isSimpleDivCheck()
@@ -8042,14 +7369,6 @@ OMR::Node::chkSimpleDivCheck()
    return (self()->getOpCode().isDiv() || self()->getOpCode().isRem()) && _flags.testAny(simpleDivCheck);
    }
 
-const char *
-OMR::Node::printIsSimpleDivCheck()
-   {
-   return self()->chkSimpleDivCheck() ? "simpleDivCheck " : "";
-   }
-
-
-
 bool
 OMR::Node::isNormalizedShift()
    {
@@ -8072,14 +7391,6 @@ OMR::Node::chkNormalizedShift()
    return (self()->getOpCode().isLeftShift() || self()->getOpCode().isRightShift()) && _flags.testAny(normalizedShift);
    }
 
-const char *
-OMR::Node::printIsNormalizedShift()
-   {
-   return self()->chkNormalizedShift() ? "normalizedShift " : "";
-   }
-
-
-
 bool
 OMR::Node::isFPStrictCompliant()
    {
@@ -8094,14 +7405,6 @@ OMR::Node::setIsFPStrictCompliant(bool v)
    if (performNodeTransformation2(c, "O^O NODE FLAGS: Setting resultFPStrictCompliant flag on node %p to %d\n", self(), v))
       _flags.set(resultFPStrictCompliant, v);
    }
-
-const char *
-OMR::Node::printIsFPStrictCompliant()
-   {
-   return self()->isFPStrictCompliant() ? "FPPrecise " : "";
-   }
-
-
 
 bool
 OMR::Node::isUnneededConversion()
@@ -8118,14 +7421,6 @@ OMR::Node::setUnneededConversion(bool v)
       _flags.set(unneededConv, v);
    }
 
-const char *
-OMR::Node::printIsUnneededConversion()
-   {
-   return self()->isUnneededConversion() ? "unneededConv " : "";
-   }
-
-
-
 bool
 OMR::Node::parentSupportsLazyClobber()
    {
@@ -8138,12 +7433,6 @@ OMR::Node::setParentSupportsLazyClobber(bool v)
    TR_ASSERT(self()->getOpCode().isConversion(), "Opcode must be a conv");
    TR_ASSERT(self()->getReferenceCount() <= 1, "Lazy clobber requires node reference count of 1 (actual value is %d)", self()->getReferenceCount());
    _flags.set(ParentSupportsLazyClobber, v);
-   }
-
-const char *
-OMR::Node::printParentSupportsLazyClobber()
-   {
-   return self()->parentSupportsLazyClobber() ? "lazyClobber " : "";
    }
 
 void
@@ -8176,14 +7465,6 @@ OMR::Node::chkUseCallForFloatToFixedConversion()
    {
    return self()->isFloatToFixedConversion() && _flags.testAny(callForFloatToFixedConversion);
    }
-
-const char *
-OMR::Node::printUseCallForFloatToFixedConversion()
-   {
-   return self()->chkUseCallForFloatToFixedConversion() ? "useCallForFloatToFixedConv " : "";
-   }
-
-
 
 bool
 OMR::Node::isLoadFence()
@@ -8237,14 +7518,6 @@ OMR::Node::chkReturnIsDummy()
    return (self()->getOpCodeValue() == TR::Return) && _flags.testAny(returnIsDummy);
    }
 
-const char *
-OMR::Node::printReturnIsDummy()
-   {
-   return (self()->chkReturnIsDummy()) ? "returnIsDummy " : "";
-   }
-
-
-
 bool
 OMR::Node::isBigDecimalLoad()
    {
@@ -8293,14 +7566,6 @@ OMR::Node::setCopyToNewVirtualRegister(bool v)
    _flags.set(copyToNewVirtualRegister, v);
    }
 
-const char *
-OMR::Node::printCopyToNewVirtualRegister()
-   {
-   return self()->isCopyToNewVirtualRegister() ? "copyToNewVirtualRegister " : "";
-   }
-
-
-
 bool
 OMR::Node::nodeRequiresConditionCodes()
    {
@@ -8321,12 +7586,6 @@ OMR::Node::chkOpsNodeRequiresConditionCodes()
    {
    TR::ILOpCode op = self()->getOpCode();
    return op.isArithmetic() || op.isLoadConst() || op.isOverflowCheck();
-   }
-
-const char *
-OMR::Node::printRequiresConditionCodes()
-   {
-   return self()->nodeRequiresConditionCodes() ? "requiresConditionCodes " : "";
    }
 
 static void

@@ -1,5 +1,5 @@
 <!--
-Copyright (c) 2016, 2018 IBM Corp. and others
+Copyright (c) 2016, 2023 IBM Corp. and others
 
 This program and the accompanying materials are made available under
 the terms of the Eclipse Public License 2.0 which accompanies this
@@ -36,7 +36,7 @@ malfunction. Typical symptoms include:
   * the VM crashes, resulting in a core file and/or crash report.
 
 This document discusses troubleshooting procedures as well as some of the tools
-available to you with which you could try to determine whether the compiler is 
+available to you with which you could try to determine whether the compiler is
 faulty, as well as identifying the faulty component.
 
 #  Invocation
@@ -216,13 +216,57 @@ compilation altogether, using the `exclude=method` parameter:
 ### Identifying the failing Optimization.
 
 Most transformations that can be elided are guarded in the source code by a special
-check called `performTransformation` that can be controlled by the option
-`lastOptIndex=N`. This tells the compiler to perform `N` optional transformations,
-then proceed to only do required operations. In this sense, `lastOptIndex=-1` is an
-even stronger property than `optLevel=noOpt`.
+check called [performTransformation](https://github.com/eclipse/omr/blob/f5a790b68037be3a48b6e5c4f7e8ae6ad3e30f00/compiler/compile/OMRCompilation.hpp#L271-L274)
+([more details](https://github.com/eclipse/omr/blob/8f5212d52b533cdf9d6de9c2bd8a3e01e83e8b9d/compiler/compile/OMRCompilation.hpp#L170-L226)).
 
-By binary searching `lastOptIndex=` you can find the optimization that failed.
+`performTransformation` is [enabled by option](https://github.com/eclipse/omr/blob/8f5212d52b533cdf9d6de9c2bd8a3e01e83e8b9d/compiler/compile/OMRCompilation.hpp#L242)
+`TR_TraceOptDetails` or `TR_CountOptTransformations`. `TR_TraceOptDetails` is enabled
+if the `optDetails` option is specified or if `TR_TraceAll` (`traceFull`) is set.
+`TR_CountOptTransformations` is enabled normally when the verbose log is enabled or
+if `lastOptSubIndex` is specified.
 
+To isolate a buggy optimization, transformations can be selectively disabled by
+having `performTransformation` return false. It is (mostly) restricted to the traced
+compilations to avoid overhead in the overwhelmingly common non-tracing case.
+
+`performTransformation` is controlled by comparing
+the current `optIndex` with `firstOptIndex` and  `lastOptIndex` options, either when
+[it is invoked](https://github.com/eclipse/omr/blob/f5a790b68037be3a48b6e5c4f7e8ae6ad3e30f00/compiler/ras/Debug.cpp#L477)
+or in the higher level [performOptimization](https://github.com/eclipse/omr/blob/8f5212d52b533cdf9d6de9c2bd8a3e01e83e8b9d/compiler/optimizer/OMROptimizer.cpp#L1670-L1671)
+if the optimization is not set as `MustBeDone`.
+
+`lastOptIndex` - the index of the last optimization - can be used to narrow things
+down to a particular optimization pass. By adjusting `N` in `lastOptIndex=N` that tells
+the compiler to perform `N` transformation passes and observing when the test passes
+or fails, it is possible to narrow down the failing transformation using a binary-search
+approach. Once the issue is narrowed down to one opt pass, then try searching for the
+bad transformation with `lastOptSubIndex`. `lastOptSubIndex` is used to narrow things
+down to a particular optional transformation within the last optimization. `lastOptSubIndex`
+also controls `performTransformation` as mentioned above.
+
+For example, if the issue is narrowed down to `lastOptIndex=28`, `optSubIndex` will
+be printed out in the [compilation log](optimizer/IntroReadLogFile.md) as in the
+following example. Next `lastOptIndex=28` and `lastOptSubIndex=3` can be set together
+to binary search for the bad transformation within the last optimization pass.
+
+```
+[     5]  28.1    O^O VALUE PROPAGATION: Setting element width for array [00007F2D3F004B70] to 0
+[     6]  28.2    O^O VALUE PROPAGATION: Removing redundant null check node [00007F2D3F004DF0]
+[     7]  28.3    O^O VALUE PROPAGATION: Setting element width for array [00007F2D3F004B70] to 0
+[     8]  28.4    O^O VALUE PROPAGATION: Replace PassThrough node [00007F2D3F004DA0] with its child in its parent [00007F2D3F004DF0]
+[     9]  28.5    O^O VALUE PROPAGATION: Replacing n26n acall of <jitLoadFlattenableArrayElement>
+```
+
+`lastOptIndex=-1` is an even stronger property than `optLevel=noOpt`.
+
+Another option related to the index of an optimization transformation is
+`lastOptTransformationIndex`, which is the index of the last optimization
+transformation to perform. However it uses a single static counter for all compilations.
+Therefore it is not very reliable or often used. It can really only be used
+in situations where the JIT will not run any compilations concurrently, and
+where it will run the same sequence of compilations every time. (That's on top
+of the possibility that some non-determinism might cause a particular
+compilation to do a different sequence of transformations or even of opt passes.)
 
 ### Identifying Compilation Failures
 
@@ -252,60 +296,60 @@ or in the command line link.
 
 ### Limit files
 
-A limit file (also known as a verbose log) contains the signatures of all 
-methods in a program that have been JIT-compiled. The limit file produced 
-by one run of the program can be edited to select individual methods, and 
-subsequently read by the JIT compiler to compile only those selected 
-methods. This allows a developer investigating a defect to concentrate on 
-only methods that, once compiled, will trigger a given failure. 
+A limit file (also known as a verbose log) contains the signatures of all
+methods in a program that have been JIT-compiled. The limit file produced
+by one run of the program can be edited to select individual methods, and
+subsequently read by the JIT compiler to compile only those selected
+methods. This allows a developer investigating a defect to concentrate on
+only methods that, once compiled, will trigger a given failure.
 
 Limit files can be generated using the compiler options
 `verbose,vlog=limit-file`. the `verbose` option instructs the compiler to
 enable verbose log, and the `vlog=limit-file` writes the verbose log to the
 specified file. To learn how to single out methods that cause compilation failures,
-follow the steps in the [section about locating failing method](#locating-the-failing-method) 
+follow the steps in the [section about locating failing method](#locating-the-failing-method)
 that outlines how you can perform a manual binary search using the limit file.
 
 ### Command line limits
 
-An alternative to using limit files is to use the `limit={*method*}` option 
-in the command line. This is suitable if you know exactly what method(s) you 
+An alternative to using limit files is to use the `limit={*method*}` option
+in the command line. This is suitable if you know exactly what method(s) you
 want to limit, and want a quick test run without having to create a text file.
 `method` can be specified in three ways:
 
-* The simplest way to use the option is to specify the (full or partial) name 
-of the method. For example, `limit={*main*}` will instruct the JIT compiler 
+* The simplest way to use the option is to specify the (full or partial) name
+of the method. For example, `limit={*main*}` will instruct the JIT compiler
 to compile any method whose name contains the word "main".
-* You can also spell out the entire signature of the method, e.g. 
-`limit={*java/lang/Class.initialize()V*}.` Only the method with a 
+* You can also spell out the entire signature of the method, e.g.
+`limit={*java/lang/Class.initialize()V*}.` Only the method with a
 signature that matches exactly will be compiled.
-* Finally, you can use a regular expression to specify a group of methods. For 
-instance, `-limit={SimpleLooper.*}` specifies all methods that are members 
-of the class SimpleLooper. The syntax of the regular expression used for 
-limiting is the same as discussed above. You can combine this with the binary 
-search approach to isolate a failure quickly without editing limit files, by 
-running the program repeatedly using increasingly restrictive regular 
-expressions such as `{[a-m]*}`, `{[a-f]*}`, and so on. Note that the brace 
-character is treated specially by some UNIX shells, in which case you will 
-need to escape the character with a backslash, or by surrounding the regular 
+* Finally, you can use a regular expression to specify a group of methods. For
+instance, `-limit={SimpleLooper.*}` specifies all methods that are members
+of the class SimpleLooper. The syntax of the regular expression used for
+limiting is the same as discussed above. You can combine this with the binary
+search approach to isolate a failure quickly without editing limit files, by
+running the program repeatedly using increasingly restrictive regular
+expressions such as `{[a-m]*}`, `{[a-f]*}`, and so on. Note that the brace
+character is treated specially by some UNIX shells, in which case you will
+need to escape the character with a backslash, or by surrounding the regular
 expression in quotation marks.
 
 ### Limit expressions
 
-You can use regular expressions with limit directives to control compilation 
-for methods based on whether their names match the patterns you specify. To 
-use this feature, instead of a method signature, put a regular expression, 
-enclosed in braces, in the limit file. Note that these "regular expressions" 
-are not the same as those used by Perl, or by grep, or even by the Sovereign 
+You can use regular expressions with limit directives to control compilation
+for methods based on whether their names match the patterns you specify. To
+use this feature, instead of a method signature, put a regular expression,
+enclosed in braces, in the limit file. Note that these "regular expressions"
+are not the same as those used by Perl, or by grep, or even by the Sovereign
 JIT compiler.
 
-The following table gives some examples. 
+The following table gives some examples.
 
 | **Limit expression** | **Meaning** |
 | ---------------------- | ------------------------------------------------------ |
 | `- {*(I)*}` | Skip all methods with a single integer parameter |
 | `+ {*.[^a]*}` | Compile all methods whose names do not begin with "a" |
-| `+ {java/lang/[A-M]*}` | Compile all methods of all classes in the `java.lang` 
+| `+ {java/lang/[A-M]*}` | Compile all methods of all classes in the `java.lang`
 package whose names start with the letters `A` through `M` |
 | `+ {*)[[]*}` | Compile All methods that return any kind of array |
 
@@ -317,7 +361,7 @@ a method. The table below lists the four kinds of available filters.
 | **Limit filter** | **Meaning** |
 | ----------------------- | ------------------------------------------------------- |
 | `{regular expression}` | Methods with its signature matching `regular expression`. |
-| `1-0 set index` | Methods specified with one digit number in the limit file 
+| `1-0 set index` | Methods specified with one digit number in the limit file
 right after the + or - sign |
 | `[m,n]` | Methods between line `m` and `n` |
 | `[n]` | The method in line `n` in the limit file |
@@ -325,14 +369,14 @@ right after the + or - sign |
 An example of using command line filters with a limit file:
 
 ```sh
-optlevel=noOpt,limitFile=limit.log,[5-10](optlevel=hot) 
+optlevel=noOpt,limitFile=limit.log,[5-10](optlevel=hot)
 ```
 
 The example above would instruct the compiler to compile methods between line 5 and 10 inclusive
 at `hot` optimization level, and the rest of the methods in the limit file at minimal
 optimization (level `noOpt`).
 
-# Compilation Log
+# [Compilation Log](optimizer/IntroReadLogFile.md)
 
 The compilation log, or simply log, is a file that records the results of program
 analyses and code transformations performed by the compiler during one or more
@@ -512,7 +556,7 @@ is a flowchart-like representation of the different paths of execution through
 the instructions constituting a single function, method, or trace. Each vertex
 in the graph is a basic block: a sequence of instructions with a single entry
 point at the start, and a single exit point at the end. Each edge in the graph
-joins a predecessor block to a successor; each block could have multiple 
+joins a predecessor block to a successor; each block could have multiple
 predecessors and successors. A loop is represented as a cycle in the graph.
 Below is the CFG printed after the Initial Trees listing for the
 `HelloWorld.main(Ljava/lang/String;)V` method.
@@ -550,10 +594,10 @@ Below is the CFG printed after the Initial Trees listing for the
 
 The CFG is is printed in the order of increasing basic block numbers. Each of the
 entries have the memory address of the basic block, its corresponding address in
-the IL (eg. block at index 2 corresponds to node `n1n` in the trees listing in 
+the IL (eg. block at index 2 corresponds to node `n1n` in the trees listing in
 the last section), followed by 4 entries:
 * **in**: blocks that fall through or branch to the current block
-* **out**: blocks to which the current block falls through or branches 
+* **out**: blocks to which the current block falls through or branches
 * **exception-in**: blocks that throw exceptions for which the current block is the catcher
 * **exception-out**: blocks that catch exceptions thrown by the current block
 

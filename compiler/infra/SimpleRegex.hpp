@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2019 IBM Corp. and others
+ * Copyright (c) 2000, 2023 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -59,6 +59,38 @@ class SimpleRegex
    static bool match(TR::SimpleRegex *regex, const char *, bool isCaseSensitive=true);
    static bool match(TR::SimpleRegex *regex, int, bool isCaseSensitive=true);
    static bool match(TR::SimpleRegex *regex, TR_ResolvedMethod *, bool isCaseSensitive=true);
+
+   /**
+    * \brief Check whether a location identified by the specified \ref TR_ByteCodeInfo
+    *        matches the specified regular expression
+    *
+    * The location described by the \c bcInfo argument is expanded into a string of the
+    * form
+    *
+    * [<tt>\#</tt> <em>outer-method-sig</em>] <tt>\@</tt> <em>bc-offset</em> { <tt>\#</tt> <em>callee-method-sig</em> <tt>\@</tt> <em>bc-offset</em> }*
+    *
+    * where each <i>callee-method-sig</i> is the signature of an inlined method invocation,
+    * and each <i>bc-offset</i> is a bytecode offset within the particular method.  The outermost method
+    * signature is optional.
+    *
+    * For example, if the outermost method <code>Outer.out()V</code> has an inlined reference to
+    * <code>Middle.mid()Z</code> at bytecode offset 13, and that in turn has an inlined
+    * reference to <code>Inner.in()I</code> at bytecode offset 17, then bytecode offset 19 of
+    * that innermost inlined reference would have the following two forms:
+    *
+    * <ul>
+    * <li><tt>#Outer.out()V@13#Middle.mid()Z@17#Inner.in()I@19</tt>
+    * <li><tt>@13#Middle.mid()Z@17#Inner.in()I@19</tt>
+    * </ul>
+    *
+    * If either form of the location matches the regular expression, the match is successful.
+    *
+    * \param[in] regex The regular expression against which to match
+    * \param[in] bcInfo A location in the IL
+    * \param[in] isCaseSensitive Optional.  Specifies whether the case of letters is significant in matching.  Default is \c true.
+    * \return \c true if the location matches the specified regular expression; \c false otherwise
+    */
+   static bool match(TR::SimpleRegex *regex, TR_ByteCodeInfo &bcInfo, bool isCaseSensitive=true);
    static bool matchIgnoringLocale(TR::SimpleRegex *regex, const char *, bool isCaseSensitive=true);
 
    void print(bool negate);

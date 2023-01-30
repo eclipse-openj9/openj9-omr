@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2022 IBM Corp. and others
+ * Copyright (c) 2000, 2023 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -1541,6 +1541,86 @@ uint8_t* TR::X86RegMaskRegRegInstruction::generateOperand(uint8_t* cursor)
    applySourceRegisterToEvex(modRM - 4);
 
    return cursor;
+   }
+
+// -----------------------------------------------------------------------------
+// TR::X86RegMaskRegRegImmInstruction:: member functions
+
+void TR::X86RegMaskRegRegImmInstruction::addMetaDataForCodeAddress(uint8_t *cursor)
+   {
+   TR_ASSERT_FATAL(getOpCode().hasByteImmediate(), "Unsupported operation");
+   }
+
+uint8_t* TR::X86RegMaskRegRegImmInstruction::generateOperand(uint8_t* cursor)
+   {
+   TR_ASSERT_FATAL(getEncodingMethod() != OMR::X86::Bad && getEncodingMethod() >= OMR::X86::EVEX_L128, "Masks can be be used on AVX-512 instructions");
+   uint8_t *modRM = cursor - 1;
+
+   if (getOpCode().hasTargetRegisterIgnored() == 0)
+      {
+      applyTargetRegisterToModRMByte(modRM);
+      }
+
+   if (getOpCode().hasSourceRegisterIgnored() == 0)
+      {
+      applySourceRegisterToModRMByte(modRM);
+      }
+
+   if (getMaskRegister())
+      {
+      TR_ASSERT_FATAL(getMaskRegister()->getKind() == TR_VMR, "Mask register should be a VMR");
+      toRealRegister(getMaskRegister())->setMaskRegisterInEvex(modRM - 2, hasZeroMask());
+      }
+
+   applySource2ndRegisterToEVEX(modRM - 3);
+   applyTargetRegisterToEvex(modRM - 4);
+   applySourceRegisterToEvex(modRM - 4);
+
+   uint8_t *immediateCursor = cursor;
+   if (getOpCode().hasIntImmediate())
+      {
+      *(int32_t *)cursor = (int32_t)getSourceImmediate();
+      cursor += 4;
+      }
+   else if (getOpCode().hasByteImmediate() || getOpCode().hasSignExtendImmediate())
+      {
+      *(int8_t *)cursor = (int8_t)getSourceImmediate();
+      cursor += 1;
+      }
+   else
+      {
+      *(int16_t *)cursor = (int16_t)getSourceImmediate();
+      cursor += 2;
+      }
+
+   addMetaDataForCodeAddress(immediateCursor);
+
+   return cursor;
+   }
+
+uint8_t TR::X86RegMaskRegRegImmInstruction::getBinaryLengthLowerBound()
+   {
+   uint8_t len = getOpCode().length(self()->getEncodingMethod(), self()->rexBits());
+
+   if (getOpCode().hasIntImmediate()) len += 4;
+   else if (getOpCode().hasShortImmediate()) len += 2;
+   else len += 1;
+   return len;
+   }
+
+int32_t TR::X86RegMaskRegRegImmInstruction::estimateBinaryLength(int32_t currentEstimate)
+   {
+   uint32_t immediateLength = 1;
+   if (getOpCode().hasIntImmediate())
+      {
+      immediateLength = 4;
+      }
+   else if (getOpCode().hasShortImmediate())
+      {
+      immediateLength = 2;
+      }
+   setEstimatedBinaryLength(getOpCode().length(self()->getEncodingMethod(), self()->rexBits()) + immediateLength);
+   return currentEstimate + getEstimatedBinaryLength();
    }
 
 // -----------------------------------------------------------------------------

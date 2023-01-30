@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2022 IBM Corp. and others
+ * Copyright (c) 2000, 2023 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -129,6 +129,7 @@ namespace TR { class X86RegImmInstruction;                 }
 namespace TR { class X86RegRegImmInstruction;              }
 namespace TR { class X86RegRegRegInstruction;              }
 namespace TR { class X86RegMaskRegRegInstruction;          }
+namespace TR { class X86RegMaskRegRegImmInstruction;       }
 namespace TR { class X86RegMaskRegInstruction;             }
 namespace TR { class X86RegMaskMemInstruction;             }
 namespace TR { class X86MemInstruction;                    }
@@ -820,6 +821,7 @@ public:
    void print(TR::FILE *, TR::X86RegRegRegInstruction *);
    void print(TR::FILE *, TR::X86RegMaskRegInstruction *);
    void print(TR::FILE *, TR::X86RegMaskRegRegInstruction *);
+   void print(TR::FILE *, TR::X86RegMaskRegRegImmInstruction *);
    void print(TR::FILE *, TR::X86MemInstruction *);
    void print(TR::FILE *, TR::X86MemImmInstruction *);
    void print(TR::FILE *, TR::X86MemRegInstruction *);

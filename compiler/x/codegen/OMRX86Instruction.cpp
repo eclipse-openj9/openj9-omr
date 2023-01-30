@@ -4976,12 +4976,50 @@ generateRegMaskRegRegInstruction(TR::InstOpCode::Mnemonic op,
                                  TR::Register * reg3,
                                  TR::RegisterDependencyConditions *deps,
                                  TR::CodeGenerator *cg,
-                                 OMR::X86::Encoding encoding)
+                                 OMR::X86::Encoding encoding,
+                                 bool zeroMask)
    {
    TR_ASSERT_FATAL(encoding != OMR::X86::Bad && encoding >= OMR::X86::Encoding::EVEX_L128, "Must use EVEX encoding for AVX-512 instructions");
    TR_ASSERT_FATAL(mreg->getKind() == TR_VMR, "Mask register must be a VMR");
 
-   return new (cg->trHeapMemory()) TR::X86RegMaskRegRegInstruction(reg3, mreg, reg2, reg1, node, op, deps, cg, encoding);
+   return new (cg->trHeapMemory()) TR::X86RegMaskRegRegInstruction(reg1, mreg, reg2, reg3, node, op, deps, cg, encoding, zeroMask);
+   }
+
+TR::X86RegMaskRegRegImmInstruction *
+generateRegMaskRegRegImmInstruction(TR::InstOpCode::Mnemonic op,
+                                    TR::Node * node,
+                                    TR::Register * reg1,
+                                    TR::Register * mreg,
+                                    TR::Register * reg2,
+                                    TR::Register * reg3,
+                                    int32_t imm,
+                                    TR::CodeGenerator *cg,
+                                    OMR::X86::Encoding encoding,
+                                    bool zeroMask)
+   {
+   TR_ASSERT_FATAL(encoding != OMR::X86::Bad && encoding >= OMR::X86::Encoding::EVEX_L128, "Must use EVEX encoding for AVX-512 instructions");
+   TR_ASSERT_FATAL(mreg->getKind() == TR_VMR, "Mask register must be a VMR");
+
+   return new (cg->trHeapMemory()) TR::X86RegMaskRegRegImmInstruction(reg1, mreg, reg2, reg3, imm, node, op, cg, encoding, zeroMask);
+   }
+
+TR::X86RegMaskRegRegImmInstruction *
+generateRegMaskRegRegImmInstruction(TR::InstOpCode::Mnemonic op,
+                                    TR::Node * node,
+                                    TR::Register * reg1,
+                                    TR::Register * mreg,
+                                    TR::Register * reg2,
+                                    TR::Register * reg3,
+                                    int32_t imm,
+                                    TR::RegisterDependencyConditions *deps,
+                                    TR::CodeGenerator *cg,
+                                    OMR::X86::Encoding encoding,
+                                    bool zeroMask)
+   {
+   TR_ASSERT_FATAL(encoding != OMR::X86::Bad && encoding >= OMR::X86::Encoding::EVEX_L128, "Must use EVEX encoding for AVX-512 instructions");
+   TR_ASSERT_FATAL(mreg->getKind() == TR_VMR, "Mask register must be a VMR");
+
+   return new (cg->trHeapMemory()) TR::X86RegMaskRegRegImmInstruction(reg1, mreg, reg2, reg3, imm, node, op, deps, cg, encoding, zeroMask);
    }
 
 TR::X86RegMaskRegInstruction *

@@ -26,7 +26,7 @@
 TR::RealRegister *getRealRegister(TR::RealRegister::RegNum regNum, TR::CodeGenerator *cg) {
     TR::RealRegister *rr = cg->machine()->getRealRegister(regNum);
 
-    if (!cg->comp()->target().cpu.supportsFeature(OMR_FEATURE_X86_AVX512F) && regNum >= TR::RealRegister::k1 && regNum <= TR::RealRegister::k7) {
+    if (!cg->comp()->target().cpu.supportsFeature(OMR_FEATURE_X86_AVX512F) && regNum >= TR::RealRegister::k0 && regNum <= TR::RealRegister::k7) {
         // Without AVX-512 the machine class will not initialize mask registers
         rr = new (cg->trHeapMemory()) TR::RealRegister(TR_VMR, 0, TR::RealRegister::Free, regNum, TR::RealRegister::vectorMaskMask(regNum), cg);
     }
@@ -88,10 +88,10 @@ TEST_P(XRegRegImm1EncodingTest, encode) {
 class XRegMaskRegRegImmEncodingTest : public TRTest::BinaryEncoderTest<>, public ::testing::WithParamInterface<std::tuple<TR::InstOpCode::Mnemonic, TR::RealRegister::RegNum, TR::RealRegister::RegNum, TR::RealRegister::RegNum, TR::RealRegister::RegNum, int32_t, OMR::X86::Encoding, TRTest::BinaryInstruction>> {};
 
 TEST_P(XRegMaskRegRegImmEncodingTest, encode) {
-    auto regA = cg()->machine()->getRealRegister(std::get<1>(GetParam()));
-    auto regB = cg()->machine()->getRealRegister(std::get<2>(GetParam()));
-    auto regC = cg()->machine()->getRealRegister(std::get<3>(GetParam()));
-    auto regD = cg()->machine()->getRealRegister(std::get<4>(GetParam()));
+    auto regA = getRealRegister(std::get<1>(GetParam()), cg());
+    auto regB = getRealRegister(std::get<2>(GetParam()), cg());
+    auto regC = getRealRegister(std::get<3>(GetParam()), cg());
+    auto regD = getRealRegister(std::get<4>(GetParam()), cg());
     auto imm1 = std::get<5>(GetParam());
     auto encoding = std::get<6>(GetParam());
 

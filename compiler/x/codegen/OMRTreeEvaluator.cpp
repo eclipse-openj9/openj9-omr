@@ -4226,30 +4226,64 @@ TR::Register* OMR::X86::TreeEvaluator::vectorFPNaNHelper(TR::Node *node, TR::Reg
    TR::DataType et = node->getType().getVectorElementType();
    TR::VectorLength vl = node->getType().getVectorLength();
 
-   TR_ASSERT_FATAL(vl != TR::VectorLength512, "NaN helper is not supported for 512-bit vectors");
-
    TR::InstOpCode movOpcode = TR::InstOpCode::MOVDQURegReg;
    TR::InstOpCode orOpcode = mr ? TR::InstOpCode::ORPDRegMem : TR::InstOpCode::ORPDRegReg;
    TR::InstOpCode cmpOpcode = et.isFloat() ? TR::InstOpCode::CMPPSRegRegImm1 : TR::InstOpCode::CMPPDRegRegImm1;
 
-   OMR::X86::Encoding movEncoding = movOpcode.getSIMDEncoding(&cg->comp()->target().cpu, vl);
    OMR::X86::Encoding cmpEncoding = cmpOpcode.getSIMDEncoding(&cg->comp()->target().cpu, vl);
-   OMR::X86::Encoding orEncoding = orOpcode.getSIMDEncoding(&cg->comp()->target().cpu, vl);
+   OMR::X86::Encoding movEncoding = movOpcode.getSIMDEncoding(&cg->comp()->target().cpu, vl);
 
-   TR_ASSERT_FATAL(movEncoding != OMR::X86::Encoding::Bad, "No suitable encoding method for move opcode");
    TR_ASSERT_FATAL(cmpEncoding != OMR::X86::Encoding::Bad, "No suitable encoding method for compare opcode");
-   TR_ASSERT_FATAL(orEncoding != OMR::X86::Encoding::Bad, "No suitable encoding method for por opcode");
+   TR_ASSERT_FATAL(movEncoding != OMR::X86::Encoding::Bad, "No suitable encoding method for move opcode");
 
-   generateRegRegInstruction(movOpcode.getMnemonic(), node, tmpReg, lhs, cg, movEncoding);
-   generateRegRegImmInstruction(cmpOpcode.getMnemonic(), node, tmpReg, tmpReg, 0x4, cg, cmpEncoding);
-
-   if (mr)
+   if (cmpEncoding >= OMR::X86::EVEX_L128)
       {
-      generateRegMemInstruction(orOpcode.getMnemonic(), node, tmpReg, mr, cg, orEncoding);
+       if (et.isDouble())
+          movOpcode = TR::InstOpCode::VMOVDQU64RegReg;
+
+      TR::RegisterDependencyConditions *deps = generateRegisterDependencyConditions(0, 2, cg);
+      TR::Register *maskReg = cg->allocateRegister(TR_VMR);
+      TR::Register *dummyMaskReg = cg->allocateRegister(TR_VMR);
+
+      deps->addPostCondition(maskReg, TR::RealRegister::NoReg, cg);
+      deps->addPostCondition(dummyMaskReg, TR::RealRegister::k0, cg);
+
+      generateRegMaskRegRegImmInstruction(cmpOpcode.getMnemonic(), node, maskReg, dummyMaskReg, lhs, lhs, 0x4, cg, cmpEncoding);
+
+      if (mr)
+         {
+         generateRegMemInstruction(movOpcode.getMnemonic(), node, tmpReg, mr, cg, movEncoding);
+         }
+      else
+         {
+         generateRegRegInstruction(movOpcode.getMnemonic(), node, tmpReg, rhs, cg, movEncoding);
+         }
+
+      generateRegMaskRegInstruction(movOpcode.getMnemonic(), node, tmpReg, maskReg, lhs, cg, movEncoding);
+
+      // Todo: use vblendmps/vblendmpd to use 1 less instruction
+
+      cg->stopUsingRegister(maskReg);
+      cg->stopUsingRegister(dummyMaskReg);
+      TR::LabelSymbol *label = generateLabelSymbol(cg);
+      generateLabelInstruction(TR::InstOpCode::label, node, label, deps, cg);
       }
    else
       {
-      generateRegRegInstruction(orOpcode.getMnemonic(), node, tmpReg, rhs, cg, orEncoding);
+      OMR::X86::Encoding orEncoding = orOpcode.getSIMDEncoding(&cg->comp()->target().cpu, vl);
+      TR_ASSERT_FATAL(orEncoding != OMR::X86::Encoding::Bad, "No suitable encoding method for por opcode");
+
+      generateRegRegInstruction(movOpcode.getMnemonic(), node, tmpReg, lhs, cg, movEncoding);
+      generateRegRegImmInstruction(cmpOpcode.getMnemonic(), node, tmpReg, tmpReg, 0x4, cg, cmpEncoding);
+
+      if (mr)
+         {
+         generateRegMemInstruction(orOpcode.getMnemonic(), node, tmpReg, mr, cg, orEncoding);
+         }
+      else
+         {
+         generateRegRegInstruction(orOpcode.getMnemonic(), node, tmpReg, rhs, cg, orEncoding);
+         }
       }
 
    return tmpReg;
@@ -4291,7 +4325,6 @@ TR::Register* OMR::X86::TreeEvaluator::vectorBinaryArithmeticEvaluator(TR::Node*
             // These opcodes require special handling of NaN values
             // If either operand is NaN, the result must be NaN
             tmpNaNReg = cg->allocateRegister(TR_VRF);
-            TR_ASSERT_FATAL(type.getVectorLength() != TR::VectorLength512, "min/max f/d not supported for 512-bit vectors");
          default:
             break;
          }
@@ -4935,7 +4968,7 @@ TR::Register* OMR::X86::TreeEvaluator::SIMDreductionEvaluator(TR::Node* node, TR
       case TR::VectorLength512:
          // extract 256-bits from zmm and store in ymm, then perform vertical operation
          generateRegRegImmInstruction(TR::InstOpCode::VEXTRACTF64X4YmmZmmImm1, node, resultVRF, workingReg, 0xFF, cg);
-         TR_ASSERT_FATAL(!needsNaNHandling, "NaN handling not supported for 512-bit vector reductions");
+         rSrcReg = needsNaNHandling ? vectorFPNaNHelper(child, tmpNaNReg, workingReg, resultVRF, NULL, cg) : resultVRF;
          generateRegRegInstruction(regOpcode.getMnemonic(), node, workingReg, resultVRF, cg, regOpcode.getSIMDEncoding(&cg->comp()->target().cpu, TR::VectorLength256));
          // Fallthrough to treat remaining result as 256-bit vector
       case TR::VectorLength256:

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017, 2022 IBM Corp. and others
+ * Copyright (c) 2017, 2023 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -932,7 +932,7 @@ INSTANTIATE_TEST_CASE_P(Double128NaNInfReductionTest, BinaryDataDriven128DoubleT
 
 INSTANTIATE_TEST_CASE_P(BinaryFloatTest, BinaryDataDrivenFloatTest, ::testing::ValuesIn(*TRTest::MakeVector<std::tuple<TR::VectorOperation, BinaryFloatTest>>(
     std::make_tuple(TR::vmin, BinaryFloatTest {
-        {  -20, -0, 15.5,  5, 10.5,  0.1,  9.5, 5,   4,  0.1, 0,  5, -1,  1,  10,  5},
+        {  -20, -0, 15.5,  5, 10.5,  0.1,  9.5, 5,   4,  0.1, 0,  5, -1,  0,  10,  5},
         {  -20,  0, 15.5, 12, 22.1,  0.1, 15.5, 12,  4, 25.5, 0, 12,  1,  1,  10, 12},
         {   10, -0, 21.5,  5, 10.5, 25.5,  9.5,  5, 10,  0.1, 0,  5, -1,  0, 100,  5},
     }),
@@ -942,6 +942,7 @@ INSTANTIATE_TEST_CASE_P(BinaryFloatTest, BinaryDataDrivenFloatTest, ::testing::V
         {   10, -0, 21.5,  5, 10.5, 25.5,  9.5,  5, 10,  0.1, 0,  5, -1,  0, 100,  5},
     })
 )));
+
 
 /* 128/256/512-Bit Double tests*/
 #if !defined(J9ZOS390) && !defined(AIXPPC)

@@ -1750,6 +1750,8 @@ protected:
 
 // Private functionality.
 private:
+   inline void setFlagsForConstIntegralValue(int64_t x);
+
    TR::Node * getExtendedChild(int32_t c);
    friend class TR::NodePool;
 

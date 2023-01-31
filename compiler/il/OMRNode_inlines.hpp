@@ -429,6 +429,20 @@ OMR::Node::setConstValue(int64_t val)
    {
    self()->freeExtensionIfExists();
    _unionBase._constValue = val;
+
+   if (self()->getDataType().isIntegral())
+      {
+      // Get the 64-bit sign-extension of the value of this node, i.e. replace
+      // all of the upper bits with copies of the sign bit according to the
+      // actual bit-width of the constant.
+      //
+      // Cast to unsigned before shifting left to avoid UB. Cast back to signed
+      // before shifting right to get an arithmetic shift.
+      //
+      int32_t pad = 64 - 8 * TR::DataType::getSize(self()->getDataType());
+      val = (int64_t)((uint64_t)val << pad) >> pad;
+      self()->setFlagsForConstIntegralValue(val);
+      }
    }
 
 int64_t
@@ -441,7 +455,8 @@ int64_t
 OMR::Node::setLongInt(int64_t li)
    {
    self()->freeExtensionIfExists();
-   return (int64_t)(_unionBase._constValue = (int64_t)li);
+   self()->setFlagsForConstIntegralValue(li);
+   return (_unionBase._constValue = li);
    }
 
 int32_t
@@ -466,6 +481,7 @@ uint64_t
 OMR::Node::setUnsignedLongInt(uint64_t uli)
    {
    self()->freeExtensionIfExists();
+   self()->setFlagsForConstIntegralValue((int64_t)uli);
    return (uint64_t)(_unionBase._constValue = (int64_t)uli);
    }
 
@@ -493,6 +509,7 @@ OMR::Node::setInt(int32_t i)
    {
    TR_ASSERT(self()->getOpCodeValue() != TR::fconst, "TR::Node::setInt: used for an fconst node");
    self()->freeExtensionIfExists();
+   self()->setFlagsForConstIntegralValue(i); // i gets sign-extended
    return static_cast<int32_t>(_unionBase._constValue = (int64_t)i);
    }
 
@@ -506,6 +523,7 @@ uint32_t
 OMR::Node::setUnsignedInt(uint32_t ui)
    {
    self()->freeExtensionIfExists();
+   self()->setFlagsForConstIntegralValue((int32_t)ui); // (int32_t)ui gets sign-extended
    return (uint32_t)(_unionBase._constValue = (int64_t)ui);
    }
 
@@ -519,6 +537,7 @@ int16_t
 OMR::Node::setShortInt(int16_t si)
    {
    self()->freeExtensionIfExists();
+   self()->setFlagsForConstIntegralValue(si); // si gets sign-extended
    return (int16_t)(_unionBase._constValue = (int64_t)si);
    }
 
@@ -532,6 +551,7 @@ uint16_t
 OMR::Node::setUnsignedShortInt(uint16_t c)
    {
    self()->freeExtensionIfExists();
+   self()->setFlagsForConstIntegralValue((int16_t)c); // (int16_t)c gets sign-extended
    return (uint16_t)(_unionBase._constValue = (int64_t)c);
    }
 
@@ -545,6 +565,7 @@ int8_t
 OMR::Node::setByte(int8_t b)
    {
    self()->freeExtensionIfExists();
+   self()->setFlagsForConstIntegralValue(b); // b gets sign-extended
    return (int8_t)(_unionBase._constValue = (int64_t)b);
    }
 
@@ -558,6 +579,7 @@ uint8_t
 OMR::Node::setUnsignedByte(uint8_t b)
    {
    self()->freeExtensionIfExists();
+   self()->setFlagsForConstIntegralValue((int8_t)b); // (int8_t)b gets sign-extended
    return (uint8_t)(_unionBase._constValue = (int64_t)b);
    }
 
@@ -631,6 +653,9 @@ OMR::Node::setAddress(uint64_t a)
 
    if (TR::comp()->target().is32Bit())
       a = a & 0x00000000ffffffff;
+
+   _flags.set(nodeIsNull, a == 0);
+   _flags.set(nodeIsNonNull, a != 0);
 
    return (uint64_t)(_unionBase._constValue = (int64_t)a);
    }
@@ -732,6 +757,17 @@ OMR::Node::setDataType(TR::DataType dt)
 /**
  * Node flag functions
  */
+
+inline void
+OMR::Node::setFlagsForConstIntegralValue(int64_t x)
+   {
+   _flags.set(nodeIsZero, x == 0);
+   _flags.set(nodeIsNonZero, x != 0);
+   _flags.set(nodeIsNonNegative, x >= 0);
+   _flags.set(nodeIsNonPositive, x <= 0);
+   if (self()->getDataType().isInt64())
+      _flags.set(highWordZero, ((uint64_t)x >> 32) == 0);
+   }
 
 inline bool
 OMR::Node::hasNodeExtension()

@@ -44,6 +44,7 @@
 #include "il/SymbolReference.hpp"
 #include "il/TreeTop.hpp"
 #include "il/TreeTop_inlines.hpp"
+#include "infra/Arith.hpp"
 #include "infra/Bit.hpp"
 #include "infra/BitVector.hpp"
 #include "infra/Cfg.hpp"
@@ -910,8 +911,10 @@ static TR::Node *addSimplifier(TR::Node * node, TR::Block * block, TR::Simplifie
       // Turn add with first child negated into a subtract
       else if (performTransformation(s->comp(), "%sReduced iadd with negated first child in node [%s] to isub\n", s->optDetailString(), node->getName(s->getDebug())))
          {
+         bool cannotOverflow = node->cannotOverflow() && firstChild->cannotOverflow();
          s->anchorChildren(node, s->_curTree);
          TR::Node::recreate(node, TR::ILOpCode::getSubOpCode<T>());
+         node->setCannotOverflow(cannotOverflow);
          node->setAndIncChild(1, newFirstChild);
          node->setChild(0, secondChild);
          firstChild->recursivelyDecReferenceCount();
@@ -6132,9 +6135,24 @@ TR::Node *iaddSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
       {
       if (performTransformation(s->comp(), "%sNormalized iadd of iconst > 0 in node [%s] to isub of -iconst\n", s->optDetailString(), node->getName(s->getDebug())))
          {
+         // Preserve flags that describe the resulting value, since it is
+         // unchanged. Also preserve cannotOverflow. The subtraction (x - (-c))
+         // overflows precisely when the original addition (x + c) does.
+         bool isNonZero = node->isNonZero();
+         bool isNonNegative = node->isNonNegative();
+         bool isNonPositive = node->isNonPositive();
+         bool cannotOverflow = node->cannotOverflow();
+
          TR::Node * newSecondChild = (secondChild->getReferenceCount() == 1) ? secondChild : TR::Node::create(secondChild, TR::iconst, 0);
          newSecondChild->setInt(-secondChild->getInt());
+
          TR::Node::recreateWithoutProperties(node, TR::isub, 2, firstChild, newSecondChild);
+
+         node->setIsNonZero(isNonZero);
+         node->setIsNonNegative(isNonNegative);
+         node->setIsNonPositive(isNonPositive);
+         node->setCannotOverflow(cannotOverflow);
+
          firstChild->recursivelyDecReferenceCount();
          secondChild->recursivelyDecReferenceCount();
          node->setVisitCount(0);
@@ -6163,8 +6181,10 @@ TR::Node *iaddSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
       // Turn add with first child negated into a subtract
       else if (performTransformation(s->comp(), "%sReduced iadd with negated first child in node [%s] to isub\n", s->optDetailString(), node->getName(s->getDebug())))
          {
+         bool cannotOverflow = node->cannotOverflow() && firstChild->cannotOverflow();
          s->anchorChildren(node, s->_curTree);
          TR::Node::recreate(node, TR::isub);
+         node->setCannotOverflow(cannotOverflow);
          node->setAndIncChild(1, newFirstChild);
          node->setChild(0, secondChild);
          firstChild->recursivelyDecReferenceCount();
@@ -6298,6 +6318,9 @@ TR::Node *iaddSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
             if (!s->reassociate() && // use new rules
                performTransformation(s->comp(), "%sFound iadd of iconst with iadd or isub of x and const in node [%s]\n", s->optDetailString(), node->getName(s->getDebug())))
                {
+               bool cannotOverflow =
+                  node->cannotOverflow() && firstChild->cannotOverflow();
+
                if (firstChild->getReferenceCount()>1)
                   {
                   // it makes sense to uncommon it in this situation
@@ -6310,14 +6333,19 @@ TR::Node *iaddSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
                   }
 
                int32_t value  = secondChild->getInt();
+               TR::StickyOverflowFlag valOverflow;
                if (firstChildOp == TR::iadd)
                   {
-                  value += lrChild->getInt();
+                  TR::incWithOverflow(value, lrChild->getInt(), valOverflow);
                   }
                else
                   {
-                  value -= lrChild->getInt();
+                  TR::decWithOverflow(value, lrChild->getInt(), valOverflow);
                   }
+
+               if (valOverflow.occurred)
+                  cannotOverflow = false;
+
                if (value > 0)
                   {
                   value = -value;
@@ -6335,6 +6363,7 @@ TR::Node *iaddSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
                   secondChild->recursivelyDecReferenceCount();
                   }
 
+               node->setCannotOverflow(cannotOverflow);
                node->setAndIncChild(0, firstChild->getFirstChild());
                firstChild->recursivelyDecReferenceCount();
                node->setVisitCount(0);
@@ -6936,7 +6965,12 @@ TR::Node *isubSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
       {
       if (performTransformation(s->comp(), "%sNormalized isub of iconst > 0 in node [%s] to iadd of -iconst \n", s->optDetailString(), node->getName(s->getDebug())))
          {
+         // If the original add couldn't overflow, then neither can the sub.
+         // Negating the constant doesn't overflow, so when the inputs are
+         // interpreted as signed, the true result is the same in both cases.
+         bool cannotOverflow = node->cannotOverflow();
          TR::Node::recreate(node, TR::iadd);
+         node->setCannotOverflow(cannotOverflow);
          if (secondChild->getReferenceCount() == 1)
             {
             secondChild->setInt(-secondChild->getInt());
@@ -7119,6 +7153,9 @@ TR::Node *isubSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
             {
             if (performTransformation(s->comp(), "%sFound isub of iconst with iadd or isub of x and const in node [%s]\n", s->optDetailString(), node->getName(s->getDebug())))
                {
+               bool cannotOverflow =
+                  node->cannotOverflow() && firstChild->cannotOverflow();
+
                if (firstChild->getReferenceCount()>1)
                   {
                   // it makes sense to uncommon it in this situation
@@ -7130,15 +7167,33 @@ TR::Node *isubSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
                   firstChild = newFirstChild;
                   }
 
-               int32_t value = - secondChild->getInt();
+               int32_t value = 0;
+               TR::StickyOverflowFlag valOverflow;
                if (firstChildOp == TR::iadd)
                   {
-                  value += lrChild->getInt();
+                  value = TR::subWithOverflow(
+                     lrChild->getInt(), secondChild->getInt(), valOverflow);
                   }
                else // firstChildOp == TR::isub
                   {
-                  value -= lrChild->getInt();
+                  TR::decWithOverflow(value, secondChild->getInt(), valOverflow);
+                  TR::decWithOverflow(value, lrChild->getInt(), valOverflow);
+                  if (valOverflow.occurred)
+                     {
+                     // Try the other order. If there is an order in which we
+                     // can negate one constant and subtract the other without
+                     // overflowing, then the calculation of the new constant
+                     // does not interfere with cannotOverflow.
+                     valOverflow.occurred = false;
+                     value = 0;
+                     TR::decWithOverflow(value, lrChild->getInt(), valOverflow);
+                     TR::decWithOverflow(value, secondChild->getInt(), valOverflow);
+                     }
                   }
+
+               if (valOverflow.occurred)
+                  cannotOverflow = false;
+
                if (value > 0)
                   {
                   value = -value;
@@ -7158,6 +7213,8 @@ TR::Node *isubSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
                   foldedConstChild->setInt(value);
                   secondChild->recursivelyDecReferenceCount();
                   }
+
+               node->setCannotOverflow(cannotOverflow);
                node->setAndIncChild(0, firstChild->getFirstChild());
                firstChild->recursivelyDecReferenceCount();
                node->setVisitCount(0);
@@ -7943,22 +8000,54 @@ TR::Node *imulSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
        secondChild->getInt() != TR::getMinSigned<TR::Int32>() &&
        performTransformation(s->comp(), "%sFound a*(-c) = -(a*c) in imul [%s]\n", s->optDetailString(), node->getName(s->getDebug())))
       {
+      int32_t absVal = -secondChild->getInt();
+      bool cannotOverflow = false;
+      if (node->cannotOverflow())
+         {
+         // Overflow can only happen if the original product can be INT32_MIN.
+         // In that case, the true result of the product a*c is INT32_MAX+1.
+         // If, OTOH, INT32_MIN (= -2**31) is not possible, then we know that
+         //
+         //    -2**31 < a*(-c) < 2**31
+         //    -2**31 <   a*c  < 2**31    ==> new imul a*c does not overflow
+         //    -2**31 < -(a*c) < 2**31    ==> ineg does not overflow
+         //
+         // Each of the following conditions rules out INT32_MIN and so
+         // guarantees that there will be no overflow.
+         //
+         cannotOverflow =
+            absVal == 1 // INT32_MIN only possible when original imul overflows
+            || !isPowerOf2(absVal) // a*(-c) = INT32_MIN ==> c is a power of 2
+            || node->isNonNegative(); // INT32_MIN < 0
+         }
+
       TR::Node::recreate(node, TR::ineg);
       node->setNumChildren(1);
+      node->setCannotOverflow(cannotOverflow);
+
       if (secondChild->getReferenceCount() == 1)
          {
-         secondChild->setInt(-secondChild->getInt());
+         secondChild->setInt(absVal);
          }
       else
          {
-         int32_t negVal = -secondChild->getInt();
          secondChild->decReferenceCount();
-         secondChild = TR::Node::iconst(negVal);
+         secondChild = TR::Node::iconst(absVal);
          secondChild->incReferenceCount();
          }
+
       TR::Node *newMul = TR::Node::create(TR::imul, 2);
       newMul->setChild(0, firstChild);
       newMul->setChild(1, secondChild);
+
+      newMul->setIsNonZero(node->isNonZero()); // even if overflow is possible
+      if (cannotOverflow)
+         {
+         newMul->setCannotOverflow(true);
+         newMul->setIsNonNegative(node->isNonPositive());
+         newMul->setIsNonPositive(node->isNonNegative());
+         }
+
       node->setAndIncChild(0, newMul);
       s->_alteredBlock = true;
       return s->simplify(node, block);
@@ -8038,20 +8127,15 @@ TR::Node *imulSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
             productNode->setInt((int32_t)product);
             TR::Node::recreate(node, TR::iadd);
             }
-         if (firstChild->getReferenceCount() != 1)
-            {
-            TR::Node * newFirst = TR::Node::create(firstChild, TR::imul, 2);
-            newFirst->setReferenceCount(1);
-            newFirst->setAndIncChild(0, firstChild->getFirstChild());
-            newFirst->setAndIncChild(1, lrChild);
-            firstChild->recursivelyDecReferenceCount();
-            firstChild = newFirst;
-            node->setChild(0, firstChild);
-            }
-         else
-            {
-            TR::Node::recreate(firstChild, TR::imul);
-            }
+
+         TR::Node * newFirst = TR::Node::create(firstChild, TR::imul, 2);
+         newFirst->setReferenceCount(1);
+         newFirst->setAndIncChild(0, firstChild->getFirstChild());
+         newFirst->setAndIncChild(1, lrChild);
+         firstChild->recursivelyDecReferenceCount();
+         firstChild = newFirst;
+         node->setChild(0, firstChild);
+
          if (lrChild->getReferenceCount() != 1)
             {
             lrChild->decReferenceCount();
@@ -9687,7 +9771,9 @@ TR::Node *inegSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
       {
       if (performTransformation(s->comp(), "%sReduced ineg with isub child in node [" POINTER_PRINTF_FORMAT "] to isub\n", s->optDetailString(), node))
          {
+         bool cannotOverflow = node->cannotOverflow() && firstChild->cannotOverflow();
          TR::Node::recreate(node, TR::isub);
+         node->setCannotOverflow(cannotOverflow);
          node->setNumChildren(2);
          node->setAndIncChild(0, firstChild->getSecondChild());
          node->setAndIncChild(1, firstChild->getFirstChild());

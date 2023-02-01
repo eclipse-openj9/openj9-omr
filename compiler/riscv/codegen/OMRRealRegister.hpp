@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2019, 2019 IBM Corp. and others
+ * Copyright (c) 2019, 2023 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -70,12 +70,25 @@ class OMR_EXTENSIBLE RealRegister : public OMR::RealRegister
    public:
 
    /**
+    * @brief Return binary encoding of given @param reg.
+    *
+    * @param reg register to encode
+    * @return register binary encoding
+    */
+   static
+   uint32_t binaryRegCode(RegNum reg)
+      {
+      return (uint32_t)fullRegBinaryEncodings[reg];
+      }
+
+
+   /**
     * @brief Return binary encoding of the register
     * @return: register binary encoding
     */
    uint32_t binaryRegCode()
       {
-      return (uint32_t)fullRegBinaryEncodings[_registerNumber];
+      return binaryRegCode(_registerNumber);
       }
 
    private:

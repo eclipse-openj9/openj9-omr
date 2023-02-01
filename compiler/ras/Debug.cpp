@@ -2913,6 +2913,9 @@ TR_Debug::getRealRegisterName(uint32_t regNum)
 #if defined(TR_TARGET_ARM)
    return getName(regNum+1);
 #endif
+#if defined(TR_TARGET_ARM64)
+   return getARM64RegisterName(regNum+1);
+#endif
 #if defined(TR_TARGET_S390)
    return getS390RegisterName(regNum+1);
 #endif

@@ -4711,6 +4711,7 @@ OMR::X86::TreeEvaluator::vfmaEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    TR::Node *leftNode = node->getChild(0);
    TR::Node *middleNode = node->getChild(1);
    TR::Node *rightNode = node->getChild(2);
+   TR::Node* maskNode = node->getOpCode().isVectorMasked() ? node->getChild(3) : NULL;
 
    TR::Register *resultReg = cg->allocateRegister(TR_VRF);
    node->setRegister(resultReg);
@@ -4723,11 +4724,19 @@ OMR::X86::TreeEvaluator::vfmaEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    TR::Register *leftReg = cg->evaluate(leftNode);
    TR::Register *middleReg = cg->evaluate(middleNode);
    TR::Register *rightReg = cg->evaluate(rightNode);
+   TR::Register *maskReg = maskNode ? cg->evaluate(maskNode) : NULL;
 
    if (et.isFloatingPoint() && fmaEncoding != OMR::X86::Encoding::Bad)
       {
-      generateRegRegInstruction(movOpcode.getMnemonic(), node, resultReg, leftReg, cg, movOpcodeEncoding);
-      generateRegRegRegInstruction(fmaOpcode.getMnemonic(), node, resultReg, middleReg, rightReg, cg, fmaEncoding);
+      if (maskReg)
+         {
+         ternaryVectorMaskHelper(fmaOpcode.getMnemonic(), fmaEncoding, node, resultReg, leftReg, middleReg, rightReg, maskReg, cg);
+         }
+      else
+         {
+         generateRegRegInstruction(movOpcode.getMnemonic(), node, resultReg, leftReg, cg, movOpcodeEncoding);
+         generateRegRegRegInstruction(fmaOpcode.getMnemonic(), node, resultReg, middleReg, rightReg, cg, fmaEncoding);
+         }
       }
    else
       {
@@ -4743,17 +4752,26 @@ OMR::X86::TreeEvaluator::vfmaEvaluator(TR::Node *node, TR::CodeGenerator *cg)
       TR_ASSERT_FATAL(mulEncoding != OMR::X86::Encoding::Bad, "No supported encoding method for multiplication opcode");
       TR_ASSERT_FATAL(addEncoding != OMR::X86::Encoding::Bad, "No supported encoding method for addition opcode");
 
+      TR::Register *tmpResultReg = maskReg ? cg->allocateRegister(TR_VRF) : resultReg;
+
       if (mulEncoding == OMR::X86::Legacy)
          {
-         generateRegRegInstruction(movOpcode.getMnemonic(), node, resultReg, leftReg, cg, movOpcodeEncoding);
-         generateRegRegInstruction(mulOpcode.getMnemonic(), node, resultReg, middleReg, cg, mulEncoding);
+         generateRegRegInstruction(movOpcode.getMnemonic(), node, tmpResultReg, leftReg, cg, movOpcodeEncoding);
+         generateRegRegInstruction(mulOpcode.getMnemonic(), node, tmpResultReg, middleReg, cg, mulEncoding);
          }
       else
          {
-         generateRegRegRegInstruction(mulOpcode.getMnemonic(), node, resultReg, leftReg, middleReg, cg, mulEncoding);
+         generateRegRegRegInstruction(mulOpcode.getMnemonic(), node, tmpResultReg, leftReg, middleReg, cg, mulEncoding);
          }
 
-      generateRegRegInstruction(addOpcode.getMnemonic(), node, resultReg, rightReg, cg, addEncoding);
+      generateRegRegInstruction(addOpcode.getMnemonic(), node, tmpResultReg, rightReg, cg, addEncoding);
+
+      if (maskReg)
+         {
+         generateRegRegInstruction(movOpcode.getMnemonic(), node, resultReg, leftReg, cg, movOpcodeEncoding);
+         vectorMergeMaskHelper(node, vl, et, resultReg, tmpResultReg, maskReg, cg);
+         cg->stopUsingRegister(tmpResultReg);
+         }
       }
 
    cg->decReferenceCount(leftNode);
@@ -5127,6 +5145,7 @@ OMR::X86::TreeEvaluator::ternaryVectorMaskHelper(TR::InstOpCode opcode,
 
    if (vectorMask)
       {
+      TR_ASSERT_FATAL(encoding == OMR::X86::VEX_L128 || encoding == OMR::X86::VEX_L256, "AVX supported opcode required for ternary mask emulation");
       generateRegRegInstruction(TR::InstOpCode::MOVDQURegReg, node, tmpReg, lhsReg, cg);
       generateRegRegRegInstruction(opcode.getMnemonic(), node, tmpReg, middleReg, rhsReg, cg, encoding);
       vectorMergeMaskHelper(node, resultReg, tmpReg, maskReg, cg);
@@ -5592,7 +5611,7 @@ OMR::X86::TreeEvaluator::vmdivEvaluator(TR::Node *node, TR::CodeGenerator *cg)
 TR::Register*
 OMR::X86::TreeEvaluator::vmfmaEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   return TR::TreeEvaluator::unImpOpEvaluator(node, cg);
+   return TR::TreeEvaluator::vfmaEvaluator(node, cg);
    }
 
 TR::Register*

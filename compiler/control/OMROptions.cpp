@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2022 IBM Corp. and others
+ * Copyright (c) 2000, 2023 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -1097,6 +1097,7 @@ TR::OptionTable OMR::Options::_jitOptions[] = {
    {"suffixLogs",          "O\tadd the date/time/pid suffix to the file name of the logs", SET_OPTION_BIT(TR_EnablePIDExtension), "F", NOT_IN_SUBSET},
    {"suffixLogsFormat=",   "O\tadd the suffix in specified format to the file name of the logs", TR::Options::setString,  offsetof(OMR::Options, _suffixLogsFormat), 0, "P%s", NOT_IN_SUBSET},
    {"supportSwitchToInterpeter", "C\tGenerate code to allow each method to switch to the interpreter", SET_OPTION_BIT(TR_SupportSwitchToInterpreter), "P"},
+   {"suppressEA=",               "O{regex}\tSuppress stack allocations by Escape Analysis at locations that match the specified regex", TR::Options::setRegex, offsetof(OMR::Options, _suppressEA), 0, "P"},
    {"suspendCompThreadsEarly", "M\tSuspend compilation threads when QWeight drops under a threshold", SET_OPTION_BIT(TR_SuspendEarly), "F", NOT_IN_SUBSET },
    {"terseRegisterPressureTrace","L\tinclude only summary info about register pressure tracing when traceGRA is enabled", SET_OPTION_BIT(TR_TerseRegisterPressureTrace), "P" },
    {"test390LitPoolBufferSize=", "L\tInsert 8byte elements into Lit Pool to force testing of large lit pool sizes",

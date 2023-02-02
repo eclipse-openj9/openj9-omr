@@ -2147,6 +2147,8 @@ const char *OMR::SymbolReferenceTable::_commonNonHelperSymbolNames[] =
    "<objectEqualityComparison>",
    "<objectInequalityComparison>",
    "<nonNullableArrayNullStoreCheck>",
+   "<loadFlattenableArrayElementNonHelper>",
+   "<storeFlattenableArrayElementNonHelper>",
    "<synchronizedFieldLoad>",
    "<atomicAdd>",
    "<atomicFetchAndAdd>",

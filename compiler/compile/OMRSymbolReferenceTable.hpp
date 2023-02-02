@@ -240,6 +240,31 @@ class SymbolReferenceTable
        */
       nonNullableArrayNullStoreCheckSymbol,
 
+      /**
+       * \brief This symbol represents a call that loads an array element. The array must have a reference
+       * type for its element type. It cannot be arrays of primitive types such as int[] or double[]
+       *
+       * \code
+       *   acall <loadFlattenableArrayElementNonHelperSymbol>
+       *     array-element-index
+       *     array-base-address
+       * \endcode
+       */
+      loadFlattenableArrayElementNonHelperSymbol,
+
+      /**
+       * \brief This symbol represents a call that stores a value into an array element. The array must have
+       * a reference type for its element type. It cannot be arrays of primitive types such as int[] or double[]
+       *
+       * \code
+       *   call <storeFlattenableArrayElementNonHelperSymbol>
+       *     value-reference-to-be-stored
+       *     array-element-index
+       *     array-reference-to-which-value-will-be-stored
+       * \endcode
+       */
+      storeFlattenableArrayElementNonHelperSymbol,
+
       /** \brief
        *
        *  This symbol is used by the code generator to recognize and inline a call which emulates the following

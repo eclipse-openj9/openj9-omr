@@ -147,6 +147,11 @@ OMR::SymbolReference::getUseonlyAliasesBV(TR::SymbolReferenceTable * symRefTab)
             {
             return &symRefTab->aliasBuilder.defaultMethodUseAliases();
             }
+         if (symRefTab->isNonHelper(self(), TR::SymbolReferenceTable::loadFlattenableArrayElementNonHelperSymbol) ||
+             symRefTab->isNonHelper(self(), TR::SymbolReferenceTable::storeFlattenableArrayElementNonHelperSymbol))
+            {
+            return &symRefTab->aliasBuilder.defaultMethodUseAliases();
+            }
 
          if (!methodSymbol->isHelper())
             {
@@ -339,7 +344,9 @@ OMR::SymbolReference::getUseDefAliasesBV(bool isDirectCall, bool includeGCSafePo
              symRefTab->isNonHelper(self(), TR::SymbolReferenceTable::eaEscapeHelperSymbol) ||
              symRefTab->isNonHelper(self(), TR::SymbolReferenceTable::objectEqualityComparisonSymbol) ||
              symRefTab->isNonHelper(self(), TR::SymbolReferenceTable::objectInequalityComparisonSymbol) ||
-             symRefTab->isNonHelper(self(), TR::SymbolReferenceTable::nonNullableArrayNullStoreCheckSymbol))
+             symRefTab->isNonHelper(self(), TR::SymbolReferenceTable::nonNullableArrayNullStoreCheckSymbol) ||
+             symRefTab->isNonHelper(self(), TR::SymbolReferenceTable::loadFlattenableArrayElementNonHelperSymbol) ||
+             symRefTab->isNonHelper(self(), TR::SymbolReferenceTable::storeFlattenableArrayElementNonHelperSymbol))
             {
             return &symRefTab->aliasBuilder.defaultMethodDefAliases();
             }

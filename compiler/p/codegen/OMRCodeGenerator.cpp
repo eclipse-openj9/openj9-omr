@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2022 IBM Corp. and others
+ * Copyright (c) 2000, 2023 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -872,6 +872,30 @@ void OMR::Power::CodeGenerator::buildRegisterMapForInstruction(TR_GCStackMap *ma
    map->setInternalPointerMap(internalPtrMap);
    }
 
+bool
+OMR::Power::CodeGenerator::considerTypeForGRA(TR::Node *node)
+   {
+   return !node->getDataType().isMask();
+   }
+
+bool
+OMR::Power::CodeGenerator::considerTypeForGRA(TR::DataType dt)
+   {
+   return !dt.isMask();
+   }
+
+bool
+OMR::Power::CodeGenerator::considerTypeForGRA(TR::SymbolReference *symRef)
+   {
+   if (symRef && symRef->getSymbol())
+      {
+      return self()->considerTypeForGRA(symRef->getSymbol()->getDataType());
+      }
+   else
+      {
+      return true;
+      }
+   }
 
 void OMR::Power::CodeGenerator::findOrCreateFloatConstant(void *v, TR::DataType t,
                              TR::Instruction *n0, TR::Instruction *n1,

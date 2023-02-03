@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 1991, 2022 IBM Corp. and others
+ * Copyright (c) 1991, 2023 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -61,6 +61,7 @@ private:
 	/* Methods */
 public:
 	virtual MM_GlobalCollector* createGlobalCollector(MM_EnvironmentBase* env);
+	virtual MM_GlobalCollector* createCollectors(MM_EnvironmentBase* env);
 	virtual MM_Heap* createHeapWithManager(MM_EnvironmentBase* env, uintptr_t heapBytesRequested, MM_HeapRegionManager* regionManager);
 	virtual MM_HeapRegionManager* createHeapRegionManager(MM_EnvironmentBase* env);
 	virtual J9Pool* createEnvironmentPool(MM_EnvironmentBase* env);

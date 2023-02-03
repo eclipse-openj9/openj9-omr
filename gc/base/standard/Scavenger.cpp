@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 1991, 2022 IBM Corp. and others
+ * Copyright (c) 1991, 2023 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -184,13 +184,13 @@ MM_Scavenger::deleteSweepPoolState(MM_EnvironmentBase *env, void *sweepPoolState
  * @return a new instance of the receiver or NULL on failure.
  */
 MM_Scavenger *
-MM_Scavenger::newInstance(MM_EnvironmentStandard *env, MM_HeapRegionManager *regionManager)
+MM_Scavenger::newInstance(MM_EnvironmentStandard *env)
 {
 	MM_Scavenger *scavenger;
 
 	scavenger = (MM_Scavenger *)env->getForge()->allocate(sizeof(MM_Scavenger), OMR::GC::AllocationCategory::FIXED, OMR_GET_CALLSITE());
 	if (scavenger) {
-		new(scavenger) MM_Scavenger(env, regionManager);
+		new(scavenger) MM_Scavenger(env);
 		if (!scavenger->initialize(env)) {
 			scavenger->kill(env);
 			scavenger = NULL;

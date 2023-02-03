@@ -80,8 +80,20 @@ public:
 								   uintptr_t memoryMax,
 								   uintptr_t tenureFlags,
 								   MM_InitializationParameters* parameters);
-
-	virtual MM_GlobalCollector* createGlobalCollector(MM_EnvironmentBase* env) = 0;
+	/* temporary replace abstract to empty implementation, method will be deleted on next step */
+	virtual MM_GlobalCollector* createGlobalCollector(MM_EnvironmentBase* env)
+	{
+		return NULL;
+	};
+	/**
+	 * Create set of collectors for given configuration.
+	 * It might be a Global Collector accompanied with Local Collector if necessary.
+	 *
+	 * @param env[in] the current thread
+	 *
+	 * @return Pointer to created Global Collector or NULL
+	 */
+	virtual MM_GlobalCollector* createCollectors(MM_EnvironmentBase* env) = 0;
 	MM_Heap* createHeap(MM_EnvironmentBase* env, uintptr_t heapBytesRequested);
 	virtual MM_Heap* createHeapWithManager(MM_EnvironmentBase* env, uintptr_t heapBytesRequested, MM_HeapRegionManager* regionManager) = 0;
 	virtual MM_HeapRegionManager* createHeapRegionManager(MM_EnvironmentBase* env) = 0;

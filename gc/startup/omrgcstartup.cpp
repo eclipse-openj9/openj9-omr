@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2015, 2017 IBM Corp. and others
+ * Copyright (c) 2015, 2023 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -54,7 +54,7 @@ collectorCreationHelper(OMR_VM *omrVM, MM_EnvironmentBase *env)
 {
 	OMRPORT_ACCESS_FROM_OMRVM(omrVM);
 	MM_GCExtensionsBase *extensions = MM_GCExtensionsBase::getExtensions(omrVM);
-	MM_GlobalCollector *globalCollector = extensions->configuration->createGlobalCollector(env);
+	MM_GlobalCollector *globalCollector = extensions->configuration->createCollectors(env);
 	omr_error_t rc = OMR_ERROR_NONE;
 
 	if (NULL == globalCollector) {

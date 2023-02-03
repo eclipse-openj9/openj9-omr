@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 1991, 2022 IBM Corp. and others
+ * Copyright (c) 1991, 2023 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -53,7 +53,16 @@ public:
 	virtual MM_Heap *createHeapWithManager(MM_EnvironmentBase *env, UDATA heapBytesRequested, MM_HeapRegionManager *regionManager);
 
 	virtual void defaultMemorySpaceAllocated(MM_GCExtensionsBase *extensions, void* defaultMemorySpace);
-	
+
+	/**
+	 * Create Local Collector and rely on parent MM_ConfigurationStandard to create Global Collector
+	 *
+	 * @param[in] env the current environment.
+	 *
+	 * @return Pointer to Global Collector or NULL
+	 */
+	virtual MM_GlobalCollector* createGlobalCollector(MM_EnvironmentBase* env);
+	virtual MM_GlobalCollector* createCollectors(MM_EnvironmentBase* env);
 
 #if defined(J9VM_OPT_CRIU_SUPPORT)
 	/**

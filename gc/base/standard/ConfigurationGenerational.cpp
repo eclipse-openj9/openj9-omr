@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 1991, 2022 IBM Corp. and others
+ * Copyright (c) 1991, 2023 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -68,9 +68,11 @@ MM_ConfigurationGenerational::tearDown(MM_EnvironmentBase* env)
 {
 	MM_GCExtensionsBase* extensions = env->getExtensions();
 
-	/* unregisterScavenger before Scavenger is teared down as part of clean up of defaultMemorySpace
-	 * in MM_Configuration::tearDown. */
-	extensions->unregisterScavenger();
+	/* This is wrong spot to set scavenger to NULL. Keep it here for now for logical consistency temporary */
+#if defined(OMR_GC_MODRON_SCAVENGER)
+	extensions->scavenger = NULL;
+#endif /* defined(OMR_GC_MODRON_SCAVENGER) */
+
 
 	MM_ConfigurationStandard::tearDown(env);
 }
@@ -151,7 +153,6 @@ MM_ConfigurationGenerational::createDefaultMemorySpace(MM_EnvironmentBase *envBa
 	MM_MemorySubSpaceGeneric *memorySubSpaceGenericOld = NULL;
 	MM_PhysicalSubArenaVirtualMemoryFlat *physicalSubArenaFlat = NULL;
 	MM_MemorySubSpaceFlat *memorySubSpaceOld = NULL;
-	MM_Scavenger *scavenger = NULL;
 	MM_MemorySubSpaceGenerational *memorySubSpaceGenerational = NULL;
 	MM_MemorySubSpace *memorySubSpaceNew = NULL;
 	MM_PhysicalArenaVirtualMemory *physicalArena = NULL;
@@ -178,14 +179,7 @@ MM_ConfigurationGenerational::createDefaultMemorySpace(MM_EnvironmentBase *envBa
 	}
 
 	/* then we build "new-space" - note that if we fail during this we must remember to kill() the oldspace we created */
-
-	/* join them with a semispace */
-	if(NULL == (scavenger = MM_Scavenger::newInstance(env, ext->heapRegionManager))) {
-		memorySubSpaceOld->kill(env);
-		return NULL;
-	}
-
-	if(NULL == (memorySubSpaceNew = createSemiSpace(env, heap, scavenger, parameters))) {
+	if(NULL == (memorySubSpaceNew = createSemiSpace(env, heap, ext->scavenger, parameters))) {
 		memorySubSpaceOld->kill(env);
 	}
 	
@@ -201,9 +195,30 @@ MM_ConfigurationGenerational::createDefaultMemorySpace(MM_EnvironmentBase *envBa
 		return NULL;
 	}
 	
-	ext->registerScavenger(scavenger);
-
 	return MM_MemorySpace::newInstance(env, heap, physicalArena, memorySubSpaceGenerational, parameters, MEMORY_SPACE_NAME_GENERATIONAL, MEMORY_SPACE_DESCRIPTION_GENERATIONAL);
+}
+
+/* this temporary wrapper will be deleted on the next step */
+MM_GlobalCollector*
+MM_ConfigurationGenerational::createGlobalCollector(MM_EnvironmentBase* envBase)
+{
+	return createCollectors(envBase);
+}
+
+/**
+ * Create Local Collector and rely on parent MM_ConfigurationStandard to create Global Collector
+ */
+MM_GlobalCollector*
+MM_ConfigurationGenerational::createCollectors(MM_EnvironmentBase* envBase)
+{
+	MM_EnvironmentStandard *env = MM_EnvironmentStandard::getEnvironment(envBase);
+	MM_GCExtensionsBase *ext = env->getExtensions();
+
+	if (NULL == (ext->scavenger = MM_Scavenger::newInstance(env))) {
+		return NULL;
+	}
+
+	return MM_ConfigurationStandard::createCollectors(env);
 }
 
 /**

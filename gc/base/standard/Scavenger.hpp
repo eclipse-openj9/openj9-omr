@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 1991, 2022 IBM Corp. and others
+ * Copyright (c) 1991, 2023 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -723,7 +723,7 @@ protected:
 	
 public:
 
-	static MM_Scavenger *newInstance(MM_EnvironmentStandard *env, MM_HeapRegionManager *regionManager);
+	static MM_Scavenger *newInstance(MM_EnvironmentStandard *env);
 	virtual void kill(MM_EnvironmentBase *env);
 
 	MM_ScavengerDelegate* getDelegate() { return &_delegate; }
@@ -925,7 +925,7 @@ public:
 	virtual bool canCollectorExpand(MM_EnvironmentBase *env, MM_MemorySubSpace *subSpace, uintptr_t expandSize);
 	virtual uintptr_t getCollectorExpandSize(MM_EnvironmentBase *env);
 
-	MM_Scavenger(MM_EnvironmentBase *env, MM_HeapRegionManager *regionManager) :
+	MM_Scavenger(MM_EnvironmentBase *env) :
 		MM_Collector()
 		, _cycleTimes()
 		, _delegate(env)
@@ -965,7 +965,7 @@ public:
 		, _backOutDoneIndex(0)
 		, _heapBase(NULL)
 		, _heapTop(NULL)
-		, _regionManager(regionManager)
+		, _regionManager(_extensions->heapRegionManager)
 #if defined(OMR_GC_CONCURRENT_SCAVENGER)
 		, _mainGCThread(env)
 		, _concurrentPhase(concurrent_phase_idle)

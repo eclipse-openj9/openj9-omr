@@ -26,7 +26,7 @@
 TR::RealRegister *getRealRegister(TR::RealRegister::RegNum regNum, TR::CodeGenerator *cg) {
     TR::RealRegister *rr = cg->machine()->getRealRegister(regNum);
 
-    if (!cg->comp()->target().cpu.supportsFeature(OMR_FEATURE_X86_AVX512F) && regNum >= TR::RealRegister::k1 && regNum <= TR::RealRegister::k7) {
+    if (!cg->comp()->target().cpu.supportsFeature(OMR_FEATURE_X86_AVX512F) && regNum >= TR::RealRegister::k0 && regNum <= TR::RealRegister::k7) {
         // Without AVX-512 the machine class will not initialize mask registers
         rr = new (cg->trHeapMemory()) TR::RealRegister(TR_VMR, 0, TR::RealRegister::Free, regNum, TR::RealRegister::vectorMaskMask(regNum), cg);
     }
@@ -83,6 +83,21 @@ TEST_P(XRegRegImm1EncodingTest, encode) {
     auto instr = generateRegRegImmInstruction(std::get<0>(GetParam()), fakeNode, regA, regB, imm1, cg(), encoding);
 
     ASSERT_EQ(std::get<5>(GetParam()), encodeInstruction(instr));
+}
+
+class XRegMaskRegRegImmEncodingTest : public TRTest::BinaryEncoderTest<>, public ::testing::WithParamInterface<std::tuple<TR::InstOpCode::Mnemonic, TR::RealRegister::RegNum, TR::RealRegister::RegNum, TR::RealRegister::RegNum, TR::RealRegister::RegNum, int32_t, OMR::X86::Encoding, TRTest::BinaryInstruction>> {};
+
+TEST_P(XRegMaskRegRegImmEncodingTest, encode) {
+    auto regA = getRealRegister(std::get<1>(GetParam()), cg());
+    auto regB = getRealRegister(std::get<2>(GetParam()), cg());
+    auto regC = getRealRegister(std::get<3>(GetParam()), cg());
+    auto regD = getRealRegister(std::get<4>(GetParam()), cg());
+    auto imm1 = std::get<5>(GetParam());
+    auto encoding = std::get<6>(GetParam());
+
+    auto instr = generateRegMaskRegRegImmInstruction(std::get<0>(GetParam()), fakeNode, regA, regB, regC, regD, imm1, cg(), encoding);
+
+    ASSERT_EQ(std::get<7>(GetParam()), encodeInstruction(instr));
 }
 
 class XRegImm1EncodingTest : public TRTest::BinaryEncoderTest<>, public ::testing::WithParamInterface<std::tuple<TR::InstOpCode::Mnemonic, TR::RealRegister::RegNum, int32_t, OMR::X86::Encoding, TRTest::BinaryInstruction>> {};
@@ -500,7 +515,19 @@ INSTANTIATE_TEST_CASE_P(AVXRegRegImm1Evex512Test, XRegRegImm1EncodingTest, ::tes
     std::make_tuple(TR::InstOpCode::VEXTRACTF64X4YmmZmmImm1,     TR::RealRegister::zmm0, TR::RealRegister::zmm1, 0xc, OMR::X86::EVEX_L512, "62f3fd481bc80c"),
     std::make_tuple(TR::InstOpCode::PSHUFLWRegRegImm1,           TR::RealRegister::zmm0, TR::RealRegister::zmm1, 0x0, OMR::X86::EVEX_L512, "62f17f4870c100"),
     std::make_tuple(TR::InstOpCode::PSHUFLWRegRegImm1,           TR::RealRegister::zmm0, TR::RealRegister::zmm1, 0xF, OMR::X86::EVEX_L512, "62f17f4870c10f")
-    /* cmpps, cmppd excluded until write mask registers are supported. */
+)));
+
+INSTANTIATE_TEST_CASE_P(AVXRegMaskRegRegImmEvex512Test, XRegMaskRegRegImmEncodingTest, ::testing::ValuesIn(*TRTest::MakeVector<std::tuple<TR::InstOpCode::Mnemonic, TR::RealRegister::RegNum, TR::RealRegister::RegNum, TR::RealRegister::RegNum, TR::RealRegister::RegNum, int32_t, OMR::X86::Encoding, TRTest::BinaryInstruction>>(
+    std::make_tuple(TR::InstOpCode::CMPPSRegRegImm1, TR::RealRegister::k0, TR::RealRegister::k0, TR::RealRegister::xmm0, TR::RealRegister::xmm0, 0xc, OMR::X86::EVEX_L512, "62f17c48c2c00c"),
+    std::make_tuple(TR::InstOpCode::CMPPSRegRegImm1, TR::RealRegister::k0, TR::RealRegister::k1, TR::RealRegister::xmm0, TR::RealRegister::xmm0, 0xc, OMR::X86::EVEX_L512, "62f17c49c2c00c"),
+    std::make_tuple(TR::InstOpCode::CMPPSRegRegImm1, TR::RealRegister::k4, TR::RealRegister::k7, TR::RealRegister::xmm1, TR::RealRegister::xmm2, 0xc, OMR::X86::EVEX_L512, "62f1744fc2e20c"),
+    std::make_tuple(TR::InstOpCode::CMPPSRegRegImm1, TR::RealRegister::k4, TR::RealRegister::k7, TR::RealRegister::xmm8, TR::RealRegister::xmm2, 0xc, OMR::X86::EVEX_L512, "62f13c4fc2e20c"),
+    std::make_tuple(TR::InstOpCode::CMPPSRegRegImm1, TR::RealRegister::k4, TR::RealRegister::k7, TR::RealRegister::xmm5, TR::RealRegister::xmm9, 0xc, OMR::X86::EVEX_L512, "62d1544fc2e10c"),
+    std::make_tuple(TR::InstOpCode::CMPPDRegRegImm1, TR::RealRegister::k0, TR::RealRegister::k0, TR::RealRegister::xmm0, TR::RealRegister::xmm0, 0xc, OMR::X86::EVEX_L512, "62f1fd48c2c00c"),
+    std::make_tuple(TR::InstOpCode::CMPPDRegRegImm1, TR::RealRegister::k0, TR::RealRegister::k1, TR::RealRegister::xmm0, TR::RealRegister::xmm0, 0xc, OMR::X86::EVEX_L512, "62f1fd49c2c00c"),
+    std::make_tuple(TR::InstOpCode::CMPPDRegRegImm1, TR::RealRegister::k4, TR::RealRegister::k7, TR::RealRegister::xmm1, TR::RealRegister::xmm2, 0xc, OMR::X86::EVEX_L512, "62f1f54fc2e20c"),
+    std::make_tuple(TR::InstOpCode::CMPPDRegRegImm1, TR::RealRegister::k4, TR::RealRegister::k7, TR::RealRegister::xmm8, TR::RealRegister::xmm2, 0xc, OMR::X86::EVEX_L512, "62f1bd4fc2e20c"),
+    std::make_tuple(TR::InstOpCode::CMPPDRegRegImm1, TR::RealRegister::k4, TR::RealRegister::k7, TR::RealRegister::xmm5, TR::RealRegister::xmm9, 0xc, OMR::X86::EVEX_L512, "62d1d54fc2e10c")
 )));
 
 class XRegRegRegEncEncodingTest : public TRTest::BinaryEncoderTest<>, public ::testing::WithParamInterface<std::tuple<TR::InstOpCode::Mnemonic, TR::RealRegister::RegNum, TR::RealRegister::RegNum, TR::RealRegister::RegNum, OMR::X86::Encoding, TRTest::BinaryInstruction>> {};

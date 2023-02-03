@@ -46,15 +46,19 @@ TR::Register *OMR::X86::TreeEvaluator::floatingPointAbsHelper(TR::Node *node, TR
 
    TR::InstOpCode andOpcode = TR::InstOpCode::PANDRegReg;
    TR::InstOpCode shrOpcode = et == TR::Double ? TR::InstOpCode::PSRLQRegImm1 : TR::InstOpCode::PSRLDRegImm1;
+   TR::InstOpCode cmpOpcode = TR::InstOpCode::CMPPSRegRegImm1;
+
    OMR::X86::Encoding shrEncoding = shrOpcode.getSIMDEncoding(&cg->comp()->target().cpu, vl);
    OMR::X86::Encoding andEncoding = andOpcode.getSIMDEncoding(&cg->comp()->target().cpu, vl);
+   OMR::X86::Encoding cmpEncoding = cmpOpcode.getSIMDEncoding(&cg->comp()->target().cpu, vl);
 
    TR_ASSERT_FATAL(shrEncoding != OMR::X86::Bad, "vabs: No encoding method for shift opcode");
    TR_ASSERT_FATAL(andEncoding != OMR::X86::Bad, "vabs: No encoding method for and opcode");
+   TR_ASSERT_FATAL(cmpEncoding != OMR::X86::Bad, "vabs: No encoding method for cmp opcode");
 
    // Generate mask 7fffffff for floats or 7fffffffffffffff doubles, then 'and' with input vector
 
-   if (vl == TR::VectorLength512)
+   if (cmpEncoding >= EVEX_L128)
       {
       TR_ASSERT_FATAL(cg->comp()->target().cpu.supportsFeature(OMR_FEATURE_X86_AVX512F), "512-bit vabs requires AVX512");
       TR::InstOpCode ternOpcode = et == TR::Double ? TR::InstOpCode::VPTERNLOGQRegMaskRegRegImm1 : TR::InstOpCode::VPTERNLOGDRegMaskRegRegImm1;
@@ -68,9 +72,7 @@ TR::Register *OMR::X86::TreeEvaluator::floatingPointAbsHelper(TR::Node *node, TR
       }
    else
       {
-      TR::InstOpCode cmpOpcode = TR::InstOpCode::CMPPSRegRegImm1;
       TR::InstOpCode xorOpcode = TR::InstOpCode::PXORRegReg;
-      OMR::X86::Encoding cmpEncoding = cmpOpcode.getSIMDEncoding(&cg->comp()->target().cpu, vl);
       OMR::X86::Encoding xorEncoding = xorOpcode.getSIMDEncoding(&cg->comp()->target().cpu, vl);
       TR_ASSERT_FATAL(cmpEncoding != OMR::X86::Bad, "vabs: No encoding method for compare opcode");
       TR_ASSERT_FATAL(xorEncoding != OMR::X86::Bad, "vabs: No encoding method for xor opcode");

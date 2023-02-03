@@ -701,7 +701,7 @@ enum TR_CompilationOptions
    // Option word 21
    // Available                                       = 0x00000020 + 21,
    // Available                                       = 0x00000040 + 21,
-   TR_DisableWrtBarSrcObjCheck                        = 0x00000080 + 21, // enable srcobj range check for wrtBar
+   // Available                                       = 0x00000080 + 21,
    TR_DisableCodeCacheReclamation                     = 0x00000100 + 21, // Disable the freeing of compiled methods
    TR_DisableClearCodeCacheFullFlag                   = 0x00000200 + 21, // Disable the re-enabling of the code cache when a method body is freed after the cache has become full
    // Available                                       = 0x00000400 + 21,

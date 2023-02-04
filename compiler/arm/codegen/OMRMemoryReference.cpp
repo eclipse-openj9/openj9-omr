@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2021 IBM Corp. and others
+ * Copyright (c) 2000, 2022 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -1340,22 +1340,12 @@ static void loadRelocatableConstant(TR::Node               *node,
    TR::Compilation * comp = cg->comp();
    symbol = ref->getSymbol();
    /* This method is called only if symbol->isStatic() && !ref->isUnresolved(). */
-   TR_ASSERT(symbol->isStatic() || symbol->isMethod(), "loadRelocatableConstant, problem with new symbol hierarchy");
-
    bool isStatic = symbol->isStatic();
-   bool isStaticField = isStatic && (ref->getCPIndex() > 0) && !symbol->isClassObject();
-   bool isClass = isStatic && symbol->isClassObject();
-   bool isPicSite = isClass;
-   if (isPicSite
-       && !cg->comp()->compileRelocatableCode()
-       && cg->wantToPatchClassPointer((TR_OpaqueClassBlock*)symbol->getStaticSymbol()->getStaticAddress(), node))
-      {
-      intptr_t address = (intptr_t)symbol->getStaticSymbol()->getStaticAddress();
-      loadAddressConstantInSnippet(cg, node ? node : cg->getCurrentEvaluationTreeTop()->getNode(), address, reg); // isStore ? TR::InstOpCode::Op_st : TR::InstOpCode::Op_load
-      return;
-      }
+   TR_ASSERT(isStatic || symbol->isMethod(), "loadRelocatableConstant, problem with new symbol hierarchy");
 
-   addr = symbol->isStatic() ? (uintptr_t)symbol->getStaticSymbol()->getStaticAddress() : (uintptr_t)symbol->getMethodSymbol()->getMethodAddress();
+   bool isStaticField = isStatic && (ref->getCPIndex() > 0) && !symbol->isClassObject();
+
+   addr = isStatic ? (uintptr_t)symbol->getStaticSymbol()->getStaticAddress() : (uintptr_t)symbol->getMethodSymbol()->getMethodAddress();
 
    if (symbol->isStartPC())
       {

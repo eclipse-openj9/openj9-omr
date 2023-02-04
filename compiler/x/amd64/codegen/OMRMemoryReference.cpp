@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2021 IBM Corp. and others
+ * Copyright (c) 2000, 2022 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -423,8 +423,7 @@ OMR::X86::AMD64::MemoryReference::addMetaDataForCodeAddressWithLoad(
          TR::Compilation *comp = cg->comp();
          if (comp->getOption(TR_EnableHCR)
              && (!sr.getSymbol()->isStatic()
-                 || !sr.getSymbol()->isClassObject()
-                 || cg->wantToPatchClassPointer(NULL, containingInstruction->getBinaryEncoding()))) // unresolved
+                 || !sr.getSymbol()->isClassObject()))
             {
             cg->jitAddUnresolvedAddressMaterializationToPatchOnClassRedefinition(containingInstruction->getBinaryEncoding());
             }
@@ -452,11 +451,6 @@ OMR::X86::AMD64::MemoryReference::addMetaDataForCodeAddressWithLoad(
                                                                                             TR_ClassAddress, cg),__FILE__, __LINE__,
                                                                                             containingInstruction->getNode());
                   }
-               }
-
-            if (cg->wantToPatchClassPointer(NULL, displacementLocation)) // may not point to beginning of class
-               {
-               cg->jitAddPicToPatchOnClassRedefinition(((void *)displacement), displacementLocation);
                }
             }
          }
@@ -524,25 +518,6 @@ OMR::X86::AMD64::MemoryReference::addMetaDataForCodeAddressWithLoad(
                               __FILE__,
                               __LINE__,
                               containingInstruction->getNode());
-         }
-      }
-
-   }
-
-
-void
-OMR::X86::AMD64::MemoryReference::addMetaDataForCodeAddressDisplacementOnly(
-      intptr_t displacement,
-      uint8_t *cursor,
-      TR::CodeGenerator *cg)
-   {
-
-   if (IS_32BIT_SIGNED(displacement) && !_forceRIPRelative)
-      {
-      if (_symbolReference.getSymbol() && _symbolReference.getSymbol()->isClassObject()
-         && cg->wantToPatchClassPointer(NULL, cursor)) // may not point to beginning of class
-         {
-         cg->jitAdd32BitPicToPatchOnClassRedefinition(((void *)displacement), cursor);
          }
       }
 
@@ -728,8 +703,6 @@ OMR::X86::AMD64::MemoryReference::generateBinaryEncoding(
          self()->ModRM(modRM)->setIndexOnlyDisp32();
          *(uint32_t*)cursor = (uint32_t)(displacement - (intptr_t)nextInstructionAddress);
          }
-
-      self()->addMetaDataForCodeAddressDisplacementOnly(displacement, cursor, cg);
 
       // Unresolved shadows whose base object is explicitly NULL need to report the
       // offset of the disp32 field.

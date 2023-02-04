@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2020 IBM Corp. and others
+ * Copyright (c) 2000, 2022 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -128,8 +128,7 @@ TR::X86HelperCallSnippet::addMetaDataForLoadAddrArg(
    TR::StaticSymbol *sym = child->getSymbol()->getStaticSymbol();
 
    if (cg()->comp()->getOption(TR_EnableHCR)
-       && (!child->getSymbol()->isClassObject()
-           || cg()->wantToPatchClassPointer((TR_OpaqueClassBlock*)sym->getStaticAddress(), buffer)))
+       && !child->getSymbol()->isClassObject())
       {
       if (cg()->comp()->target().is64Bit())
          cg()->jitAddPicToPatchOnClassRedefinition(((void *) (uintptr_t)sym->getStaticAddress()), (void *) buffer);

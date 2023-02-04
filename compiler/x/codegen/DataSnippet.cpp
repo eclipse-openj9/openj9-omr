@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2021 IBM Corp. and others
+ * Copyright (c) 2000, 2022 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -65,19 +65,11 @@ TR::X86DataSnippet::addMetaDataForCodeAddress(uint8_t *cursor)
          {
          if (!needRelocation)
             cg()->jitAddPicToPatchOnClassUnload((void*)-1, (void *) cursor);
-         if (cg()->wantToPatchClassPointer(NULL, cursor)) // unresolved
-            {
-            cg()->jitAddPicToPatchOnClassRedefinition(((void *) -1), (void *) cursor, true);
-            }
          }
       else
          {
          if (!needRelocation)
             cg()->jitAdd32BitPicToPatchOnClassUnload((void*)-1, (void *) cursor);
-         if (cg()->wantToPatchClassPointer(NULL, cursor)) // unresolved
-            {
-            cg()->jitAdd32BitPicToPatchOnClassRedefinition(((void *) -1), (void *) cursor, true);
-            }
          }
 
       TR_OpaqueClassBlock *clazz = getData<TR_OpaqueClassBlock *>();

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2021 IBM Corp. and others
+ * Copyright (c) 2000, 2022 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -403,19 +403,11 @@ TR::Register *OMR::ARM::Linkage::pushAddressArg(TR::Node *child)
    TR::Register         *pushRegister = NULL;
    if (child->getRegister() == NULL && child->getOpCode().isLoadConst())
       {
-      bool isClass = child->isClassPointerConstant();
       pushRegister = codeGen->allocateRegister();
-      if (isClass && self()->cg()->wantToPatchClassPointer((TR_OpaqueClassBlock*)child->getAddress(), child))
-         {
-         loadAddressConstantInSnippet(self()->cg(), child, child->getAddress(), pushRegister);
-         }
+      if (child->isMethodPointerConstant())
+         loadAddressConstant(self()->cg(), child, child->getAddress(), pushRegister, NULL, false, TR_RamMethodSequence);
       else
-         {
-          if (child->isMethodPointerConstant())
-             loadAddressConstant(self()->cg(), child, child->getAddress(), pushRegister, NULL, false, TR_RamMethodSequence);
-          else
-             loadAddressConstant(self()->cg(), child, child->getAddress(), pushRegister);
-         }
+         loadAddressConstant(self()->cg(), child, child->getAddress(), pushRegister);
       }
    else
       {

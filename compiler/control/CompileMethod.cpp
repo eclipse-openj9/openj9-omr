@@ -60,6 +60,7 @@
 #include "env/DebugSegmentProvider.hpp"
 #include "omrformatconsts.h"
 #include "runtime/CodeCacheManager.hpp"
+#include "control/CompilationController.hpp"
 
 static void
 writePerfToolEntry(void *start, uint32_t size, const char *name)

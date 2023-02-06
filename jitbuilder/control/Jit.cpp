@@ -35,6 +35,7 @@
 #include "runtime/CodeCache.hpp"
 #include "runtime/Runtime.hpp"
 #include "runtime/JBJitConfig.hpp"
+#include "control/CompilationController.hpp"
 
 #if defined(AIXPPC)
 #include "p/codegen/PPCTableOfConstants.hpp"

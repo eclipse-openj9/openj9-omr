@@ -136,8 +136,6 @@ int32_t TR_OptimizationPlan::freeEntirePool()
       _totalNumAllocatedPlans--;
       }
    TR_ASSERT(_poolSize==0, "Some error regarding optimization plan accounting\n");
-   if (TR::CompilationController::verbose() >= TR::CompilationController::LEVEL1)
-      fprintf(stderr, "TR_OptimizationPlan allocations=%lu releases=%lu\n", _numAllocOp, _numFreeOp);
    remainingPlans = _totalNumAllocatedPlans;
    _optimizationPlanMonitor->exit();
    return remainingPlans;

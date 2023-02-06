@@ -4287,7 +4287,9 @@ TR::Register* OMR::X86::TreeEvaluator::vectorBinaryArithmeticEvaluator(TR::Node*
       switch (node->getOpCode().getVectorOperation())
          {
          case TR::vmin:
+         case TR::vmmin:
          case TR::vmax:
+         case TR::vmmax:
             // These opcodes require special handling of NaN values
             // If either operand is NaN, the result must be NaN
             tmpNaNReg = cg->allocateRegister(TR_VRF);

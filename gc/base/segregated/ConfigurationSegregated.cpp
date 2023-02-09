@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 1991, 2017 IBM Corp. and others
+ * Copyright (c) 1991, 2023 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -214,8 +214,22 @@ MM_ConfigurationSegregated::createHeapRegionManager(MM_EnvironmentBase *env)
 /**
  * Create the global collector for a Standard configuration
  */
+/* this temporary wrapper will be deleted on the next step */
 MM_GlobalCollector*
 MM_ConfigurationSegregated::createGlobalCollector(MM_EnvironmentBase* env)
+{
+	return createCollectors(env);
+}
+
+/**
+ * Create Global Collector for a Standard configuration
+ *
+ * @param[in] env the current environment.
+ *
+ * @return Pointer to Global Collector or NULL
+ */
+MM_GlobalCollector*
+MM_ConfigurationSegregated::createCollectors(MM_EnvironmentBase* env)
 {
 	return MM_SegregatedGC::newInstance(env);
 }

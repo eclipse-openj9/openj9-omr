@@ -61,7 +61,6 @@ public:
 	 *
 	 * @return Pointer to Global Collector or NULL
 	 */
-	virtual MM_GlobalCollector* createGlobalCollector(MM_EnvironmentBase* env);
 	virtual MM_GlobalCollector* createCollectors(MM_EnvironmentBase* env);
 
 #if defined(J9VM_OPT_CRIU_SUPPORT)

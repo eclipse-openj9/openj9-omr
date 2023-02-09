@@ -57,7 +57,6 @@ private:
 public:
 	static MM_Configuration *newInstance(MM_EnvironmentBase *env);
 
-	virtual MM_GlobalCollector *createGlobalCollector(MM_EnvironmentBase *env);
 	virtual MM_GlobalCollector *createCollectors(MM_EnvironmentBase *env);
 	virtual MM_Heap *createHeapWithManager(MM_EnvironmentBase *env, uintptr_t heapBytesRequested, MM_HeapRegionManager *regionManager);
 	virtual MM_HeapRegionManager *createHeapRegionManager(MM_EnvironmentBase *env);

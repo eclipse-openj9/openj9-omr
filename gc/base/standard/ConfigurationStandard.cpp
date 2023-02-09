@@ -98,13 +98,6 @@ MM_ConfigurationStandard::initialize(MM_EnvironmentBase* env)
 	return result;
 }
 
-/* this temporary wrapper will be deleted on the next step */
-MM_GlobalCollector*
-MM_ConfigurationStandard::createGlobalCollector(MM_EnvironmentBase* env)
-{
-	return createCollectors(env);
-}
-
 /**
  * Create the global collector for a Standard configuration
  */

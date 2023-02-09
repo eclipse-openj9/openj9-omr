@@ -212,16 +212,6 @@ MM_ConfigurationSegregated::createHeapRegionManager(MM_EnvironmentBase *env)
 }
 
 /**
- * Create the global collector for a Standard configuration
- */
-/* this temporary wrapper will be deleted on the next step */
-MM_GlobalCollector*
-MM_ConfigurationSegregated::createGlobalCollector(MM_EnvironmentBase* env)
-{
-	return createCollectors(env);
-}
-
-/**
  * Create Global Collector for a Standard configuration
  *
  * @param[in] env the current environment.

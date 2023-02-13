@@ -90,6 +90,16 @@ public:
 	 * @return Pointer to created Global Collector or NULL
 	 */
 	virtual MM_GlobalCollector* createCollectors(MM_EnvironmentBase* env) = 0;
+
+	/**
+	 * Destroy Garbage Collectors
+	 *
+	 * @param[in] env the current environment.
+	 *
+	 * @return void
+	 */
+	virtual void destroyCollectors(MM_EnvironmentBase* env);
+
 	MM_Heap* createHeap(MM_EnvironmentBase* env, uintptr_t heapBytesRequested);
 	virtual MM_Heap* createHeapWithManager(MM_EnvironmentBase* env, uintptr_t heapBytesRequested, MM_HeapRegionManager* regionManager) = 0;
 	virtual MM_HeapRegionManager* createHeapRegionManager(MM_EnvironmentBase* env) = 0;

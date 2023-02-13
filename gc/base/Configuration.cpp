@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 1991, 2022 IBM Corp. and others
+ * Copyright (c) 1991, 2023 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -102,11 +102,7 @@ MM_Configuration::tearDown(MM_EnvironmentBase* env)
 		extensions->referenceChainWalkerMarkMap = NULL;
 	}
 
-	MM_Collector *collector = extensions->getGlobalCollector();
-	if (NULL != collector) {
-		collector->kill(env);
-		extensions->setGlobalCollector(NULL);
-	}
+	destroyCollectors(env);
 
 	if (!extensions->isMetronomeGC()) {
 		/* In Metronome, dispatcher is created and destroyed by the collector */
@@ -148,6 +144,21 @@ MM_Configuration::tearDown(MM_EnvironmentBase* env)
 	extensions->_numaManager.shutdownNUMASupport(env);
 
 	_delegate.tearDown(env);
+}
+
+/**
+ * Destroy Garbage Collectors
+ */
+void
+MM_Configuration::destroyCollectors(MM_EnvironmentBase* env)
+{
+	MM_GCExtensionsBase* extensions = env->getExtensions();
+	MM_Collector *collector = extensions->getGlobalCollector();
+
+	if (NULL != collector) {
+		collector->kill(env);
+		extensions->setGlobalCollector(NULL);
+	}
 }
 
 /**

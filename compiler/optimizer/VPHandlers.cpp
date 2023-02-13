@@ -5276,7 +5276,9 @@ static bool canFoldNonOverriddenGuard(OMR::ValuePropagation *vp, TR::Node *callN
        methodSymbol->isVirtual())
       {
       TR::ResolvedMethodSymbol * resolvedMethodSymbol = methodSymbol->getResolvedMethodSymbol();
-      if (resolvedMethodSymbol)
+      // The receiver class has to be initialized at this point. Otherwise updateCHTable might
+      // not have been called to update overridden bits
+      if (resolvedMethodSymbol && TR::Compiler->cls.isClassInitialized(vp->comp(), thisType))
          {
          TR_ResolvedMethod *originalResolvedMethod = resolvedMethodSymbol->getResolvedMethod();
          TR_OpaqueClassBlock *originalMethodClass = originalResolvedMethod->classOfMethod();

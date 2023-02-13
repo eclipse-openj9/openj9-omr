@@ -198,13 +198,6 @@ MM_ConfigurationGenerational::createDefaultMemorySpace(MM_EnvironmentBase *envBa
 	return MM_MemorySpace::newInstance(env, heap, physicalArena, memorySubSpaceGenerational, parameters, MEMORY_SPACE_NAME_GENERATIONAL, MEMORY_SPACE_DESCRIPTION_GENERATIONAL);
 }
 
-/* this temporary wrapper will be deleted on the next step */
-MM_GlobalCollector*
-MM_ConfigurationGenerational::createGlobalCollector(MM_EnvironmentBase* envBase)
-{
-	return createCollectors(envBase);
-}
-
 /**
  * Create Local Collector and rely on parent MM_ConfigurationStandard to create Global Collector
  */

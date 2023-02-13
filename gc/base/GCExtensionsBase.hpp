@@ -988,13 +988,6 @@ public:
 #endif /* defined(OMR_GC_MODRON_SCAVENGER) */
 	}
 
-	virtual void registerScavenger(MM_Scavenger *scavenger)
-	{
-#if defined(OMR_GC_MODRON_SCAVENGER)
-		this->scavenger = scavenger;
-#endif /* defined(OMR_GC_MODRON_SCAVENGER) */
-	}
-
 	MMINLINE bool
 	isConcurrentMarkEnabled()
 	{

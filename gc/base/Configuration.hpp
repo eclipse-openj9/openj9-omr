@@ -80,11 +80,7 @@ public:
 								   uintptr_t memoryMax,
 								   uintptr_t tenureFlags,
 								   MM_InitializationParameters* parameters);
-	/* temporary replace abstract to empty implementation, method will be deleted on next step */
-	virtual MM_GlobalCollector* createGlobalCollector(MM_EnvironmentBase* env)
-	{
-		return NULL;
-	};
+
 	/**
 	 * Create set of collectors for given configuration.
 	 * It might be a Global Collector accompanied with Local Collector if necessary.

@@ -297,11 +297,11 @@ MM_ConfigurationGenerational::initializeConcurrentScavengerThreadCount(MM_Enviro
 
 #if defined(J9VM_OPT_CRIU_SUPPORT)
 bool
-MM_ConfigurationGenerational::reinitializeGCThreadCountOnRestore(MM_EnvironmentBase* env)
+MM_ConfigurationGenerational::reinitializeGCThreadCountForRestore(MM_EnvironmentBase* env)
 {
 	MM_GCExtensionsBase* extensions = env->getExtensions();
 
-	bool result = MM_Configuration::reinitializeGCThreadCountOnRestore(env);
+	bool result = MM_Configuration::reinitializeGCThreadCountForRestore(env);
 
 #if defined(OMR_GC_CONCURRENT_SCAVENGER)
 	initializeConcurrentScavengerThreadCount(env);

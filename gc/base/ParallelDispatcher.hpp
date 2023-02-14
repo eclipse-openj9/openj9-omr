@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 1991, 2022 IBM Corp. and others
+ * Copyright (c) 1991, 2023 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -84,7 +84,7 @@ protected:
 	uintptr_t _defaultOSStackSize; /**< default OS stack size */
 
 #if defined(J9VM_OPT_CRIU_SUPPORT)
-	uintptr_t _threadCountMaximumAtCheckpointStartup;
+	uintptr_t _poolMaxCapacity;  /**< Size of the dispatcher tables: _taskTable, _statusTable & _threadTable. */
 #endif /* defined(J9VM_OPT_CRIU_SUPPORT) */
 
 public:
@@ -136,7 +136,7 @@ public:
 	/**
 	 * Expand/fill the thread pool by starting up threads based on what H/W supports.
 	 * This API is capped by the initial thread pool size, i.e expanding
-	 * past _threadCountMaximumAtCheckpointStartup is not possible
+	 * past _poolMaxCapacity is not possible
 	 * (expanding the dispatcher tables is currently not supported).
 	 *
 	 * This API assumes CRIU is the only consumer (not tested for general use).
@@ -165,6 +165,25 @@ public:
 	 * @return void
 	 */
 	virtual void contractThreadPool(MM_EnvironmentBase *env, uintptr_t newThreadCount);
+
+	/**
+	 * Reinitialize (resize and allocate) the dispatcher tables so that the thread pool
+	 * can be expanded beyond the initial size at startup.
+	 *
+	 * @param[in] env the current environment.
+	 * @param[in] newPoolSize the number of threads that need to be accommodated by the dispatcher.
+	 * @return bool indicating if the thread pool tables can accommodate the newPoolSize (
+	 * i.e., successfully reallocated or already have capacity).
+	 */
+	bool reinitializeThreadPool(MM_EnvironmentBase *env, uintptr_t newPoolSize);
+
+	/**
+	 * Fetch the size allocated for the thread pool (max threads supported)
+	 * (i.e., array size for dispatcher tables: _taskTable, _statusTable & _threadTable)
+	 *
+	 * @return uintptr_t indicating the thread pool size.
+	 */
+	MMINLINE uintptr_t getPoolMaxCapacity() { return _poolMaxCapacity; }
 #endif /* defined(J9VM_OPT_CRIU_SUPPORT) */
 
 	virtual bool condYieldFromGCWrapper(MM_EnvironmentBase *env, uint64_t timeSlack = 0) { return false; }
@@ -206,7 +225,7 @@ public:
 		,_handler_arg(handler_arg)
 		,_defaultOSStackSize(defaultOSStackSize)
 #if defined(J9VM_OPT_CRIU_SUPPORT)
-		,_threadCountMaximumAtCheckpointStartup(0)
+		,_poolMaxCapacity(0)
 #endif /* defined(J9VM_OPT_CRIU_SUPPORT) */
 	{
 		_typeId = __FUNCTION__;

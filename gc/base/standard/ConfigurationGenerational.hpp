@@ -68,9 +68,10 @@ public:
 	 * Startup GC threads on restore.
 	 *
 	 * @param[in] env the current environment.
-	 * @return void
+	 * @return bool indicating if the restore thread count was
+	 * successfully set and accommodated (thread pool resized).
 	 */
-	virtual bool reinitializeGCThreadCountOnRestore(MM_EnvironmentBase* env);
+	virtual bool reinitializeGCThreadCountForRestore(MM_EnvironmentBase* env);
 #endif /* defined(J9VM_OPT_CRIU_SUPPORT) */
 
 	MM_ConfigurationGenerational(MM_EnvironmentBase *env)

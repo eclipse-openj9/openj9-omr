@@ -166,8 +166,11 @@ omrsl_open_shared_library(struct OMRPortLibrary *portLibrary, char *name, uintpt
 
 	Trc_PRT_sl_open_shared_library_Event1(openName);
 
-	/* LoadLibrary will try appending .DLL if necessary */
-	dllHandle = LoadLibraryW(unicodeName);
+	/* LoadLibraryExW will try appending .DLL if necessary.
+	 * LOAD_LIBRARY_SEARCH_DLL_LOAD_DIR causes the operating system to search for dependencies in the same folder.
+	 * This behaviour is similar to LOAD_WITH_ALTERED_SEARCH_PATH.
+	 */
+	dllHandle = LoadLibraryExW(unicodeName, NULL, LOAD_LIBRARY_SEARCH_DEFAULT_DIRS | LOAD_LIBRARY_SEARCH_DLL_LOAD_DIR);
 	if (dllHandle >= (HINSTANCE)HINSTANCE_ERROR) {
 		*descriptor = (uintptr_t)dllHandle;
 		SetErrorMode(prevMode);
@@ -178,8 +181,8 @@ omrsl_open_shared_library(struct OMRPortLibrary *portLibrary, char *name, uintpt
 		return 0;
 	}
 
-	/* Now try with "altered search path" to catch DLLs with dependencies */
-	dllHandle = LoadLibraryExW(unicodeName, NULL, LOAD_WITH_ALTERED_SEARCH_PATH);
+	/* LoadLibrary will try appending .DLL if necessary. */
+	dllHandle = LoadLibraryW(unicodeName);
 	if (dllHandle >= (HINSTANCE)HINSTANCE_ERROR) {
 		*descriptor = (uintptr_t)dllHandle;
 		SetErrorMode(prevMode);

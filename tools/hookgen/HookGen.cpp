@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2015, 2023 IBM Corp. and others
+ * Copyright (c) 2015, 2021 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -28,9 +28,6 @@
 #if defined(OMR_OS_WINDOWS)
 #include <windows.h>
 #define strdup _strdup
-#if defined(_MSC_VER) && (_MSC_VER < 1900)
-#define snprintf(s, n, format, ...) _snprintf_s(s, n, _TRUNCATE, format, __VA_ARGS__)
-#endif /* defined(_MSC_VER) && (_MSC_VER < 1900) */
 #endif /* defined(OMR_OS_WINDOWS) */
 
 #include "HookGen.hpp"
@@ -217,7 +214,8 @@ HookGen::writeEventToPublicHeader(const char *name, const char *description, con
 	char *exampleBuf = (char *)malloc(bufSize + 1);
 	if (NULL != exampleBuf) {
 		/* If we fail to allocate room for the example just skip writing it */
-		snprintf(exampleBuf, bufSize + 1, (char *)example, name, description, name, structName);
+		int length = sprintf(exampleBuf, (char *)example, name, description, name, structName);
+		exampleBuf[length] = '\0';
 
 		writeComment(_publicFile, exampleBuf);
 

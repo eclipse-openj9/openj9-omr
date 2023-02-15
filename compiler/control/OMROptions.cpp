@@ -1653,6 +1653,7 @@ int64_t       OMR::Options::INLINE_calleeHasTooManyNodesSum      = 0;
 int32_t       OMR::Options::_inlinerVeryLargeCompiledMethodAdjustFactor = 20;
 
 int32_t       OMR::Options::_numUsableCompilationThreads = -1; // -1 means not initialized
+int32_t       OMR::Options::_numAllocatedCompilationThreads = -1; // -1 means not initialized
 
 int32_t       OMR::Options::_trampolineSpacePercentage = 0; // 0 means no change from default
 
@@ -1795,7 +1796,8 @@ OMR::Options::Options(
       TR_OptimizationPlan *optimizationPlan,
       bool isAOT,
       int32_t compThreadID) :
-   _optionSets(0),
+   _optionSets(NULL),
+   _postRestoreOptionSets(NULL),
    _logListForOtherCompThreads(0)
    {
    TR_ASSERT(optimizationPlan, "Must have an optimization plan when calling this method");
@@ -1908,7 +1910,8 @@ OMR::Options::Options(
 
 
 OMR::Options::Options(TR::Options &other) :
-   _optionSets(0),
+   _optionSets(NULL),
+   _postRestoreOptionSets(NULL),
    _logListForOtherCompThreads(0)
    {
    *this = other;
@@ -3277,7 +3280,8 @@ OMR::Options::processOptionSet(
       char *options,
       TR::OptionSet *optionSet,
       void *jitBase,
-      bool isAOT)
+      bool isAOT,
+      bool postRestore)
    {
    while (*options && *options != ')')
       {
@@ -3440,10 +3444,20 @@ OMR::Options::processOptionSet(
                newSet->setIndex(*filterHeader - '0');
                }
 
-            if (isAOT)
-               TR::Options::getAOTCmdLineOptions()->addOptionSet(newSet);
+            if (postRestore)
+               {
+               if (isAOT)
+                  TR::Options::getAOTCmdLineOptions()->addPostRestoreOptionSet(newSet);
+               else
+                  TR::Options::getJITCmdLineOptions()->addPostRestoreOptionSet(newSet);
+               }
             else
-               TR::Options::getJITCmdLineOptions()->addOptionSet(newSet);
+               {
+               if (isAOT)
+                  TR::Options::getAOTCmdLineOptions()->addOptionSet(newSet);
+               else
+                  TR::Options::getJITCmdLineOptions()->addOptionSet(newSet);
+               }
             }
          }
 
@@ -3499,6 +3513,39 @@ OMR::Options::processOptionSet(
       options = endOpt;
       break;
       }
+   return options;
+   }
+
+char *
+OMR::Options::processOptionSetPostRestore(void *jitConfig, char *options, TR::Options *optBase, bool isAOT)
+   {
+   // Process options and remember option sets
+   options = processOptionSet(options, NULL, optBase, isAOT, true);
+   if (*options)
+      return options;
+
+   if (!optBase->jitLatePostProcess(NULL, jitConfig))
+      return options;
+
+   // Process option sets
+   for (TR::OptionSet *optionSet = optBase->_postRestoreOptionSets; optionSet; optionSet = optionSet->getNext())
+      {
+      char *subOpts = optionSet->getOptionString();
+
+      TR::Options *newOptions = new (PERSISTENT_NEW) TR::Options(*optBase);
+      optionSet->setOptions(newOptions);
+
+      subOpts = TR::Options::processOptionSet(subOpts, optionSet, optionSet->getOptions(), isAOT, true);
+      if (*subOpts != ')')
+         return subOpts;
+
+      if (!optionSet->getOptions()->jitLatePostProcess(optionSet, jitConfig))
+         return subOpts;
+      }
+
+   // Once the option sets are processed, merge them with the main option sets
+   optBase->mergePostRestoreOptionSets();
+
    return options;
    }
 
@@ -4064,6 +4111,23 @@ OMR::Options::setOptLevel(int32_t o)
 static int32_t    count[numHotnessLevels] = {-2};
 static int32_t   bcount[numHotnessLevels] = {-2};
 static int32_t milcount[numHotnessLevels] = {-2};
+
+/**
+ * Merge option sets stored in _postRestoreOptionSets into _optionSets.
+ * _postRestoreOptionSets is then set to NULL.
+ */
+void
+OMR::Options::mergePostRestoreOptionSets()
+   {
+   TR::OptionSet *optionSet = _postRestoreOptionSets;
+   while (optionSet)
+      {
+      TR::OptionSet *next = optionSet->getNext();
+      self()->addOptionSet(optionSet);
+      optionSet = next;
+      }
+   _postRestoreOptionSets = NULL;
+   }
 
 char*
 OMR::Options::setCounts()
@@ -5397,7 +5461,10 @@ void OMR::Options::setDefaultsForDeterministicMode()
       self()->setOption(TR_DisablePersistIProfile, true); // AOT specific
       OMR::Options::_bigAppThreshold = 1;
       if (TR::Options::getNumUsableCompilationThreads() == -1) // not yet set
+         {
          OMR::Options::_numUsableCompilationThreads = 7;
+         OMR::Options::_numAllocatedCompilationThreads = OMR::Options::_numUsableCompilationThreads;
+         }
 #ifdef J9_PROJECT_SPECIFIC
       TR::Options::_veryHotSampleThreshold = 240; // 12.5 %
       TR::Options::_scorchingSampleThreshold = 120; // 25% CPU

@@ -2032,6 +2032,7 @@ protected:
    bool  feLatePostProcess(void *base, TR::OptionSet *optionSet);
    void  addOptionSet(TR::OptionSet *o) {o->setNext(_optionSets);_optionSets = o;}
    void  addPostRestoreOptionSet(TR::OptionSet *o) {o->setNext(_postRestoreOptionSets);_postRestoreOptionSets = o;}
+   void  setAggressivenessLevelOpts();
 
 private:
    friend class OMR::Compilation;

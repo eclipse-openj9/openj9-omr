@@ -2496,6 +2496,50 @@ OMR::Options::processOptionsAOT(char *aotOptions, void *feBase, TR_FrontEnd *fe)
    return dummy_string;
    }
 
+void
+OMR::Options::setAggressivenessLevelOpts()
+   {
+   if (this == OMR::Options::getJITCmdLineOptions() || this == OMR::Options::getAOTCmdLineOptions())
+      {
+      if (_aggressivenessLevel >= 0 && _aggressivenessLevel < LAST_AGGRESSIVENESS_LEVEL)
+         {
+         // Set some default values for JIT and AOT main command line options
+         //
+         switch (_aggressivenessLevel)
+            {
+            case OMR::Options::DEFAULT: // default behavior
+               break;
+            case OMR::Options::CONSERVATIVE_DEFAULT: // conservative default
+               self()->setConservativeDefaultBehavior();
+               break;
+            case OMR::Options::AGGRESSIVE_AOT: // aggressive AOT (Rely on AOT as much as possible)
+               self()->setGlobalAggressiveAOT();
+               break;
+            case OMR::Options::AGGRESSIVE_QUICKSTART: // aggressive quickstart (Quickstart with interpreter profiler)
+               self()->setAggressiveQuickStart();
+               break;
+            case OMR::Options::QUICKSTART: // quickstart or -client
+               self()->setQuickStart();
+               break;
+            case OMR::Options::CONSERVATIVE_QUICKSTART: // conservative quickstart
+               self()->setConservativeQuickStart();
+               break;
+            case OMR::Options::AGGRESSIVE_THROUGHPUT: // Enabled with -Xtune:throughput
+               self()->setAggressiveThroughput();
+               break;
+            } // end switch
+         }
+      else  // Some message that the aggressivenessLevel is invalid
+         {
+         if (_aggressivenessLevel != -1) // -1 means not set
+            {
+            if (OMR::Options::isAnyVerboseOptionSet())
+               TR_VerboseLog::writeLineLocked(TR_Vlog_INFO, "_aggressivenessLevel=%d; must be between 0 and 5; Option ignored", _aggressivenessLevel);
+            _aggressivenessLevel = -1;
+            }
+         }
+      }
+   }
 
 void
 OMR::Options::jitPreProcess()
@@ -2712,46 +2756,7 @@ OMR::Options::jitPreProcess()
       // The aggressivenessLevel is set as a VM option. JIT options have not been processed at this point
       // When JIT processing is taking place, some of these decisions can be overidden
       //
-      if (this == OMR::Options::getJITCmdLineOptions() || this == OMR::Options::getAOTCmdLineOptions())
-         {
-         if (_aggressivenessLevel >= 0 && _aggressivenessLevel < LAST_AGGRESSIVENESS_LEVEL)
-            {
-            // Set some default values for JIT and AOT main command line options
-            //
-            switch (_aggressivenessLevel)
-               {
-               case OMR::Options::DEFAULT: // default behavior
-                  break;
-               case OMR::Options::CONSERVATIVE_DEFAULT: // conservative default
-                  self()->setConservativeDefaultBehavior();
-                  break;
-               case OMR::Options::AGGRESSIVE_AOT: // aggressive AOT (Rely on AOT as much as possible)
-                  self()->setGlobalAggressiveAOT();
-                  break;
-               case OMR::Options::AGGRESSIVE_QUICKSTART: // aggressive quickstart (Quickstart with interpreter profiler)
-                  self()->setAggressiveQuickStart();
-                  break;
-               case OMR::Options::QUICKSTART: // quickstart or -client
-                  self()->setQuickStart();
-                  break;
-               case OMR::Options::CONSERVATIVE_QUICKSTART: // conservative quickstart
-                  self()->setConservativeQuickStart();
-                  break;
-               case OMR::Options::AGGRESSIVE_THROUGHPUT: // Enabled with -Xtune:throughput
-                  self()->setAggressiveThroughput();
-                  break;
-               } // end switch
-            }
-         else  // Some message that the aggressivenessLevel is invalid
-            {
-            if (_aggressivenessLevel != -1) // -1 means not set
-               {
-               if (OMR::Options::isAnyVerboseOptionSet())
-                     TR_VerboseLog::writeLineLocked(TR_Vlog_INFO, "_aggressivenessLevel=%d; must be between 0 and 5; Option ignored", _aggressivenessLevel);
-               _aggressivenessLevel = -1;
-               }
-            }
-         }
+      self()->setAggressivenessLevelOpts();
 
       _enableSCHintFlags = TR_HintFailedValidation;
 

@@ -1588,6 +1588,8 @@ TR_Debug *OMR::Options::_debug = 0;
 bool OMR::Options::_canJITCompile = false;
 bool OMR::Options::_fullyInitialized = false;
 
+bool OMR::Options::_postRestoreProcessing = false;
+
 OMR::Options::VerboseOptionFlagArray OMR::Options::_verboseOptionFlags;
 bool          OMR::Options::_quickstartDetected = false;
 
@@ -3280,8 +3282,7 @@ OMR::Options::processOptionSet(
       char *options,
       TR::OptionSet *optionSet,
       void *jitBase,
-      bool isAOT,
-      bool postRestore)
+      bool isAOT)
    {
    while (*options && *options != ')')
       {
@@ -3444,20 +3445,10 @@ OMR::Options::processOptionSet(
                newSet->setIndex(*filterHeader - '0');
                }
 
-            if (postRestore)
-               {
-               if (isAOT)
-                  TR::Options::getAOTCmdLineOptions()->addPostRestoreOptionSet(newSet);
-               else
-                  TR::Options::getJITCmdLineOptions()->addPostRestoreOptionSet(newSet);
-               }
+            if (isAOT)
+               TR::Options::getAOTCmdLineOptions()->saveOptionSet(newSet);
             else
-               {
-               if (isAOT)
-                  TR::Options::getAOTCmdLineOptions()->addOptionSet(newSet);
-               else
-                  TR::Options::getJITCmdLineOptions()->addOptionSet(newSet);
-               }
+               TR::Options::getJITCmdLineOptions()->saveOptionSet(newSet);
             }
          }
 
@@ -3519,8 +3510,10 @@ OMR::Options::processOptionSet(
 char *
 OMR::Options::processOptionSetPostRestore(void *jitConfig, char *options, TR::Options *optBase, bool isAOT)
    {
+   _postRestoreProcessing = true;
+
    // Process options and remember option sets
-   options = processOptionSet(options, NULL, optBase, isAOT, true);
+   options = processOptionSet(options, NULL, optBase, isAOT);
    if (*options)
       return options;
 
@@ -3535,7 +3528,7 @@ OMR::Options::processOptionSetPostRestore(void *jitConfig, char *options, TR::Op
       TR::Options *newOptions = new (PERSISTENT_NEW) TR::Options(*optBase);
       optionSet->setOptions(newOptions);
 
-      subOpts = TR::Options::processOptionSet(subOpts, optionSet, optionSet->getOptions(), isAOT, true);
+      subOpts = TR::Options::processOptionSet(subOpts, optionSet, optionSet->getOptions(), isAOT);
       if (*subOpts != ')')
          return subOpts;
 
@@ -4111,6 +4104,20 @@ OMR::Options::setOptLevel(int32_t o)
 static int32_t    count[numHotnessLevels] = {-2};
 static int32_t   bcount[numHotnessLevels] = {-2};
 static int32_t milcount[numHotnessLevels] = {-2};
+
+
+void
+OMR::Options::saveOptionSet(TR::OptionSet *o)
+   {
+   if (_postRestoreProcessing)
+      {
+      self()->addPostRestoreOptionSet(o);
+      }
+   else
+      {
+      self()->addOptionSet(o);
+      }
+   }
 
 /**
  * Merge option sets stored in _postRestoreOptionSets into _optionSets.

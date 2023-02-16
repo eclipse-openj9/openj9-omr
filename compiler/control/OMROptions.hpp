@@ -1531,8 +1531,7 @@ public:
    static TR::Options *getAOTCmdLineOptions();
    static void        setAOTCmdLineOptions(TR::Options *options);
    static TR::Options *getJITCmdLineOptions();
-          void        addOptionSet(TR::OptionSet *o) {o->setNext(_optionSets);_optionSets = o;}
-          void        addPostRestoreOptionSet(TR::OptionSet *o) {o->setNext(_postRestoreOptionSets);_postRestoreOptionSets = o;}
+          void        saveOptionSet(TR::OptionSet *o);
           void        mergePostRestoreOptionSets();
           bool        hasOptionSets() {return _optionSets != NULL;}
    char*              setCounts();
@@ -1848,6 +1847,8 @@ public:
    static bool    _fullyInitialized;
    static bool    _canJITCompile;
 
+   static bool    _postRestoreProcessing;
+
    static int32_t _samplingFrequency;
 
    static int32_t _sampleInterval;
@@ -2029,6 +2030,8 @@ protected:
    bool  fePostProcessJIT(void *base);
    bool  jitLatePostProcess(TR::OptionSet *optionSet, void *jitConfig);
    bool  feLatePostProcess(void *base, TR::OptionSet *optionSet);
+   void  addOptionSet(TR::OptionSet *o) {o->setNext(_optionSets);_optionSets = o;}
+   void  addPostRestoreOptionSet(TR::OptionSet *o) {o->setNext(_postRestoreOptionSets);_postRestoreOptionSets = o;}
 
 private:
    friend class OMR::Compilation;
@@ -2075,7 +2078,7 @@ private:
 
    static char *processOptionSet(char *options, char *envOptions, TR::Options *jitBase, bool isAOT);
    static char *processOptionSet(char *options, char *envOptions, TR::OptionSet *optionSet);
-   static char *processOptionSet(char *options, TR::OptionSet *optionSet, void *jitBase, bool isAOT, bool postRestore = false);
+   static char *processOptionSet(char *options, TR::OptionSet *optionSet, void *jitBase, bool isAOT);
    static char *processOption(char *option, TR::OptionTable *table, void *base, int32_t numEntries, TR::OptionSet *optionSet);
           void  printOptions(char *options, char *envOptions);
 

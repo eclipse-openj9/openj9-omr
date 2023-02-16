@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2014, 2023 IBM Corp. and others
+ * Copyright (c) 2014, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -46,9 +46,7 @@
 #if defined(OMR_OS_WINDOWS)
 #define strdup _strdup
 #define stat _stat
-#if defined(_MSC_VER) && (_MSC_VER < 1900)
-#define snprintf(s, n, format, ...) _snprintf_s(s, n, _TRUNCATE, format, __VA_ARGS__)
-#endif /* defined(_MSC_VER) && (_MSC_VER < 1900) */
+#define snprintf _snprintf
 #define PATH_SEP "\\"
 #define dirstat struct _stat
 #define PORT_INVALID_FIND_FILE_HANDLE ((intptr_t) INVALID_HANDLE_VALUE)

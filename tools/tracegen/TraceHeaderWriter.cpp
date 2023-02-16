@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2014, 2023 IBM Corp. and others
+ * Copyright (c) 2014, 2017 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -214,9 +214,8 @@ TraceHeaderWriter::tpTemplate(FILE *fd, unsigned int overhead, unsigned int test
 	char *testNop =  NULL;
 	char *testMacroTemplate = (char *)  "#define TrcEnabled_%s  (%s_UtActive[%u] != 0)\n";
 	char *testNopTemplate = (char *) "#define TrcEnabled_%s  (0)\n";
-	size_t parmBufLen = (parmCount * 5) + 1;
 
-	parmString = (char *)Port::omrmem_calloc(1, parmBufLen);
+	parmString = (char *)Port::omrmem_calloc(1, (parmCount * sizeof(char) * 5) + 1);
 	if (NULL == parmString) {
 		eprintf("Failed to allocate memory");
 		goto failed;
@@ -230,31 +229,27 @@ TraceHeaderWriter::tpTemplate(FILE *fd, unsigned int overhead, unsigned int test
 	pos = parmString;
 
 	if (test) {
-		/* Allow 20 digits for tracepoints + 1 for the null byte. */
-		size_t bufLen = strlen(testMacroTemplate) + strlen(name) + strlen(module) + 21;
-		testMacro = (char *)Port::omrmem_calloc(1, bufLen);
+		/* Allow 7 digits for tracepoints + 1 for the null byte. (Millions of trace points are unlikely.) */
+		testMacro = (char *)Port::omrmem_calloc(1, (strlen(testMacroTemplate) + strlen(name) + strlen(module) + 8));
 		if (NULL == testMacro) {
 			eprintf("Failed to allocate memory");
 			goto failed;
 		}
-		snprintf(testMacro, bufLen, testMacroTemplate, name, module, id);
+		sprintf(testMacro, testMacroTemplate, name, module, id);
 
-		bufLen = strlen(testMacroTemplate) + strlen(name) + 1;
-		testNop = (char *)Port::omrmem_calloc(1, bufLen);
+		testNop = (char *)Port::omrmem_calloc(1, (strlen(testMacroTemplate) + strlen(name) + 1));
 		if (NULL == testNop) {
 			eprintf("Failed to allocate memory");
 			goto failed;
 		}
-		snprintf(testNop, bufLen, testNopTemplate, name);
+		sprintf(testNop, testNopTemplate, name);
 	} else {
 		testMacro = (char *) "";
 		testNop = (char *) "";
 	}
 
 	for (unsigned int i = 0; i < parmCount; i++) {
-		int n = snprintf(pos, parmBufLen, ", P%u", i + 1);
-		pos += n;
-		parmBufLen -= n;
+		pos += sprintf(pos, ", P%u", i + 1);
 	}
 
 	if (auxiliary) {
@@ -349,9 +344,8 @@ TraceHeaderWriter::tpAssert(FILE *fd, unsigned int overhead, unsigned int test, 
 	char *testnop = NULL;
 	char *testmacrotemplate = (char *)  "#define TrcEnabled_%s  (%s_UtActive[%u] != 0)\n";
 	char *testnoptemplate = (char *) "#define TrcEnabled_%s  (0)\n";
-	size_t parmBufLen = (parmCount * 5) + 1;
 
-	parmString = (char *)Port::omrmem_calloc(1, parmBufLen);
+	parmString = (char *)Port::omrmem_calloc(1, (parmCount * sizeof(char) * 5) + 1);
 	if (NULL == parmString) {
 		eprintf("Failed to allocate memory");
 		goto failed;
@@ -366,31 +360,27 @@ TraceHeaderWriter::tpAssert(FILE *fd, unsigned int overhead, unsigned int test, 
 	pos = parmString;
 
 	if (test) {
-		/* Allow 20 digits for tracepoints + 1 for the null byte. */
-		size_t bufLen = strlen(testmacrotemplate) + strlen(name) + strlen(module) + 21;
-		testmacro = (char *)Port::omrmem_calloc(1, bufLen);
+		/* Allow 7 digits for tracepoints + 1 for the null byte. (Millions of trace points are unlikely.) */
+		testmacro = (char *)Port::omrmem_calloc(1, (strlen(testmacrotemplate) + strlen(name) + strlen(module) + 8));
 		if (NULL == testmacro) {
 			eprintf("Failed to allocate memory");
 			goto failed;
 		}
-		snprintf(testmacro, bufLen, testmacrotemplate, name, module, id);
+		sprintf(testmacro, testmacrotemplate, name, module, id);
 
-		bufLen = strlen(testmacrotemplate) + strlen(name) + 1;
-		testnop = (char *)Port::omrmem_calloc(1, bufLen);
+		testnop = (char *)Port::omrmem_calloc(1, (strlen(testmacrotemplate) + strlen(name) + 1));
 		if (NULL == testnop) {
 			eprintf("Failed to allocate memory");
 			goto failed;
 		}
-		snprintf(testnop, bufLen, testnoptemplate, name);
+		sprintf(testnop, testnoptemplate, name);
 	} else {
 		testmacro = (char *) "";
 		testnop = (char *) "";
 	}
 
 	for (unsigned int i = 0; i < parmCount; i++) {
-		int n = snprintf(pos, parmBufLen, ", P%u", i + 1);
-		pos += n;
-		parmBufLen -= n;
+		pos += sprintf(pos, ", P%u", i + 1);
 	}
 
 	if (0 <= fprintf(fd, TP_ASSERT_TEMPLATE

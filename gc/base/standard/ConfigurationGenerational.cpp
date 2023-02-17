@@ -63,20 +63,6 @@ MM_ConfigurationGenerational::newInstance(MM_EnvironmentBase *env)
 	return configuration;
 }
 
-void
-MM_ConfigurationGenerational::tearDown(MM_EnvironmentBase* env)
-{
-	MM_GCExtensionsBase* extensions = env->getExtensions();
-
-	/* This is wrong spot to set scavenger to NULL. Keep it here for now for logical consistency temporary */
-#if defined(OMR_GC_MODRON_SCAVENGER)
-	extensions->scavenger = NULL;
-#endif /* defined(OMR_GC_MODRON_SCAVENGER) */
-
-
-	MM_ConfigurationStandard::tearDown(env);
-}
-
 bool
 MM_ConfigurationGenerational::initialize(MM_EnvironmentBase* env)
 {
@@ -205,13 +191,29 @@ MM_GlobalCollector*
 MM_ConfigurationGenerational::createCollectors(MM_EnvironmentBase* envBase)
 {
 	MM_EnvironmentStandard *env = MM_EnvironmentStandard::getEnvironment(envBase);
-	MM_GCExtensionsBase *ext = env->getExtensions();
+	MM_GCExtensionsBase *extensions = env->getExtensions();
 
-	if (NULL == (ext->scavenger = MM_Scavenger::newInstance(env))) {
+	if (NULL == (extensions->scavenger = MM_Scavenger::newInstance(env))) {
 		return NULL;
 	}
 
 	return MM_ConfigurationStandard::createCollectors(env);
+}
+
+/**
+ * Destroy Local Collector and rely on parent MM_ConfigurationStandard to destroy Global Collector
+ */
+void
+MM_ConfigurationGenerational::destroyCollectors(MM_EnvironmentBase* env)
+{
+	MM_GCExtensionsBase *extensions = env->getExtensions();
+
+	MM_ConfigurationStandard::destroyCollectors(env);
+
+	if (NULL != extensions->scavenger) {
+		extensions->scavenger->kill(env);
+		extensions->scavenger = NULL;
+	}
 }
 
 /**

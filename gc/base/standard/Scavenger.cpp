@@ -205,9 +205,7 @@ MM_Scavenger::newInstance(MM_EnvironmentStandard *env)
 void
 MM_Scavenger::kill(MM_EnvironmentBase *env)
 {
-	MM_EnvironmentStandard *envStandard = MM_EnvironmentStandard::getEnvironment(env);
-
-	tearDown(envStandard);
+	tearDown(env);
 	env->getForge()->free(this);
 }
 

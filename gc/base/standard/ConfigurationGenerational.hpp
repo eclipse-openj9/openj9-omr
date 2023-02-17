@@ -63,6 +63,15 @@ public:
 	 */
 	virtual MM_GlobalCollector* createCollectors(MM_EnvironmentBase* env);
 
+	/**
+	 * Destroy Local Collector and rely on parent MM_ConfigurationStandard to destroy Global Collector
+	 *
+	 * @param[in] env the current environment.
+	 *
+	 * @return void
+	 */
+	virtual void destroyCollectors(MM_EnvironmentBase* env);
+
 #if defined(J9VM_OPT_CRIU_SUPPORT)
 	/**
 	 * Startup GC threads on restore.
@@ -83,7 +92,6 @@ public:
 protected:
 	bool initialize(MM_EnvironmentBase* env);
 	MM_MemorySubSpaceSemiSpace *createSemiSpace(MM_EnvironmentBase *envBase, MM_Heap *heap, MM_Scavenger *scavenger, MM_InitializationParameters *parameters, UDATA numaNode = UDATA_MAX);
-	virtual void tearDown(MM_EnvironmentBase* env);
 	/**
 	 * Sets the number of GC threads.
 	 *

@@ -1041,6 +1041,18 @@
 		vfminp2d,                                               	/* 0x6EE0F400	FMINP        	 */
 		fminp2s,                                                	/* 0x7EB0F800	FMINP(scalar)  	 */
 		fminp2d,                                                	/* 0x7EF0F800	FMINP(scalar)  	 */
+		vsmaxp16b,                                              	/* 0x4E20A400	SMAXP        	 */
+		vsmaxp8h,                                               	/* 0x4E60A400	SMAXP        	 */
+		vsmaxp4s,                                               	/* 0x4EA0A400	SMAXP        	 */
+		vsminp16b,                                              	/* 0x4E20AC00	SMINP        	 */
+		vsminp8h,                                               	/* 0x4E60AC00	SMINP        	 */
+		vsminp4s,                                               	/* 0x4EA0AC00	SMINP        	 */
+		vumaxp16b,                                              	/* 0x6E20A400	UMAXP        	 */
+		vumaxp8h,                                               	/* 0x6E60A400	UMAXP        	 */
+		vumaxp4s,                                               	/* 0x6EA0A400	UMAXP        	 */
+		vuminp16b,                                              	/* 0x6E20AC00	UMINP        	 */
+		vuminp8h,                                               	/* 0x6E60AC00	UMINP        	 */
+		vuminp4s,                                               	/* 0x6EA0AC00	UMINP        	 */
 /* Hint instructions */
 		nop,                                                    	/* 0xD503201F   NOP          */
 /* Internal OpCodes */

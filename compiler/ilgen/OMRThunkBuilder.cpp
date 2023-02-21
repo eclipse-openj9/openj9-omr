@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2016, 2018 IBM Corp. and others
+ * Copyright (c) 2016, 2023 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -47,8 +47,8 @@ OMR::ThunkBuilder::ThunkBuilder(TR::TypeDictionary *types, const char *name, TR:
    _numCalleeParams(numCalleeParams),
    _calleeParamTypes(calleeParamTypes)
    {
-   DefineLine(__FILE__);
-   DefineFile(LINETOSTR(__LINE__));
+   DefineFile(__FILE__);
+   DefineLine(LINETOSTR(__LINE__));
    DefineName(name);
    DefineReturnType(returnType);
    DefineParameter("target", Address); // target

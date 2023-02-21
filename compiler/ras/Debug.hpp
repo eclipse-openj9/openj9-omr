@@ -362,6 +362,7 @@ namespace TR { class ARM64Trg1Src2IndexedElementInstruction; }
 namespace TR { class ARM64Trg1Src2ZeroInstruction; }
 namespace TR { class ARM64Trg1Src3Instruction; }
 namespace TR { class ARM64Trg1MemInstruction; }
+namespace TR { class ARM64Trg2MemInstruction; }
 namespace TR { class ARM64MemInstruction; }
 namespace TR { class ARM64MemImmInstruction; }
 namespace TR { class ARM64MemSrc1Instruction; }
@@ -1153,6 +1154,7 @@ public:
    void print(TR::FILE *, TR::ARM64Trg1Src2ZeroInstruction *);
    void print(TR::FILE *, TR::ARM64Trg1Src3Instruction *);
    void print(TR::FILE *, TR::ARM64Trg1MemInstruction *);
+   void print(TR::FILE *, TR::ARM64Trg2MemInstruction *);
    void print(TR::FILE *, TR::ARM64MemInstruction *);
    void print(TR::FILE *, TR::ARM64MemImmInstruction *);
    void print(TR::FILE *, TR::ARM64MemSrc1Instruction *);

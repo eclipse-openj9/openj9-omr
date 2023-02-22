@@ -1043,6 +1043,18 @@ static const char *opCodeToNameMap[] =
    "vfminp2d",
    "fminp2s",
    "fminp2d",
+   "vsmaxp16b",
+   "vsmaxp8h",
+   "vsmaxp4s",
+   "vsminp16b",
+   "vsminp8h",
+   "vsminp4s",
+   "vumaxp16b",
+   "vumaxp8h",
+   "vumaxp4s",
+   "vuminp16b",
+   "vuminp8h",
+   "vuminp4s",
    "nop",
    };
 

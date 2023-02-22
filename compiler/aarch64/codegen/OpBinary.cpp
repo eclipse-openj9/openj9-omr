@@ -1042,6 +1042,18 @@ const OMR::ARM64::InstOpCode::OpCodeBinaryEntry OMR::ARM64::InstOpCode::binaryEn
 		0x6EE0F400,	/* FMINP 	vfminp2d */
 		0x7EB0F800,	/* FMINP(scalar) 	fminp2s */
 		0x7EF0F800,	/* FMINP(scalar) 	fminp2d */
+		0x4E20A400,	/* SMAXP 	vsmaxp16b */
+		0x4E60A400,	/* SMAXP 	vsmaxp8h */
+		0x4EA0A400,	/* SMAXP 	vsmaxp4s */
+		0x4E20AC00,	/* SMINP 	vsminp16b */
+		0x4E60AC00,	/* SMINP 	vsminp8h */
+		0x4EA0AC00,	/* SMINP 	vsminp4s */
+		0x6E20A400,	/* UMAXP 	vumaxp16b */
+		0x6E60A400,	/* UMAXP 	vumaxp8h */
+		0x6EA0A400,	/* UMAXP 	vumaxp4s */
+		0x6E20AC00,	/* UMINP 	vuminp16b */
+		0x6E60AC00,	/* UMINP 	vuminp8h */
+		0x6EA0AC00,	/* UMINP 	vuminp4s */
 	/* Hint instructions */
 		0xD503201F,	/* NOP          nop      */
 };

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 1991, 2021 IBM Corp. and others
+ * Copyright (c) 1991, 2023 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -202,13 +202,13 @@ MM_SweepHeapSectioning::initialize(MM_EnvironmentBase* env)
 	totalChunkCountEstimate = estimateTotalChunkCount(env);
 
 	/* Allocate the lead array to see if the initial backing store can be allocated */
-	_head = MM_ParallelSweepChunkArray::newInstance(env, totalChunkCountEstimate, true);
-	if (NULL == _head) {
+	_tail = MM_ParallelSweepChunkArray::newInstance(env, totalChunkCountEstimate, true);
+	if (NULL == _tail) {
 		return false;
 	}
 
 	/* Save away the initial array for other uses (routines that need its backing store, such as compact) */
-	_baseArray = _head;
+	_head = _tail;
 
 	/* Make sure we record the total size currently allocated */
 	_totalSize = totalChunkCountEstimate;
@@ -230,7 +230,7 @@ MM_SweepHeapSectioning::tearDown(MM_EnvironmentBase* env)
 		array->kill(env);
 		array = nextArray;
 	}
-	_head = NULL;
+	_tail = NULL;
 }
 
 /**
@@ -286,39 +286,34 @@ MM_SweepHeapSectioning::initArrays(uintptr_t chunkCount)
 bool
 MM_SweepHeapSectioning::update(MM_EnvironmentBase* env)
 {
-	uintptr_t totalChunkCount;
+	uintptr_t totalChunkCount = calculateActualChunkNumbers();
 
-	totalChunkCount = calculateActualChunkNumbers();
-
-	/* Check if we've exceeded our current physical capacity to reserve chunks */
+	/* Check if the current physical capacity to reserve chunks will be exceeded */
 	if (totalChunkCount > _totalSize) {
 		/* Insufficient room - reserve more memory for chunks */
-		MM_ParallelSweepChunkArray* newArray;
+		MM_ParallelSweepChunkArray* newArray = MM_ParallelSweepChunkArray::newInstance(
+				env, totalChunkCount - _totalSize, false);
 
-		/* TODO: Do we want to round the number of chunks allocated to something sane? */
-		newArray = MM_ParallelSweepChunkArray::newInstance(env, totalChunkCount - _totalSize, false);
 		if (NULL == newArray) {
 			return false;
 		}
 
-		/* clear chunks */
+		/* Clear all the chunks in the new array */
 		MM_ParallelSweepChunk* chunk;
-		for(uintptr_t count=0; count<newArray->_size; count++) {
+		for (uintptr_t count = 0; count < newArray->_size; count++) {
 			chunk = newArray->_array + count;
 			chunk->clear();
 		}
 
-		/* link the new array into the list of arrays */
-		newArray->_next = _head;
-		_head = newArray;
+		/* Link the new array into the list of arrays */
+		Assert_MM_true(NULL != _tail);
+		Assert_MM_true(NULL == _tail->_next);
 
-		/* set the actual number of chunks used */
-		_totalUsed = totalChunkCount;
+		_tail->_next = newArray;
+		_tail = newArray;
+
+		/* Set the actual number of chunks used */
 		_totalSize = totalChunkCount;
-
-	} else {
-		/* Sufficient room - reserve the chunks */
-		_totalUsed = totalChunkCount;
 	}
 
 	/* Walk the arrays initializing their used lengths to account for new totals */
@@ -334,7 +329,7 @@ void*
 MM_SweepHeapSectioning::getBackingStoreAddress()
 {
 	MM_MemoryManager* memoryManager = _extensions->memoryManager;
-	return (void*)memoryManager->getHeapBase(&_baseArray->_memoryHandle);
+	return (void*)memoryManager->getHeapBase(&_head->_memoryHandle);
 }
 
 /**
@@ -345,7 +340,23 @@ MM_SweepHeapSectioning::getBackingStoreAddress()
 uintptr_t
 MM_SweepHeapSectioning::getBackingStoreSize()
 {
-	return _baseArray->_used * sizeof(MM_ParallelSweepChunk);
+	return _head->_used * sizeof(MM_ParallelSweepChunk);
+}
+
+void
+MM_SweepHeapSectioning::initializeChunkSize(MM_EnvironmentBase *env)
+{
+	if (0 == _extensions->parSweepChunkSize) {
+		/* -Xgc:sweepchunksize= has NOT been specified, so we set it heuristically.
+		 *
+		 *                  maxheapsize
+		 * chunksize =   ----------------   (rounded up to the nearest 256k)
+		 *               threadcount * 32
+		 */
+		uintptr_t threadFactor = _extensions->dispatcher->threadCountMaximum() * 32;
+		uintptr_t chunkSize = _extensions->heap->getMaximumMemorySize() / threadFactor;
+		_extensions->parSweepChunkSize = MM_Math::roundToCeiling(256 * 1024, chunkSize);
+	}
 }
 
 /**
@@ -360,19 +371,15 @@ MM_SweepHeapSectioning::getBackingStoreSize()
 uintptr_t
 MM_SweepHeapSectioning::estimateTotalChunkCount(MM_EnvironmentBase *env)
 {
-	uintptr_t totalChunkCountEstimate;
+	initializeChunkSize(env);
 
-	if(0 == _extensions->parSweepChunkSize) {
-		/* -Xgc:sweepchunksize= has NOT been specified, so we set it heuristically.
-		 *
-		 *                  maxheapsize
-		 * chunksize =   ----------------   (rounded up to the nearest 256k)
-		 *               threadcount * 32
-		 */
-		_extensions->parSweepChunkSize = MM_Math::roundToCeiling(256*1024, _extensions->heap->getMaximumMemorySize() / (_extensions->dispatcher->threadCountMaximum() * 32));
-	}
+	uintptr_t adjustedMaxMemorySize = MM_Math::roundToCeiling(
+			_extensions->parSweepChunkSize,
+			_extensions->heap->getMaximumMemorySize());
 
-	totalChunkCountEstimate = MM_Math::roundToCeiling(_extensions->parSweepChunkSize, _extensions->heap->getMaximumMemorySize()) / _extensions->parSweepChunkSize;
+	Assert_MM_true(0 != _extensions->parSweepChunkSize);
+
+	uintptr_t totalChunkCountEstimate = adjustedMaxMemorySize / _extensions->parSweepChunkSize;
 
 	return totalChunkCountEstimate;
 }
@@ -458,3 +465,13 @@ MM_SweepHeapSectioning::reassignChunks(MM_EnvironmentBase *env)
 
 	return totalChunkCount;
 }
+
+#if defined(J9VM_OPT_CRIU_SUPPORT)
+bool
+MM_SweepHeapSectioning::reinitializeForRestore(MM_EnvironmentBase *env)
+{
+	initializeChunkSize(env);
+
+	return update(env);
+}
+#endif /* defined(J9VM_OPT_CRIU_SUPPORT) */

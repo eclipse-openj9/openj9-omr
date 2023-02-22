@@ -1732,7 +1732,7 @@ public:
 		, heapRegionManager(NULL)
 		, memoryManager(NULL)
 		, aggressive(0)
-		, sweepHeapSectioning(0)
+		, sweepHeapSectioning(NULL)
 #if defined(OMR_GC_MODRON_COMPACTION)
 		, compactOnGlobalGC(0) /* By default we will only compact on triggers, no forced compactions */
 		, noCompactOnGlobalGC(0)

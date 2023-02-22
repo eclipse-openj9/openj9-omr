@@ -888,6 +888,34 @@ uint8_t *TR::ARM64ZeroSrc2Instruction::generateBinaryEncoding()
    return cursor;
    }
 
+uint8_t *TR::ARM64Src1ImmCondInstruction::generateBinaryEncoding()
+   {
+   uint8_t *instructionStart = cg()->getBinaryBufferCursor();
+   uint8_t *cursor = getOpCode().copyBinaryToBuffer(instructionStart);
+   insertConditionCodeField(toARM64Cursor(cursor));
+   insertConditionFlags(toARM64Cursor(cursor));
+   insertSource1Register(toARM64Cursor(cursor));
+   insertImmediateField(toARM64Cursor(cursor));
+   cursor += ARM64_INSTRUCTION_LENGTH;
+   setBinaryLength(ARM64_INSTRUCTION_LENGTH);
+   setBinaryEncoding(instructionStart);
+   return cursor;
+   }
+
+uint8_t *TR::ARM64Src2CondInstruction::generateBinaryEncoding()
+   {
+   uint8_t *instructionStart = cg()->getBinaryBufferCursor();
+   uint8_t *cursor = getOpCode().copyBinaryToBuffer(instructionStart);
+   insertConditionCodeField(toARM64Cursor(cursor));
+   insertConditionFlags(toARM64Cursor(cursor));
+   insertSource1Register(toARM64Cursor(cursor));
+   insertSource2Register(toARM64Cursor(cursor));
+   cursor += ARM64_INSTRUCTION_LENGTH;
+   setBinaryLength(ARM64_INSTRUCTION_LENGTH);
+   setBinaryEncoding(instructionStart);
+   return cursor;
+   }
+
 #ifdef J9_PROJECT_SPECIFIC
 uint8_t *TR::ARM64VirtualGuardNOPInstruction::generateBinaryEncoding()
    {

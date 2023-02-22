@@ -530,6 +530,32 @@ TR::Instruction *generateTestInstruction(TR::CodeGenerator *cg, TR::Node *node,
    return new (cg->trHeapMemory()) TR::ARM64ZeroSrc2Instruction(op, node, s1reg, s2reg, cg);
    }
 
+TR::Instruction *generateConditionalCompareImmInstruction(TR::CodeGenerator *cg, TR::Node *node,
+   TR::Register *sreg, uint32_t imm, uint32_t conditionFlags, TR::ARM64ConditionCode cc,
+   bool is64bit, bool isNegative, TR::Instruction *preced)
+   {
+   TR::InstOpCode::Mnemonic op = is64bit ? (isNegative ? TR::InstOpCode::ccmnimmx : TR::InstOpCode::ccmpimmx) :
+                                           (isNegative ? TR::InstOpCode::ccmnimmw : TR::InstOpCode::ccmpimmw);
+
+   TR_ASSERT_FATAL(constantIsUnsignedImm5(imm), "Immediate value is out of range for ccmp/ccmn");
+
+   if (preced)
+      return new (cg->trHeapMemory()) TR::ARM64Src1ImmCondInstruction(op, node, sreg, imm, cc, conditionFlags, preced, cg);
+   return new (cg->trHeapMemory()) TR::ARM64Src1ImmCondInstruction(op, node, sreg, imm, cc, conditionFlags, cg);
+   }
+
+TR::Instruction *generateConditionalCompareInstruction(TR::CodeGenerator *cg, TR::Node *node,
+   TR::Register *sreg1, TR::Register *sreg2, uint32_t conditionFlags, TR::ARM64ConditionCode cc,
+   bool is64bit, bool isNegative, TR::Instruction *preced)
+   {
+   TR::InstOpCode::Mnemonic op = is64bit ? (isNegative ? TR::InstOpCode::ccmnx : TR::InstOpCode::ccmpx) :
+                                           (isNegative ? TR::InstOpCode::ccmnw : TR::InstOpCode::ccmpw);
+
+   if (preced)
+      return new (cg->trHeapMemory()) TR::ARM64Src2CondInstruction(op, node, sreg1, sreg2, cc, conditionFlags, preced, cg);
+   return new (cg->trHeapMemory()) TR::ARM64Src2CondInstruction(op, node, sreg1, sreg2, cc, conditionFlags, cg);
+   }
+
 TR::Instruction *generateMovInstruction(TR::CodeGenerator *cg, TR::Node *node,
    TR::Register *treg, TR::Register *sreg, bool is64bit, TR::Instruction *preced)
    {
@@ -604,6 +630,14 @@ TR::Instruction *generateCSetInstruction(TR::CodeGenerator *cg, TR::Node *node,
    if (preced)
       return new (cg->trHeapMemory()) TR::ARM64Trg1CondInstruction(op, node, treg, cc_invert(cc), preced, cg);
    return new (cg->trHeapMemory()) TR::ARM64Trg1CondInstruction(op, node, treg, cc_invert(cc), cg);
+   }
+
+TR::Instruction *generateCIncInstruction(TR::CodeGenerator *cg, TR::Node *node,
+   TR::Register *treg, TR::Register *sreg, TR::ARM64ConditionCode cc, bool is64bit, TR::Instruction *preced)
+   {
+   /* Alias of CSINC instruction with inverted condition code */
+   TR::InstOpCode::Mnemonic op = is64bit ? TR::InstOpCode::csincx : TR::InstOpCode::csincw;
+   return generateCondTrg1Src2Instruction(cg, op, node, treg, sreg, sreg, cc_invert(cc), preced);
    }
 
 TR::ARM64SynchronizationInstruction *generateSynchronizationInstruction(TR::CodeGenerator *cg, TR::InstOpCode::Mnemonic op,

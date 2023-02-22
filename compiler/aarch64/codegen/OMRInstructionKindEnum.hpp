@@ -63,5 +63,7 @@
       IsMemImm,
    IsSrc1,
       IsZeroSrc1Imm,
+      IsSrc1ImmCond,
       IsSrc2,
-         IsZeroSrc2
+         IsZeroSrc2,
+         IsSrc2Cond

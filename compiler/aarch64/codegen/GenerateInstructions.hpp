@@ -934,6 +934,56 @@ TR::Instruction *generateCompareInstruction(
                   bool is64bit = false,
                   TR::Instruction *preced = NULL);
 
+/**
+ * @brief Generates CCMP or CCMN (immediate) instruction
+ *
+ * @param[in] cg : CodeGenerator
+ * @param[in] node : node
+ * @param[in] sreg : source register
+ * @param[in] imm : unsigned 5-bit immediate
+ * @param[in] conditionFlags : condition flags to set if condition specified by cc is true
+ * @param[in] cc : Condition code
+ * @param[in] is64bit : true when it is 64-bit operation
+ * @param[in] isNegative : Generates CCMN instruction if true
+ * @param[in] preced : preceding instruction
+ * @return generated instruction
+ */
+TR::Instruction *generateConditionalCompareImmInstruction(
+                  TR::CodeGenerator *cg,
+                  TR::Node *node,
+                  TR::Register *sreg,
+                  uint32_t imm,
+                  uint32_t conditionFlags,
+                  TR::ARM64ConditionCode cc,
+                  bool is64bit = false,
+                  bool isNegative = false,
+                  TR::Instruction *preced = NULL);
+
+/**
+ * @brief Generates CCMP or CCMN (register) instruction
+ *
+ * @param[in] cg : CodeGenerator
+ * @param[in] node : node
+ * @param[in] sreg1 : source register1
+ * @param[in] sreg2 : source register2
+ * @param[in] conditionFlags : condition flags to set if condition specified by cc is true
+ * @param[in] cc : Condition code
+ * @param[in] is64bit : true when it is 64-bit operation
+ * @param[in] isNegative : Generates CCMN instruction if true
+ * @param[in] preced : preceding instruction
+ * @return generated instruction
+ */
+TR::Instruction *generateConditionalCompareInstruction(
+                  TR::CodeGenerator *cg,
+                  TR::Node *node,
+                  TR::Register *sreg1,
+                  TR::Register *sreg2,
+                  uint32_t conditionFlags,
+                  TR::ARM64ConditionCode cc,
+                  bool is64bit = false,
+                  bool isNegative = false,
+                  TR::Instruction *preced = NULL);
+
 /*
  * @brief Generates TST (immediate) instruction
  * @param[in] cg : CodeGenerator
@@ -1098,6 +1148,26 @@ TR::Instruction *generateCSetInstruction(
                   TR::Node *node,
                   TR::Register *treg,
                   TR::ARM64ConditionCode cc,
+                  TR::Instruction *preced = NULL);
+
+/*
+ * @brief Generates CINC instruction
+ * @param[in] cg : CodeGenerator
+ * @param[in] node : node
+ * @param[in] treg : target register
+ * @param[in] sreg : source register
+ * @param[in] cc : branch condition code
+ * @param[in] is64bit : true when it is 64-bit operation
+ * @param[in] preced : preceding instruction
+ * @return generated instruction
+ */
+TR::Instruction *generateCIncInstruction(
+                  TR::CodeGenerator *cg,
+                  TR::Node *node,
+                  TR::Register *treg,
+                  TR::Register *sreg,
+                  TR::ARM64ConditionCode cc,
+                  bool is64bit,
                   TR::Instruction *preced = NULL);
 
 /*

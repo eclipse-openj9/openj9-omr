@@ -1196,6 +1196,12 @@ TR_Debug::print(TR::FILE *pOutFile, TR::Instruction *instr)
       case OMR::Instruction::IsZeroSrc2:
          print(pOutFile, (TR::ARM64ZeroSrc2Instruction *)instr);
          break;
+      case OMR::Instruction::IsSrc1ImmCond:
+         print(pOutFile, (TR::ARM64Src1ImmCondInstruction *)instr);
+         break;
+      case OMR::Instruction::IsSrc2Cond:
+         print(pOutFile, (TR::ARM64Src2CondInstruction *)instr);
+         break;
       default:
          TR_ASSERT(false, "unexpected instruction kind");
             // fall through
@@ -2155,15 +2161,61 @@ TR_Debug::print(TR::FILE *pOutFile, TR::ARM64ZeroSrc2Instruction *instr)
    }
 
 void
+TR_Debug::print(TR::FILE *pOutFile, TR::ARM64Src1ImmCondInstruction *instr)
+   {
+   printPrefix(pOutFile, instr);
+   TR::InstOpCode::Mnemonic op = instr->getOpCodeValue();
+
+   trfprintf(pOutFile, "%s \t", getOpCodeName(&instr->getOpCode()));
+
+   print(pOutFile, instr->getSource1Register(), TR_WordReg);
+   trfprintf(pOutFile, ", %d", instr->getSourceImmediate());
+   trfprintf(pOutFile, ", %d", instr->getConditionFlags());
+   trfprintf(pOutFile, ", %s", ARM64ConditionNames[instr->getConditionCode()]);
+
+   trfflush(_comp->getOutFile());
+   }
+
+void
+TR_Debug::print(TR::FILE *pOutFile, TR::ARM64Src2CondInstruction *instr)
+   {
+   printPrefix(pOutFile, instr);
+   TR::InstOpCode::Mnemonic op = instr->getOpCodeValue();
+
+   trfprintf(pOutFile, "%s \t", getOpCodeName(&instr->getOpCode()));
+
+   print(pOutFile, instr->getSource1Register(), TR_WordReg); trfprintf(pOutFile, ", ");
+   print(pOutFile, instr->getSource2Register(), TR_WordReg);
+   trfprintf(pOutFile, ", %d", instr->getConditionFlags());
+   trfprintf(pOutFile, ", %s", ARM64ConditionNames[instr->getConditionCode()]);
+
+   trfflush(_comp->getOutFile());
+   }
+
+void
 TR_Debug::print(TR::FILE *pOutFile, TR::ARM64CondTrg1Src2Instruction *instr)
    {
    printPrefix(pOutFile, instr);
-   trfprintf(pOutFile, "%s \t", getOpCodeName(&instr->getOpCode()));
+   TR::Register *r1 = instr->getSource1Register();
+   TR::Register *r2 = instr->getSource2Register();
+   TR::InstOpCode::Mnemonic op = instr->getOpCodeValue();
+   if ((r1 == r2) && ((op == TR::InstOpCode::csincx) ||
+       (op == TR::InstOpCode::csincw)))
+      {
+      trfprintf(pOutFile, "%s \t", (op == TR::InstOpCode::csincx) ? "cincx" : "cincw");
+      print(pOutFile, instr->getTargetRegister(), TR_WordReg); trfprintf(pOutFile, ", ");
+      print(pOutFile, r1, TR_WordReg);
+      trfprintf(pOutFile, ", %s", ARM64ConditionNames[cc_invert(instr->getConditionCode())]);
+      }
+   else
+      {
+      trfprintf(pOutFile, "%s \t", getOpCodeName(&instr->getOpCode()));
 
-   print(pOutFile, instr->getTargetRegister(), TR_WordReg); trfprintf(pOutFile, ", ");
-   print(pOutFile, instr->getSource1Register(), TR_WordReg); trfprintf(pOutFile, ", ");
-   print(pOutFile, instr->getSource2Register(), TR_WordReg);
-   trfprintf(pOutFile, ", %s", ARM64ConditionNames[instr->getConditionCode()]);
+      print(pOutFile, instr->getTargetRegister(), TR_WordReg); trfprintf(pOutFile, ", ");
+      print(pOutFile, instr->getSource1Register(), TR_WordReg); trfprintf(pOutFile, ", ");
+      print(pOutFile, instr->getSource2Register(), TR_WordReg);
+      trfprintf(pOutFile, ", %s", ARM64ConditionNames[instr->getConditionCode()]);
+      }
 
    if (instr->getDependencyConditions())
       print(pOutFile, instr->getDependencyConditions());

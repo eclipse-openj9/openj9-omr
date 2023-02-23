@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2022 IBM Corp. and others
+ * Copyright (c) 2000, 2023 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -676,7 +676,7 @@ TR_Debug::limitOption(char *option, void *base, TR::OptionTable *entry, TR::Opti
       newSet->init(startOptString);
       newSet->setMethodRegex(methodRegex);
       newSet->setOptLevelRegex(optLevelRegex);
-      cmdLineOptions->addOptionSet(newSet);
+      cmdLineOptions->saveOptionSet(newSet);
       }
 
    return p;

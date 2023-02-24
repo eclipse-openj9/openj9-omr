@@ -348,15 +348,15 @@ MM_Scavenger::collectorShutdown(MM_GCExtensionsBase* extensions)
 {
 #if defined(OMR_GC_CONCURRENT_SCAVENGER)
 	if (IS_CONCURRENT_ENABLED) {
-		/*
-		 * completeConcurrentCycle(env) is normally invoked to stop a CS cycle.
-		 * However, it can be assumed that there is no activity of mutator threads
-		 * in the shutdown path. So, a change to the idle state is sufficient at
-		 * this point.
-		 */
-		_concurrentPhase = concurrent_phase_idle;
 
 		_mainGCThread.shutdown();
+
+		/*
+		 * While completeConcurrentCycle(env) can be invoked to stop a potentially active CS cycle,
+		 * at this point both mutator and GC threads should be down.
+		 * It is sufficient to change the concurrent phase state to idle.
+		 */
+		_concurrentPhase = concurrent_phase_idle;
 	}
 #endif /* OMR_GC_CONCURRENT_SCAVENGER */
 }

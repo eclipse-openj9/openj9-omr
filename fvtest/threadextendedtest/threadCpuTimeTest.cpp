@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2014, 2020 IBM Corp. and others
+ * Copyright (c) 2014, 2023 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -22,6 +22,11 @@
 #include "omrTest.h"
 #include "thread_api.h"
 #include "threadExtendedTestHelpers.hpp"
+
+#if defined(OSX) && defined(OMR_ARCH_AARCH64)
+/* See OMR Issue #6774 */
+#define TestOtherThreadCputime DISABLED_TestOtherThreadCputime
+#endif /* defined(OSX) && defined(OMR_ARCH_AARCH64) */
 
 #define NUM_ITERATIONS	50
 

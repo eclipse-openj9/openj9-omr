@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2018, 2021 IBM Corp. and others
+ * Copyright (c) 2018, 2023 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -790,19 +790,20 @@ MM_ConcurrentGCIncrementalUpdate::updateTuningStatisticsInternal(MM_EnvironmentB
 	if (_extensions->debugConcurrentMark) {
 		OMRPORT_ACCESS_FROM_ENVIRONMENT(env);
 
-		char pass1Factor[10];
-		char pass2Factor[10];
+		const size_t bufLen = 10;
+		char pass1Factor[bufLen];
+		char pass2Factor[bufLen];
 
 		if (_extensions->cardCleaningPasses > 0) {
-			sprintf(pass1Factor, "%.3f", _cardCleaningFactorPass1);
+			omrstr_printf(pass1Factor, bufLen, "%.3f", _cardCleaningFactorPass1);
 		} else {
-			sprintf(pass1Factor, "%s", "N/A");
+			omrstr_printf(pass1Factor, bufLen, "%s", "N/A");
 		}
 
 		if (_extensions->cardCleaningPasses > 1) {
-			sprintf(pass2Factor, "%.3f", _cardCleaningFactorPass2);
+			omrstr_printf(pass2Factor, bufLen, "%.3f", _cardCleaningFactorPass2);
 		} else {
-			sprintf(pass2Factor, "%s", "N/A");
+			omrstr_printf(pass2Factor, bufLen, "%s", "N/A");
 		}
 
 		omrtty_printf("Update tuning statistics: Total Traced=\"%zu\" (Pass 2 KO=\"%zu\")  Total Cleaned=\"%zu\" (Pass 2 KO=\"%zu\")\n",

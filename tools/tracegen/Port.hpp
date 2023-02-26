@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2014, 2018 IBM Corp. and others
+ * Copyright (c) 2014, 2023 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -56,6 +56,9 @@
 #define OS_ENCODING_WC_FLAGS 0
 #define UNICODE_BUFFER_SIZE EsMaxPath
 #else /* defined(OMR_OS_WINDOWS) */
+#if __cplusplus < 201103L
+#define snprintf(buf, buf_size, format, ...) sprintf(buf, format, __VA_ARGS__)
+#endif /* __cplusplus < 201103L */
 #define PATH_SEP  "/"
 #define dirstat struct stat
 #define PORT_INVALID_FIND_FILE_HANDLE ((intptr_t) 0)

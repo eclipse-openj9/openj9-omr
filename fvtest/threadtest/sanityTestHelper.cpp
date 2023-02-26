@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 1991, 2017 IBM Corp. and others
+ * Copyright (c) 1991, 2023 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -21,6 +21,10 @@
 
 #include "threadTestLib.hpp"
 #include "sanityTestHelper.hpp"
+
+#if __cplusplus < 201103L
+#define snprintf(buf, buf_size, format, ...) sprintf(buf, format, __VA_ARGS__)
+#endif /* __cplusplus < 201103L */
 
 static bool TestLoopingWaitNotify(int runTime);
 
@@ -156,7 +160,7 @@ TestNThreadsLooping(unsigned int numThreads, unsigned int sleepInterval,
 		for (i = 0; i < numThreads; i++) {
 			count += threads[i]->LoopCount();
 		}
-		sprintf(buf, "Performance = %lu", count);
+		snprintf(buf, sizeof(buf), "Performance = %lu", count);
 		omrTestEnv->log("\n");
 		omrTestEnv->log("%s\n", buf);
 	}
@@ -325,13 +329,13 @@ TestLoopingWaitNotify(int runTime)
 	thread2.Start();
 
 	omrTestEnv->log("Letting threads run for ");
-	sprintf(numBuf, "%d", runTime);
+	snprintf(numBuf, sizeof(numBuf), "%d", runTime);
 	omrTestEnv->logRaw(numBuf);
 	omrTestEnv->logRaw(" seconds...");
 	omrTestEnv->log("\n");
 	omrTestEnv->log("");
 	for (int i = runTime; i > 0; i--) {
-		sprintf(numBuf, "%d ", i);
+		snprintf(numBuf, sizeof(numBuf), "%d ", i);
 		omrTestEnv->logRaw(numBuf);
 		omrthread_sleep(1000);
 	}

@@ -1145,6 +1145,8 @@ bool OMR::X86::CodeGenerator::getSupportsOpCodeForAutoSIMD(TR::CPU *cpu, TR::ILO
 #endif //closes the if 0
             return false;
 
+      case TR::vcast:
+         return true;
       default:
          break;
       }

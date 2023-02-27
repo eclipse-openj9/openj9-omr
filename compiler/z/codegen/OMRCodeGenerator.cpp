@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2022 IBM Corp. and others
+ * Copyright (c) 2000, 2023 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -4798,11 +4798,11 @@ bool OMR::Z::CodeGenerator::getSupportsOpCodeForAutoSIMD(TR::CPU *cpu, TR::ILOpC
          else
             return true;
       case TR::vconv:
-         if (et == TR::Double &&
-             opcode.getVectorSourceDataType().getVectorElementType() == TR::Int64)
-            return true;
+         return (et == TR::Double && opcode.getVectorSourceDataType().getVectorElementType() == TR::Int64);
+      case TR::vcast:
+         return true;
       default:
-        return false;
+         return false;
       }
 
    return false;

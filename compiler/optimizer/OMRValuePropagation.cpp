@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2022 IBM Corp. and others
+ * Copyright (c) 2000, 2023 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -6586,7 +6586,7 @@ void OMR::ValuePropagation::buildBoundCheckComparisonNodes(BlockVersionInfo *blo
                   {
                   sig = indexObjectRefChild->getTypeSignature(len);
                   clazz = sig ? fe()->getClassFromSignature(sig,len,indexObjectRefChild->getSymbolReference()->getOwningMethod(comp())) : NULL;
-                  TR_YesNoMaybe result = clazz ? comp()->fe()->isInstanceOf(arrayIndex->_instanceOfClass,clazz,false) : TR_no;
+                  TR_YesNoMaybe result = clazz ? comp()->fe()->isInstanceOf(clazz,arrayIndex->_instanceOfClass,false) : TR_no;
                   if (result != TR_yes)
                      {
                      if (comp()->compileRelocatableCode())
@@ -6604,7 +6604,7 @@ void OMR::ValuePropagation::buildBoundCheckComparisonNodes(BlockVersionInfo *blo
                      }
                   else
                      {
-                     dumpOptDetails(comp(), "%s ctInstanceOf test passed, skipping runtime instanceof of %p outside block_%d for versioning array index %p\n", OPT_DETAILS, indexObjectRefChild, blockInfo->_block->getNumber(), arrayIndex->_baseNode);
+                     dumpOptDetails(comp(), "%s ctInstanceOf test passed, skipping runtime instanceof(%p, %p) of %p outside block_%d for versioning array index %p\n", OPT_DETAILS, clazz, arrayIndex->_instanceOfClass, indexObjectRefChild, blockInfo->_block->getNumber(), arrayIndex->_baseNode);
                      }
                   }
                }
@@ -6632,10 +6632,14 @@ void OMR::ValuePropagation::buildBoundCheckComparisonNodes(BlockVersionInfo *blo
                {
                sig = objectRefChild->getTypeSignature(len);
                clazz = sig ? fe()->getClassFromSignature(sig,len,objectRefChild->getSymbolReference()->getOwningMethod(comp())) : NULL;
-               TR_YesNoMaybe result = clazz ? comp()->fe()->isInstanceOf(arrayLength->_instanceOfClass,clazz,false) : TR_no;
+               TR_YesNoMaybe result = clazz ? comp()->fe()->isInstanceOf(clazz,arrayLength->_instanceOfClass,false) : TR_no;
                ArrayIndexInfo *arrayIndex = NULL;
 
-               if (result != TR_yes)
+               if (result == TR_yes)
+                  {
+                  dumpOptDetails(comp(), "%s ctInstanceOf test passed, skipping runtime instanceof(%p, %p) of %p outside block_%d for versioning arraylenth %p\n", OPT_DETAILS, clazz, arrayLength->_instanceOfClass, objectRefChild, blockInfo->_block->getNumber(), arrayLength->_arrayLen);
+                  }
+               else
                   {
                   // Have we already generated an instanceOf for this object/class when handling array indexes?
                   for (arrayIndex = arrayLength->_arrayIndicesInfo->getFirst(); result != TR_yes && arrayIndex; arrayIndex = arrayIndex->getNext())
@@ -6647,26 +6651,22 @@ void OMR::ValuePropagation::buildBoundCheckComparisonNodes(BlockVersionInfo *blo
                         dumpOptDetails(comp(), "%s Skipping redundant runtime instanceof of %p outside block_%d for versioning arraylenth %p\n", OPT_DETAILS, objectRefChild, blockInfo->_block->getNumber(), arrayLength->_arrayLen);
                         }
                      }
-                  }
 
-               if (result != TR_yes)
-                  {
-                  if (comp()->compileRelocatableCode())
+                  if (result != TR_yes)
                      {
-                     dumpOptDetails(comp(), "%s Abandoned versioning of block_%d because an instanceOf check is needed and this is a relocatable compile.\n", OPT_DETAILS, blockInfo->_block->getNumber());
-                     comparisonNodes->deleteAll();
-                     return;
+                     if (comp()->compileRelocatableCode())
+                        {
+                        dumpOptDetails(comp(), "%s Abandoned versioning of block_%d because an instanceOf check is needed and this is a relocatable compile.\n", OPT_DETAILS, blockInfo->_block->getNumber());
+                        comparisonNodes->deleteAll();
+                        return;
+                        }
+                     dumpOptDetails(comp(), "%s Creating test for instanceof of %p outside block_%d for versioning arraylenth %p \n", OPT_DETAILS, objectRefChild, blockInfo->_block->getNumber(), arrayLength->_arrayLen);
+                     TR::Node *duplicateClassPtr = TR::Node::createWithSymRef(objectRefChild, TR::loadaddr, 0, comp()->getSymRefTab()->findOrCreateClassSymbol(objectRef->getSymbolReference()->getOwningMethodSymbol(comp()), -1, arrayLength->_instanceOfClass, false));
+                     TR::Node *instanceofNode = TR::Node::createWithSymRef(TR::instanceof, 2, 2, objectRefChild->duplicateTree(),  duplicateClassPtr, comp()->getSymRefTab()->findOrCreateInstanceOfSymbolRef(comp()->getMethodSymbol()));
+                     TR::Node *ificmpeqNode =  TR::Node::createif(TR::ificmpeq, instanceofNode, TR::Node::create(objectRef, TR::iconst, 0, 0));
+                     comparisonNodes->add(ificmpeqNode);
+                     numInstanceOfChecksAdded++;
                      }
-                  dumpOptDetails(comp(), "%s Creating test for instanceof of %p outside block_%d for versioning arraylenth %p \n", OPT_DETAILS, objectRefChild, blockInfo->_block->getNumber(), arrayLength->_arrayLen);
-                  TR::Node *duplicateClassPtr = TR::Node::createWithSymRef(objectRefChild, TR::loadaddr, 0, comp()->getSymRefTab()->findOrCreateClassSymbol(objectRef->getSymbolReference()->getOwningMethodSymbol(comp()), -1, arrayLength->_instanceOfClass, false));
-                  TR::Node *instanceofNode = TR::Node::createWithSymRef(TR::instanceof, 2, 2, objectRefChild->duplicateTree(),  duplicateClassPtr, comp()->getSymRefTab()->findOrCreateInstanceOfSymbolRef(comp()->getMethodSymbol()));
-                  TR::Node *ificmpeqNode =  TR::Node::createif(TR::ificmpeq, instanceofNode, TR::Node::create(objectRef, TR::iconst, 0, 0));
-                  comparisonNodes->add(ificmpeqNode);
-                  numInstanceOfChecksAdded++;
-                  }
-               else if (arrayIndex)
-                  {
-                  dumpOptDetails(comp(), "%s ctInstanceOf test passed, skipping runtime instanceof of %p outside block_%d for versioning arraylenth %p\n", OPT_DETAILS, objectRefChild, blockInfo->_block->getNumber(), arrayLength->_arrayLen);
                   }
                }
 

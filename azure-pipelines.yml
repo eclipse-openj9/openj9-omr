@@ -134,7 +134,7 @@ jobs:
   - job:
     displayName: 'x86-64 Linux'
     pool:
-      vmImage: 'ubuntu-18.04'
+      vmImage: 'ubuntu-latest'
     variables:
       CCACHE_DIR: $(Pipeline.Workspace)/ccache
       GTEST_FILTER: -*dump_test_create_dump_*

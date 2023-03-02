@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2014, 2020 IBM Corp. and others
+ * Copyright (c) 2014, 2023 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -149,8 +149,9 @@ DATMerge::merge(J9TDFOptions *options, const char *fromFileName)
 		if (0 != fclose(toFile)) {
 			perror("fclose error");
 		}
-		char *newToFileName = (char *)Port::omrmem_calloc(1, strlen(toFileName) + strlen(".new") + 1);
-		sprintf(newToFileName, "%s.new", toFileName);
+		size_t bufLen = strlen(toFileName) + strlen(".new") + 1;
+		char *newToFileName = (char *)Port::omrmem_calloc(1, bufLen);
+		snprintf(newToFileName, bufLen, "%s.new", toFileName);
 
 		char *buffer = (char *)Port::omrmem_calloc(1, 1024);
 

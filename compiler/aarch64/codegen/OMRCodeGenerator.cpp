@@ -174,6 +174,14 @@ OMR::ARM64::CodeGenerator::initialize()
    // Enable compaction of local stack slots.  i.e. variables with non-overlapping live ranges
    // can share the same slot.
    cg->setSupportsCompactedLocals();
+   if (!TR::Compiler->om.canGenerateArraylets())
+      {
+      static const bool disableArrayCmp = feGetEnv("TR_aarch64DisableArrayCmp") != NULL;
+      if (!disableArrayCmp)
+         {
+         cg->setSupportsArrayCmp();
+         }
+      }
    }
 
 void

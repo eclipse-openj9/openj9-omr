@@ -77,7 +77,7 @@ class CppGenerator:
     def get_copyright_header(self):
         return """\
 /*******************************************************************************
- * Copyright (c) {0}, {0} IBM Corp. and others
+ * Copyright IBM Corp. and others {0}
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this

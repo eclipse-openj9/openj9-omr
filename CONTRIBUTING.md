@@ -163,26 +163,22 @@ Following these guidelines will help us to merge your pull requests smoothly:
 3. Please read carefully and adhere to the legal considerations and
    copyright/license requirements outlined below.
 
-4. For each file that you modify, ensure that the current copyright year in the
-   header at the top of the file is up-to-date with the current year.  Note that
-   renaming, moving, or copying a file does not require a copyright change.
-
-5. Follow the coding style and format of the code you are modifying (see the
+4. Follow the coding style and format of the code you are modifying (see the
    [coding standards](doc/CodingStandard.md)). The code base is yet to be unified
    in style however, so if the file you are editing seems to have a diffferent
    style, defer to the style of the file as you found it.
 
-6. Only use C++ language features supported by our compilers. A list of supported
+5. Only use C++ language features supported by our compilers. A list of supported
    features can be found [here](doc/SupportedC++Features.md).
 
-7. Follow the commit guidelines found below.
+6. Follow the commit guidelines found below.
 
-8. We encourage you to open a pull request early, and mark it as "Work In Progress"
+7. We encourage you to open a pull request early, and mark it as "Work In Progress"
    (prefix the PR title with WIP). This allows feedback to start early, and helps
    create a better end product. Committers will wait until after you've removed
    the WIP prefix to merge your changes.
 
-9. If you are contributing a change to the compiler technology that involves modifications
+8. If you are contributing a change to the compiler technology that involves modifications
    to the Testarossa IL (including, but not limited to, adding a new IL opcode, changing
    the properties of an opcode, or adding a new datatype) or, in the opinion of a committer,
    a fundamental element of compiler infrastructure, a committer will request that this
@@ -375,7 +371,7 @@ The template for the copyright notice and dual-license is as follows:
 
 ```c
 /*******************************************************************************
- *  Copyright (c) 2017, 2017 ${author} and others
+ *  Copyright ${author} and others 2017
  *
  *  This program and the accompanying materials are made available under
  *  the terms of the Eclipse Public License 2.0 which accompanies this

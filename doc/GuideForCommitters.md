@@ -121,9 +121,6 @@ built on x86 are modified) then pull request testing can be limited to only thos
 platforms.  However, a comment from the committer providing justification is
 mandatory.
 
-* Ensure the author has updated the copyright date on each file modified to the
-current year.
-
 ## Pull Request Builds: Advanced Options
 
 The advanced options provide finer control over the PR builds.

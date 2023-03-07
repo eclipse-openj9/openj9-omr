@@ -2333,6 +2333,15 @@ OMR::Options::jitLatePostProcess(TR::OptionSet *optionSet, void * jitConfig)
    else // option set processing
       {
       _logFile = NULL;
+
+      if (_logFileName)
+         {
+         if (_logFileName[0])
+            _hasLogFile = true; // non-null log file name
+         else
+            _logFileName = NULL;// null log file name ... treat as no log file
+         }
+
       if (_logFileName)
          {
          if (!_debug)

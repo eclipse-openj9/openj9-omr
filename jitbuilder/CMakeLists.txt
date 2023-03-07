@@ -1,5 +1,5 @@
 ###############################################################################
-# Copyright (c) 2017, 2021 IBM Corp. and others
+# Copyright (c) 2017, 2023 IBM Corp. and others
 #
 # This program and the accompanying materials are made available under
 # the terms of the Eclipse Public License 2.0 which accompanies this
@@ -111,6 +111,11 @@ if(OMR_ARCH_X86 OR OMR_ARCH_S390)
 else()
 	set(OMR_WARNINGS_AS_ERRORS OFF)
 	set(OMR_ENHANCED_WARNINGS OFF)
+endif()
+
+# Workaround for deprecated sprintf
+if(OMR_OS_OSX)
+	set(OMR_WARNINGS_AS_ERRORS OFF)
 endif()
 
 # Create jitbuilder library.

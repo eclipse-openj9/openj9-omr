@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2022 IBM Corp. and others
+ * Copyright (c) 2000, 2023 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -1074,8 +1074,8 @@ TR::Node *OMR::LocalCSE::replaceCopySymbolReferenceByOriginalIn(TR::SymbolRefere
 
             TR::Node *convNode = NULL;
             if (TR::ILOpCode::isVectorOpCode(convOp) &&
-                TR::ILOpCode::getVectorOperation(convOp) == TR::vcast)
-               convNode = TR::Node::create(TR::ILOpCode::createVectorOpCode(TR::vcast, rhsOfStoreDefNode->getDataType(), node->getDataType()), 1, rhsOfStoreDefNode);
+                TR::ILOpCode::getVectorOperation(convOp) == TR::vconv)
+               convNode = TR::Node::create(TR::ILOpCode::createVectorOpCode(TR::vconv, rhsOfStoreDefNode->getDataType(), node->getDataType()), 1, rhsOfStoreDefNode);
             else
                convNode = TR::Node::create(convOp, 1, rhsOfStoreDefNode);
             rhsOfStoreDefNode->decReferenceCount();

@@ -731,6 +731,9 @@ bool OMR::ARM64::CodeGenerator::getSupportsOpCodeForAutoSIMD(TR::CPU *cpu, TR::I
       case TR::m2v:
          /* For the same reason, the number of lanes is 16, which means that the type of elements is 8-bit integer. */
          return et == TR::Int8;
+
+      case TR::vcast:
+         return true;
       default:
          return false;
       }

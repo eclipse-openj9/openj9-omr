@@ -88,7 +88,7 @@ enum TR_CompilationOptions
    TR_ReportMethodEnter          = 0x00000080,
    TR_ReportMethodExit           = 0x00000100,
    TR_EntryBreakPoints           = 0x00000200,
-   // Available                  = 0x00000400,
+   TR_EnableOldEDO               = 0x00000400,
    // Available                  = 0x00000800,
    TR_RegisterMaps               = 0x00001000,
    TR_CreatePCMaps               = 0x00002000,
@@ -1489,6 +1489,9 @@ public:
       _maxSzForVPInliningWarm = 0;
       _loopyAsyncCheckInsertionMaxEntryFreq = 0;
       _objectFileName = 0;
+      _edoRecompSizeThreshold = 0;
+      _edoRecompSizeThresholdInStartupMode = 0;
+      _catchBlockCounterThreshold = 0;
 
       memset(_options, 0, sizeof(_options));
       memset(_disabledOptimizations, false, sizeof(_disabledOptimizations));
@@ -1827,6 +1830,11 @@ public:
       {
       return _loopyAsyncCheckInsertionMaxEntryFreq;
       }
+
+   int32_t getEdoRecompSizeThreshold() { return _edoRecompSizeThreshold; }
+   int32_t getEdoRecompSizeThresholdInStartupMode() { return _edoRecompSizeThresholdInStartupMode; }
+   int32_t getCatchBlockCounterThreshold() { return _catchBlockCounterThreshold; }
+
 
 public:
 
@@ -2503,7 +2511,9 @@ protected:
    int32_t                     _loopyAsyncCheckInsertionMaxEntryFreq;
 
    char *                      _objectFileName; //Name of the relocatable ELF file *.o if one is to be generated
-
+   int32_t                     _edoRecompSizeThreshold; // Size threshold (in nodes) for candidates to recompilation through EDO
+   int32_t                     _edoRecompSizeThresholdInStartupMode; // Size threshold (in nodes) for candidates to recompilation through EDO during startup
+   int32_t                     _catchBlockCounterThreshold; // Counter threshold for catch blocks to trigger more aggresive inlining on the throw path
    }; // TR::Options
 
 }

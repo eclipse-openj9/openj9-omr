@@ -861,7 +861,6 @@ OMR::Optimizer::Optimizer(TR::Compilation *comp, TR::ResolvedMethodSymbol *metho
       new (comp->allocator()) TR::OptimizationManager(self(), TR::RecognizedCallTransformer::create, OMR::recognizedCallTransformer);
    _opts[OMR::switchAnalyzer] =
       new (comp->allocator()) TR::OptimizationManager(self(), TR::SwitchAnalyzer::create, OMR::switchAnalyzer);
-
    // NOTE: Please add new OMR optimizations here!
 
    // initialize OMR optimization groups
@@ -1550,6 +1549,12 @@ int32_t OMR::Optimizer::performOptimization(const OptimizationStrategy *optimiza
          {
          if (comp()->getMethodSymbol()->hasVectorAPI() &&
              !comp()->getOption(TR_DisableVectorAPIExpansion))
+            doThisOptimization = true;
+         }
+         break;
+      case IfExceptionHandlers:
+         {
+         if (comp()->hasExceptionHandlers())
             doThisOptimization = true;
          }
          break;

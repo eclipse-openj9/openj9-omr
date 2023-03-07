@@ -277,4 +277,12 @@ typedef uintptr_t (*condYieldFromGCFunctionPtr) (OMR_VMThread *omrVMThread, uint
 		<data type="omrobjectptr_t" name="newObject" description="the new pointer to the object." />
 	</event>
 
+	<event>
+		<name>J9HOOK_MM_OMR_REINITIALIZED</name>
+		<description>Triggered as soon as the GC is fully reinitialized.</description>
+		<struct>MM_ReinitializedEvent</struct>
+		<data type="struct OMR_VMThread*" name="currentThread" description="current thread" />
+		<data type="uint64_t" name="timestamp" description="time of event" />
+	</event>
+
 </interface>

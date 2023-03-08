@@ -1319,7 +1319,7 @@ TR_Debug::print(TR::FILE *pOutFile, TR::ARM64LabelInstruction *instr)
 
 #ifdef J9_PROJECT_SPECIFIC
 void
-TR_Debug::print(TR::FILE *pOutFile, TR::ARM64VirtualGuardNOPInstruction * instr)
+TR_Debug::print(TR::FILE *pOutFile, TR::ARM64VirtualGuardNOPInstruction *instr)
    {
    printPrefix(pOutFile, instr);
    trfprintf(pOutFile, "%s Site:" POINTER_PRINTF_FORMAT ", ", getOpCodeName(&instr->getOpCode()), instr->getSite());
@@ -2523,7 +2523,7 @@ TR_Debug::print(TR::FILE *pOutFile, TR::RegisterDependencyConditions *conditions
 void
 TR_Debug::printAssocRegDirective(TR::FILE *pOutFile, TR::Instruction *instr)
    {
-   TR::RegisterDependencyGroup * depGroup = instr->getDependencyConditions()->getPostConditions();
+   TR::RegisterDependencyGroup *depGroup = instr->getDependencyConditions()->getPostConditions();
 
    printPrefix(pOutFile, instr);
    trfprintf(pOutFile, "%s", getOpCodeName(&instr->getOpCode()));
@@ -2716,7 +2716,7 @@ void TR_Debug::printARM64OOLSequences(TR::FILE *pOutFile)
    }
 
 const char *
-TR_Debug::getNamea64(TR::Snippet * snippet)
+TR_Debug::getNamea64(TR::Snippet *snippet)
    {
    switch (snippet->getKind())
       {
@@ -2734,6 +2734,9 @@ TR_Debug::getNamea64(TR::Snippet * snippet)
          break;
       case TR::Snippet::IsStackCheckFailure:
          return "Stack Check Failure Snippet";
+         break;
+      case TR::Snippet::IsForceRecompilation:
+         return "Force Recompilation Snippet";
          break;
       case TR::Snippet::IsUnresolvedData:
          return "Unresolved Data Snippet";
@@ -2762,7 +2765,7 @@ TR_Debug::getNamea64(TR::Snippet * snippet)
    }
 
 void
-TR_Debug::printa64(TR::FILE *pOutFile, TR::Snippet * snippet)
+TR_Debug::printa64(TR::FILE *pOutFile, TR::Snippet *snippet)
    {
    if (pOutFile == NULL)
       return;

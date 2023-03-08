@@ -516,6 +516,32 @@
 #define vmxorSimplifierHandler dftSimplifier
 #define vmfirstNonZeroSimplifierHandler dftSimplifier
 
+#define vpopcntSimplifierHandler dftSimplifier
+#define vmpopcntSimplifierHandler dftSimplifier
+#define vcompressSimplifierHandler dftSimplifier
+#define vexpandSimplifierHandler dftSimplifier
+#define vshlSimplifierHandler dftSimplifier
+#define vmshlSimplifierHandler dftSimplifier
+#define vshrSimplifierHandler dftSimplifier
+#define vmshrSimplifierHandler dftSimplifier
+#define vushrSimplifierHandler dftSimplifier
+#define vmushrSimplifierHandler dftSimplifier
+#define vrolSimplifierHandler dftSimplifier
+#define vmrolSimplifierHandler dftSimplifier
+#define mcompressSimplifierHandler dftSimplifier
+#define vnotzSimplifierHandler dftSimplifier
+#define vmnotzSimplifierHandler dftSimplifier
+#define vnolzSimplifierHandler dftSimplifier
+#define vmnolzSimplifierHandler dftSimplifier
+#define vbitswapSimplifierHandler dftSimplifier
+#define vmbitswapSimplifierHandler dftSimplifier
+#define vbyteswapSimplifierHandler dftSimplifier
+#define vmbyteswapSimplifierHandler dftSimplifier
+#define vcompressbitsSimplifierHandler dftSimplifier
+#define vmcompressbitsSimplifierHandler dftSimplifier
+#define vexpandbitsSimplifierHandler dftSimplifier
+#define vmexpandbitsSimplifierHandler dftSimplifier
+
 #define f2iuSimplifierHandler f2iSimplifier
 #define f2luSimplifierHandler f2lSimplifier
 #define f2buSimplifierHandler f2bSimplifier

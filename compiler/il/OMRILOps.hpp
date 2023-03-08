@@ -1670,6 +1670,45 @@ public:
          case TR::l2d:
             return ILOpCode::createVectorOpCode(TR::vconv, TR::DataType::createVectorType(TR::Int64, vectorLength),
                                                             TR::DataType::createVectorType(TR::Double, vectorLength));
+         case TR::bshl:
+         case TR::sshl:
+         case TR::ishl:
+         case TR::lshl:
+            vectorOperation = TR::vshl;
+            break;
+         case TR::bshr:
+         case TR::sshr:
+         case TR::ishr:
+         case TR::lshr:
+            vectorOperation = TR::vshr;
+            break;
+         case TR::bushr:
+         case TR::sushr:
+         case TR::iushr:
+         case TR::lushr:
+            vectorOperation = TR::vushr;
+            break;
+         case TR::irol:
+         case TR::lrol:
+            vectorOperation = TR::vrol;
+            break;
+         case TR::ipopcnt:
+         case TR::lpopcnt:
+            vectorOperation = TR::vpopcnt;
+            break;
+         case TR::inotz:
+         case TR::lnotz:
+            vectorOperation = TR::vnotz;
+            break;
+         case TR::inolz:
+         case TR::lnolz:
+            vectorOperation = TR::vnolz;
+            break;
+         case TR::sbyteswap:
+         case TR::ibyteswap:
+         case TR::lbyteswap:
+            vectorOperation = TR::vbyteswap;
+            break;
          default:
             return TR::BadILOp;
          }

@@ -1,5 +1,5 @@
 <!--
-Copyright (c) 2018, 2022 IBM Corp. and others
+Copyright IBM Corp. and others 2018
 
 This program and the accompanying materials are made available under
 the terms of the Eclipse Public License 2.0 which accompanies this
@@ -120,9 +120,6 @@ following names and aliases:
 built on x86 are modified) then pull request testing can be limited to only those
 platforms.  However, a comment from the committer providing justification is
 mandatory.
-
-* Ensure the author has updated the copyright date on each file modified to the
-current year.
 
 ## Pull Request Builds: Advanced Options
 

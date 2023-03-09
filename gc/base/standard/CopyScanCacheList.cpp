@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 1991, 2015 IBM Corp. and others
+ * Copyright (c) 1991, 2023 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -50,7 +50,7 @@ MM_CopyScanCacheList::initialize(MM_EnvironmentBase *env, volatile uintptr_t *ca
 	} else {
 		for (uintptr_t i = 0; i < _sublistCount; i++) {
 			new (&_sublists[i]) CopyScanCacheSublist();
-			if(_sublists[i].initialize(env)) {
+			if (_sublists[i].initialize(env)) {
 				result = false;
 				break;
 			}
@@ -133,8 +133,8 @@ MM_CopyScanCacheList::removeAllHeapAllocatedChunks(MM_EnvironmentStandard *env)
 			MM_CopyScanCacheStandard *previousCache = NULL;
 			MM_CopyScanCacheStandard *cache = _sublists[index]._cacheHead;
 	
-			while(cache != NULL) {
-				if (0 != (cache->flags & OMR_SCAVENGER_CACHE_TYPE_HEAP)) {
+			while (cache != NULL) {
+				if (0 != (cache->flags & OMR_COPYSCAN_CACHE_TYPE_HEAP)) {
 					/* this cache is heap allocated - remove it from list */
 					if (NULL == previousCache) {
 						/* still be a first element */
@@ -162,10 +162,10 @@ MM_CopyScanCacheList::removeAllHeapAllocatedChunks(MM_EnvironmentStandard *env)
 		MM_CopyScanCacheChunk *previousChunk = NULL;
 		MM_CopyScanCacheChunk *chunk = _chunkHead;
 
-		while(chunk != NULL) {
+		while (chunk != NULL) {
 			MM_CopyScanCacheChunk *nextChunk = chunk->getNext();
 
-			if (0 != (chunk->getBase()->flags & OMR_SCAVENGER_CACHE_TYPE_HEAP)) {
+			if (0 != (chunk->getBase()->flags & OMR_COPYSCAN_CACHE_TYPE_HEAP)) {
 				/* this chunk is heap allocated - remove it from list */
 				if (NULL == previousChunk) {
 					/* still be a first element */
@@ -201,7 +201,7 @@ MM_CopyScanCacheList::appendCacheEntries(MM_EnvironmentBase *env, uintptr_t cach
 	bool result = false;
 	MM_CopyScanCacheStandard *sublistTail = NULL;
 	MM_CopyScanCacheChunk *chunk = MM_CopyScanCacheChunk::newInstance(env, cacheEntryCount, _chunkHead, &sublistTail);
-	if(NULL != chunk) {
+	if (NULL != chunk) {
 		uintptr_t index = getSublistIndex(env);
 
 		Assert_MM_true(NULL != sublistTail);
@@ -228,7 +228,7 @@ MM_CopyScanCacheList::appendCacheEntriesInHeap(MM_EnvironmentStandard *env, MM_M
 	MM_CopyScanCacheStandard *sublistTail = NULL;
 	uintptr_t entries = 0;
 	MM_CopyScanCacheChunkInHeap *chunk = MM_CopyScanCacheChunkInHeap::newInstance(env, _chunkHead, memorySubSpace, requestCollector, &sublistTail, &entries);
-	if(NULL != chunk) {
+	if (NULL != chunk) {
 		uintptr_t index = getSublistIndex(env);
 
 		Assert_MM_true(0 <= entries);

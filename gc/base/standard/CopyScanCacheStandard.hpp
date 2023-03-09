@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 1991, 2020 IBM Corp. and others
+ * Copyright (c) 1991, 2023 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -49,7 +49,7 @@ protected:
 public:
 	GC_ObjectScannerState _objectScannerState; /**< Space reserved for instantiation of object scanner for current object */
 	bool _shouldBeRemembered; /**< whether current object being scanned should be remembered */
-	uintptr_t _arraySplitIndex; /**< The index within a split array to start scanning from (meaningful if OMR_SCAVENGER_CACHE_TYPE_SPLIT_ARRAY is set) */
+	uintptr_t _arraySplitIndex; /**< The index within a split array to start scanning from (meaningful if OMR_COPYSCAN_CACHE_TYPE_SPLIT_ARRAY is set) */
 	uintptr_t _arraySplitAmountToScan; /**< The amount of elements that should be scanned by split array scanning. */
 	omrobjectptr_t* _arraySplitRememberedSlot; /**< A pointer to the remembered set slot a split array came from if applicable. */
 
@@ -71,7 +71,7 @@ public:
 	MMINLINE bool
 	isSplitArray() const
 	{
-		return (OMR_SCAVENGER_CACHE_TYPE_SPLIT_ARRAY == (flags & OMR_SCAVENGER_CACHE_TYPE_SPLIT_ARRAY));
+		return (OMR_COPYSCAN_CACHE_TYPE_SPLIT_ARRAY == (flags & OMR_COPYSCAN_CACHE_TYPE_SPLIT_ARRAY));
 	}
 	
 	/**

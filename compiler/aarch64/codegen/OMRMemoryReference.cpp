@@ -1126,7 +1126,11 @@ static bool isImm7OffsetGPRInstruction(uint32_t enc)
    {
    return ((enc & 0x3e000000) == 0x28000000);
    }
-
+/* stp/ldp FPR */
+static bool isImm7OffsetFPRInstruction(uint32_t enc)
+   {
+   return ((enc & 0x3e000000) == 0x2C000000);
+   }
 /* load/store exclusive */
 static bool isExclusiveMemAccessInstruction(uint32_t enc)
    {
@@ -1383,6 +1387,23 @@ uint8_t *OMR::ARM64::MemoryReference::generateBinaryEncoding(TR::Instruction *cu
                   TR_ASSERT_FATAL(false, "Offset is too large for specified instruction.");
                   }
                }
+            else if (isImm7OffsetFPRInstruction(enc))
+               {
+               uint32_t opc = ((enc >> 30) & 3); /* 32bit: 00, 64bit: 01, 128bit: 10 */
+               uint32_t size = opc + 2;
+               uint32_t shifted = displacement >> size;
+
+               TR_ASSERT_FATAL((displacement & ((1 << size) - 1)) == 0, "displacement must be 4/8/16-byte alligned");
+
+               if (constantIsImm7(shifted))
+                  {
+                  *wcursor |= (shifted & 0x7f) << 15; /* imm7 */
+                  }
+               else
+                  {
+                  TR_ASSERT_FATAL(false, "Offset is too large for specified instruction.");
+                  }
+               }
             else if (!(isExclusiveMemAccessInstruction(enc) || isAtomicOperationInstruction(enc)))
                {
                TR_ASSERT_FATAL(false, "enc = 0x%x", enc);
@@ -1594,6 +1615,23 @@ TR::Instruction *OMR::ARM64::MemoryReference::expandInstruction(TR::Instruction 
                uint32_t shifted = displacement >> size;
 
                TR_ASSERT((displacement & ((1 << size) - 1)) == 0, "displacement must be 4/8-byte alligned");
+
+               if (constantIsImm7(shifted))
+                  {
+                  return currentInstruction;
+                  }
+               else
+                  {
+                  TR_ASSERT_FATAL(false, "Offset is too large for specified instruction.");
+                  }
+               }
+            else if (isImm7OffsetFPRInstruction(enc))
+               {
+               uint32_t opc = ((enc >> 30) & 3); /* 32bit: 00, 64bit: 01, 128bit: 10 */
+               uint32_t size = opc + 2;
+               uint32_t shifted = displacement >> size;
+
+               TR_ASSERT_FATAL((displacement & ((1 << size) - 1)) == 0, "displacement must be 4/8/16-byte alligned");
 
                if (constantIsImm7(shifted))
                   {

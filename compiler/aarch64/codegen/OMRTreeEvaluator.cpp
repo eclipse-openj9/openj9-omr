@@ -5617,10 +5617,394 @@ OMR::ARM64::TreeEvaluator::arraytranslateEvaluator(TR::Node *node, TR::CodeGener
 
 TR::Register *
 OMR::ARM64::TreeEvaluator::arraysetEvaluator(TR::Node *node, TR::CodeGenerator *cg)
-	{
-	// TODO:ARM64: Enable TR::TreeEvaluator::arraysetEvaluator in compiler/aarch64/codegen/TreeEvaluatorTable.hpp when Implemented.
-	return OMR::ARM64::TreeEvaluator::unImpOpEvaluator(node, cg);
-	}
+   {
+   TR::Node *dstNode = node->getFirstChild();
+   TR::Node *valueNode = node->getSecondChild();
+   TR::Node *lengthNode = node->getThirdChild();
+   static char *optimizedArrayLengthStr = feGetEnv("TR_ConstArraySetOptLength");
+   static const int32_t constLoopLen = std::min(std::max(((optimizedArrayLengthStr != NULL) ? atoi(optimizedArrayLengthStr) : 256), 128), 512);
+   static const int32_t alignmentThresholdLength = constLoopLen;
+
+   const bool isValueConstant = valueNode->getOpCode().isLoadConst();
+   const bool isValueZero = isValueConstant && (!valueNode->getDataType().isFloatingPoint()) && (valueNode->getConstValue() == 0);
+   const bool isLengthConstant = lengthNode->getOpCode().isLoadConst();
+
+   TR_ARM64ScratchRegisterManager *srm = cg->generateScratchRegisterManager();
+   TR::Register *dstReg = cg->gprClobberEvaluate(dstNode);
+   TR::Register *valueReg = NULL;
+   TR::Register *lengthReg = NULL;
+   const uint8_t elementSize = valueNode->getOpCode().isRef()
+      ? TR::Compiler->om.sizeofReferenceField()
+      : valueNode->getSize();
+   const TR::InstOpCode::Mnemonic dupOpCode = (!valueNode->getDataType().isFloatingPoint()) ? static_cast<TR::InstOpCode::Mnemonic>(TR::InstOpCode::vdup16b + trailingZeroes(elementSize)) :
+                                               valueNode->getDataType().isFloat() ? TR::InstOpCode::vdupe4s : TR::InstOpCode::vdupe2d;
+   if (isLengthConstant)
+      {
+      const int64_t length = lengthNode->getConstValue(); /* length in bytes */
+      if (length >= elementSize * 4)
+         {
+         TR::Register *vectorValueReg = srm->findOrCreateScratchRegister(TR_VRF);
+         const bool needToLoadValueRegToVectorReg = (vsplatsImmediateHelper(node, cg, valueNode, valueNode->getDataType(), vectorValueReg)) == NULL;
+         if (needToLoadValueRegToVectorReg)
+            {
+            valueReg = isValueZero ? cg->allocateRegister() : cg->evaluate(valueNode);
+            generateTrg1Src1Instruction(cg, dupOpCode, node, vectorValueReg, valueReg);
+            }
+         if (length >= 32)
+            {
+            int64_t lenMod32 = length & 0x1f;
+            if (length >= alignmentThresholdLength)
+               {
+               generateMemSrc2Instruction(cg, TR::InstOpCode::vstpoffq, node, TR::MemoryReference::createWithDisplacement(cg, dstReg, 0), vectorValueReg, vectorValueReg);
+               TR::Register *dstEndReg = srm->findOrCreateScratchRegister();
+               if (constantIsUnsignedImm12(length) || constantIsUnsignedImm12Shifted(length))
+                  {
+                  generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::addimmx, node, dstEndReg, dstReg, length);
+                  }
+               else
+                  {
+                  loadConstant64(cg, node, length, dstEndReg);
+                  generateTrg1Src2Instruction(cg, TR::InstOpCode::addx, node, dstEndReg, dstReg, dstEndReg);
+                  }
+               // N = true, immr:imms = 0xf3b for immediate value ~(0xf)
+               auto dstAdjustmentInstr = generateLogicalImmInstruction(cg, TR::InstOpCode::andimmx, node, dstReg, dstReg, true, 0xf3b);
+               bool useLoop = (length - 32) > constLoopLen * 2;
+               if (useLoop)
+                  {
+                  TR::Register *countReg = srm->findOrCreateScratchRegister();
+                  loadConstant64(cg, node, (length - 32) / constLoopLen, countReg);
+                  TR::LabelSymbol *loopLabel = generateLabelSymbol(cg);
+                  generateLabelInstruction(cg, TR::InstOpCode::label, node, loopLabel);
+                  generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::subsimmx, node, countReg, countReg, 1);
+                  for (int i = 1; i <= 7; i++)
+                     {
+                     generateMemSrc2Instruction(cg, TR::InstOpCode::vstpoffq, node, TR::MemoryReference::createWithDisplacement(cg, dstReg, i * 32), vectorValueReg, vectorValueReg);
+                     }
+                  generateMemSrc2Instruction(cg, TR::InstOpCode::vstppreq, node, TR::MemoryReference::createWithDisplacement(cg, dstReg, 256), vectorValueReg, vectorValueReg);
+                  generateConditionalBranchInstruction(cg, TR::InstOpCode::b_cond, node, loopLabel, TR::CC_GT);
+                  srm->reclaimScratchRegister(countReg);
+                  }
+               int64_t remainingLength = useLoop ? ((length - 32) % constLoopLen) : (length - 32);
+               for (int i = 32; i <= remainingLength; i += 32)
+                  {
+                  generateMemSrc2Instruction(cg, TR::InstOpCode::vstpoffq, node, TR::MemoryReference::createWithDisplacement(cg, dstReg, i), vectorValueReg, vectorValueReg);
+                  }
+               if (lenMod32 <= elementSize)
+                  {
+                  /*
+                   * If (remainingLength mod 32) <= elementSize, then the left over is not larger than 16 bytes.
+                   */
+                  generateMemSrc1Instruction(cg, TR::InstOpCode::vsturq, node, TR::MemoryReference::createWithDisplacement(cg, dstEndReg, -16), vectorValueReg);
+                  }
+               else if (lenMod32 <= (16 + elementSize))
+                  {
+                  /*
+                   * If (remainingLength mod 32) <= (16 + elementSize), then the left over is not larger than 32 bytes.
+                   */
+                  generateMemSrc2Instruction(cg, TR::InstOpCode::vstpoffq, node, TR::MemoryReference::createWithDisplacement(cg, dstEndReg, -32), vectorValueReg, vectorValueReg);
+                  }
+               else
+                  {
+                  generateMemSrc1Instruction(cg, TR::InstOpCode::vstrimmq, node, TR::MemoryReference::createWithDisplacement(cg, dstReg, (remainingLength + 32) & (~0x1f)), vectorValueReg);
+                  /* now the left over is not larger than 32 bytes. */
+                  generateMemSrc2Instruction(cg, TR::InstOpCode::vstpoffq, node, TR::MemoryReference::createWithDisplacement(cg, dstEndReg, -32), vectorValueReg, vectorValueReg);
+                  }
+               srm->reclaimScratchRegister(dstEndReg);
+               }
+            else
+               {
+               if (lenMod32 == 0)
+                  {
+                  for (int i = 0; i < length; i += 32)
+                     {
+                     generateMemSrc2Instruction(cg, TR::InstOpCode::vstpoffq, node, TR::MemoryReference::createWithDisplacement(cg, dstReg, i), vectorValueReg, vectorValueReg);
+                     }
+                  }
+               else
+                  {
+                  for (int i = 0; i < length - 32; i += 32)
+                     {
+                     generateMemSrc2Instruction(cg, TR::InstOpCode::vstpoffq, node, TR::MemoryReference::createWithDisplacement(cg, dstReg, i), vectorValueReg, vectorValueReg);
+                     }
+                  if (lenMod32 == 16)
+                     {
+                     generateMemSrc1Instruction(cg, TR::InstOpCode::vstrimmq, node, TR::MemoryReference::createWithDisplacement(cg, dstReg, length - 16), vectorValueReg);
+                     }
+                  else
+                     {
+                     TR::Register *dstEndReg = srm->findOrCreateScratchRegister();
+                     generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::addimmx, node, dstEndReg, dstReg, length);
+                     if (lenMod32 > 16)
+                        {
+                        generateMemSrc2Instruction(cg, TR::InstOpCode::vstpoffq, node, TR::MemoryReference::createWithDisplacement(cg, dstEndReg, -32), vectorValueReg, vectorValueReg);
+                        }
+                     else
+                        {
+                        generateMemSrc1Instruction(cg, TR::InstOpCode::vsturq, node, TR::MemoryReference::createWithDisplacement(cg, dstEndReg, -16), vectorValueReg);
+                        }
+                     srm->reclaimScratchRegister(dstEndReg);
+                     }
+                  }
+               }
+            }
+         else if (isPowerOf2(length))
+            {
+            TR::InstOpCode::Mnemonic op = (length == 16) ? TR::InstOpCode::vstrimmq :
+                              (length == 8) ? TR::InstOpCode::vstrimmd : TR::InstOpCode::vstrimms;
+            generateMemSrc1Instruction(cg, op, node, TR::MemoryReference::createWithDisplacement(cg, dstReg, 0), vectorValueReg);
+            }
+         else
+            {
+            TR::InstOpCode::Mnemonic op = (length >= 16) ? TR::InstOpCode::vstrimmq :
+                              (length >= 8) ? TR::InstOpCode::vstrimmd : TR::InstOpCode::vstrimms;
+            int32_t offset = (length >= 16) ? -16 :
+                              (length >= 8) ? -8 : -4;
+            TR::Register *dstEndReg = srm->findOrCreateScratchRegister();
+            generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::addimmx, node, dstEndReg, dstReg, length);
+            generateMemSrc1Instruction(cg, op, node, TR::MemoryReference::createWithDisplacement(cg, dstReg, 0), vectorValueReg);
+            generateMemSrc1Instruction(cg, op, node, TR::MemoryReference::createWithDisplacement(cg, dstEndReg, offset), vectorValueReg);
+            srm->reclaimScratchRegister(dstEndReg);
+            }
+         }
+      else
+         {
+         const TR::InstOpCode::Mnemonic strOpCode = (!valueNode->getDataType().isFloatingPoint()) ?
+                                                      ((elementSize == 1) ? TR::InstOpCode::strbimm :
+                                                      (elementSize == 2) ? TR::InstOpCode::strhimm :
+                                                      (elementSize == 4) ? TR::InstOpCode::strimmw : TR::InstOpCode::strimmx) :
+                                                      valueNode->getDataType().isFloat() ? TR::InstOpCode::vstrimms : TR::InstOpCode::vstrimmd;
+         valueReg = isValueZero ? cg->allocateRegister() : cg->evaluate(valueNode);
+         for (int i = 0; i < length / elementSize; i++)
+            {
+            generateMemSrc1Instruction(cg, strOpCode, node, TR::MemoryReference::createWithDisplacement(cg, dstReg, i * elementSize), valueReg);
+            }
+         }
+      if ((valueReg != NULL) && isValueZero)
+         {
+         TR::LabelSymbol *doneLabel = generateLabelSymbol(cg);
+         TR::RegisterDependencyConditions *conditions = new (cg->trHeapMemory()) TR::RegisterDependencyConditions(0, 1, cg->trMemory());
+         conditions->addPostCondition(valueReg, TR::RealRegister::xzr);
+         generateLabelInstruction(cg, TR::InstOpCode::label, node, doneLabel, conditions);
+         }
+      }
+   else
+      {
+      /*
+       * Generating following instruction sequence
+       *
+       * cbz     lengthReg, LDONE
+       * dup     v0.16b, byteRegw
+       * add     endReg, dstReg, lengthReg
+       * cmp     lengthReg, #32
+       * b.cc    LessThan32
+       * stp     q0, q0, [dstReg]
+       * cmp     lengthReg, #96
+       * b.ls    LessThanOrEqual96
+       * sub     lengthReg, lengthReg, #96 ; 64 + 32
+       * ; align by 16
+       * and     remainderReg, dstReg, #15
+       * add     lengthReg, lengthReg, remainderReg
+       * and     dstReg, dstReg, #~15    ; dstReg points the nearest 16-byte boundary before the location that is read in the next load.
+       * mainLoop:
+       * subs    lengthReg, lengthReg, #64
+       * stp     q0, q0, [dstReg, #32]
+       * stp     q0, q0, [dstReg, #64]!
+       * b.hi    mainLoop
+       * stp     q0, q0, [dstEndReg, #-64]
+       * stp     q0, q0, [dstEndReg, #-32]
+       * b       LDONE
+       *
+       * LessThanOrEqual96:
+       * tbz     lengthReg, #6, LessThan64
+       * stp     q0, q0, [dstReg, #32]
+       * LessThan64:
+       * stp     q0, q0, [dstEndReg, #-32]
+       * b       LDONE
+       *
+       * LessThan32:
+       * tbz     lengthReg, #4, LessThan16
+       * str     q0, [dstReg]
+       * str     q0, [dstEndReg, #-16]
+       * b       LDONE
+       * LessThan16:
+       * elementLoop:
+       * subs    lengthReg, lengthReg, #elementSize
+       * str     byteRegw, [dstReg], #elementSize
+       * b.hi    elementLoop
+       * LDONE:
+       */
+      lengthReg = cg->gprClobberEvaluate(lengthNode);
+      TR::LabelSymbol *startLabel = generateLabelSymbol(cg);
+      TR::LabelSymbol *doneLabel = generateLabelSymbol(cg);
+      TR_Debug *debugObj = cg->getDebug();
+
+      startLabel->setStartInternalControlFlow();
+      doneLabel->setEndInternalControlFlow();
+
+      TR::Register *vectorValueReg = srm->findOrCreateScratchRegister(TR_VRF);
+      /* We need to have the value in valueReg for variable length case. */
+      valueReg = isValueZero ? cg->allocateRegister() : cg->evaluate(valueNode);
+      const bool needToLoadValueRegToVectorReg = (vsplatsImmediateHelper(node, cg, valueNode, valueNode->getDataType(), vectorValueReg)) == NULL;
+      if (needToLoadValueRegToVectorReg)
+         {
+         generateTrg1Src1Instruction(cg, dupOpCode, node, vectorValueReg, valueReg);
+         }
+
+      generateLabelInstruction(cg, TR::InstOpCode::label, node, startLabel);
+      auto branchToDoneLabelInstr = generateCompareBranchInstruction(cg, TR::InstOpCode::cbzx, node, lengthReg, doneLabel);
+      if (debugObj)
+         {
+         debugObj->addInstructionComment(branchToDoneLabelInstr, "Done if length is 0.");
+         }
+
+      TR::Register *dstEndReg = srm->findOrCreateScratchRegister();
+      generateTrg1Src2Instruction(cg, TR::InstOpCode::addx, node, dstEndReg, dstReg, lengthReg);
+      TR::LabelSymbol *lessThan32Label = generateLabelSymbol(cg);
+      generateCompareImmInstruction(cg, node, lengthReg, 32, true);
+      auto branchToLessThan32LabelInstr = generateConditionalBranchInstruction(cg, TR::InstOpCode::b_cond, node, lessThan32Label, TR::CC_CC);
+
+      generateMemSrc2Instruction(cg, TR::InstOpCode::vstpoffq, node, TR::MemoryReference::createWithDisplacement(cg, dstReg, 0), vectorValueReg, vectorValueReg);
+
+      TR::LabelSymbol *lessThanOrEqual96Label = generateLabelSymbol(cg);
+      generateCompareImmInstruction(cg, node, lengthReg, 96, true);
+      auto branchToLessThanOrEqual96LabelInstr = generateConditionalBranchInstruction(cg, TR::InstOpCode::b_cond, node, lessThanOrEqual96Label, TR::CC_LS);
+      if (debugObj)
+         {
+         debugObj->addInstructionComment(branchToLessThan32LabelInstr, "Jumps to lessThan32Label if length < 32.");
+         debugObj->addInstructionComment(branchToLessThanOrEqual96LabelInstr, "Jumps to lessThanOrEqual96Label if length <= 96.");
+         }
+
+      generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::subimmx, node, lengthReg, lengthReg, 96);
+      /* Makes dst address 16 byte aligned */
+      TR::Register *remainderReg = srm->findOrCreateScratchRegister();
+
+      // N = true, immr:imms = 3 for immediate value 0xf
+      auto mod16OfDstInstr = generateLogicalImmInstruction(cg, TR::InstOpCode::andimmx, node, remainderReg, dstReg, true, 3);
+      generateTrg1Src2Instruction(cg, TR::InstOpCode::addx, node, lengthReg, lengthReg, remainderReg);
+      // N = true, immr:imms = 0xf3b for immediate value ~(0xf)
+      auto dstAdjustmentInstr = generateLogicalImmInstruction(cg, TR::InstOpCode::andimmx, node, dstReg, dstReg, true, 0xf3b);
+
+      if (debugObj)
+         {
+         debugObj->addInstructionComment(mod16OfDstInstr, "The modulo 16 residue of src address.");
+         debugObj->addInstructionComment(dstAdjustmentInstr, "dst points the nearest 16-byte boundary before the location that is read in the next load.");
+         }
+
+      srm->reclaimScratchRegister(remainderReg);
+
+      TR::LabelSymbol *mainLoopLabel = generateLabelSymbol(cg);
+      auto mainLoopLabelInstr = generateLabelInstruction(cg, TR::InstOpCode::label, node, mainLoopLabel);
+      generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::subsimmx, node, lengthReg, lengthReg, 64);
+      generateMemSrc2Instruction(cg, TR::InstOpCode::vstpoffq, node, TR::MemoryReference::createWithDisplacement(cg, dstReg, 32), vectorValueReg, vectorValueReg);
+      generateMemSrc2Instruction(cg, TR::InstOpCode::vstppreq, node, TR::MemoryReference::createWithDisplacement(cg, dstReg, 64), vectorValueReg, vectorValueReg);
+      auto branchBackToMainLoopLabelInstr = generateConditionalBranchInstruction(cg, TR::InstOpCode::b_cond, node, mainLoopLabel, TR::CC_HI);
+      auto adjustDstRegInstr = generateTrg1Src2Instruction(cg, TR::InstOpCode::addx, node, dstReg, dstReg, lengthReg);
+      generateMemSrc2Instruction(cg, TR::InstOpCode::vstpoffq, node, TR::MemoryReference::createWithDisplacement(cg, dstReg, 32), vectorValueReg, vectorValueReg);
+      generateMemSrc2Instruction(cg, TR::InstOpCode::vstpoffq, node, TR::MemoryReference::createWithDisplacement(cg, dstReg, 64), vectorValueReg, vectorValueReg);
+
+      if (debugObj)
+         {
+         debugObj->addInstructionComment(mainLoopLabelInstr, "mainLoopLabel");
+         debugObj->addInstructionComment(branchBackToMainLoopLabelInstr, "Jumps to mainLoopLabel while the remaining length >= 64.");
+         debugObj->addInstructionComment(adjustDstRegInstr, "Adjusts dst register so that they point to 64bytes before the end");
+         }
+      auto branchToDoneLabelInstr2 = generateLabelInstruction(cg, TR::InstOpCode::b, node, doneLabel);
+      if (debugObj)
+         {
+         debugObj->addInstructionComment(branchToDoneLabelInstr2, "Jumps to doneLabel.");
+         }
+
+      TR::LabelSymbol *lessThan64Label = generateLabelSymbol(cg);
+      auto lessThanOrEqual96LabelInstr = generateLabelInstruction(cg, TR::InstOpCode::label, node, lessThanOrEqual96Label);
+      auto branchToLessThan64LabelInstr = generateTestBitBranchInstruction(cg, TR::InstOpCode::tbz, node, lengthReg, 6, lessThan64Label);
+      generateMemSrc2Instruction(cg, TR::InstOpCode::vstpoffq, node, TR::MemoryReference::createWithDisplacement(cg, dstReg, 32), vectorValueReg, vectorValueReg);
+      auto lessThan64LabelInstr = generateLabelInstruction(cg, TR::InstOpCode::label, node, lessThan64Label);
+      generateMemSrc2Instruction(cg, TR::InstOpCode::vstpoffq, node, TR::MemoryReference::createWithDisplacement(cg, dstEndReg, -32), vectorValueReg, vectorValueReg);
+      auto branchToDoneLabelInstr3 = generateLabelInstruction(cg, TR::InstOpCode::b, node, doneLabel);
+      if (debugObj)
+         {
+         debugObj->addInstructionComment(lessThanOrEqual96LabelInstr, "lessThanOrEqual96Label");
+         debugObj->addInstructionComment(branchToLessThan64LabelInstr, "Jumps to lessThan64Label if length < 64.");
+         debugObj->addInstructionComment(lessThan64LabelInstr, "lessThan64Label");
+         debugObj->addInstructionComment(branchToDoneLabelInstr3, "Jumps to doneLabel.");
+         }
+
+      TR::LabelSymbol *lessThan16Label = generateLabelSymbol(cg);
+      auto lessThan32LabelInstr = generateLabelInstruction(cg, TR::InstOpCode::label, node, lessThan32Label);
+      auto branchToLessThan16LabelInstr = generateTestBitBranchInstruction(cg, TR::InstOpCode::tbz, node, lengthReg, 4, lessThan16Label);
+
+      if (debugObj)
+         {
+         debugObj->addInstructionComment(lessThan32LabelInstr, "lessThan32Label");
+         debugObj->addInstructionComment(branchToLessThan16LabelInstr, "Jumps to lessThan16Label if length < 16.");
+         }
+
+      generateMemSrc1Instruction(cg, TR::InstOpCode::vstrimmq, node, TR::MemoryReference::createWithDisplacement(cg, dstReg, 0), vectorValueReg);
+      generateMemSrc1Instruction(cg, TR::InstOpCode::vsturq, node, TR::MemoryReference::createWithDisplacement(cg, dstEndReg, -16), vectorValueReg);
+
+      auto branchToDoneLabelInstr4 = generateLabelInstruction(cg, TR::InstOpCode::b, node, doneLabel);
+      if (debugObj)
+         {
+         debugObj->addInstructionComment(branchToDoneLabelInstr4, "Jumps to doneLabel.");
+         }
+
+      auto lessThan16LabelInstr = generateLabelInstruction(cg, TR::InstOpCode::label, node, lessThan16Label);
+      if (elementSize == 8)
+         {
+         generateMemSrc1Instruction(cg, valueNode->getDataType().isFloatingPoint() ? TR::InstOpCode::vstrimmd : TR::InstOpCode::strimmx,
+                                    node, TR::MemoryReference::createWithDisplacement(cg, dstReg, 0), valueReg);
+         }
+      else
+         {
+         TR::LabelSymbol *elementLoopLabel = generateLabelSymbol(cg);
+         auto elementLoopLabelInstr = generateLabelInstruction(cg, TR::InstOpCode::label, node, elementLoopLabel);
+         generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::subsimmx, node, lengthReg, lengthReg, elementSize);
+         const TR::InstOpCode::Mnemonic strOpCode = (!valueNode->getDataType().isFloatingPoint()) ?
+                                                      ((elementSize == 1) ? TR::InstOpCode::strbpost :
+                                                      (elementSize == 2) ? TR::InstOpCode::strhpost :
+                                                      (elementSize == 4) ? TR::InstOpCode::strpostw : TR::InstOpCode::strpostx) :
+                                                      valueNode->getDataType().isFloat() ? TR::InstOpCode::vstrposts : TR::InstOpCode::vstrpostd;
+         generateMemSrc1Instruction(cg, strOpCode, node, TR::MemoryReference::createWithDisplacement(cg, dstReg, elementSize), valueReg);
+         auto branchBackToElementLoopLabelInstr = generateConditionalBranchInstruction(cg, TR::InstOpCode::b_cond, node, elementLoopLabel, TR::CC_HI);
+         if (debugObj)
+            {
+            debugObj->addInstructionComment(lessThan16LabelInstr, "lessThan16Label");
+            debugObj->addInstructionComment(elementLoopLabelInstr, "elementLoopLabel");
+            debugObj->addInstructionComment(branchBackToElementLoopLabelInstr, "Jumps to elementLoopLabel if the remaining length > 0");
+            }
+         }
+
+      /* dstReg, lengthReg, valueReg, and registers allocated through SRM */
+      TR::RegisterDependencyConditions *conditions = new (cg->trHeapMemory()) TR::RegisterDependencyConditions(0, 3 + srm->numAvailableRegisters(), cg->trMemory());
+      conditions->addPostCondition(dstReg, TR::RealRegister::NoReg);
+      conditions->addPostCondition(lengthReg, TR::RealRegister::NoReg);
+      conditions->addPostCondition(valueReg, isValueZero ? TR::RealRegister::xzr : TR::RealRegister::NoReg);
+      srm->addScratchRegistersToDependencyList(conditions);
+
+      auto doneLabelInstr = generateLabelInstruction(cg, TR::InstOpCode::label, node, doneLabel, conditions);
+      if (debugObj)
+         {
+         debugObj->addInstructionComment(doneLabelInstr, "doneLabel");
+         }
+      }
+
+   srm->stopUsingRegisters();
+   cg->stopUsingRegister(dstReg);
+   if (valueReg != NULL)
+      {
+      cg->stopUsingRegister(valueReg);
+      }
+   if (lengthReg != NULL)
+      {
+      cg->stopUsingRegister(lengthReg);
+      }
+
+   cg->decReferenceCount(dstNode);
+   cg->decReferenceCount(valueNode);
+   cg->decReferenceCount(lengthNode);
+
+   return NULL;
+   }
 
 TR::Register *
 OMR::ARM64::TreeEvaluator::arraycmpEvaluator(TR::Node *node, TR::CodeGenerator *cg)

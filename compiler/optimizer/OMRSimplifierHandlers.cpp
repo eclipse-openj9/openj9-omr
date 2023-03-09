@@ -17391,6 +17391,10 @@ TR::Node * arraysetSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier
       {
       uint64_t fillVal = fill->getConst<uint64_t>();
       if ((fillVal & 0x0FFFFFFFFL) == ((fillVal >> 32) & 0x0FFFFFFFFL) &&
+#ifdef TR_TARGET_ARM64
+          /* 0 and -1 can be efficiently loaded and stored as 64-bit data on AArch64. */
+          (fillVal != 0) && (fillVal != -1) &&
+#endif /* TR_TARGET_ARM64 */
           performTransformation(s->comp(), "%sTransform large fill arrayset to 4byte fill arrayset [" POINTER_PRINTF_FORMAT "]\n",
                 s->optDetailString(), node))
          {

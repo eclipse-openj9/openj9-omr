@@ -1,5 +1,5 @@
 <!--
-Copyright (c) 2016, 2022 IBM Corp. and others
+Copyright IBM Corp. and others 2016
 
 This program and the accompanying materials are made available under
 the terms of the Eclipse Public License 2.0 which accompanies this
@@ -200,4 +200,4 @@ Blog Posts about OMR technologies
 * [Introducing Eclipse OMR: Building Language Runtimes](https://developer.ibm.com/code/2016/03/08/introducing-omr-building-language-runtimes/)
 * [JitBuilder Library and Eclipse OMR: Just-In-Time Compilers made easy](https://developer.ibm.com/code/2016/07/19/jitbuilder-library-and-eclipse-omr-just-in-time-compilers-made-easy/)
 
-Copyright (c) 2016, 2019 IBM Corp.
+Copyright IBM Corp. 2016

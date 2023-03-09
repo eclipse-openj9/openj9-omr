@@ -4,7 +4,7 @@
 #
 #
 # Copyright (C) 1992-1996, 1998-2012 Free Software Foundation, Inc.
-# Copyright (c) 2015, 2022 IBM Corp. and others
+# Copyright IBM Corp. and others 2015
 #
 #
 # This configure script is free software; the Free Software Foundation
@@ -2708,7 +2708,7 @@ ac_compiler_gnu=$ac_cv_c_compiler_gnu
 
 
 ###############################################################################
-# Copyright (c) 2015, 2019 IBM Corp. and others
+# Copyright IBM Corp. and others 2015
 #
 # This program and the accompanying materials are made available under
 # the terms of the Eclipse Public License 2.0 which accompanies this

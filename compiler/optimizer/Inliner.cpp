@@ -2071,6 +2071,10 @@ bool rematerializeConstant(TR::Node *node, TR::Compilation *comp)
         rematConst = true;
     } else if (node->getOpCodeValue() == TR::loadaddr) {
         rematConst = true;
+    } else if (node->getOpCode().hasSymbolReference() && !node->getSymbolReference()->isUnresolved()) {
+        TR::SymbolReference *symRef = node->getSymbolReference();
+        TR::Symbol *sym = symRef->getSymbol();
+        rematConst = sym->isFixedObjectRef() || (sym->isAuto() && symRef->hasKnownObjectIndex());
     } else {
         rematConst = false;
     }
@@ -2449,10 +2453,20 @@ TR::Node *TR_ParameterToArgumentMapper::fixCallNodeArgs(bool createNullCheckRefe
             if (parmMap->_replacementSymRef) {
                 nullCheckReference = TR::Node::createLoad(_callNode, parmMap->_replacementSymRef);
             } else if (parmMap->_isConst) {
-                TR_ASSERT(parmMap->_parameterNode->getOpCodeValue() == TR::aconst,
-                    "a const this arg should be a const");
-                TR_ASSERT(parmMap->_parameterNode->getInt() == 0, "a const this arg should be an aconst 0");
-                nullCheckReference = TR::Node::aconst(_callNode, 0);
+                TR::Node *parmNode = parmMap->_parameterNode;
+                if (parmNode->getOpCodeValue() == TR::aconst) {
+                    TR_ASSERT_FATAL_WITH_NODE(parmNode, parmNode->getAddress() == 0, "non-null aconst this arg");
+
+                    nullCheckReference = TR::Node::aconst(_callNode, 0);
+                } else {
+                    TR_ASSERT_FATAL_WITH_NODE(parmNode, parmNode->getOpCodeValue() == TR::aload,
+                        "constant this arg should be aconst or aload");
+
+                    TR_ASSERT_FATAL_WITH_NODE(parmNode, parmNode->getSymbol()->isFixedObjectRef(),
+                        "aload this arg should be a fixed object ref");
+
+                    nullCheckReference = TR::Node::createLoad(_callNode, parmNode->getSymbolReference());
+                }
             }
         } else if (parmMap->_isConst && _callNode->getChild(i)->getReferenceCount() > 1) {
             _callNode->getChild(i)->decReferenceCount();
@@ -2985,9 +2999,12 @@ void TR_HandleInjectedBasicBlock::createTemps(bool replaceAllReferences)
                     value = valueToTempConv;
                 }
 
-                if (value->getOpCode().hasSymbolReference() && value->getSymbolReference()->hasKnownObjectIndex())
+                if (value->getOpCode().hasSymbolReference() && value->getSymbolReference()->hasKnownObjectIndex()) {
+                    TR_ASSERT_FATAL(!comp()->useConstRefs(), "with const refs we should always rematerialize here");
+
                     symRef = comp()->getSymRefTab()->findOrCreateTemporaryWithKnowObjectIndex(_methodSymbol,
                         value->getSymbolReference()->getKnownObjectIndex());
+                }
 
                 OMR_InlinerUtil::storeValueInATemp(comp(), value, symRef, tt, _methodSymbol, _injectedBasicBlockTemps,
                     _availableTemps, 0);

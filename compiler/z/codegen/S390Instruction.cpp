@@ -1711,17 +1711,21 @@ uint8_t *TR::S390RILInstruction::generateBinaryEncoding()
             //  Using RIL to get to a Static
             //
             uintptr_t addr = getTargetPtr();
+            TR::LabelSymbol *label = getTargetLabel();
 
             i2 = (int32_t)((addr - (uintptr_t)cursor) / 2);
 
-            if (cg()->comp()->target().cpu.isTargetWithinBranchRelativeRILRange((intptr_t)getTargetPtr(),
-                    (intptr_t)cursor)) {
+            if (cg()->comp()->target().cpu.isTargetWithinBranchRelativeRILRange((intptr_t)addr, (intptr_t)cursor)
+                || label != NULL) {
                 getOpCode().copyBinaryToBuffer(instructionStart);
                 toRealRegister(getRegisterOperand(1))->setRegister1Field((uint32_t *)cursor);
-                (*(int32_t *)(cursor + 2)) |= boi(i2);
+                if (label != NULL) {
+                    cg()->addRelocation(new (cg()->trHeapMemory()) TR::LabelRelative32BitRelocation(cursor, label));
+                } else {
+                    (*(int32_t *)(cursor + 2)) |= boi(i2);
+                }
                 cursor += getOpCode().getInstructionLength();
-            } else // We need to do things the old fashioned way
-            {
+            } else { // We need to do things the old fashioned way
                 TR_ASSERT(cg()->comp()->target().is64Bit(), "We should only be here on 64-bit platforms\n");
 
                 TR::RealRegister *scratchReg = NULL;

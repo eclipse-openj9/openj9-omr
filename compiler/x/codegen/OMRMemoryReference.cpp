@@ -1489,6 +1489,11 @@ TR::MemoryReference *generateX86MemoryReference(TR::Register *br, TR::Register *
 
 TR::MemoryReference *generateX86MemoryReference(TR::Node *node, TR::CodeGenerator *cg, bool canRematerializeAddressAdds)
 {
+    TR::LabelSymbol *constRefLabel = cg->assignConstRefLabel(node);
+    if (constRefLabel != NULL) {
+        return generateX86MemoryReference(constRefLabel, cg);
+    }
+
     return new (cg->trHeapMemory()) TR::MemoryReference(node, cg, canRematerializeAddressAdds);
 }
 

@@ -77,8 +77,12 @@ class Register;
 static TR_BitVector *addVeryRefinedCallAliasSets(TR::ResolvedMethodSymbol *, TR_BitVector *, List<void> *);
 #endif
 
-OMR::SymbolReference::SymbolReference(TR::SymbolReferenceTable *symRefTab, TR::SymbolReference &sr, intptr_t o,
-    TR::KnownObjectTable::Index knownObjectIndex)
+OMR::SymbolReference::SymbolReference(TR::SymbolReferenceTable *symRefTab, TR::SymbolReference &sr, intptr_t o
+#ifdef TR_ALLOW_NON_CONST_KNOWN_OBJECTS
+    ,
+    TR::KnownObjectTable::Index knownObjectIndex
+#endif
+)
 {
     _referenceNumber = symRefTab->assignSymRefNumber(self());
     _symbol = sr._symbol;
@@ -89,7 +93,16 @@ OMR::SymbolReference::SymbolReference(TR::SymbolReferenceTable *symRefTab, TR::S
     _extraInfo = 0;
     _flags.set(sr._flags);
     _useDefAliases = NULL;
-    _knownObjectIndex = knownObjectIndex;
+
+#ifdef TR_ALLOW_NON_CONST_KNOWN_OBJECTS
+    if (!symRefTab->comp()->useConstRefs()) {
+        _knownObjectIndex = knownObjectIndex;
+    } else
+#endif
+    {
+        _knownObjectIndex = TR::KnownObjectTable::UNKNOWN;
+    }
+
     self()->copyAliasSets(&sr, symRefTab);
     symRefTab->aliasBuilder.updateSubSets(self());
 }

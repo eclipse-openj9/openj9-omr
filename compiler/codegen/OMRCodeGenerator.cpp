@@ -258,6 +258,9 @@ OMR::CodeGenerator::CodeGenerator(TR::Compilation *comp)
     , _snippetsToBePatchedOnClassUnload(getTypedAllocator<TR::Snippet *>(comp->allocator()))
     , _methodSnippetsToBePatchedOnClassUnload(getTypedAllocator<TR::Snippet *>(comp->allocator()))
     , _snippetsToBePatchedOnClassRedefinition(getTypedAllocator<TR::Snippet *>(comp->allocator()))
+    , _constRefLabels(comp->trMemory()->heapMemoryRegion())
+    , _constRefSortOrder(comp->trMemory()->heapMemoryRegion())
+    , _hasConstRefs(false)
 {}
 
 void OMR::CodeGenerator::initialize()
@@ -2133,6 +2136,14 @@ int32_t OMR::CodeGenerator::setEstimatedLocationsForSnippetLabels(int32_t estima
         estimatedSnippetStart += (*iterator)->getLength(estimatedSnippetStart);
     }
 
+    if (_hasConstRefs) {
+        estimatedSnippetStart += sizeof(uintptr_t) - 1; // may need to align
+        for (auto it = _constRefSortOrder.begin(); it != _constRefSortOrder.end(); it++) {
+            _constRefLabels[*it]->setEstimatedCodeLocation(estimatedSnippetStart);
+            estimatedSnippetStart += sizeof(uintptr_t);
+        }
+    }
+
     if (self()->hasDataSnippets()) {
         estimatedSnippetStart = self()->setEstimatedLocationsForDataSnippetLabels(estimatedSnippetStart);
     }
@@ -2165,6 +2176,25 @@ uint8_t *OMR::CodeGenerator::emitSnippets()
     }
 
     retVal = self()->getBinaryBufferCursor();
+
+    // Reserve space for constant references. The slots will be initialized later.
+    if (_hasConstRefs) {
+        uint8_t *cursor = self()->getBinaryBufferCursor();
+        uintptr_t align = sizeof(uintptr_t);
+        uintptr_t lowBits = (uintptr_t)cursor & (align - 1);
+        if (lowBits != 0) {
+            cursor += align - lowBits;
+        }
+
+        uint8_t *start = cursor;
+        for (auto it = _constRefSortOrder.begin(); it != _constRefSortOrder.end(); it++) {
+            _constRefLabels[*it]->setCodeLocation(cursor);
+            cursor += sizeof(uintptr_t);
+        }
+
+        memset(start, 0, cursor - start);
+        self()->setBinaryBufferCursor(cursor);
+    }
 
     // Emit constant data snippets last.
     //
@@ -3149,3 +3179,58 @@ void OMR::CodeGenerator::getMethodStats(MethodStats &methodStats)
         log->printf("FOOTPRINT: COLD BLOCK TYPE: OTHER = %d\n", coldBlocks - known_cold_blocks);
     }
 }
+
+TR::LabelSymbol *OMR::CodeGenerator::assignConstRefLabel(TR::Node *node)
+{
+#if defined(J9VM_OPT_OPENJDK_METHODHANDLE)
+    if (!self()->comp()->useConstRefs()) {
+        return NULL;
+    }
+
+    if (node->getOpCodeValue() != TR::aload) {
+        return NULL;
+    }
+
+    TR::SymbolReference *symRef = node->getSymbolReference();
+    TR::StaticSymbol *sym = symRef->getSymbol()->getStaticSymbol();
+    if (sym == NULL) {
+        return NULL;
+    }
+
+    TR::KnownObjectTable::Index koi = symRef->getKnownObjectIndex();
+    if (koi == TR::KnownObjectTable::UNKNOWN) {
+        return NULL;
+    }
+
+    TR::KnownObjectTable *knot = self()->comp()->getKnownObjectTable();
+    TR_ASSERT_FATAL_WITH_NODE(node, symRef == knot->constSymRef(koi), "unexpected known object symref");
+
+    return assignConstRefLabel(koi);
+#else
+    return NULL;
+#endif
+}
+
+#if defined(J9VM_OPT_OPENJDK_METHODHANDLE)
+TR::LabelSymbol *OMR::CodeGenerator::assignConstRefLabelImpl(TR::KnownObjectTable::Index koi, bool mustBeNew)
+{
+    TR::KnownObjectTable *knot = self()->comp()->getKnownObjectTable();
+    TR::KnownObjectTable::Index numKnobs = knot->getEndIndex();
+    TR_ASSERT_FATAL(0 <= koi && (size_t)koi < numKnobs, "known object index %d out of bounds (%d)", koi, numKnobs);
+
+    if (koi >= _constRefLabels.size()) {
+        _constRefLabels.resize(numKnobs, NULL);
+    }
+
+    TR::LabelSymbol *&label = _constRefLabels[koi];
+    TR_ASSERT_FATAL(!mustBeNew || label == NULL, "obj%d already has a const ref label", koi);
+
+    if (label == NULL) {
+        label = TR::LabelSymbol::create(self()->trHeapMemory(), self());
+        _constRefSortOrder.push_back(koi);
+        _hasConstRefs = true;
+    }
+
+    return label;
+}
+#endif

@@ -1362,6 +1362,18 @@ void OMR::Power::MemoryReference::accessStaticItem(TR::Node *node, TR::SymbolRef
         return;
     }
 
+    TR::LabelSymbol *constRefLabel = cg->assignConstRefLabel(node);
+    if (constRefLabel != NULL) {
+        if (cg->comp()->target().is64Bit() && cg->comp()->target().cpu.isAtLeast(OMR_PROCESSOR_PPC_P10)) {
+            _label = constRefLabel;
+        } else {
+            _baseRegister = cg->allocateRegister();
+            cg->fixedLoadLabelAddressIntoReg(node, _baseRegister, constRefLabel);
+        }
+
+        return;
+    }
+
     bool useUnresSnippetToAvoidRelo = cg->comp()->compileRelocatableCode();
     if (useUnresSnippetToAvoidRelo) {
         // The unresolved snippet can't handle fabricated symrefs, so we'll have

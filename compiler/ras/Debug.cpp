@@ -2196,6 +2196,19 @@ void TR_Debug::print(OMR::Logger *log, TR::list<TR::Snippet *> &snippetList)
         print(log, *snippets);
     }
 
+    TR::KnownObjectTable *knot = _comp->getKnownObjectTable();
+    if (knot != NULL && _comp->cg()->hasConstRefs()) {
+        auto kois = _comp->cg()->getConstRefSortOrder();
+        for (auto it = kois.begin(); it != kois.end(); it++) {
+            TR::KnownObjectTable::Index koi = *it;
+            TR::LabelSymbol *label = _comp->cg()->getConstRefLabel(koi);
+            uint8_t *pos = label->getCodeLocation();
+            printSnippetLabel(log, label, pos, "constant reference");
+            printPrefix(log, NULL, pos, (uint8_t)sizeof(uintptr_t));
+            log->printf("obj%d\n", koi);
+        }
+    }
+
     if (_comp->cg()->hasDataSnippets())
         _comp->cg()->dumpDataSnippets(log);
 }

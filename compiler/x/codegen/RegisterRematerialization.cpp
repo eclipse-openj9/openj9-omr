@@ -66,6 +66,15 @@ void setDiscardableIfPossible(TR_RematerializableTypes type, TR::Register *candi
     TR::Instruction *instr, TR::MemoryReference *mr, TR::CodeGenerator *cg)
 {
     TR::Compilation *comp = cg->comp();
+    if (comp->useConstRefs() && node->getOpCodeValue() == TR::aload && node->getSymbolReference()->hasKnownObjectIndex()
+        && node->getSymbol()->isStatic()) {
+        // In principle it should always be possible to rematerialize a constant
+        // reference, but it will take some effort, so prevent rematerialization
+        // for now. Constant reference loads usually exist to replace field loads
+        // (static or instance), which in general can't be rematerialized anyway.
+        return; // TODO
+    }
+
     TR_RematerializationInfo *info = generateRematerializationInfo(node, mr, type, instr, cg);
 
     if (info) {

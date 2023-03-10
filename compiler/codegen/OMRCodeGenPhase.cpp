@@ -285,6 +285,12 @@ void OMR::CodeGenPhase::performBinaryEncodingPhase(TR::CodeGenerator *cg, TR::Co
     LexicalTimer pt(phase->getName(), comp->phaseTimer());
 
     cg->preBinaryEncodingHook();
+
+    // The keepalives are needed now to properly estimate snippet label locations.
+    // It's also necessary to know the order in which the const refs will appear.
+    cg->assignKeepaliveConstRefLabels();
+    cg->sortConstRefs();
+
     cg->doBinaryEncoding();
     cg->postBinaryEncodingHook();
 

@@ -908,6 +908,7 @@ public:
     inline scount_t incLocalIndex();
     inline scount_t decLocalIndex();
 
+#ifdef TR_ALLOW_NON_CONST_KNOWN_OBJECTS
     /**
      * @brief Sets a known object index on this node
      * @param[in] koi : the known object index
@@ -925,6 +926,7 @@ public:
      * @return true if a known object index is cached; false otherwise.
      */
     bool hasKnownObjectIndex() { return _knownObjectIndex != TR::KnownObjectTable::UNKNOWN; }
+#endif
 
     inline scount_t getFutureUseCount();
     inline scount_t setFutureUseCount(scount_t li);
@@ -1838,6 +1840,7 @@ protected:
     /// References to this node.
     rcount_t _referenceCount;
 
+#ifdef TR_ALLOW_NON_CONST_KNOWN_OBJECTS
     /// Known object index associated with this node, if any.
     ///
     /// This field allows for more accurate placement of known object information
@@ -1846,6 +1849,7 @@ protected:
     /// If no such information is available this field is TR::KnownObjectTable::UNKNOWN
     ///
     TR::KnownObjectTable::Index _knownObjectIndex;
+#endif
 
     UnionA _unionA;
 

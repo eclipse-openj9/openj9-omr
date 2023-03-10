@@ -1037,11 +1037,32 @@ void TR_CopyPropagation::commonIndirectLoadsFromAutos()
 static void preserveKnownObjectInfo(TR::Compilation *comp, TR::Node *node, TR::SymbolReference *oldSymRef,
     TR::SymbolReference *newSymRef)
 {
-    if (oldSymRef->hasKnownObjectIndex() && !node->hasKnownObjectIndex() && !newSymRef->hasKnownObjectIndex()) {
+    // Preserve known object information on nodes that were loading from known
+    // object temps before copy propagation but that are no longer doing so.
+    // For example, with definitions something like these:
+    //
+    //    astore regular_tmp
+    //      ... (obj3)
+    //    astore tmp_known (obj3)
+    //      ==>... (obj3)
+    //
+    // a later (aload tmp_known (obj3)) could be changed to (aload regular_tmp),
+    // at which point the known object information would be lost. We want to
+    // catch this case and set the per-node known object index.
+    //
+    // With const refs, the per-node known object index isn't supposed to be
+    // used, but thankfully the problem shouldn't occur in the first place. If
+    // the result of a node is a known object, then the node should already be a
+    // const ref load, not an auto load.
+    //
+#ifdef TR_ALLOW_NON_CONST_KNOWN_OBJECTS
+    if (!comp->useConstRefs() && oldSymRef->hasKnownObjectIndex() && !node->hasKnownObjectIndex()
+        && !newSymRef->hasKnownObjectIndex()) {
         node->setKnownObjectIndex(oldSymRef->getKnownObjectIndex());
         dumpOptDetails(comp, "%s   Set known-object obj%d for node : %p\n", OPT_DETAILS,
             oldSymRef->getKnownObjectIndex(), node);
     }
+#endif
 }
 
 /*

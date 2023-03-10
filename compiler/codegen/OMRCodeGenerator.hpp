@@ -2254,6 +2254,38 @@ public:
 
     void setLmmdFailed() { _lmmdFailed = true; }
 
+    TR::LabelSymbol *assignConstRefLabel(TR::Node *node);
+
+    void assignKeepaliveConstRefLabels() {}
+
+#if defined(J9VM_OPT_OPENJDK_METHODHANDLE)
+    TR::LabelSymbol *assignConstRefLabel(TR::KnownObjectTable::Index koi)
+    {
+        return assignConstRefLabelImpl(koi, false);
+    }
+
+    TR::LabelSymbol *assignNewConstRefLabel(TR::KnownObjectTable::Index koi)
+    {
+        return assignConstRefLabelImpl(koi, true);
+    }
+#endif
+
+    TR::LabelSymbol *getConstRefLabel(TR::KnownObjectTable::Index koi)
+    {
+        return 0 <= koi && koi < _constRefLabels.size() ? _constRefLabels[koi] : NULL;
+    }
+
+    bool hasConstRefs() { return _hasConstRefs; }
+
+    void sortConstRefs() {}
+
+    const TR::vector<TR::KnownObjectTable::Index, TR::Region &> &getConstRefSortOrder() { return _constRefSortOrder; }
+
+#if defined(J9VM_OPT_OPENJDK_METHODHANDLE)
+private:
+    TR::LabelSymbol *assignConstRefLabelImpl(TR::KnownObjectTable::Index koi, bool mustBeNew);
+#endif
+
 protected:
     enum // _flags1
     {
@@ -2559,6 +2591,16 @@ private:
     TR::list<TR::Snippet *> _snippetsToBePatchedOnClassUnload;
     TR::list<TR::Snippet *> _methodSnippetsToBePatchedOnClassUnload;
     TR::list<TR::Snippet *> _snippetsToBePatchedOnClassRedefinition;
+
+    TR::vector<TR::LabelSymbol *, TR::Region &> _constRefLabels; // indexed by known object index
+
+protected:
+    // This needs to be protected (instead of private) so that a sortConstRefs()
+    // override can mutate it.
+    TR::vector<TR::KnownObjectTable::Index, TR::Region &> _constRefSortOrder;
+
+private:
+    bool _hasConstRefs;
 };
 
 } // namespace OMR

@@ -6837,7 +6837,7 @@ bool TR_LoopVersioner::requiresPrivatization(TR::Node *node)
 
     TR::SymbolReference *symRef = node->getSymbolReference();
     TR::Symbol *sym = symRef->getSymbol();
-    if (sym->isAutoOrParm())
+    if (sym->isAutoOrParm() || sym->isFixedObjectRef())
         return false;
 
     TR::SymbolReferenceTable *srTab = comp()->getSymRefTab();

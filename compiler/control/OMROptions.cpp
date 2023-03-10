@@ -428,6 +428,9 @@ TR::OptionTable OMR::Options::_jitOptions[] = {
     { "disableConstProvenance",
      "M\tdisable constant provenance tracking. Known objects will be assumed to be reachable from the outermost "
         "method.", SET_OPTION_BIT(TR_DisableConstProvenance), "F" },
+#ifdef TR_ALLOW_NON_CONST_KNOWN_OBJECTS
+    { "disableConstRefs", "I\tdisable constant references", RESET_OPTION_BIT(TR_EnableConstRefs), "F" },
+#endif
     { "disableConverterReducer", "O\tdisable reducing converters methods to intrinsic arrayTranslate",
      SET_OPTION_BIT(TR_DisableConverterReducer), "F" },
     { "disableCPUUtilization", "M\tdisable tracking of cpu utilization", SET_OPTION_BIT(TR_DisableCPUUtilization), "F",
@@ -1152,6 +1155,9 @@ TR::OptionTable OMR::Options::_jitOptions[] = {
      SET_OPTION_BIT(TR_EnableCompThreadThrottlingDuringStartup), "F", NOT_IN_SUBSET },
     { "enableCompilationYieldStats", "M\tenable statistics on time between 2 consecutive yield points",
      SET_OPTION_BIT(TR_EnableCompYieldStats), "F", NOT_IN_SUBSET },
+#ifdef TR_ALLOW_NON_CONST_KNOWN_OBJECTS
+    { "enableConstRefs", "I\tenable constant references", SET_OPTION_BIT(TR_EnableConstRefs), "F" },
+#endif
     { "enableCopyingTROTInduction1Idioms", "O\tenable CopyingTROTInduction1 idiom patterns",
      SET_OPTION_BIT(TR_EnableCopyingTROTInduction1Idioms), "F", NOT_IN_SUBSET },
     { "enableDataCacheStatistics", "I\tenable the collection and display of data cache related statistics.",
@@ -1694,6 +1700,10 @@ TR::OptionTable OMR::Options::_jitOptions[] = {
      offsetof(OMR::Options, _optLevel), veryHot, "P" },
     { "optLevel=warm", "O\tcompile all methods at warm level", TR::Options::set32BitValue,
      offsetof(OMR::Options, _optLevel), warm, "P" },
+    { "orphanedConstRefs=fail", "M\tfail the compilation if there are any orphaned const refs",
+     SET_OPTION_BIT(TR_OrphanedConstRefsFail), "F" },
+    { "orphanedConstRefs=top",
+     "M\tassign any orphaned const refs to the defining class of the outermost method (might cause a memory leak)", SET_OPTION_BIT(TR_OrphanedConstRefsTop), "F" },
     { "packedTest=", "D{regex}\tforce particular code paths to test Java Packed Object", TR::Options::setRegex,
      offsetof(OMR::Options, _packedTest), 0, "P" },
     { "paintAllocatedFrameSlotsDead", "C\tpaint all slots allocated in method prologue with deadf00d",
@@ -3479,6 +3489,8 @@ void OMR::Options::jitPreProcess()
     //
 
     self()->setOption(TR_RestrictStaticFieldFolding);
+
+    // TODO: enable const refs here
 
     if (TR::Compiler->target.cpu.isPower())
         self()->setOption(TR_DisableRegisterPressureSimulation);

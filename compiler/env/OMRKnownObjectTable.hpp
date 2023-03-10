@@ -37,14 +37,18 @@ typedef OMR::KnownObjectTable KnownObjectTableConnector;
 #include <stdint.h>
 #include "env/FilePointerDecl.hpp"
 #include "env/jittypes.h"
+#include "env/Region.hpp"
 #include "infra/Annotations.hpp"
 #include "infra/BitVector.hpp"
+#include "infra/vector.hpp"
 
 class TR_FrontEnd;
 
 namespace TR {
 class Compilation;
 class KnownObjectTable;
+class Symbol;
+class SymbolReference;
 } // namespace TR
 
 namespace OMR {
@@ -100,6 +104,8 @@ public:
     Index getExistingIndexAt(uintptr_t *objectReferenceLocation);
 
     uintptr_t getPointer(Index index);
+
+    TR::SymbolReference *constSymRef(Index index);
 
 protected:
     void addArrayWithConstantElements(Index index);

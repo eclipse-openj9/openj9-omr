@@ -506,8 +506,8 @@ enum TR_CompilationOptions {
     TR_DisableMultiLeafArrayCopy                             = 0x00000800 + 13,
     TR_DisableInlinerFanIn                                   = 0x00001000 + 13,
     // Available                                             = 0x00002000 + 13,
-    // Available                                             = 0x00004000 + 13,
-    // Available                                             = 0x00008000 + 13,
+    TR_OrphanedConstRefsTop                                  = 0x00004000 + 13,
+    TR_OrphanedConstRefsFail                                 = 0x00008000 + 13,
     // Available                                             = 0x00010000 + 13,
     // Available                                             = 0x00020000 + 13,
     TR_EnableMonitorCacheLookup                              = 0x00040000 + 13,
@@ -648,7 +648,9 @@ enum TR_CompilationOptions {
     // Available                                             = 0x00000100 + 18,
     TR_UseStrictStartupHints                                 = 0x00000200 + 18,
     // Available                                             = 0x00000400 + 18,
-    // Available                                             = 0x00000800 + 18,
+#ifdef TR_ALLOW_NON_CONST_KNOWN_OBJECTS
+    TR_EnableConstRefs                                       = 0x00000800 + 18,
+#endif
     // Available                                             = 0x00001000 + 18,
     TR_AllowJitBodyToOutliveInlinedCode                      = 0x00004000 + 18,
     // Available                                             = 0x00008000 + 18,

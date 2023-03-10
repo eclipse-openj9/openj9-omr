@@ -334,6 +334,10 @@ public:
 
 	virtual void workStackOverflow() {}
 
+#if defined(J9VM_OPT_CRIU_SUPPORT)
+	virtual bool reinitializeForRestore(MM_EnvironmentBase *env);
+#endif /* defined(J9VM_OPT_CRIU_SUPPORT) */
+
 	MM_ParallelGlobalGC(MM_EnvironmentBase *env)
 		: MM_GlobalCollector()
 		, _extensions(MM_GCExtensionsBase::getExtensions(env->getOmrVM()))

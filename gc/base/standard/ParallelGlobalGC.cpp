@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 1991, 2022 IBM Corp. and others
+ * Copyright (c) 1991, 2023 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -410,6 +410,7 @@ MM_ParallelGlobalGC::cleanupAfterGC(MM_EnvironmentBase *env, MM_AllocateDescript
 		MM_EnvironmentStandard *threadEnvironment = MM_EnvironmentStandard::getEnvironment(walkThread);
 		threadEnvironment->_tenureTLHRemainderBase = NULL;
 		threadEnvironment->_tenureTLHRemainderTop = NULL;
+		threadEnvironment->_loaAllocation = false;
 	}
 
 	_extensions->_mainThreadTenureTLHRemainderTop = NULL;

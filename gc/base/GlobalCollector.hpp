@@ -111,6 +111,16 @@ public:
 	 */
 	virtual void preAllocCacheFlush(MM_EnvironmentBase *env, void *base, void *top) {};
 
+#if defined(J9VM_OPT_CRIU_SUPPORT)
+	/**
+	 * Reinitalize the Global Collector components for restore. This function is meant to be
+	 * implemented by the derived collectors as needed.
+	 * @param[in] env the current environment.
+	 * @return boolean indicating if the collector reinitialized successfully.
+	 */
+	virtual bool reinitializeForRestore(MM_EnvironmentBase *env) { return true; }
+#endif /* defined(J9VM_OPT_CRIU_SUPPORT) */
+
 	MM_GlobalCollector()
 		: MM_Collector()
 		, _delegate()

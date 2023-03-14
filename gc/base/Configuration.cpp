@@ -528,12 +528,6 @@ MM_Configuration::adjustGCThreadCountForCheckpoint(MM_EnvironmentBase* env)
 	MM_ParallelDispatcher* dispatcher = extensions->dispatcher;
 
 	dispatcher->contractThreadPool(env, extensions->checkpointGCthreadCount);
-
-	/* This line is temporary, it's required to prevent thread pool growth beyond
-	 * the initial pool sizing done at startup. It's required until dependent
-	 * functional components (beyond just Dispatcher) are sufficiently tested with unbounded growth.
-	 */
-	_delegate.setMaxGCThreadCount(env, dispatcher->getPoolMaxCapacity());
 }
 
 bool
@@ -541,7 +535,7 @@ MM_Configuration::reinitializeGCThreadCountForRestore(MM_EnvironmentBase* env)
 {
 	MM_GCExtensionsBase* extensions = env->getExtensions();
 
-	uintptr_t checkpointThreadCount = extensions->gcThreadCount;
+	uintptr_t checkpointThreadCount = extensions->dispatcher->threadCountMaximum();
 
 	initializeGCThreadCount(env);
 

@@ -64,7 +64,9 @@ endif()
 set_property(TARGET omrthreadtest PROPERTY FOLDER fvtest)
 
 if(OMR_OS_LINUX AND OMR_ARCH_RISCV AND CMAKE_CROSSCOMPILING)
-	set(EXCLUDE_LIST "${EXCLUDE_LIST}-PriorityInterrupt.*")
+	message(WARNING "Disabling PriorityInterrupt test (see #6665) ")
+	message(WARNING "Disabling RWMutex test (see #6706) ")
+	set(EXCLUDE_LIST "${EXCLUDE_LIST}-PriorityInterrupt.*:RWMutex*")
 endif()
 
 if(EXCLUDE_LIST)

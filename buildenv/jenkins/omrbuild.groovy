@@ -165,14 +165,14 @@ SPECS = [
         'label' : 'compile:riscv64:cross',
         'reference' : defaultReference,
         'environment' : [
-            'PATH+CCACHE_AND_QEMU=/usr/lib/ccache/:/home/jenkins/qemu/build'
+            'PATH+CCACHE=/usr/lib/ccache/'
         ],
         'ccache' : true,
         'buildSystem' : 'cmake',
         'builds' : [
             [
                 'buildDir' : cmakeBuildDir,
-                'configureArgs' : '-Wdev -C../cmake/caches/Travis.cmake -DOMR_DDR=OFF  -DCMAKE_TOOLCHAIN_FILE=../cmake/toolchains/riscv64-linux-cross.cmake "-DCMAKE_SYSROOT=${CROSS_SYSROOT_RISCV64}"',
+                'configureArgs' : '-Wdev -C../cmake/caches/Travis.cmake -DOMR_DDR=OFF  -DCMAKE_TOOLCHAIN_FILE=../cmake/toolchains/riscv64-linux-cross.cmake "-DOMR_EXE_LAUNCHER=/home/jenkins/qemu/build/qemu-riscv64;-L;${CROSS_SYSROOT_RISCV64}" "-DCMAKE_SYSROOT=${CROSS_SYSROOT_RISCV64}"',
                 'compile' : defaultCompile
             ]
         ],

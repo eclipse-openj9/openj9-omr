@@ -1402,6 +1402,7 @@ public:
       _memUsage = NULL;
       _classesWithFolableFinalFields = NULL;
       _disabledIdiomPatterns = NULL;
+      _suppressEA = NULL;
       _gcCardSize = 0;
       _heapBase = 0;
       _heapTop = 0;

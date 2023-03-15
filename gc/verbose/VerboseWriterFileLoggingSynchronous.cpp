@@ -95,7 +95,9 @@ MM_VerboseWriterFileLoggingSynchronous::openFile(MM_EnvironmentBase *env, bool p
 		return false;
 	}
 	
-	_logFileDescriptor = omrfile_open(filenameToOpen, EsOpenRead | EsOpenWrite | EsOpenCreate | EsOpenTruncate, 0666);
+	int32_t openFlags =  EsOpenRead | EsOpenWrite | EsOpenCreate | _manager->fileOpenMode(env);
+
+	_logFileDescriptor = omrfile_open(filenameToOpen, openFlags, 0666);
 	if(-1 == _logFileDescriptor) {
 		char *cursor = filenameToOpen;
 		/**
@@ -109,7 +111,7 @@ MM_VerboseWriterFileLoggingSynchronous::openFile(MM_EnvironmentBase *env, bool p
 		}
 
 		/* Try again */
-		_logFileDescriptor = omrfile_open(filenameToOpen, EsOpenRead | EsOpenWrite | EsOpenCreate | EsOpenTruncate, 0666);
+		_logFileDescriptor = omrfile_open(filenameToOpen, openFlags, 0666);
 		if (-1 == _logFileDescriptor) {
 			_manager->handleFileOpenError(env, filenameToOpen);
 			extensions->getForge()->free(filenameToOpen);

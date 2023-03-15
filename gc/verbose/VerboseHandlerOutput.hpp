@@ -399,6 +399,17 @@ public:
 	 */
 	virtual void handleInitialized(J9HookInterface** hook, uintptr_t eventNum, void* eventData);
 
+#if defined(J9VM_OPT_CRIU_SUPPORT)
+	/**
+	 * Handle any output or data tracking for the reinitialization (restore) phase of verbose GC.
+	 * Called during reinitialization of GC, stanza printed to all writers via writer chain.
+	 * @param hook Hook interface used by the JVM.
+	 * @param eventNum The hook event number.
+	 * @param eventData hook specific event data.
+	 */
+	virtual void handleReinitialized(J9HookInterface** hook, uintptr_t eventNum, void* eventData);
+#endif /* defined(J9VM_OPT_CRIU_SUPPORT) */
+
 	/**
 	 * Write verbose stanza for Initialization of GC in to a verbose buffer
 	 * @param env GC thread used for output.

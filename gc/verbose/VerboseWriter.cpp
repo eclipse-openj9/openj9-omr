@@ -72,10 +72,16 @@ void
 MM_VerboseWriter::tearDown(MM_EnvironmentBase* env)
 {
 	MM_GCExtensionsBase* ext = env->getExtensions();
-	ext->getForge()->free(_header);
-	_header = NULL;
-	ext->getForge()->free(_footer);
-	_footer = NULL;
+
+	if (NULL != _header) {
+		ext->getForge()->free(_header);
+		_header = NULL;
+	}
+
+	if (NULL != _footer) {
+		ext->getForge()->free(_footer);
+		_footer = NULL;
+	}
 }
 
 void

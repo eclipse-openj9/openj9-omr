@@ -39,6 +39,9 @@
 #include "gcutils.h"
 
 static void verboseHandlerInitialized(J9HookInterface** hook, uintptr_t eventNum, void* eventData, void* userData);
+#if defined(J9VM_OPT_CRIU_SUPPORT)
+static void verboseHandlerReinitialized(J9HookInterface** hook, uintptr_t eventNum, void* eventData, void* userData);
+#endif /* defined(J9VM_OPT_CRIU_SUPPORT) */
 static void verboseHandlerHeapResize(J9HookInterface** hook, uintptr_t eventNum, void* eventData, void* userData);
 
 MM_VerboseHandlerOutput *
@@ -102,6 +105,9 @@ MM_VerboseHandlerOutput::enableVerbose()
 {
 	/* Initialized */
 	(*_mmOmrHooks)->J9HookRegisterWithCallSite(_mmOmrHooks, J9HOOK_MM_OMR_INITIALIZED, verboseHandlerInitialized, OMR_GET_CALLSITE(), (void *)this);
+#if defined(J9VM_OPT_CRIU_SUPPORT)
+	(*_mmOmrHooks)->J9HookRegisterWithCallSite(_mmOmrHooks, J9HOOK_MM_OMR_REINITIALIZED, verboseHandlerReinitialized, OMR_GET_CALLSITE(), (void *)this);
+#endif /* defined(J9VM_OPT_CRIU_SUPPORT) */
 	(*_mmPrivateHooks)->J9HookRegisterWithCallSite(_mmPrivateHooks, J9HOOK_MM_PRIVATE_HEAP_RESIZE, verboseHandlerHeapResize, OMR_GET_CALLSITE(), (void *)this);
 
 	return ;
@@ -112,6 +118,9 @@ MM_VerboseHandlerOutput::disableVerbose()
 {
 	/* Initialized */
 	(*_mmOmrHooks)->J9HookUnregister(_mmOmrHooks, J9HOOK_MM_OMR_INITIALIZED, verboseHandlerInitialized, NULL);
+#if defined(J9VM_OPT_CRIU_SUPPORT)
+	(*_mmOmrHooks)->J9HookUnregister(_mmOmrHooks, J9HOOK_MM_OMR_REINITIALIZED, verboseHandlerReinitialized, NULL);
+#endif /* defined(J9VM_OPT_CRIU_SUPPORT) */
 	(*_mmPrivateHooks)->J9HookUnregister(_mmPrivateHooks, J9HOOK_MM_PRIVATE_HEAP_RESIZE, verboseHandlerHeapResize, NULL);
 
 	return ;
@@ -339,6 +348,11 @@ MM_VerboseHandlerOutput::outputInitializedStanza(MM_EnvironmentBase *env, MM_Ver
 #endif /* OMR_GC_MODRON_SCAVENGER */
 	buffer->formatAndOutput(env, 1, "<attribute name=\"splitFreeListSplitAmount\" value=\"%zu\" />", _extensions->splitFreeListSplitAmount);
 	buffer->formatAndOutput(env, 1, "<attribute name=\"numaNodes\" value=\"%zu\" />", _extensions->_numaManager.getAffinityLeaderCount());
+#if defined(J9VM_OPT_CRIU_SUPPORT)
+	if (_extensions->reinitializationInProgress()) {
+		buffer->formatAndOutput(env, 1, "<attribute name=\"Restored Snapshot\" value=\"%s\" />", "true");
+	}
+#endif /* defined(J9VM_OPT_CRIU_SUPPORT) */
 
 	outputInitializedInnerStanza(env, buffer);
 
@@ -397,6 +411,23 @@ MM_VerboseHandlerOutput::handleInitialized(J9HookInterface** hook, uintptr_t eve
 	writer->flush(env);
 	exitAtomicReportingBlock();
 }
+
+#if defined(J9VM_OPT_CRIU_SUPPORT)
+void
+MM_VerboseHandlerOutput::handleReinitialized(J9HookInterface** hook, uintptr_t eventNum, void* eventData)
+{
+	MM_ReinitializedEvent* event = (MM_ReinitializedEvent*)eventData;
+	MM_VerboseWriterChain* writer = _manager->getWriterChain();
+	MM_EnvironmentBase* env = MM_EnvironmentBase::getEnvironment(event->currentThread);
+
+	_manager->setInitializedTime(event->timestamp);
+
+	enterAtomicReportingBlock();
+	outputInitializedStanza(env, writer->getBuffer());
+	writer->flush(env);
+	exitAtomicReportingBlock();
+}
+#endif /* defined(J9VM_OPT_CRIU_SUPPORT) */
 
 void
 MM_VerboseHandlerOutput::handleCycleStart(J9HookInterface** hook, uintptr_t eventNum, void* eventData)
@@ -1120,6 +1151,14 @@ verboseHandlerInitialized(J9HookInterface** hook, uintptr_t eventNum, void* even
 {
 	((MM_VerboseHandlerOutput*)userData)->handleInitialized(hook, eventNum, eventData);
 }
+
+#if defined(J9VM_OPT_CRIU_SUPPORT)
+void
+verboseHandlerReinitialized(J9HookInterface** hook, uintptr_t eventNum, void* eventData, void* userData)
+{
+	((MM_VerboseHandlerOutput*)userData)->handleReinitialized(hook, eventNum, eventData);
+}
+#endif /* defined(J9VM_OPT_CRIU_SUPPORT) */
 
 void
 verboseHandlerHeapResize(J9HookInterface** hook, uintptr_t eventNum, void* eventData, void* userData)

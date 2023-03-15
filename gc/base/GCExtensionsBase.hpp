@@ -1443,6 +1443,15 @@ public:
 	bool isSATBBarrierActive();
 	bool usingSATBBarrier();
 
+#if defined(J9VM_OPT_CRIU_SUPPORT)
+	/**
+	 * Helper function to determine whether a GC reinitialization is taking place
+	 * as a result of a VM snapshot restore.
+	 * @return boolean indicating whether GC reinitialization is taking place.
+	 */
+	MMINLINE virtual bool reinitializationInProgress() { return false; }
+#endif /* defined(J9VM_OPT_CRIU_SUPPORT) */
+
 	MM_GCExtensionsBase()
 		: MM_BaseVirtual()
 #if defined(OMR_GC_MODRON_SCAVENGER)

@@ -129,7 +129,12 @@ public:
 	 * @param[in] env the current environment.
 	 * @return void
 	 */
-	virtual void prepareForCheckpoint(MM_EnvironmentBase *env) { closeStreams(env); }
+	virtual void
+	prepareForCheckpoint(MM_EnvironmentBase *env)
+	{
+		closeStreams(env);
+		disableVerboseGC();
+	}
 
 	/**
 	 * Reinitalize the Verbose GC Components for restore.

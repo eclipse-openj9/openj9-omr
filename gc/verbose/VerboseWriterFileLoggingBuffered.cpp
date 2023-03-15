@@ -94,7 +94,9 @@ MM_VerboseWriterFileLoggingBuffered::openFile(MM_EnvironmentBase *env, bool prin
 		return false;
 	}
 	
-	_logFileStream = omrfilestream_open(filenameToOpen, EsOpenWrite | EsOpenCreate | EsOpenTruncate, 0666);
+	int32_t openFlags =  EsOpenWrite | EsOpenCreate | _manager->fileOpenMode(env);
+
+	_logFileStream = omrfilestream_open(filenameToOpen, openFlags, 0666);
 	if(NULL == _logFileStream) {
 		char *cursor = filenameToOpen;
 		/**
@@ -108,7 +110,7 @@ MM_VerboseWriterFileLoggingBuffered::openFile(MM_EnvironmentBase *env, bool prin
 		}
 
 		/* Try again */
-		_logFileStream = omrfilestream_open(filenameToOpen, EsOpenWrite | EsOpenCreate | EsOpenTruncate, 0666);
+		_logFileStream = omrfilestream_open(filenameToOpen, openFlags, 0666);
 		if (NULL == _logFileStream) {
 			_manager->handleFileOpenError(env, filenameToOpen);
 			extensions->getForge()->free(filenameToOpen);

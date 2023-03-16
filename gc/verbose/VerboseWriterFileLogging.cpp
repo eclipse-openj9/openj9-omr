@@ -95,10 +95,15 @@ MM_VerboseWriterFileLogging::tearDown(MM_EnvironmentBase *env)
 	OMRPORT_ACCESS_FROM_OMRPORT(env->getPortLibrary());
 	MM_GCExtensionsBase *extensions = MM_GCExtensionsBase::getExtensions(env->getOmrVM());
 
-	omrstr_free_tokens(_tokens);
-	_tokens = NULL;
-	extensions->getForge()->free(_filename);
-	_filename = NULL;
+	if (NULL != _tokens) {
+		omrstr_free_tokens(_tokens);
+		_tokens = NULL;
+	}
+
+	if (NULL != _filename) {
+		extensions->getForge()->free(_filename);
+		_filename = NULL;
+	}
 
 	MM_VerboseWriter::tearDown(env);
 }
@@ -329,6 +334,7 @@ bool
 MM_VerboseWriterFileLogging::reconfigure(MM_EnvironmentBase *env, const char *filename, uintptr_t numFiles, uintptr_t numCycles)
 {
 	closeFile(env);
+	tearDown(env);
 	return initialize(env, filename, numFiles, numCycles);
 }
 

@@ -271,6 +271,13 @@ public:
 	J9HookInterface** getPrivateHookInterface(){ return _mmPrivateHooks; }
 	J9HookInterface** getOMRHookInterface(){ return _omrHooks; }
 
+	/**
+	 * Query used by verbose writers to determine the file open flags required by the verbose manager.
+	 * @param[in] env the current environment.
+	 * @return int32_t flags that must be used for opening a verbose log.
+	 */
+	virtual int32_t fileOpenMode(MM_EnvironmentBase *env) { return EsOpenTruncate; }
+
 	MM_VerboseManagerBase(OMR_VM *omrVM)
 		: MM_BaseVirtual()
 		, _omrVM(omrVM)

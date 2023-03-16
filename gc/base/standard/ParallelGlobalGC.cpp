@@ -67,6 +67,10 @@
 #endif /* OMR_GC_MODRON_SCAVENGER */
 #include "WorkPackets.hpp"
 
+#if defined(J9VM_OPT_CRIU_SUPPORT)
+#include "SweepHeapSectioning.hpp"
+#endif /* defined(J9VM_OPT_CRIU_SUPPORT) */
+
 /* OMRTODO temporary workaround to allow both ut_j9mm.h and ut_omrmm.h to be included.
  *                 Dependency on ut_j9mm.h should be removed in the future.
  */
@@ -1908,3 +1912,17 @@ MM_ParallelGlobalGC::healHeap(MM_EnvironmentBase *env)
 	 */
 }
 #endif /* defined(OMR_ENV_DATA64) && defined(OMR_GC_FULL_POINTERS) */
+
+#if defined(J9VM_OPT_CRIU_SUPPORT)
+bool
+MM_ParallelGlobalGC::reinitializeForRestore(MM_EnvironmentBase *env)
+{
+	bool result = true;
+	/* Consider reinitializing sweepHeapSectioning through the collector's _sweepScheme. */
+	if (!_extensions->sweepHeapSectioning->reinitializeForRestore(env)) {
+		result = false;
+	}
+
+	return result;
+}
+#endif /* defined(J9VM_OPT_CRIU_SUPPORT) */

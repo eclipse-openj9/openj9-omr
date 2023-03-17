@@ -245,6 +245,7 @@ TR::AutomaticSymbol * OMR::AutomaticSymbol::createLocalObject(AllocatorType m, T
    {
    TR_ASSERT(kind == TR::newarray     ||
              kind == TR::New          ||
+             kind == TR::newvalue     ||
              kind == TR::anewarray,
              "Invalid kind passed to local object factory");
    TR::AutomaticSymbol * sym  = new (m) TR::AutomaticSymbol(d, s);

@@ -4679,6 +4679,9 @@ static void updateCallersFlags(TR::ResolvedMethodSymbol* callerSymbol, TR::Resol
    if (calleeSymbol->hasVectorAPI())
       callerSymbol->setHasVectorAPI(true);
 
+   if (calleeSymbol->hasExceptionHandlers())
+      callerSymbol->setHasExceptionHandlers(true);
+
    // Make sure we propagate to the top-level symbol too
    //
    static char *disablePropagatingCalleeFlagsToTopLevelMethod = feGetEnv("TR_disablePropagatingCalleeFlagsToTopLevelMethod");

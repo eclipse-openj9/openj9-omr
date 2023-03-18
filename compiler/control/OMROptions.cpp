@@ -167,6 +167,9 @@ TR::OptionTable OMR::Options::_jitOptions[] = {
    {"breakOnThrow=",       "D{regex}\traise trap when throwing an exception whose class name matches regex", TR::Options::setRegex, offsetof(OMR::Options,             _breakOnThrow), 0, "P"},
    {"breakOnWriteBarrier", "D\tinsert breakpoint instruction ahead of inline write barrier", SET_OPTION_BIT(TR_BreakOnWriteBarrier), "F" },
    {"breakOnWriteBarrierSnippet", "D\tinsert breakpoint instruction at beginning of write barrier snippet", SET_OPTION_BIT(BreakOnWriteBarrierSnippet), "F" },
+   {"catchBlockCounterThreshold=", "O<nnn>\tInliner will inline more aggressively on the throw path "
+                                   "if the catch block counter is greater than this threshold",
+                                   TR::Options::set32BitNumeric, offsetof(TR::Options, _catchBlockCounterThreshold), 50, "F%d"},
    {"checkGRA",                "D\tPreserve stores that would otherwise be removed by GRA, and then verify that the stored value matches the global register", SET_OPTION_BIT(TR_CheckGRA), "F"},
    {"checkStructureDuringExitExtraction", "D\tCheck structure after each step of exit extraction", SET_OPTION_BIT(TR_CheckStructureDuringExitExtraction), "F"},
    {"classesWithFoldableFinalFields=",   "O{regex}\tAllow hard-coding of values of final fields in the specified classes.  Default is to fold anything considered safe.", TR::Options::setRegex, offsetof(OMR::Options, _classesWithFolableFinalFields), 0, "F"},
@@ -640,6 +643,12 @@ TR::OptionTable OMR::Options::_jitOptions[] = {
    {"dumpIprofilerMethodNamesAndCounts",  "O\tDebug Printing of Method Names and Persisted Counts.", SET_OPTION_BIT(TR_DumpPersistedIProfilerMethodNamesAndCounts), "F"},
    {"dynamicThreadPriority",              "M\tenable dynamic changing of compilation thread priority", SET_OPTION_BIT(TR_DynamicThreadPriority), "F", NOT_IN_SUBSET},
    {"earlyLPQ",                           "M\tAllow compilations from low priority queue to happen early, during startup", SET_OPTION_BIT(TR_EarlyLPQ), "F", NOT_IN_SUBSET },
+   {"edoRecompSizeThreshold=",            "R<nnn>\tThe sample counter will not be decremented in a catch block "
+                                           "if the number of nodes in the compiled method exceeds this threshold",
+                                           TR::Options::set32BitNumeric, offsetof(TR::Options, _edoRecompSizeThreshold), 50, "F%d"},
+   {"edoRecompSizeThresholdInStartupMode=", "R<nnn>\tThe sample counter will not be decremented in a catch block "
+                                           "if the number of nodes in the compiled method exceeds this threshold and the VM is in startup mode",
+                                           TR::Options::set32BitNumeric, offsetof(TR::Options, _edoRecompSizeThresholdInStartupMode), 50, "F%d"},
    {"enableAggressiveInlining",           "I\tSet additional options that makes inlining more aggressive ", SET_OPTION_BIT(TR_AggressiveInlining), "F", NOT_IN_SUBSET},
    {"enableAggressiveLiveness",           "I\tenable globalLiveVariablesForGC below warm", SET_OPTION_BIT(TR_EnableAggressiveLiveness), "F"},
    {"enableAggressiveLoopVersioning", "O\tOptions and thresholds that result in loop versioning occurring in more cases", SET_OPTION_BIT(TR_EnableAggressiveLoopVersioning), "F" },
@@ -727,6 +736,7 @@ TR::OptionTable OMR::Options::_jitOptions[] = {
    {"enableNewCheckCastInstanceOf",      "O\tenable new Checkcast/InstanceOf evaluator", SET_OPTION_BIT(TR_EnableNewCheckCastInstanceOf), "F"},
    {"enableNewX86PrefetchTLH",           "O\tenable new X86 TLH prefetch algorithm", SET_OPTION_BIT(TR_EnableNewX86PrefetchTLH), "F"},
    {"enableNodeGC",                      "M\tenable node recycling", SET_OPTION_BIT(TR_EnableNodeGC), "F"},
+   {"enableOldEDO",                       "O\tenable the old EDO mechanism", SET_OPTION_BIT(TR_EnableOldEDO), "F", NOT_IN_SUBSET},
    {"enableOnsiteCacheForSuperClassTest", "O\tenable onsite cache for super class test",       SET_OPTION_BIT(TR_EnableOnsiteCacheForSuperClassTest), "F"},
    {"enableOSR",                          "O\tenable on-stack replacement", SET_OPTION_BIT(TR_EnableOSR), "F", NOT_IN_SUBSET},
    {"enableOSROnGuardFailure",            "O\tperform a decompile using on-stack replacement every time a virtual guard fails", SET_OPTION_BIT(TR_EnableOSROnGuardFailure), "F"},
@@ -1126,6 +1136,7 @@ TR::OptionTable OMR::Options::_jitOptions[] = {
    {"traceBlockShuffling",              "L\ttrace random rearrangement of blocks",         TR::Options::traceOptimization, blockShuffling, 0, "P"},
    {"traceBlockSplitter",               "L\ttrace block splitter",                         TR::Options::traceOptimization, blockSplitter, 0, "P"},
    {"traceBVA",                         "L\ttrace bit vector analysis",                    SET_OPTION_BIT(TR_TraceBVA), "P" },
+   {"traceCatchBlockProfiler",          "L\ttrace catch block profiler",                   TR::Options::traceOptimization, catchBlockProfiler, 0, "P"},
    {"traceCatchBlockRemoval",           "L\ttrace catch block removal",                    TR::Options::traceOptimization, catchBlockRemoval, 0, "P"},
    {"traceCFGSimplification",           "L\ttrace Control Flow Graph simplification",      TR::Options::traceOptimization, CFGSimplification, 0, "P"},
    {"traceCG",                          "L\tdump output of code generation passes",        SET_OPTION_BIT(TR_TraceCG), "P" },
@@ -2170,15 +2181,6 @@ OMR::Options::jitLatePostProcess(TR::OptionSet *optionSet, void * jitConfig)
 
       // TODO: make cold inliner less aggressive for 2P or less
 
-#ifdef J9_PROJECT_SPECIFIC
-      if (TR::Options::_catchSamplingSizeThreshold == -1) // not yet set
-         {
-         TR::Options::_catchSamplingSizeThreshold = 1100; // in number of nodes
-         if (TR::Compiler->target.numberOfProcessors() <= 2)
-            TR::Options::_catchSamplingSizeThreshold = 850;
-         }
-#endif
-
       if (_startupMethodDontDowngradeThreshold == -1) // not yet set
          {
          _startupMethodDontDowngradeThreshold = 300;
@@ -2812,6 +2814,12 @@ OMR::Options::jitPreProcess()
       _stackPCDumpNumberOfFrames=5;
       _maxSpreadCountLoopless = TR_MAX_SPREAD_COUNT_LOOPLESS;
       _maxSpreadCountLoopy = TR_MAX_SPREAD_COUNT_LOOPY;
+
+      // Set the default value for _edoRecompSizeThreshold before the
+      // code that sets default based on the deterministic mode
+      _edoRecompSizeThreshold = TR::Compiler->target.numberOfProcessors() <= 2 ? 850 : 1100; // in number of nodes
+      _edoRecompSizeThresholdInStartupMode = TR::Compiler->target.numberOfProcessors() <= 2 ? 850 : 1100; // in number of nodes
+      _catchBlockCounterThreshold = 50;
 
       // This call needs to stay at the end of jitPreProcess() because
       // it changes the default values for some options
@@ -5486,6 +5494,8 @@ void OMR::Options::setDefaultsForDeterministicMode()
          OMR::Options::_numUsableCompilationThreads = 7;
          OMR::Options::_numAllocatedCompilationThreads = OMR::Options::_numUsableCompilationThreads;
          }
+      _edoRecompSizeThreshold = 1000000;
+      _edoRecompSizeThresholdInStartupMode = 1000000;
 #ifdef J9_PROJECT_SPECIFIC
       TR::Options::_veryHotSampleThreshold = 240; // 12.5 %
       TR::Options::_scorchingSampleThreshold = 120; // 25% CPU
@@ -5499,7 +5509,6 @@ void OMR::Options::setDefaultsForDeterministicMode()
       TR::Options::_profileAllTheTime = 1;
       TR::Options::_scratchSpaceFactorWhenJSR292Workload = 1; // since we have maximum scratchSpaceLimit
       TR::Options::_scratchSpaceLimitKBWhenLowVirtualMemory = 2147483647;
-      TR::Options::_catchSamplingSizeThreshold = 10000000;
       TR::Options::_smallMethodBytecodeSizeThresholdForCold = 0; // Don't try filter out small methods from using GCR trees
 #endif
       switch (TR::Options::getDeterministicMode())

@@ -533,6 +533,7 @@ public:
    bool mayHaveLoops();
    bool hasLargeNumberOfLoops();
    bool hasNews();
+   bool hasExceptionHandlers();
 
    ToNumberMap  &getToNumberMap()  { return _toNumberMap; }
    ToStringMap  &getToStringMap()  { return _toStringMap; }

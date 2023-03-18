@@ -254,7 +254,7 @@ public:
    void setHasBranches(bool b)               { _methodFlags2.set(HasBranches, b); }
    bool hasVectorAPI()                       { return _methodFlags2.testAny(HasVectorAPI); }
    void setHasVectorAPI(bool b)              { _methodFlags2.set(HasVectorAPI, b); }
-   
+
    int32_t getNumberOfBackEdges();
 
    bool canDirectNativeCall()                { return _properties.testAny(CanDirectNativeCall); }
@@ -273,6 +273,8 @@ public:
 
    bool hasSnapshots()                       { return _properties.testAny(HasSnapshots); }
    void setHasSnapshots(bool v=true)         { _properties.set(HasSnapshots,v); }
+   bool hasExceptionHandlers()               { return _properties.testAny(HasExceptionHandlers); }
+   void setHasExceptionHandlers(bool v=true) { _properties.set(HasExceptionHandlers,v); }
 
    bool detectInternalCycles();
    bool catchBlocksHaveRealPredecessors();

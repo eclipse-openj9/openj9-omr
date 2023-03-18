@@ -382,7 +382,7 @@ OMR::Compilation::Compilation(
    // _methodSymbol must be initialized here because creating a jitted method symbol
    //   actually inspects TR::comp()->_methodSymbol (to compare against the new object)
    _methodSymbol = TR::ResolvedMethodSymbol::createJittedMethodSymbol(self()->trHeapMemory(), compilee, self());
-   
+
    // initPersistentCPUField and createOpCode must be done after method symbol creation
 
    if (self()->getOption(TR_EnableNodeGC))
@@ -2423,11 +2423,16 @@ OMR::Compilation::mayHaveLoops()
    return self()->getMethodSymbol()->mayHaveLoops();
    }
 
-
 bool
 OMR::Compilation::hasNews()
    {
    return self()->getMethodSymbol()->hasNews();
+   }
+
+bool
+OMR::Compilation::hasExceptionHandlers()
+   {
+   return self()->getMethodSymbol()->hasExceptionHandlers();
    }
 
 TR::HCRMode

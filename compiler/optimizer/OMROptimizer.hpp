@@ -134,6 +134,7 @@ enum
    IfEAOpportunitiesAndNotOptServer,
    IfAggressiveLiveness,
    IfVectorAPI,  // JEP414: Extra analysis required to optimize Vector API
+   IfExceptionHandlers,
    MarkLastRun
    };
 
@@ -176,9 +177,9 @@ class Optimizer
     * functionality as the `optTest=` parameter, it does not require
     * reinitializing the JIT, nor manually changing the optFile.
     *
-    * If _mockStrategy is NULL, has no effect on the optimizer. 
+    * If _mockStrategy is NULL, has no effect on the optimizer.
     *
-    * @param strategy The #OptimizationStrategy to return when requested. 
+    * @param strategy The #OptimizationStrategy to return when requested.
     */
    static void setMockStrategy(const OptimizationStrategy *strategy) { _mockStrategy = strategy; };
 
@@ -361,9 +362,9 @@ class Optimizer
 
    const OptimizationStrategy *          _strategy;
 
-   /* 
+   /*
     * Since mock strategies are only used in testing right now, we make this
-    * static to ease implementation. 
+    * static to ease implementation.
     *
     * This is currently not a thread-safe implementation beause doing a
     * thread-safe implementation would require a more invasive compilation

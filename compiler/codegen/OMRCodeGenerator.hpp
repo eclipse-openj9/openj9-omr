@@ -81,8 +81,8 @@ class TR_LiveReference;
 class TR_LiveRegisters;
 class TR_OSRMethodData;
 class TR_PseudoRegister;
-class TR_RegisterCandidate;
-class TR_RegisterCandidates;
+namespace TR { class RegisterCandidate; }
+namespace TR { class RegisterCandidates; }
 namespace TR { class Relocation; }
 namespace TR { class RelocationDebugInfo; }
 class TR_ResolvedMethod;
@@ -1025,13 +1025,13 @@ public:
    TR_BitVector *getGlobalFPRsPreservedAcrossCalls(){ return NULL; }
 
    int32_t getFirstBit(TR_BitVector &bv);
-   TR_GlobalRegisterNumber pickRegister(TR_RegisterCandidate *, TR::Block * *, TR_BitVector & availableRegisters, TR_GlobalRegisterNumber & highRegisterNumber, TR_LinkHead<TR_RegisterCandidate> *candidates);
-   TR_RegisterCandidate *findCoalescenceForRegisterCopy(TR::Node *node, TR_RegisterCandidate *rc, bool *isUnpreferred);
-   TR_GlobalRegisterNumber findCoalescenceRegisterForParameter(TR::Node *callNode, TR_RegisterCandidate *rc, uint32_t childIndex, bool *isUnpreferred);
-   TR_RegisterCandidate *findUsedCandidate(TR::Node *node, TR_RegisterCandidate *rc, TR_BitVector *visitedNodes);
+   TR_GlobalRegisterNumber pickRegister(TR::RegisterCandidate *, TR::Block * *, TR_BitVector & availableRegisters, TR_GlobalRegisterNumber & highRegisterNumber, TR_LinkHead<TR::RegisterCandidate> *candidates);
+   TR::RegisterCandidate *findCoalescenceForRegisterCopy(TR::Node *node, TR::RegisterCandidate *rc, bool *isUnpreferred);
+   TR_GlobalRegisterNumber findCoalescenceRegisterForParameter(TR::Node *callNode, TR::RegisterCandidate *rc, uint32_t childIndex, bool *isUnpreferred);
+   TR::RegisterCandidate *findUsedCandidate(TR::Node *node, TR::RegisterCandidate *rc, TR_BitVector *visitedNodes);
 
-   bool allowGlobalRegisterAcrossBranch(TR_RegisterCandidate *, TR::Node * branchNode);
-   void removeUnavailableRegisters(TR_RegisterCandidate * rc, TR::Block * * blocks, TR_BitVector & availableRegisters) {}
+   bool allowGlobalRegisterAcrossBranch(TR::RegisterCandidate *, TR::Node * branchNode);
+   void removeUnavailableRegisters(TR::RegisterCandidate * rc, TR::Block * * blocks, TR_BitVector & availableRegisters) {}
    void setUnavailableRegistersUsage(TR_Array<TR_BitVector>  & liveOnEntryUsage, TR_Array<TR_BitVector>   & liveOnExitUsage) {}
 
    int32_t getMaximumNumberOfGPRsAllowedAcrossEdge(TR::Node *) { return INT_MAX; }

@@ -35,7 +35,7 @@
 class TR_BitVector;
 class TR_OpaqueClassBlock;
 class TR_PostDominators;
-class TR_RegisterCandidate;
+namespace TR { class RegisterCandidate; }
 class TR_Structure;
 class TR_ValueNumberInfo;
 namespace TR { class Block; }
@@ -163,7 +163,7 @@ class TR_FieldPrivatizer : public TR_LoopTransformer
    TR_BitVector *_needToStoreBack;
    List<TR::Node> _privatizedFieldNodes;
    TR_HashTabInt              _privatizedFieldSymRefs;
-   List<TR_RegisterCandidate> _privatizedRegCandidates;
+   List<TR::RegisterCandidate> _privatizedRegCandidates;
    TR::Block *_criticalEdgeBlock;
    TR::SymbolReference *_stringSymRef, *_valueOfSymRef, *_tempStringSymRef, *_appendSymRef, *_toStringSymRef, *_initSymRef;
    TR::TreeTop *_stringPeepholeTree;

@@ -492,16 +492,16 @@ void OMR::ARM64::CodeGenerator::buildRegisterMapForInstruction(TR_GCStackMap *ma
    map->setInternalPointerMap(internalPtrMap);
    }
 
-TR_GlobalRegisterNumber OMR::ARM64::CodeGenerator::pickRegister(TR_RegisterCandidate *regCan,
+TR_GlobalRegisterNumber OMR::ARM64::CodeGenerator::pickRegister(TR::RegisterCandidate *regCan,
                                                           TR::Block **barr,
                                                           TR_BitVector &availRegs,
                                                           TR_GlobalRegisterNumber &highRegisterNumber,
-                                                          TR_LinkHead<TR_RegisterCandidate> *candidates)
+                                                          TR_LinkHead<TR::RegisterCandidate> *candidates)
    {
    return OMR::CodeGenerator::pickRegister(regCan, barr, availRegs, highRegisterNumber, candidates);
    }
 
-bool OMR::ARM64::CodeGenerator::allowGlobalRegisterAcrossBranch(TR_RegisterCandidate *regCan, TR::Node *branchNode)
+bool OMR::ARM64::CodeGenerator::allowGlobalRegisterAcrossBranch(TR::RegisterCandidate *regCan, TR::Node *branchNode)
    {
    // If return false, processLiveOnEntryBlocks has to dis-qualify any candidates which are referenced
    // within any CASE of a SWITCH statement.

@@ -19,35 +19,9 @@
  * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0 OR GPL-2.0 WITH Classpath-exception-2.0 OR LicenseRef-GPL-2.0 WITH Assembly-exception
  *******************************************************************************/
 
-#ifndef REGISTERCANDIDATE_INCL
-#define REGISTERCANDIDATE_INCL
+#ifndef GLOBALREGISTER_INLINES_INCL
+#define GLOBALREGISTER_INLINES_INCL
 
-#include "optimizer/OMRRegisterCandidate.hpp"
-
-namespace TR
-{
-
-class GlobalSet : public OMR::GlobalSet
-    {
-public:
-    GlobalSet(TR::Compilation * comp, TR::Region &region)
-        : OMR::GlobalSet(comp, region) {}
-    };
-
-class RegisterCandidate : public OMR::RegisterCandidate
-    {
-public:
-    RegisterCandidate(TR::SymbolReference *symRef, TR::Region &region)
-        : OMR::RegisterCandidate(symRef, region) {}
-    };
-
-class RegisterCandidates : public OMR::RegisterCandidates
-    {
-public:
-    RegisterCandidates(TR::Compilation *comp)
-        : OMR::RegisterCandidates(comp) {}
-    };
-
-}
+#include "optimizer/OMRGlobalRegister_inlines.hpp"
 
 #endif

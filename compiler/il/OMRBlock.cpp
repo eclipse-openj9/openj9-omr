@@ -69,6 +69,8 @@
 #include "optimizer/RegisterCandidate.hpp"
 #include "optimizer/Structure.hpp"
 #include "optimizer/TransformUtil.hpp"
+#include "optimizer/GlobalRegister.hpp"
+#include "optimizer/GlobalRegister_inlines.hpp"
 #include "ras/Debug.hpp"
 
 class TR_Memory;
@@ -174,7 +176,7 @@ OMR::Block::Block(TR::Block &other, TR::TreeTop *entry, TR::TreeTop *exit) :
    self()->setFrequency(other.getFrequency());
 
    if (other._globalRegisters)
-      _globalRegisters = new (other._region) TR_Array<TR_GlobalRegister>(*other._globalRegisters);
+      _globalRegisters = new (other._region) TR_Array<TR::GlobalRegister>(*other._globalRegisters);
 
    _flags.set(other._flags.getValue());
    _moreflags.set(other._moreflags.getValue());
@@ -2322,11 +2324,11 @@ OMR::Block::getNestingDepth()
    return -1;
    }
 
-TR_Array<TR_GlobalRegister> &
+TR_Array<TR::GlobalRegister> &
 OMR::Block::getGlobalRegisters(TR::Compilation *c)
    {
    if (!_globalRegisters)
-      _globalRegisters = new (c->trStackMemory()) TR_Array<TR_GlobalRegister>(c->trMemory(), c->cg()->getNumberOfGlobalRegisters(), true, stackAlloc);
+      _globalRegisters = new (c->trStackMemory()) TR_Array<TR::GlobalRegister>(c->trMemory(), c->cg()->getNumberOfGlobalRegisters(), true, stackAlloc);
    return *_globalRegisters;
    }
 

@@ -699,7 +699,7 @@ int32_t TR_LoopVersioner::performWithoutDominators()
             TR::SymbolReference *inductionVar = comp()->getSymRefTab()->getSymRef(*(versionableInductionVar->getData()));
             //printf("Induction variable %d in loop %d in register for %s\n", inductionVar->getReferenceNumber(), naturalLoop->getNumber(), comp()->signature());
             inductionVars->set(inductionVar->getReferenceNumber());
-            TR_RegisterCandidate *inductionCandidate = comp()->getGlobalRegisterCandidates()->findOrCreate(inductionVar);
+            TR::RegisterCandidate *inductionCandidate = comp()->getGlobalRegisterCandidates()->findOrCreate(inductionVar);
             //dumpOptDetails(comp(), "%s Adding auto %d as a global register candidate in loop %d\n", OPT_DETAILS_LOOP_VERSIONER, inductionCandidate->getSymbolReference()->getReferenceNumber(), naturalLoop->getNumber());
             inductionCandidate->addAllBlocksInStructure(naturalLoop, comp(), trace()?"auto":NULL);
             versionableInductionVar = versionableInductionVar->getNextElement();
@@ -729,7 +729,7 @@ int32_t TR_LoopVersioner::performWithoutDominators()
              if (inductionSymRef && !inductionVars->get(inductionSymRef->getReferenceNumber()))
                {
                //printf("CP Induction variable %d in natural loop %d in register for %s\n", inductionSymRef->getReferenceNumber(), naturalLoop->getNumber(), comp()->signature());
-               TR_RegisterCandidate *inductionCandidate = comp()->getGlobalRegisterCandidates()->findOrCreate(inductionSymRef);
+               TR::RegisterCandidate *inductionCandidate = comp()->getGlobalRegisterCandidates()->findOrCreate(inductionSymRef);
                //dumpOptDetails(comp(), "%s Adding auto %d as a global register candidate in loop %d\n", OPT_DETAILS_LOOP_VERSIONER, inductionCandidate->getSymbolReference()->getReferenceNumber(), naturalLoop->getNumber());
                inductionCandidate->addAllBlocksInStructure(naturalLoop, comp(), trace()?"auto":NULL);
                }

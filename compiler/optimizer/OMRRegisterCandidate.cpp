@@ -71,6 +71,8 @@
 #include "optimizer/Optimizations.hpp"
 #include "optimizer/Optimizer.hpp"
 #include "optimizer/Structure.hpp"
+#include "optimizer/GlobalRegister.hpp"
+#include "optimizer/GlobalRegister_inlines.hpp"
 #include "ras/Debug.hpp"
 
 
@@ -87,7 +89,7 @@
 // Duplicated in GlobalRegisterAllocator.cpp. TODO try and factor this out
 #define keepAllStores false
 
-TR::GlobalSet::GlobalSet(TR::Compilation * comp, TR::Region &region)
+OMR::GlobalSet::GlobalSet(TR::Compilation * comp, TR::Region &region)
    :_region(region),
     _blocksPerAuto((RefMapComparator()),(RefMapAllocator(region))),
     _EMPTY(region),
@@ -96,7 +98,7 @@ TR::GlobalSet::GlobalSet(TR::Compilation * comp, TR::Region &region)
    {
    }
 
-void TR::GlobalSet::collectBlocks()
+void OMR::GlobalSet::collectBlocks()
    {
    TR::StackMemoryRegion stackMemoryRegion(*_comp->trMemory());
 
@@ -137,7 +139,7 @@ void TR::GlobalSet::collectBlocks()
    _collected = true;
    }
 
-void TR::GlobalSet::collectReferencedAutoSymRefs(TR::Node *node, TR_BitVector &referencedAutoSymRefs, TR::NodeChecklist &visited)
+void OMR::GlobalSet::collectReferencedAutoSymRefs(TR::Node *node, TR_BitVector &referencedAutoSymRefs, TR::NodeChecklist &visited)
    {
    if (visited.contains(node))
       return;
@@ -159,13 +161,13 @@ static bool dontAssignInColdBlocks(TR::Compilation *comp) { return comp->getMeth
 // These classes are meant to allow that work to be independent of
 // the way that the successor blocks are actually identified.
 
-int32_t TR_RegisterCandidates::_candidateTypeWeights[TR_NumRegisterCandidateTypes] =
+int32_t OMR::RegisterCandidates::_candidateTypeWeights[TR_NumRegisterCandidateTypes] =
    {
    1,        // TR_InductionVariableCandidate
    1 // 10        // TR_PRECandidate
    };
 
-TR_RegisterCandidate::TR_RegisterCandidate(TR::SymbolReference * sr, TR::Region &r)
+OMR::RegisterCandidate::RegisterCandidate(TR::SymbolReference * sr, TR::Region &r)
    : _symRef(sr), _splitSymRef(NULL), _restoreSymRef(NULL), _lowRegNumber(-1), _highRegNumber(-1),
      _liveOnEntry(), _liveOnExit(), _originalLiveOnEntry(),
      _reprioritized(0),
@@ -179,12 +181,12 @@ TR_RegisterCandidate::TR_RegisterCandidate(TR::SymbolReference * sr, TR::Region 
    }
 
 TR::DataType
-TR_RegisterCandidate::getType()
+OMR::RegisterCandidate::getType()
    {
    return getSymbol()->getType();
    }
 TR::DataType
-TR_RegisterCandidate::getDataType()
+OMR::RegisterCandidate::getDataType()
    {
    TR::Symbol *rcSymbol = getSymbol();
    TR::DataType dtype = rcSymbol->getDataType();
@@ -193,7 +195,7 @@ TR_RegisterCandidate::getDataType()
    }
 
 TR_RegisterKinds
-TR_RegisterCandidate::getRegisterKinds()
+OMR::RegisterCandidate::getRegisterKinds()
   {
   TR::DataType dt = getDataType();
   if(dt == TR::Float
@@ -206,7 +208,7 @@ TR_RegisterCandidate::getRegisterKinds()
     return TR_GPR;
   }
 
-void TR_RegisterCandidate::addAllBlocksInStructure(TR_Structure *structure, TR::Compilation *comp, const char *description, vcount_t count, bool recursiveCall)
+void OMR::RegisterCandidate::addAllBlocksInStructure(TR_Structure *structure, TR::Compilation *comp, const char *description, vcount_t count, bool recursiveCall)
    {
    if (!recursiveCall)
       count = comp->incVisitCount();
@@ -240,21 +242,21 @@ void TR_RegisterCandidate::addAllBlocksInStructure(TR_Structure *structure, TR::
 
 
 
-TR_RegisterCandidates::TR_RegisterCandidates(TR::Compilation *comp)
+OMR::RegisterCandidates::RegisterCandidates(TR::Compilation *comp)
   : _compilation(comp), _trMemory(comp->trMemory()), _candidateRegion(_trMemory->heapMemoryRegion()),
     _referencedAutoSymRefsInBlock(NULL)
    {
    _candidateForSymRefs = 0;
    }
 
- TR_RegisterCandidate *TR_RegisterCandidates::newCandidate(TR::SymbolReference *ref) {
-   return new (_candidateRegion) TR_RegisterCandidate(ref, _candidateRegion);
+ TR::RegisterCandidate *OMR::RegisterCandidates::newCandidate(TR::SymbolReference *ref) {
+   return new (_candidateRegion) TR::RegisterCandidate(ref, _candidateRegion);
  }
 
-TR_RegisterCandidate *
-TR_RegisterCandidates::findOrCreate(TR::SymbolReference * symRef)
+TR::RegisterCandidate *
+OMR::RegisterCandidates::findOrCreate(TR::SymbolReference * symRef)
    {
-   TR_RegisterCandidate * rc;
+   TR::RegisterCandidate * rc;
    if ((rc = find(symRef)))
       {
       if (_candidateForSymRefs)
@@ -273,12 +275,12 @@ TR_RegisterCandidates::findOrCreate(TR::SymbolReference * symRef)
    return rc;
    }
 
-TR_RegisterCandidate *
-TR_RegisterCandidates::find(TR::SymbolReference * symRef)
+TR::RegisterCandidate *
+OMR::RegisterCandidates::find(TR::SymbolReference * symRef)
    {
    if (symRef->getSymbol()->isAutoOrParm())
       {
-      TR_RegisterCandidate* rc= (_candidateForSymRefs) ? (*_candidateForSymRefs)[GET_INDEX_FOR_CANDIDATE_FOR_SYMREF(symRef)] : NULL;
+      TR::RegisterCandidate* rc= (_candidateForSymRefs) ? (*_candidateForSymRefs)[GET_INDEX_FOR_CANDIDATE_FOR_SYMREF(symRef)] : NULL;
       // two symrefs can point to same symbols so it is possible that we have an rc for symref->getSymbol but not have it added to the cache
       if(rc==NULL)
          {
@@ -293,10 +295,10 @@ TR_RegisterCandidates::find(TR::SymbolReference * symRef)
    }
 
 
-TR_RegisterCandidate *
-TR_RegisterCandidates::find(TR::Symbol* sym)
+TR::RegisterCandidate *
+OMR::RegisterCandidates::find(TR::Symbol* sym)
    {
-   TR_RegisterCandidate * rc;
+   TR::RegisterCandidate * rc;
    for (rc = _candidates.getFirst(); rc; rc = rc->getNext())
       if (rc->getSymbolReference()->getSymbol() == sym)
          return rc;
@@ -304,23 +306,39 @@ TR_RegisterCandidates::find(TR::Symbol* sym)
    return NULL;
    }
 
+TR::GlobalSet&
+OMR::RegisterCandidates::getReferencedAutoSymRefs(TR::Region &region)
+   {
+   if (_referencedAutoSymRefsInBlock == NULL)
+      {
+      void *memory = region.allocate(sizeof(TR::GlobalSet));
+      _referencedAutoSymRefsInBlock = new (memory) TR::GlobalSet(comp(), region);
+      }
+   return *_referencedAutoSymRefsInBlock;
+   }
 
-
+TR_BitVector *
+OMR::RegisterCandidates::getBlocksReferencingSymRef(uint32_t symRefNum)
+   {
+   if (_referencedAutoSymRefsInBlock == NULL)
+      return NULL;
+   return (*_referencedAutoSymRefsInBlock)[symRefNum];
+   }
 
 bool
-TR_RegisterCandidate::find(TR::Block * b)
+OMR::RegisterCandidate::find(TR::Block * b)
    {
    return _blocks.find(b->getNumber());
    }
 
 void
-TR_RegisterCandidate::addBlock(TR::Block * block, int32_t numberOfLoadsAndStores)
+OMR::RegisterCandidate::addBlock(TR::Block * block, int32_t numberOfLoadsAndStores)
    {
    _blocks.incNumberOfLoadsAndStores(block->getNumber(), numberOfLoadsAndStores);
    }
 
 int32_t
-TR_RegisterCandidate::removeBlock(TR::Block * block)
+OMR::RegisterCandidate::removeBlock(TR::Block * block)
    {
    if (find(block))
       {
@@ -332,27 +350,27 @@ TR_RegisterCandidate::removeBlock(TR::Block * block)
    }
 
 
-void TR_RegisterCandidate::removeLoopExitBlock(TR::Block *b)
+void OMR::RegisterCandidate::removeLoopExitBlock(TR::Block *b)
    {
    _loopExitBlocks.remove(b);
    }
 
 
-void TR_RegisterCandidate::addLoopExitBlock(TR::Block *b)
+void OMR::RegisterCandidate::addLoopExitBlock(TR::Block *b)
    {
    if (!_loopExitBlocks.find(b))
       _loopExitBlocks.add(b);
    }
 
 
-bool TR_RegisterCandidate::hasLoopExitBlock(TR::Block * b)
+bool OMR::RegisterCandidate::hasLoopExitBlock(TR::Block * b)
    {
    return (_loopExitBlocks.find(b) != 0);
    }
 
 
 int32_t
-TR_RegisterCandidate::countNumberOfLoadsAndStoresInBlocks(List<TR::Block> *blocksInLoop)
+OMR::RegisterCandidate::countNumberOfLoadsAndStoresInBlocks(List<TR::Block> *blocksInLoop)
    {
    int32_t numLoadsAndStores = 0;
    ListIterator<TR::Block> blocksIt(blocksInLoop);
@@ -367,8 +385,8 @@ TR_RegisterCandidate::countNumberOfLoadsAndStoresInBlocks(List<TR::Block> *block
 #ifdef TRIM_ASSIGNED_CANDIDATES
 // The following are methods for maintaining info about number of candidate's loads
 // and stores per loop (vs. per block)
-TR_RegisterCandidate::LoopInfo *
-TR_RegisterCandidate::find(TR_Structure * l)
+OMR::RegisterCandidate::LoopInfo *
+OMR::RegisterCandidate::find(TR_Structure * l)
    {
    for (LoopInfo * li = _loops.getFirst(); li; li = li->getNext())
       if (li->_loop == l)
@@ -377,7 +395,7 @@ TR_RegisterCandidate::find(TR_Structure * l)
    }
 
 void
-TR_RegisterCandidate::printLoopInfo(TR::Compilation *comp)
+OMR::RegisterCandidate::printLoopInfo(TR::Compilation *comp)
    {
    for (LoopInfo * li = _loops.getFirst(); li; li = li->getNext())
       {
@@ -389,7 +407,7 @@ TR_RegisterCandidate::printLoopInfo(TR::Compilation *comp)
    }
 
 void
-TR_RegisterCandidate::addLoop(TR_Structure * loop, int32_t numberOfLoadsAndStores, TR_Memory * m)
+OMR::RegisterCandidate::addLoop(TR_Structure * loop, int32_t numberOfLoadsAndStores, TR_Memory * m)
    {
    LoopInfo * li = find(loop);
    if (li)
@@ -401,7 +419,7 @@ TR_RegisterCandidate::addLoop(TR_Structure * loop, int32_t numberOfLoadsAndStore
 
 // Reduce block info into loop info by counting loads and stores in loops
 void
-TR_RegisterCandidate::countNumberOfLoadsAndStoresInLoops(TR_Memory * m)
+OMR::RegisterCandidate::countNumberOfLoadsAndStoresInLoops(TR_Memory * m)
    {
    for (BlockInfo * bi = _blocks.getFirst(); bi; bi = bi->getNext())
       {
@@ -417,7 +435,7 @@ TR_RegisterCandidate::countNumberOfLoadsAndStoresInLoops(TR_Memory * m)
    }
 
 int32_t
-TR_RegisterCandidate::getNumberOfLoadsAndStoresInLoop(TR_Structure *loop)
+OMR::RegisterCandidate::getNumberOfLoadsAndStoresInLoop(TR_Structure *loop)
    {
    LoopInfo * li = find(loop);
    if (li)
@@ -442,7 +460,7 @@ bool isInnerLoop(TR::Compilation *comp, TR_Structure *loop)
    }
 
 void
-TR_RegisterCandidate::removeAssignedCandidateFromLoop(TR::Compilation *comp, TR_Structure *loop, int32_t regNum, TR_BitVector *liveOnEntryUsage, TR_BitVector *liveOnExitUsage, bool trace)
+OMR::RegisterCandidate::removeAssignedCandidateFromLoop(TR::Compilation *comp, TR_Structure *loop, int32_t regNum, TR_BitVector *liveOnEntryUsage, TR_BitVector *liveOnExitUsage, bool trace)
    {
    List<TR::Block> blocksInLoop(comp->trMemory());
    loop->getBlocks(&blocksInLoop);
@@ -488,7 +506,7 @@ TR_RegisterCandidate::removeAssignedCandidateFromLoop(TR::Compilation *comp, TR_
 #endif
 
 bool
-TR_RegisterCandidate::symbolIsLive(TR::Block * block)
+OMR::RegisterCandidate::symbolIsLive(TR::Block * block)
    {
    TR_BitVector * liveLocals = block->getLiveLocals();
    if (!liveLocals)
@@ -509,7 +527,7 @@ TR_RegisterCandidate::symbolIsLive(TR::Block * block)
    }
 
 
-bool findStoreNearEndOfBlock(TR::Block *block, TR::SymbolReference *ref)
+static bool findStoreNearEndOfBlock(TR::Block *block, TR::SymbolReference *ref)
    {
    TR::Node * node = block->getLastRealTreeTop()->getNode();
 
@@ -523,7 +541,7 @@ bool findStoreNearEndOfBlock(TR::Block *block, TR::SymbolReference *ref)
    return false;
    }
 
-bool findLoad(TR::Node *node, TR::SymbolReference *ref)
+static bool findLoad(TR::Node *node, TR::SymbolReference *ref)
    {
    if (node->getOpCode().isLoad() &&
        node->getSymbolReference() == ref)
@@ -539,14 +557,14 @@ bool findLoad(TR::Node *node, TR::SymbolReference *ref)
    return false;
    }
 
-bool findLoadNearStartOfBlock(TR::Block *block, TR::SymbolReference *ref)
+static bool findLoadNearStartOfBlock(TR::Block *block, TR::SymbolReference *ref)
    {
    // vcount_t visitCount = comp->incVisitCount();
    return findLoad(block->getFirstRealTreeTop()->getNode(), ref);
 
    }
 
-bool TR_RegisterCandidates::aliasesPreventAllocation(TR::Compilation *comp, TR::SymbolReference *symRef)
+bool OMR::RegisterCandidates::aliasesPreventAllocation(TR::Compilation *comp, TR::SymbolReference *symRef)
   {
 
   if (!symRef->getSymbol()->isAutoOrParm() && !(comp->target().cpu.isZ() && comp->target().isLinux()) ) return true;
@@ -564,7 +582,7 @@ bool TR_RegisterCandidates::aliasesPreventAllocation(TR::Compilation *comp, TR::
   }
 
 void
-TR_RegisterCandidate::setWeight(TR::Block * * blocks, int32_t *blockStructureWeight, TR::Compilation *comp,
+OMR::RegisterCandidate::setWeight(TR::Block * * blocks, int32_t *blockStructureWeight, TR::Compilation *comp,
                                 TR_Array<int32_t> & blockGPRCount,
                                 TR_Array<int32_t> & blockFPRCount,
                                 TR_Array<int32_t> & blockVRFCount,
@@ -635,7 +653,7 @@ TR_RegisterCandidate::setWeight(TR::Block * * blocks, int32_t *blockStructureWei
 
 
 void
-TR_RegisterCandidate::recalculateWeight(TR::Block * * blocks, int32_t *blockStructureWeight, TR::Compilation *comp,
+OMR::RegisterCandidate::recalculateWeight(TR::Block * * blocks, int32_t *blockStructureWeight, TR::Compilation *comp,
                                         TR_Array<int32_t> & blockGPRCount,
                                         TR_Array<int32_t> & blockFPRCount,
                                         TR_Array<int32_t> & blockVRFCount,
@@ -649,7 +667,7 @@ TR_RegisterCandidate::recalculateWeight(TR::Block * * blocks, int32_t *blockStru
 // Look at exit live count of predecessor, and return true if there is too much
 // register pressue
 bool
-TR_RegisterCandidate::prevBlockTooRegisterConstrained(TR::Compilation *comp, TR::Block *block,
+OMR::RegisterCandidate::prevBlockTooRegisterConstrained(TR::Compilation *comp, TR::Block *block,
                                                       TR_Array<int32_t> & blockGPRCount,
                                                       TR_Array<int32_t> & blockFPRCount,
                                                       TR_Array<int32_t> & blockVRFCount)
@@ -686,7 +704,7 @@ TR_RegisterCandidate::prevBlockTooRegisterConstrained(TR::Compilation *comp, TR:
 }
 
 
-bool TR_RegisterCandidate::rcNeeds2Regs(TR::Compilation *comp)
+bool OMR::RegisterCandidate::rcNeeds2Regs(TR::Compilation *comp)
    {
    if(getType().isAggregate())
       {
@@ -701,7 +719,7 @@ bool TR_RegisterCandidate::rcNeeds2Regs(TR::Compilation *comp)
    }
 
 bool
-TR_RegisterCandidate::hasSameGlobalRegisterNumberAs(TR::Node *node, TR::Compilation *comp)
+OMR::RegisterCandidate::hasSameGlobalRegisterNumberAs(TR::Node *node, TR::Compilation *comp)
    {
    if (node->requiresRegisterPair(comp))
       return (getLowGlobalRegisterNumber() == node->getLowGlobalRegisterNumber())
@@ -712,7 +730,7 @@ TR_RegisterCandidate::hasSameGlobalRegisterNumberAs(TR::Node *node, TR::Compilat
 
 
 void
-TR_RegisterCandidate::processLiveOnEntryBlocks(TR::Block * * blocks, int32_t *blockStructureWeight, TR::Compilation *comp,
+OMR::RegisterCandidate::processLiveOnEntryBlocks(TR::Block * * blocks, int32_t *blockStructureWeight, TR::Compilation *comp,
                                                TR_Array<int32_t> & blockGPRCount,
                                                TR_Array<int32_t> & blockFPRCount,
                                                TR_Array<int32_t> & blockVRFCount,
@@ -1279,7 +1297,7 @@ TR_RegisterCandidate::processLiveOnEntryBlocks(TR::Block * * blocks, int32_t *bl
          // we'd like to avoid doing the store itself.  If liveOnEntry is false
          // but there are loads or stores, then it must be a store in the block.
          //
-         if (!comp->cg()->allowGlobalRegisterAcrossBranch(this, node)
+         if (!comp->cg()->allowGlobalRegisterAcrossBranch((TR::RegisterCandidate *)this, node)
 //             || prevBlockTooRegisterConstrained(comp,block,blockGPRCount,blockFPRCount,blockVRFCount)
             )
             {
@@ -1609,7 +1627,7 @@ TR_RegisterCandidate::processLiveOnEntryBlocks(TR::Block * * blocks, int32_t *bl
 // till the corressponding exit
 //
 void
-TR_RegisterCandidate::extendLiveRangesForLiveOnExit(TR::Compilation *comp, TR::Block **blocks, TR_Array<TR::Block *>& startOfExtendedBBForBB)
+OMR::RegisterCandidate::extendLiveRangesForLiveOnExit(TR::Compilation *comp, TR::Block **blocks, TR_Array<TR::Block *>& startOfExtendedBBForBB)
    {
    LexicalTimer t("extendLiveRangesForLiveOnExit", comp->phaseTimer());
 
@@ -1699,7 +1717,7 @@ TR_RegisterCandidate::extendLiveRangesForLiveOnExit(TR::Compilation *comp, TR::B
    }
 
 void
-TR_RegisterCandidates::lookForCandidates(
+OMR::RegisterCandidates::lookForCandidates(
    TR::Node * node, TR::Symbol * entrySymbol, TR::Symbol * exitSymbol, bool & foundEntry, bool & foundExit)
    {
    if (node->getVisitCount() == _compilation->getVisitCount())
@@ -1730,8 +1748,8 @@ TR_RegisterCandidates::lookForCandidates(
    }
 
 bool
-TR_RegisterCandidates::candidatesOverlap(
-   TR::Block * block, TR_RegisterCandidate * candidateOnEntry, TR_RegisterCandidate * candidateOnExit, bool trace)
+OMR::RegisterCandidates::candidatesOverlap(
+   TR::Block * block, TR::RegisterCandidate * candidateOnEntry, TR::RegisterCandidate * candidateOnExit, bool trace)
    {
    LexicalTimer t("candidatesOverlap", comp()->phaseTimer());
 
@@ -1778,14 +1796,14 @@ TR_RegisterCandidates::candidatesOverlap(
 
 
 bool
-TR_RegisterCandidates::prioritizeCandidate(
-   TR_RegisterCandidate * newRC, TR_RegisterCandidate * & first)
+OMR::RegisterCandidates::prioritizeCandidate(
+   TR::RegisterCandidate * newRC, TR::RegisterCandidate * & first)
    {
    LexicalTimer t("prioritizeCandidate", comp()->phaseTimer());
 
    if (newRC->getWeight() != 0)
       {
-      TR_RegisterCandidate * rc = first, * prev = 0;
+      TR::RegisterCandidate * rc = first, * prev = 0;
       for (; rc; prev = rc, rc = rc->getNext())
          {
          if (newRC->getWeight() > rc->getWeight())
@@ -1800,9 +1818,9 @@ TR_RegisterCandidates::prioritizeCandidate(
    return false;
    }
 
-TR_RegisterCandidate *
-TR_RegisterCandidates::reprioritizeCandidates(
-                  TR_RegisterCandidate * first, TR::Block * * blocks, int32_t *blockStructureWeight, int32_t numberOfBlocks, TR::Block * fullBlock, TR::Compilation *comp,
+TR::RegisterCandidate *
+OMR::RegisterCandidates::reprioritizeCandidates(
+                  TR::RegisterCandidate * first, TR::Block * * blocks, int32_t *blockStructureWeight, int32_t numberOfBlocks, TR::Block * fullBlock, TR::Compilation *comp,
                   bool reprioritizeFP, bool onlyReprioritizeLongs, TR_BitVector *referencedBlocks,
                   TR_Array<int32_t> & blockGPRCount, TR_Array<int32_t> & blockFPRCount, TR_Array<int32_t> & blockVRFCount, TR_BitVector *successorBits,
                   bool trace)
@@ -1823,9 +1841,9 @@ TR_RegisterCandidates::reprioritizeCandidates(
          }
       }
 
-   TR_RegisterCandidate *pFirst = NULL;
-   TR_RegisterCandidate *next;
-   for (TR_RegisterCandidate * rc = first; rc; rc = next)
+   TR::RegisterCandidate *pFirst = NULL;
+   TR::RegisterCandidate *next;
+   for (TR::RegisterCandidate * rc = first; rc; rc = next)
       {
       next = rc->getNext();
       bool isFPCandidate = false;
@@ -1862,7 +1880,7 @@ TR_RegisterCandidates::reprioritizeCandidates(
 
 
 static void
-scanPressureSimulatorCacheForConflicts(TR_RegisterCandidate *rc, TR_BitVector &blocks, TR_Array<TR_BitVector> &liveOnEntryConflicts, TR_Array<TR_BitVector> &liveOnExitConflicts, TR_Array<TR_BitVector> &entryExitConflicts, int32_t firstRegister, int32_t lastRegister, TR_BitVector *spilledRegs, TR::Compilation *comp, TR::Block * * all_blocks)
+scanPressureSimulatorCacheForConflicts(TR::RegisterCandidate *rc, TR_BitVector &blocks, TR_Array<TR_BitVector> &liveOnEntryConflicts, TR_Array<TR_BitVector> &liveOnExitConflicts, TR_Array<TR_BitVector> &entryExitConflicts, int32_t firstRegister, int32_t lastRegister, TR_BitVector *spilledRegs, TR::Compilation *comp, TR::Block * * all_blocks)
    {
    LexicalTimer t("scanPressureSimulatorCacheForConflicts", comp->phaseTimer());
 
@@ -2058,7 +2076,7 @@ scanPressureSimulatorCacheForConflicts(TR_RegisterCandidate *rc, TR_BitVector &b
    }
 
 
-void TR_RegisterCandidates::collectCfgProperties(TR::Block **blocks, int32_t numberOfBlocks)
+void OMR::RegisterCandidates::collectCfgProperties(TR::Block **blocks, int32_t numberOfBlocks)
   {
    TR::CFG * cfg = comp()->getFlowGraph();
 
@@ -2093,7 +2111,21 @@ void TR_RegisterCandidates::collectCfgProperties(TR::Block **blocks, int32_t num
 
   }
 
-static void assign_candidate_loop_trace_increment(TR::Compilation *comp, TR_RegisterCandidate * rc, unsigned count)
+void
+OMR::RegisterCandidates::initCandidateForSymRefs()
+   {
+   _candidateForSymRefs = new (trStackMemory()) SymRefCandidateMap(SymRefCandidateMapComparator(), SymRefCandidateMapAllocator(trMemory()->currentStackRegion()));
+   }
+
+void
+OMR::RegisterCandidates::initStartOfExtendedBBForBB()
+   {
+   _startOfExtendedBBForBB.init(trMemory(),
+      (uint32_t)(comp()->getFlowGraph()->getNextNodeNumber() * sizeof(TR::Block *) * 1.5),
+         false, stackAlloc);
+   }
+
+static void assign_candidate_loop_trace_increment(TR::Compilation *comp, TR::RegisterCandidate * rc, unsigned count)
    {
    bool trace = comp->getOptions()->trace(OMR::tacticalGlobalRegisterAllocator);
    if (trace)
@@ -2103,11 +2135,11 @@ static void assign_candidate_loop_trace_increment(TR::Compilation *comp, TR_Regi
    }
 
 bool
-TR_RegisterCandidates::assign(TR::Block ** cfgBlocks, int32_t numberOfBlocks, int32_t & lowestNumber, int32_t & highestNumber)
+OMR::RegisterCandidates::assign(TR::Block ** cfgBlocks, int32_t numberOfBlocks, int32_t & lowestNumber, int32_t & highestNumber)
    {
 #if (defined(__IBMCPP__) || defined(__IBMC__)) && !defined(__ibmxl__)
    // __func__ is not defined for this function on XLC compilers (Notably XLC on Linux PPC and ZOS)
-   static const char __func__[] = "TR_RegisterCandidates::assign";
+   static const char __func__[] = "OMR::RegisterCandidates::assign";
 #endif
    LexicalTimer t("assign", comp()->phaseTimer());
    //ReferenceTable ot(0, comp()->allocator());
@@ -2234,7 +2266,7 @@ TR_RegisterCandidates::assign(TR::Block ** cfgBlocks, int32_t numberOfBlocks, in
           longVar->getSymbol()->isAuto() &&
           longVar->getSymbol()->getType().isInt64())
          {
-         TR_RegisterCandidate *registerCandidate = comp()->getGlobalRegisterCandidates()->find(longVar);
+         TR::RegisterCandidate *registerCandidate = comp()->getGlobalRegisterCandidates()->find(longVar);
          if (registerCandidate)
             registerCandidate->setHighWordZero(true);
          }
@@ -2244,7 +2276,7 @@ TR_RegisterCandidates::assign(TR::Block ** cfgBlocks, int32_t numberOfBlocks, in
    highestNumber = -1;
    lowestNumber = INT_MAX;
 
-   TR_RegisterCandidate * rc = _candidates.getFirst(), * first = 0, * next;
+   TR::RegisterCandidate * rc = _candidates.getFirst(), * first = 0, * next;
    if (rc == 0)
       return globalFPAssignmentDone;
 
@@ -2985,7 +3017,7 @@ TR_RegisterCandidates::assign(TR::Block ** cfgBlocks, int32_t numberOfBlocks, in
 #ifdef TRIM_ASSIGNED_CANDIDATES
                        if (containingLoop && isInnerLoop(comp(), containingLoop))
                           {
-                          TR_RegisterCandidate * regCand = block->getGlobalRegisters(comp())[i].getRegisterCandidateOnEntry();
+                          TR::RegisterCandidate * regCand = block->getGlobalRegisters(comp())[i].getRegisterCandidateOnEntry();
 
                           if (regCand)
                              {
@@ -3002,7 +3034,7 @@ TR_RegisterCandidates::assign(TR::Block ** cfgBlocks, int32_t numberOfBlocks, in
                        if (autosInBlock && autosInBlock->get(block->getNumber()))
                           {
                           // blockWeight = blockStructureWeight[block->getNumber()];
-                          blockWeight = rc->_blocks.getNumberOfLoadsAndStores(block->getNumber());
+                          blockWeight = rc->getBlocks().getNumberOfLoadsAndStores(block->getNumber());
 
                           if (blockWeight > maxFrequency)
                              {
@@ -3074,7 +3106,7 @@ TR_RegisterCandidates::assign(TR::Block ** cfgBlocks, int32_t numberOfBlocks, in
                           if (blockStructure)
                              {
                              // blockWeight = blockStructureWeight[block->getNumber()];
-                             blockWeight = rc->_blocks.getNumberOfLoadsAndStores(block->getNumber());
+                             blockWeight = rc->getBlocks().getNumberOfLoadsAndStores(block->getNumber());
                              if (blockWeight > maxFrequency)
                                 {
                                 maxFrequency = blockWeight;
@@ -3173,7 +3205,7 @@ TR_RegisterCandidates::assign(TR::Block ** cfgBlocks, int32_t numberOfBlocks, in
                     int32_t blockNumber = bvi.getNextElement();
                     TR::Block *block = blocks[blockNumber];
                     TR_Structure *loop = block->getStructureOf()->getContainingLoop();
-                    TR_RegisterCandidate *cand = block->getGlobalRegisters(comp())[conflictingRegister].getRegisterCandidateOnEntry();
+                    TR::RegisterCandidate *cand = block->getGlobalRegisters(comp())[conflictingRegister].getRegisterCandidateOnEntry();
                     if (cand)
                        {
                        cand->removeAssignedCandidateFromLoop(comp(), loop, conflictingRegister,
@@ -3198,7 +3230,7 @@ TR_RegisterCandidates::assign(TR::Block ** cfgBlocks, int32_t numberOfBlocks, in
                  }
               if (trace)
                  {
-                 TR_RegisterCandidate *rc2;
+                 TR::RegisterCandidate *rc2;
                  traceMsg(comp(),"Prioritized list of candidates\n");
                  for (rc2 = next; rc2; rc2 = rc2->getNext())
                     {
@@ -3516,9 +3548,9 @@ TR_RegisterCandidates::assign(TR::Block ** cfgBlocks, int32_t numberOfBlocks, in
    }
 
 
-void  ComputeOverlaps(TR::Node *node,
+static void  ComputeOverlaps(TR::Node *node,
                       TR::Compilation *comp,
-                      TR_RegisterCandidates::Coordinates &overlaps,
+                      OMR::RegisterCandidates::Coordinates &overlaps,
                       uint32_t &seqno)
    {
    if (node->getVisitCount() == comp->getVisitCount())
@@ -3534,21 +3566,21 @@ void  ComputeOverlaps(TR::Node *node,
       seqno+=1;
       uint32_t ref = node->getSymbolReference()->getReferenceNumber();
 
-      TR_RegisterCandidates::Coordinates::iterator itr = overlaps.find(ref);
+      OMR::RegisterCandidates::Coordinates::iterator itr = overlaps.find(ref);
       if (itr != overlaps.end())
          itr->second.last = seqno;
       else
          {
-         overlaps.insert(std::make_pair(ref, TR_RegisterCandidates::coordinates(seqno, seqno)));
+         overlaps.insert(std::make_pair(ref, OMR::RegisterCandidates::coordinates(seqno, seqno)));
          }
       }
 
 
    }
 
-void  ComputeOverlaps(TR::Block *block,
+static void  ComputeOverlaps(TR::Block *block,
                       TR::Compilation *comp,
-                      TR_RegisterCandidates::Coordinates &overlaps) {
+                      OMR::RegisterCandidates::Coordinates &overlaps) {
   uint32_t seqno = 0;
   comp->incVisitCount();
   TR::TreeTop *lt = block->getEntry()->getExtendedBlockExitTreeTop();
@@ -3563,7 +3595,7 @@ void  ComputeOverlaps(TR::Block *block,
 
 
 void
-TR_RegisterCandidates::computeAvailableRegisters(TR_RegisterCandidate *rc, int32_t firstRegister, int32_t lastRegister, TR::Block * * blocks, TR_BitVector *availableRegisters)
+OMR::RegisterCandidates::computeAvailableRegisters(TR::RegisterCandidate *rc, int32_t firstRegister, int32_t lastRegister, TR::Block * * blocks, TR_BitVector *availableRegisters)
    {
    LexicalTimer t("compute available registers", comp()->phaseTimer());
    bool trace = comp()->getOptions()->trace(OMR::tacticalGlobalRegisterAllocator);
@@ -3607,7 +3639,7 @@ TR_RegisterCandidates::computeAvailableRegisters(TR_RegisterCandidate *rc, int32
             overlaps = overlapLookup->second;
             }
 
-         TR_RegisterCandidate *rc1 = b->getGlobalRegisters(comp())[i].getRegisterCandidateOnEntry();
+         TR::RegisterCandidate *rc1 = b->getGlobalRegisters(comp())[i].getRegisterCandidateOnEntry();
          if (rc1)
             {
             Coordinates::iterator rc1Itr = overlaps->find(rc1->getSymbolReference()->getReferenceNumber());
@@ -3642,7 +3674,7 @@ TR_RegisterCandidates::computeAvailableRegisters(TR_RegisterCandidate *rc, int32
             overlaps = overlapLookup->second;
             }
 
-         TR_RegisterCandidate *rc2 = b->getGlobalRegisters(comp())[i].getRegisterCandidateOnExit();
+         TR::RegisterCandidate *rc2 = b->getGlobalRegisters(comp())[i].getRegisterCandidateOnExit();
          if (rc2)
             {
             Coordinates::iterator rcItr = overlaps->find(rc->getSymbolReference()->getReferenceNumber());

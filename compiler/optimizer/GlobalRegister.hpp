@@ -19,33 +19,18 @@
  * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0 OR GPL-2.0 WITH Classpath-exception-2.0 OR LicenseRef-GPL-2.0 WITH Assembly-exception
  *******************************************************************************/
 
-#ifndef REGISTERCANDIDATE_INCL
-#define REGISTERCANDIDATE_INCL
+#ifndef GLOBALREGISTER_INCL
+#define GLOBALREGISTER_INCL
 
-#include "optimizer/OMRRegisterCandidate.hpp"
+#include "optimizer/OMRGlobalRegister.hpp"
 
 namespace TR
 {
 
-class GlobalSet : public OMR::GlobalSet
+class OMR_EXTENSIBLE GlobalRegister : public OMR::GlobalRegisterConnector
     {
 public:
-    GlobalSet(TR::Compilation * comp, TR::Region &region)
-        : OMR::GlobalSet(comp, region) {}
-    };
-
-class RegisterCandidate : public OMR::RegisterCandidate
-    {
-public:
-    RegisterCandidate(TR::SymbolReference *symRef, TR::Region &region)
-        : OMR::RegisterCandidate(symRef, region) {}
-    };
-
-class RegisterCandidates : public OMR::RegisterCandidates
-    {
-public:
-    RegisterCandidates(TR::Compilation *comp)
-        : OMR::RegisterCandidates(comp) {}
+    // no ctor so that it can be zero initialized by the TR_Array template
     };
 
 }

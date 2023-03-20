@@ -42,6 +42,7 @@ compiler_library(optimizer
 	${CMAKE_CURRENT_LIST_DIR}/FieldPrivatizer.cpp
 	${CMAKE_CURRENT_LIST_DIR}/GeneralLoopUnroller.cpp
 	${CMAKE_CURRENT_LIST_DIR}/GlobalAnticipatability.cpp
+	${CMAKE_CURRENT_LIST_DIR}/OMRGlobalRegister.cpp
 	${CMAKE_CURRENT_LIST_DIR}/GlobalRegisterAllocator.cpp
 	${CMAKE_CURRENT_LIST_DIR}/Inliner.cpp
 	${CMAKE_CURRENT_LIST_DIR}/RematTools.cpp
@@ -78,7 +79,7 @@ compiler_library(optimizer
 	${CMAKE_CURRENT_LIST_DIR}/ReachingDefinitions.cpp
 	${CMAKE_CURRENT_LIST_DIR}/OMRRecognizedCallTransformer.cpp
 	${CMAKE_CURRENT_LIST_DIR}/RedundantAsyncCheckRemoval.cpp
-	${CMAKE_CURRENT_LIST_DIR}/RegisterCandidate.cpp
+	${CMAKE_CURRENT_LIST_DIR}/OMRRegisterCandidate.cpp
 	${CMAKE_CURRENT_LIST_DIR}/OMRSimplifier.cpp
 	${CMAKE_CURRENT_LIST_DIR}/OMRSimplifierHelpers.cpp
 	${CMAKE_CURRENT_LIST_DIR}/OMRSimplifierHandlers.cpp

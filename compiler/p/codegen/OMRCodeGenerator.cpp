@@ -1058,11 +1058,11 @@ void OMR::Power::CodeGenerator::simulateNodeEvaluation(TR::Node * node, TR_Regis
       }
    }
 
-TR_GlobalRegisterNumber OMR::Power::CodeGenerator::pickRegister(TR_RegisterCandidate              *  regCan,
+TR_GlobalRegisterNumber OMR::Power::CodeGenerator::pickRegister(TR::RegisterCandidate              *  regCan,
                                                           TR::Block                          ** barr,
                                                           TR_BitVector                      &  availRegs,
                                                           TR_GlobalRegisterNumber           &  highRegisterNumber,
-                                                          TR_LinkHead<TR_RegisterCandidate> *  candidates)
+                                                          TR_LinkHead<TR::RegisterCandidate> *  candidates)
    {
    if (!self()->comp()->getOption(TR_DisableRegisterPressureSimulation))
       return OMR::CodeGenerator::pickRegister(regCan, barr, availRegs, highRegisterNumber, candidates);
@@ -1179,7 +1179,7 @@ TR_GlobalRegisterNumber OMR::Power::CodeGenerator::pickRegister(TR_RegisterCandi
 
          _assignedGlobalRegisters->empty();
          int32_t numAssignedGlobalRegs = 0;
-         TR_RegisterCandidate *prev;
+         TR::RegisterCandidate *prev;
          for (prev = candidates->getFirst(); prev; prev = prev->getNext())
             {
             bool gprCandidate = true;
@@ -1291,7 +1291,7 @@ TR_GlobalRegisterNumber OMR::Power::CodeGenerator::pickRegister(TR_RegisterCandi
      }
   }
 
-bool OMR::Power::CodeGenerator::allowGlobalRegisterAcrossBranch(TR_RegisterCandidate *rc, TR::Node * branchNode)
+bool OMR::Power::CodeGenerator::allowGlobalRegisterAcrossBranch(TR::RegisterCandidate *rc, TR::Node * branchNode)
    {
    // If return false, processLiveOnEntryBlocks has to dis-qualify any candidates which are referenced
    // within any CASE of a SWITCH statement.

@@ -1271,6 +1271,13 @@ OMR::X86::MemoryReference::addMetaDataForCodeAddress(
                                              __LINE__,
                                              node);
                         }
+                     else if (staticSym->isCatchBlockCounter())
+                        {
+                        cg->addExternalRelocation(new (cg->trHeapMemory()) TR::ExternalRelocation(cursor, 0, TR_CatchBlockCounter, cg),
+                                             __FILE__,
+                                             __LINE__,
+                                             node);
+                        }
                      else if (staticSym->isGCRPatchPoint())
                         {
                         TR::ExternalRelocation* r= new (cg->trHeapMemory())

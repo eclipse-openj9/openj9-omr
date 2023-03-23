@@ -1371,6 +1371,10 @@ static void loadRelocatableConstant(TR::Node               *node,
          {
          loadAddressConstant(cg, GCRnode, 1, reg, NULL, false, TR_BodyInfoAddressLoad);
          }
+      else if (symbol->isCatchBlockCounter())
+         {
+         loadAddressConstant(cg, GCRnode, 1, reg, NULL, false, TR_CatchBlockCounter);
+         }
       else if (symbol->isCompiledMethod())
          {
          loadAddressConstant(cg, GCRnode, 1, reg, NULL, false, TR_RamMethodSequence);

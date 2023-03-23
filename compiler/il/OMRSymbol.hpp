@@ -282,6 +282,9 @@ public:
    void setIsRecompQueuedFlag()             { _flags2.set(RecompQueuedFlag); }
    bool isRecompQueuedFlag()                { return _flags2.testAny(RecompQueuedFlag); }
 
+   void setIsCatchBlockCounter()            { _flags2.set(CatchBlockCounter); }
+   bool isCatchBlockCounter()               { return _flags2.testAny(CatchBlockCounter); }
+
    inline bool isNamed();
 
    // flag methods specific to Autos
@@ -588,6 +591,7 @@ public:
        * This flag is used to identify the value type default value instance slot address
        */
       StaticDefaultValueInstance = 0x00020000,
+      CatchBlockCounter          = 0x00040000,
       };
 
 protected:

@@ -190,6 +190,12 @@ void OMR::X86::AMD64::MemoryReference::finishInitialization(
       {
       mightNeedAddressRegister = true;
       }
+   else if (sr.getSymbol() != NULL && (sr.isUnresolved() || (sr.stackAllocatedArrayAccess() && !IS_32BIT_SIGNED(self()->getDisplacement()))))
+      {
+      // Once resolved, the address could be anything, so be conservative.
+      //
+      mightNeedAddressRegister = true;
+      }
    else if (self()->getBaseRegister() == cg->getFrameRegister())
       {
       // We should never see stack frames 2GB in size, so don't waste a register.
@@ -197,12 +203,6 @@ void OMR::X86::AMD64::MemoryReference::finishInitialization(
       // pointer adjustment.)
       //
       mightNeedAddressRegister = false;
-      }
-   else if (sr.getSymbol() != NULL && sr.isUnresolved())
-      {
-      // Once resolved, the address could be anything, so be conservative.
-      //
-      mightNeedAddressRegister = true;
       }
    else if (comp->getOption(TR_EnableHCR) && sr.getSymbol() && sr.getSymbol()->isClassObject())
       {

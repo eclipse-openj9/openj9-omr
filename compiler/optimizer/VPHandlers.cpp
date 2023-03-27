@@ -2179,10 +2179,6 @@ TR::Node *constrainIaload(OMR::ValuePropagation *vp, TR::Node *node)
    TR::VPConstraint *constraint;
    int32_t len = 0;
    const char *sig = getFieldSignature(vp, node, len);
-   int32_t arrLength = -1;
-   int32_t elementSize = -1;
-   bool foundInfo = false;
-   bool isFixed = false;
 
    if (node->getOpCode().hasSymbolReference())
       {
@@ -2537,41 +2533,6 @@ TR::Node *constrainIaload(OMR::ValuePropagation *vp, TR::Node *node)
 
       if (!symRef->getSymbol()->isArrayShadowSymbol())
          {
-         TR::Symbol *sym = symRef->getSymbol();
-         bool allowForAOT = vp->comp()->getOption(TR_UseSymbolValidationManager);
-         if (((sym->isShadow() && node->getFirstChild()->isThisPointer()) || sym->isStatic()) &&
-            !symRef->isUnresolved() && (sym->isPrivate() || sym->isFinal()))
-            {
-            TR_PersistentClassInfo * classInfo =
-               vp->comp()->getPersistentInfo()->getPersistentCHTable()->findClassInfoAfterLocking(vp->comp()->getCurrentMethod()->containingClass(), vp->comp());
-            if (classInfo && classInfo->getFieldInfo())
-               {
-               TR_PersistentFieldInfo * fieldInfo = classInfo->getFieldInfo()->findFieldInfo(vp->comp(), node, false);
-               if (fieldInfo)
-                  {
-                  TR_PersistentArrayFieldInfo *arrayFieldInfo = fieldInfo ? fieldInfo->asPersistentArrayFieldInfo() : 0;
-                  if (arrayFieldInfo && arrayFieldInfo->isDimensionInfoValid())
-                     {
-                     arrLength = arrayFieldInfo->getDimensionInfo(0);
-                     if (arrLength >= 0 && sig && (len > 0) &&
-                         (sig[0] == '[' || sig[0] == 'L' || sig[0] == 'Q'))
-                        {
-                        elementSize = arrayElementSize(sig, len, node, vp);
-                        if (elementSize != 0)
-                           {
-                           if (vp->trace())
-                              traceMsg(vp->comp(), "Using class lookahead info to find out non null, array dimension\n");
-                           //vp->addGlobalConstraint(node, TR::VPNonNullObject::create(vp));
-                           //vp->addGlobalConstraint(node, TR::VPArrayInfo::create(vp, arrLength, arrLength, elementSize));
-                           isFixed = true;
-                           foundInfo = true;
-                           }
-                        }
-                     }
-                  }
-               }
-            }
-
          TR::Node *underlyingObject = node->getFirstChild();
           constraint = vp->getConstraint(underlyingObject, isGlobal);
           if (constraint && constraint->getClass())
@@ -2624,15 +2585,20 @@ TR::Node *constrainIaload(OMR::ValuePropagation *vp, TR::Node *node)
    // don't use getClassFromSignature for arrays to determine the type of the
    // component as its done below later using the right api
    //
-   if (sig &&
+   TR::Symbol *sym = node->getSymbol();
+   TR_OpaqueClassBlock *declaredClass = sym->getDeclaredClass();
+   if ((declaredClass != NULL || sig != NULL) &&
          !(node->getOpCode().hasSymbolReference() &&
             node->getSymbol()->isArrayShadowSymbol() &&
             node->getFirstChild()->getOpCode().isArrayRef()))
       {
       TR_ResolvedMethod *method = node->getSymbolReference()->getOwningMethod(vp->comp());
-      TR_OpaqueClassBlock *classBlock = vp->fe()->getClassFromSignature(sig, len, method);
-      TR_OpaqueClassBlock *erased = NULL;
+      TR::Symbol *sym = node->getSymbol();
+      TR_OpaqueClassBlock *classBlock = declaredClass;
+      if (classBlock == NULL)
+         classBlock = vp->fe()->getClassFromSignature(sig, len, method);
 
+      TR_OpaqueClassBlock *erased = NULL;
       if (!classBlock || vp->isUnreliableSignatureType(classBlock, erased))
          {
          classBlock = erased;
@@ -2651,17 +2617,16 @@ TR::Node *constrainIaload(OMR::ValuePropagation *vp, TR::Node *node)
             {
             if (classBlock != jlClass)
                {
-               constraint = TR::VPClassType::create(vp, sig, len, method, isFixed, classBlock);
-
-               if (*sig == '[' || sig[0] == 'L' || sig[0] == 'Q')
+               constraint = TR::VPResolvedClass::create(vp, classBlock);
+               if (TR::Compiler->cls.isClassArray(vp->comp(), classBlock))
                   {
-                  elementSize = arrayElementSize(sig, len, node, vp);
-                  if (elementSize != 0)
-                     {
-                     constraint = TR::VPClass::create(vp, (TR::VPClassType*)constraint, NULL, NULL,
-                           TR::VPArrayInfo::create(vp, 0, elementSize == 0 ? TR::getMaxSigned<TR::Int32>() : TR::getMaxSigned<TR::Int32>()/elementSize, elementSize),
-                           TR::VPObjectLocation::create(vp, TR::VPObjectLocation::NotClassObject));
-                     }
+                  int32_t elementSize =
+                     TR::Compiler->cls.getArrayElementWidthInBytes(
+                        vp->comp(), classBlock);
+
+                  constraint = TR::VPClass::create(vp, (TR::VPClassType*)constraint, NULL, NULL,
+                        TR::VPArrayInfo::create(vp, 0, TR::getMaxSigned<TR::Int32>() / elementSize, elementSize),
+                        TR::VPObjectLocation::create(vp, TR::VPObjectLocation::NotClassObject));
                   }
                }
             else
@@ -2670,15 +2635,7 @@ TR::Node *constrainIaload(OMR::ValuePropagation *vp, TR::Node *node)
             }
          }
       }
-#endif
 
-
-   if (foundInfo)
-      {
-      vp->addGlobalConstraint(node, TR::VPArrayInfo::create(vp, arrLength, arrLength, elementSize));
-      }
-
-#ifdef J9_PROJECT_SPECIFIC
    if (node->getOpCode().hasSymbolReference() &&
        node->getSymbol()->isArrayShadowSymbol() &&
        node->getFirstChild()->getOpCode().isArrayRef())
@@ -2810,7 +2767,6 @@ TR::Node *constrainIaload(OMR::ValuePropagation *vp, TR::Node *node)
          }
       }
 #endif
-
 
    if (node->isNonNull())
       vp->addBlockConstraint(node, TR::VPNonNullObject::create(vp));

@@ -377,18 +377,14 @@ uint32_t OMR::X86::AMD64::MemoryReference::estimateBinaryLength(TR::CodeGenerato
       _addressRegister = NULL;
       }
 
-   if (_addressRegister == NULL)
-      {
-      // Just use inherited logic
-      //
-      estimate = OMR::X86::MemoryReference::estimateBinaryLength(cg);
+   estimate = OMR::X86::MemoryReference::estimateBinaryLength(cg);
 
-      // For [disp32], AMD64 needs a SIB byte
-      //
-      if (_baseRegister == NULL && _indexRegister == NULL)
-         estimate += 1;
-      }
-   else
+   // For [disp32], AMD64 needs a SIB byte
+   //
+   if (_baseRegister == NULL && _indexRegister == NULL)
+      estimate += 1;
+
+   if (_addressRegister != NULL)
       {
 
       // TODO:AMD64: Should be able to do a tighter estimate than this
@@ -397,12 +393,10 @@ uint32_t OMR::X86::AMD64::MemoryReference::estimateBinaryLength(TR::CodeGenerato
       // great big load instruction.  Thus, the size we use for the estimate is
       // the size after adding the big load instruction.)
       //
-      estimate = IMM64_LOAD_SIZE + MAX_MEMREF_SIZE;
-
+      estimate += IMM64_LOAD_SIZE;
       }
 
    return estimate;
-
    }
 
 

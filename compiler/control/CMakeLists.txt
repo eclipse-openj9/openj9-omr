@@ -23,6 +23,7 @@ compiler_library(control
 	${CMAKE_CURRENT_LIST_DIR}/OMROptions.cpp
 	${CMAKE_CURRENT_LIST_DIR}/OptimizationPlan.cpp
 	${CMAKE_CURRENT_LIST_DIR}/OMRRecompilation.cpp
+        ${CMAKE_CURRENT_LIST_DIR}/OMRCompilationStrategy.cpp
 	${CMAKE_CURRENT_LIST_DIR}/CompilationController.cpp
 	${CMAKE_CURRENT_LIST_DIR}/CompileMethod.cpp
 )

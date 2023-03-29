@@ -22,24 +22,36 @@
 #ifndef COMPILATIONCONTROLLER_INCL
 #define COMPILATIONCONTROLLER_INCL
 
-#include "control/OptimizationPlan.hpp"
-#include "env/TRMemory.hpp"
+#include <stdint.h>
 
-class TR_MethodEvent;
-namespace TR { class Recompilation; }
+namespace TR { class CompilationStrategy; }
+namespace TR { class CompilationInfo; }
 
+//------------------------------- TR::CompilationController ------------------------
+// All methods and fields are static. The most important field is _compilationStrategy
+// that store the compilation strategy in use.
+//---------------------------------------------------------------------------------
 namespace TR
 {
-
-class DefaultCompilationStrategy : public TR::CompilationStrategy
+class CompilationController
    {
    public:
-   TR_PERSISTENT_ALLOC(TR_Memory::PersistentInfo);
-   DefaultCompilationStrategy() {}
-   TR_OptimizationPlan *processEvent(TR_MethodEvent *event, bool *newPlanCreated);
-   void shutdown() {}
-   virtual bool enableSwitchToProfiling() { return true; }
+   enum {LEVEL1=1, LEVEL2, LEVEL3}; // verbosity levels;
+   static bool    init(TR::CompilationInfo *);
+   static void    shutdown();
+   static bool    useController() { return _useController; }
+   static int32_t verbose() { return _verbose; }
+   static void    setVerbose(int32_t v) { _verbose = v; }
+   static TR::CompilationStrategy * getCompilationStrategy() { return _compilationStrategy; }
+   static TR::CompilationInfo     * getCompilationInfo() { return _compInfo; }
+   private:
+   static TR::CompilationStrategy *_compilationStrategy;
+   static TR::CompilationInfo     *_compInfo;        // stored here for convenience
+   static int32_t                 _verbose;
+   static bool                    _useController;
+   static bool                    _tlsCompObjCreated;
    };
 
-} // namesapce TR
+} // namespace TR
+
 #endif

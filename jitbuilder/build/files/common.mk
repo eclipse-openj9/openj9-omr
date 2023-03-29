@@ -216,6 +216,7 @@ JIT_PRODUCT_BACKEND_SOURCES+=\
     $(JIT_OMR_DIRTY_DIR)/env/FEBase.cpp \
     $(JIT_OMR_DIRTY_DIR)/env/JitConfig.cpp \
     $(JIT_OMR_DIRTY_DIR)/control/CompilationController.cpp \
+    $(JIT_OMR_DIRTY_DIR)/control/OMRCompilationStrategy.cpp \
     $(JIT_OMR_DIRTY_DIR)/optimizer/FEInliner.cpp \
     $(JIT_OMR_DIRTY_DIR)/runtime/Runtime.cpp \
     $(JIT_OMR_DIRTY_DIR)/runtime/Trampoline.cpp \

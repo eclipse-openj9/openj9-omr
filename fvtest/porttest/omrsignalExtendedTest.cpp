@@ -407,10 +407,15 @@ TEST(PortSignalExtendedTests, sig_ext_test1)
 	/* initialize local variables */
 	memset(&maskThreadInfo, 0, sizeof(maskThreadInfo));
 	memset(&unmaskThreadInfo, 0, sizeof(unmaskThreadInfo));
+	memset(&mask, 0, sizeof(mask));
 	sigemptyset(&mask);
+	memset(&oldMask, 0, sizeof(oldMask));
 	sigemptyset(&oldMask);
+	memset(&currentMask, 0, sizeof(currentMask));
 	sigemptyset(&currentMask);
+	memset(&maskThread_mask, 0, sizeof(maskThread_mask));
 	sigemptyset(&maskThread_mask);
+	memset(&unmaskThread_mask, 0, sizeof(unmaskThread_mask));
 	sigemptyset(&unmaskThread_mask);
 
 	/*

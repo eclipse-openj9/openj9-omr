@@ -182,6 +182,10 @@ OMR::ARM64::CodeGenerator::initialize()
          cg->setSupportsArrayCmp();
          }
       }
+      if (!comp->getOption(TR_DisableArraySetOpts))
+         {
+         cg->setSupportsArraySet();
+         }
    }
 
 void

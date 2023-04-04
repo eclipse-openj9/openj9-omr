@@ -1301,7 +1301,7 @@ MM_MemoryPoolSplitAddressOrderedList::releaseFreeMemoryPages(MM_EnvironmentBase*
 {
 	uintptr_t releasedMemory = 0;
 
-	for (uintptr_t i = 0; i < _heapFreeListCountExtended; i++) {
+	for (uintptr_t i = 0; i < _heapFreeListCount; i++) {
 		_heapFreeLists[i]._lock.acquire();
 		_heapFreeLists[i]._timesLocked += 1;
 		releasedMemory += releaseFreeEntryMemoryPages(env, _heapFreeLists[i]._freeList);

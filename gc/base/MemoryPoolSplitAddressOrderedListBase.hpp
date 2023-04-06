@@ -261,7 +261,6 @@ private:
 protected:
 	/* Basic free list support */
 	uintptr_t _heapFreeListCount;
-	uintptr_t _heapFreeListCountExtended;
 	uintptr_t* _currentThreadFreeList;
 	J9ModronFreeList* _heapFreeLists;
 
@@ -375,7 +374,6 @@ public:
 	MM_MemoryPoolSplitAddressOrderedListBase(MM_EnvironmentBase* env, uintptr_t minimumFreeEntrySize, uintptr_t splitAmount)
 		: MM_MemoryPoolAddressOrderedListBase(env, minimumFreeEntrySize)
 		, _heapFreeListCount(splitAmount)
-		, _heapFreeListCountExtended(splitAmount)
 		, _currentThreadFreeList(0)
 		, _heapFreeLists(NULL)
 		, _largeObjectAllocateStatsForFreeList(NULL)
@@ -386,7 +384,6 @@ public:
 	MM_MemoryPoolSplitAddressOrderedListBase(MM_EnvironmentBase* env, uintptr_t minimumFreeEntrySize, uintptr_t splitAmount, const char* name)
 		: MM_MemoryPoolAddressOrderedListBase(env, minimumFreeEntrySize, name)
 		, _heapFreeListCount(splitAmount)
-		, _heapFreeListCountExtended(splitAmount)
 		, _currentThreadFreeList(0)
 		, _heapFreeLists(NULL)
 		, _largeObjectAllocateStatsForFreeList(NULL)

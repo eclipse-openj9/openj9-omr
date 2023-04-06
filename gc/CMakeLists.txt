@@ -109,7 +109,6 @@ set(omrgc_sources
 	base/MemoryPoolAddressOrderedList.cpp
 	base/MemoryPoolAddressOrderedListBase.cpp
 	base/MemoryPoolBumpPointer.cpp
-	base/MemoryPoolHybrid.cpp
 	base/MemoryPoolLargeObjects.cpp
 	base/MemoryPoolSplitAddressOrderedList.cpp
 	base/MemoryPoolSplitAddressOrderedListBase.cpp

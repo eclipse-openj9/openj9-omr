@@ -1647,6 +1647,10 @@ TR_Debug::getName(TR::SymbolReference * symRef)
              return "<objectInequalityComparison>";
          case TR::SymbolReferenceTable::nonNullableArrayNullStoreCheckSymbol:
              return "<nonNullableArrayNullStoreCheck>";
+         case TR::SymbolReferenceTable::loadFlattenableArrayElementNonHelperSymbol:
+             return "<loadFlattenableArrayElementNonHelper>";
+         case TR::SymbolReferenceTable::storeFlattenableArrayElementNonHelperSymbol:
+             return "<storeFlattenableArrayElementNonHelper>";
          case TR::SymbolReferenceTable::J9JNIMethodIDvTableIndexFieldSymbol:
              return "<J9JNIMethodIDvTableIndexFieldSymbol>";
          case TR::SymbolReferenceTable::defaultValueSymbol:
@@ -2112,6 +2116,8 @@ static const char *commonNonhelperSymbolNames[] =
    "<objectEqualityComparison>",
    "<objectInequalityComparison>",
    "<nonNullableArrayNullStoreCheck>",
+   "<loadFlattenableArrayElementNonHelper>",
+   "<storeFlattenableArrayElementNonHelper>",
    "<synchronizedFieldLoad>",
    "<atomicAdd>",
    "<atomicFetchAndAdd>",

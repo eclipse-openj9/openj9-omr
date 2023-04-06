@@ -813,7 +813,7 @@ enum TR_CompilationOptions
    TR_DumpFinalMethodNamesAndCounts                   = 0x00000020 + 25,
    TR_DisableRecognizedMethods                        = 0x00000040 + 25,
    TR_DisableBitOpcode                                = 0x00000080 + 25,
-   // Available                                       = 0x00000100 + 25,
+   TR_DisableRecognizeCurrentThread                   = 0x00000100 + 25,
    // Available                                       = 0x00000200 + 25,
    // Available                                       = 0x00000400 + 25,
    // Available                                       = 0x00000800 + 25,

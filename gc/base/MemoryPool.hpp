@@ -422,6 +422,18 @@ public:
 	 * @return bytes of free memory in the pool released/decommited back to OS
 	 */
 	virtual uintptr_t releaseFreeMemoryPages(MM_EnvironmentBase* env);
+
+#if defined(J9VM_OPT_CRIU_SUPPORT)
+	/**
+	 * Make adjustments to the Memory Pool to accommodate the restore configuration.
+	 * It is expected that subclasses will implement this method.
+	 *
+	 * @param[in] env the current environment.
+	 * @return boolean indicating whether the memory pool was successfully updated.
+	 */
+	virtual bool reinitializeForRestore(MM_EnvironmentBase *env) { return true; }
+#endif /* defined(J9VM_OPT_CRIU_SUPPORT) */
+
 	/**
 	 * Create a MemoryPool object.
 	 */

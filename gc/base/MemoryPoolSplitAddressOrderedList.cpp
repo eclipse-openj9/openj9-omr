@@ -1310,3 +1310,47 @@ MM_MemoryPoolSplitAddressOrderedList::releaseFreeMemoryPages(MM_EnvironmentBase*
 
 	return releasedMemory;
 }
+
+#if defined(J9VM_OPT_CRIU_SUPPORT)
+bool
+MM_MemoryPoolSplitAddressOrderedList::reinitializeForRestore(MM_EnvironmentBase *env)
+{
+	if (_extensions->splitFreeListSplitAmount > _heapFreeListCount) {
+		/* Free lists must not exceed the pre-allocated _maximumHeapFreeListCount number of entries. */
+		_extensions->splitFreeListSplitAmount = OMR_MIN(
+				_extensions->splitFreeListSplitAmount, _maximumHeapFreeListCount);
+
+		/* Initialize values from _heapFreeListCount to the newly set splitFreeListSplitAmount. */
+		for (uintptr_t i = _heapFreeListCount; i < _extensions->splitFreeListSplitAmount; ++i) {
+			_currentThreadFreeList[i] = 0;
+
+			_heapFreeLists[i] = J9ModronFreeList();
+
+			if (!_heapFreeLists[i].initialize(env)) {
+				return false;
+			}
+
+			new (&_largeObjectAllocateStatsForFreeList[i]) MM_LargeObjectAllocateStats(env);
+
+			if (!_largeObjectAllocateStatsForFreeList[i].initialize(
+					env, (uint16_t)_extensions->largeObjectAllocationProfilingTopK,
+					_extensions->largeObjectAllocationProfilingThreshold,
+					_extensions->largeObjectAllocationProfilingVeryLargeObjectThreshold,
+					(float)_extensions->largeObjectAllocationProfilingSizeClassRatio / (float)100.0,
+					_extensions->heap->getMaximumMemorySize(), getTlhMaximumSize() + _minimumFreeEntrySize,
+					_extensions->tlhMinimumSize, 2)) {
+				return false;
+			}
+		}
+
+		_heapFreeListCount = _extensions->splitFreeListSplitAmount;
+	} else {
+		/* Free lists will not be reduced in size, splitFreeListSplitAmount
+		 * must be reset back to its pre-restore value.
+		 */
+		_extensions->splitFreeListSplitAmount = _heapFreeListCount;
+	}
+
+	return true;
+}
+#endif /* defined(J9VM_OPT_CRIU_SUPPORT) */

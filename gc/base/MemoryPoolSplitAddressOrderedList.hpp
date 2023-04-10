@@ -170,6 +170,16 @@ public:
 
 	virtual uintptr_t releaseFreeMemoryPages(MM_EnvironmentBase* env);
 
+#if defined(J9VM_OPT_CRIU_SUPPORT)
+	/**
+	 * Modify the Memory Pool split lists according to the updated GC thread count.
+	 *
+	 * @param[in] env the current environment.
+	 * @return boolean indicating whether the memory pool was successfully updated.
+	 */
+	virtual bool reinitializeForRestore(MM_EnvironmentBase *env);
+#endif /* defined(J9VM_OPT_CRIU_SUPPORT) */
+
 	/**
 	 * Create a MemoryPoolAddressOrderedList object.
 	 */

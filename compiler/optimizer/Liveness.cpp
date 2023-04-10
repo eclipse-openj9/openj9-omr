@@ -70,21 +70,26 @@ TR_Liveness::TR_Liveness(TR::Compilation           *comp,
      _liveVariableInfo(liveVariableInfo)
    {
    _traceLiveness = comp->getOption(TR_TraceLiveness);
-   if (traceLiveness())
-      traceMsg(comp, "Starting Liveness analysis\n");
 
    if (liveVariableInfo == NULL)
+      {
       // can be re-used by the caller because it's allocated in caller's stack
       _liveVariableInfo = new (trStackMemory()) TR_LiveVariableInformation(comp, optimizer, rootStructure, splitLongs, includeParms,
                                                                            ignoreOSRUses);
-   else
-      _liveVariableInfo = liveVariableInfo;
+      _liveVariableInfo->collectLiveVariableInformation();
+      }
+   }
+
+void TR_Liveness::perform(TR_Structure *rootStructure)
+   {
+   if (traceLiveness())
+      traceMsg(comp(), "Starting Liveness analysis\n");
 
    if (_liveVariableInfo->numLocals() == 0)
       return; // Nothing to do if there are no locals
 
-   if (comp->getVisitCount() > 8000)
-      comp->resetVisitCounts(1);
+   if (comp()->getVisitCount() > 8000)
+      comp()->resetVisitCounts(1);
 
    // Allocate the block info before setting the stack mark - it will be used by
    // the caller
@@ -102,11 +107,11 @@ TR_Liveness::TR_Liveness(TR::Compilation           *comp,
          {
          if (_blockAnalysisInfo[i])
             {
-            traceMsg(comp, "\nLive variables for block_%d: ",i);
-            _blockAnalysisInfo[i]->print(comp);
+            traceMsg(comp(), "\nLive variables for block_%d: ",i);
+            _blockAnalysisInfo[i]->print(comp());
             }
          }
-      traceMsg(comp, "\nEnding Liveness analysis\n");
+      traceMsg(comp(), "\nEnding Liveness analysis\n");
       }
    } // scope of the stack memory region
 

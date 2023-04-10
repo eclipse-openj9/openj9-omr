@@ -563,6 +563,8 @@ int32_t TR_SinkStores::performStoreSinking()
                                                                    true,  /* includeParms */
                                                                    false);
 
+   _liveVarInfo->collectLiveVariableInformation();
+
    if (_liveVarInfo->numLocals() == 0)
       {
       return 1;
@@ -574,6 +576,8 @@ int32_t TR_SinkStores::performStoreSinking()
    if (usesDataFlowAnalysis())
       {
       _liveOnSomePaths     = new (comp()->allocator()) TR_Liveness(comp(), optimizer(), rootStructure, false, _liveVarInfo, false, true);
+      _liveOnSomePaths->perform(rootStructure);
+
       _liveOnAllPaths      = new (comp()->allocator()) TR_LiveOnAllPaths(comp(), optimizer(), rootStructure, _liveVarInfo, false, true);
       _liveOnNotAllPaths   = new (comp()->allocator()) TR_LiveOnNotAllPaths(comp(), _liveOnSomePaths, _liveOnAllPaths);
 

@@ -76,7 +76,10 @@ TR_LiveOnAllPaths::TR_LiveOnAllPaths(TR::Compilation *comp,
       comp->resetVisitCounts(1);
 
    if (liveVariableInfo == NULL)
+      {
       _liveVariableInfo = new (trStackMemory()) TR_LiveVariableInformation(comp, optimizer, rootStructure, splitLongs, includeParms);
+      _liveVariableInfo->collectLiveVariableInformation();
+      }
    else
       _liveVariableInfo = liveVariableInfo;
 

@@ -373,6 +373,9 @@ TR_GlobalRegisterAllocator::perform()
             //
             TR_Liveness liveLocals(comp(), optimizer(), comp()->getFlowGraph()->getStructure(),
                false, NULL, false, comp()->getOption(TR_EnableAggressiveLiveness));
+
+            liveLocals.perform(comp()->getFlowGraph()->getStructure());
+
             if (comp()->getVisitCount() > HIGH_VISIT_COUNT)
                {
                comp()->resetVisitCounts(1);
@@ -3880,6 +3883,9 @@ void TR_LiveRangeSplitter::splitLiveRanges()
          // Perform liveness analysis
          //
          TR_Liveness liveLocals(comp(), optimizer(), comp()->getFlowGraph()->getStructure());
+
+         liveLocals.perform(comp()->getFlowGraph()->getStructure());
+
          if (comp()->getVisitCount() > HIGH_VISIT_COUNT)
             {
             comp()->resetVisitCounts(1);

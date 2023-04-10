@@ -81,6 +81,16 @@ public:
 	 * successfully set and accommodated (thread pool resized).
 	 */
 	virtual bool reinitializeGCThreadCountForRestore(MM_EnvironmentBase* env);
+
+	/**
+	 * Reinitialize Scavenger specific related thread counts:
+	 *  - concurrent thread count
+	 *  - recommended thread count (Adaptive Threading)
+	 *
+	 * @param[in] env the current environment.
+	 * @return boolean indicating whether the configuration was successfully updated.
+	 */
+	virtual bool reinitializeForRestore(MM_EnvironmentBase* env);
 #endif /* defined(J9VM_OPT_CRIU_SUPPORT) */
 
 	MM_ConfigurationGenerational(MM_EnvironmentBase *env)

@@ -148,6 +148,9 @@ public:
 	 * @param[in] env the current environment.
 	 * @return boolean indicating if threads started up successfully.
 	 */
+	virtual bool reinitializeForRestore(MM_EnvironmentBase *env);
+
+	/* TODO: Remove in follow up changes. */
 	virtual bool expandThreadPool(MM_EnvironmentBase *env);
 
 	/**
@@ -164,6 +167,9 @@ public:
 	 * @param[in] newThreadCount the number of threads to keep in the thread pool.
 	 * @return void
 	 */
+	virtual void prepareForCheckpoint(MM_EnvironmentBase *env, uintptr_t newThreadCount);
+
+	/* TODO: Remove in follow up changes. */
 	virtual void contractThreadPool(MM_EnvironmentBase *env, uintptr_t newThreadCount);
 
 	/**

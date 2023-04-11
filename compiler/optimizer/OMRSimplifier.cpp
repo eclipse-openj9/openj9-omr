@@ -418,6 +418,42 @@ OMR::Simplifier::simplifyExtendedBlock(TR::TreeTop * treeTop)
    return treeTop;
    }
 
+/*
+ * Helper functions needed by simplifier handlers across projects
+ */
+
+// Simplify the children of a node.
+//
+void
+OMR::Simplifier::simplifyChildren(TR::Node * node, TR::Block * block)
+   {
+   int32_t i = node->getNumChildren();
+   if (i == 0)
+      return;
+
+   vcount_t visitCount = comp()->getVisitCount();
+   for (--i; i >= 0; --i)
+      {
+      TR::Node * child = node->getChild(i);
+      child->decFutureUseCount();
+      if (child->getVisitCount() != visitCount)
+         {
+         child = simplify(child, block);
+         node->setChild(i, child);
+         }
+      // if simplification produced a PassThrough attach the child of the PassThrough here
+      // to keep the trees clean unless we are dealing with a node where a PassThrough is
+      // important - a null check or GlRegtDeps
+      if (!node->getOpCode().isNullCheck()
+          && node->getOpCodeValue() != TR::GlRegDeps
+          && child->getOpCodeValue() == TR::PassThrough)
+         {
+         node->setAndIncChild(i, child->getFirstChild());
+         child->recursivelyDecReferenceCount();
+         }
+      }
+   }
+
 void
 OMR::Simplifier::simplify(TR::Block * block)
    {
@@ -503,7 +539,10 @@ OMR::Simplifier::simplify(TR::Node * node, TR::Block * block)
    // Note that the processing routine for the node is responsible for
    // simplifying its children.
    //
+   preSimplification(node);
    TR::Node * newNode = simplifierOpts[node->getOpCodeValue()](node, block, (TR::Simplifier *) this);
+   if (newNode)
+      postSimplification(newNode);
    if ((node != newNode) ||
        (newNode &&
         ((newNode->getOpCodeValue() != node->getOpCodeValue()) ||

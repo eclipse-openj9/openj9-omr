@@ -98,42 +98,6 @@ static bool swapChildren(TR::Node * node, TR::Simplifier * s)
    return true;
    }
 
-
-/*
- * Helper functions needed by simplifier handlers across projects
- */
-
-// Simplify the children of a node.
-//
-void simplifyChildren(TR::Node * node, TR::Block * block, TR::Simplifier * s)
-   {
-   int32_t i = node->getNumChildren();
-   if (i == 0)
-      return;
-
-   vcount_t visitCount = s->comp()->getVisitCount();
-   for (--i; i >= 0; --i)
-      {
-      TR::Node * child = node->getChild(i);
-      child->decFutureUseCount();
-      if (child->getVisitCount() != visitCount)
-         {
-         child = s->simplify(child, block);
-         node->setChild(i, child);
-         }
-      // if simplification produced a PassThrough attach the child of the PassThrough here
-      // to keep the trees clean unless we are dealing with a node where a PassThrough is
-      // important - a null check or GlRegtDeps
-      if (!node->getOpCode().isNullCheck()
-          && node->getOpCodeValue() != TR::GlRegDeps
-          && child->getOpCodeValue() == TR::PassThrough)
-         {
-         node->setAndIncChild(i, child->getFirstChild());
-         child->recursivelyDecReferenceCount();
-         }
-      }
-   }
-
 //**************************************
 // Constant folding perform
 //
@@ -277,6 +241,28 @@ void foldShortIntConstant(TR::Node * node, int16_t value, TR::Simplifier * s, bo
    s->prepareToReplaceNode(node, TR::sconst);
    node->setShortInt(value);
    dumpOptDetails(s->comp(), " to %s %d\n", node->getOpCode().getName(), node->getShortInt());
+   }
+
+void foldUByteConstant(TR::Node * node, uint8_t value, TR::Simplifier * s, bool anchorChildrenP)
+   {
+   if (!performTransformationSimplifier(node, s)) return;
+
+   if (anchorChildrenP) s->anchorChildren(node, s->_curTree);
+
+   s->prepareToReplaceNode(node, TR::bconst);
+   node->setUnsignedByte(value);
+   dumpOptDetails(s->comp(), " to %s %d\n", node->getOpCode().getName(), node->getUnsignedByte());
+   }
+
+void foldCharConstant(TR::Node * node, uint16_t value, TR::Simplifier * s, bool anchorChildrenP)
+   {
+   if (!performTransformationSimplifier(node, s)) return;
+
+   if (anchorChildrenP) s->anchorChildren(node, s->_curTree);
+
+   s->prepareToReplaceNode(node, TR::sconst);
+   node->setConst<uint16_t>(value);
+   dumpOptDetails(s->comp(), " to %s %d\n", node->getOpCode().getName(), node->getConst<uint16_t>());
    }
 
 bool swapChildren(TR::Node * node, TR::Node * & firstChild, TR::Node * & secondChild, TR::Simplifier * s)
@@ -711,4 +697,38 @@ TR::Node *removeIfToFollowingBlock(TR::Node * node, TR::Block * block, TR::Simpl
          }
       }
    return node;
+   }
+
+void normalizeShiftAmount(TR::Node * node, int32_t normalizationConstant, TR::Simplifier * s)
+   {
+   if (s->comp()->cg()->needsNormalizationBeforeShifts() &&
+       !node->isNormalizedShift())
+      {
+      TR::Node * secondChild = node->getSecondChild();
+      //
+      // Some platforms like IA32 obey Java semantics for shifts even if the
+      // shift amount is greater than 31. However other platforms like PPC need
+      // to normalize the shift amount to range (0, 31) before shifting in order
+      // to obey Java semantics. This can be captured in the IL and commoning/hoisting
+      // can be done (look at Compressor.compress).
+      //
+      if ((secondChild->getOpCodeValue() != TR::iconst) &&
+          ((secondChild->getOpCodeValue() != TR::iand) ||
+           (secondChild->getSecondChild()->getOpCodeValue() != TR::iconst) ||
+           (secondChild->getSecondChild()->getInt() != normalizationConstant)))
+         {
+         if (performTransformation(s->comp(), "%sPlatform specific normalization of shift node [%s]\n", s->optDetailString(), node->getName(s->getDebug())))
+            {
+            //
+            // Not normalized yet
+            //
+            TR::Node * secondChild = node->getSecondChild();
+            TR::Node * normalizedNode = TR::Node::create(TR::iand, 2, secondChild, TR::Node::create(secondChild, TR::iconst, 0, normalizationConstant));
+            secondChild->recursivelyDecReferenceCount();
+            node->setAndIncChild(1, normalizedNode);
+            node->setNormalizedShift(true);
+            s->_alteredBlock = true;
+            }
+         }
+      }
    }

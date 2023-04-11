@@ -91,6 +91,8 @@ class Simplifier : public TR::Optimization
    void simplify(TR::Block *block);
    TR::TreeTop * simplifyExtendedBlock(TR::TreeTop *);
 
+   virtual void simplifyChildren(TR::Node * node, TR::Block * block);
+
    // Convert a conditional branch into either a goto or an unconditional
    // fall-through.
    // Changes the "node" argument to be the replaced branch node, NULL if the branch has been eliminated.
@@ -270,6 +272,9 @@ class Simplifier : public TR::Optimization
     */
    virtual void setNodePrecisionIfNeeded(TR::Node *baseNode, TR::Node *node, TR::NodeChecklist &visited)
       {}
+
+   virtual void preSimplification(TR::Node *node) {}
+   virtual void postSimplification(TR::Node *node) {}
 
    TR::TreeTop         *_curTree;
    TR_UseDefInfo      *_useDefInfo;      // Cached use/def info

@@ -353,6 +353,7 @@ struct {
 #define ROOT_CGROUP "/"
 #define SYSTEMD_INIT_CGROUP "/init.scope"
 #define OMR_PROC_PID_ONE_CGROUP_FILE "/proc/1/cgroup"
+#define OMR_PROC_PID_ONE_SCHED_FILE "/proc/1/sched"
 #define MAX_DEFAULT_VALUE_CHECK (LLONG_MAX - (1024 * 1024 * 1024)) /* subtracting the MAX page size (1GB) from LLONG_MAX to check against a value */
 #define CGROUP_METRIC_FILE_CONTENT_MAX_LIMIT 1024
 
@@ -6560,6 +6561,58 @@ isRunningInContainer(struct OMRPortLibrary *portLibrary, BOOLEAN *inContainer)
 		}
 		rc = 0;
 	}
+
+	/* Read the first line in /proc/1/sched if it exists.
+	 * Outside a container, the initialization process is either "init" or "systemd".
+	 * A containerized environment can be assumed for any other initialization process.
+	 */
+	if ((0 == rc) && (!*inContainer) && (0 == access(OMR_PROC_PID_ONE_SCHED_FILE, F_OK))) {
+		FILE *schedFile = fopen(OMR_PROC_PID_ONE_SCHED_FILE, "r");
+		char buffer[PATH_MAX];
+
+		if (NULL == schedFile) {
+			int32_t osErrCode = errno;
+			Trc_PRT_isRunningInContainer_fopen_failed(OMR_PROC_PID_ONE_SCHED_FILE, osErrCode);
+			rc = portLibrary->error_set_last_error(
+					portLibrary,
+					osErrCode,
+					OMRPORT_ERROR_SYSINFO_PROCESS_CGROUP_FILE_FOPEN_FAILED);
+			goto _end;
+		}
+
+		if (NULL == fgets(buffer, sizeof(buffer), schedFile)) {
+			if (0 != ferror(schedFile)) {
+				int32_t osErrCode = errno;
+				Trc_PRT_isRunningInContainer_fgets_failed(OMR_PROC_PID_ONE_SCHED_FILE, osErrCode);
+				rc = portLibrary->error_set_last_error_with_message_format(
+						portLibrary,
+						OMRPORT_ERROR_SYSINFO_PROCESS_CGROUP_FILE_READ_FAILED,
+						"fgets failed to read %s file stream with errno=%d",
+						OMR_PROC_PID_ONE_SCHED_FILE,
+						osErrCode);
+				goto _end;
+			}
+		} else {
+			/* Check if the initialization process is either "init " or "systemd ".
+			 * The space after systemd and init allows us to exactly check for those
+			 * strings and filter any strings which either begin with systemd or init.
+			 *
+			 * The first line of /proc/1/sched in a non-containerized environment:
+			 * - systemd (1, #threads: 1)
+			 * - init (1, #threads: 1)
+			 *
+			 * The first line of /proc/1/sched in a containerized environment:
+			 * - bash (1, #threads: 1)
+			 * - sh (1, #threads: 1)
+			 */
+#define STARTS_WITH(string, prefix) (0 == strncmp(string, prefix, sizeof(prefix) - 1))
+			if (!STARTS_WITH(buffer, "init ") && !STARTS_WITH(buffer, "systemd ")) {
+				*inContainer = TRUE;
+			}
+#undef STARTS_WITH
+		}
+	}
+
 	Trc_PRT_isRunningInContainer_container_detected((uintptr_t)*inContainer);
 _end:
 	if (NULL != cgroupFile) {

@@ -2612,7 +2612,7 @@ find_executable_name(struct OMRPortLibrary *portLibrary, char **result)
 	uintptr_t strLen = 0L;
 	int32_t portableError = 0;
 
-	portLibrary->str_printf(portLibrary, buffer, PATH_MAX, "/proc/%ld/psinfo", getpid());
+	portLibrary->str_printf(portLibrary, buffer, sizeof(buffer), "/proc/%ld/psinfo", getpid());
 	fd = portLibrary->file_open(portLibrary, buffer, EsOpenRead, 0);
 	if (-1 == fd) {
 		portableError = portLibrary->error_last_error_number(portLibrary);
@@ -5975,7 +5975,7 @@ populateCgroupEntryListV1(struct OMRPortLibrary *portLibrary, int pid, BOOLEAN i
 	Assert_PRT_true(NULL != cgroupEntryList);
 
 	requiredSize = portLibrary->str_printf(portLibrary, NULL, 0, "/proc/%d/cgroup", pid);
-	Assert_PRT_true(requiredSize <= PATH_MAX);
+	Assert_PRT_true(requiredSize <= sizeof(cgroupFilePath));
 	portLibrary->str_printf(portLibrary, cgroupFilePath, sizeof(cgroupFilePath), "/proc/%d/cgroup", pid);
 
 	/* Even if 'inContainer' is TRUE, we need to parse the cgroup file to get the list of subsystems */
@@ -5996,7 +5996,7 @@ populateCgroupEntryListV1(struct OMRPortLibrary *portLibrary, int pid, BOOLEAN i
 		char *separator = NULL;
 		int32_t hierId = -1;
 
-		if (NULL == fgets(buffer, PATH_MAX, cgroupFile)) {
+		if (NULL == fgets(buffer, sizeof(buffer), cgroupFile)) {
 			break;
 		}
 		if (0 != ferror(cgroupFile)) {
@@ -6105,10 +6105,18 @@ populateCgroupEntryListV2(struct OMRPortLibrary *portLibrary, int pid, OMRCgroup
 	uint64_t available = 0;
 	int32_t rc = 0;
 
+	char cgroup[PATH_MAX];
+	/* This array should be large enough to read names of all subsystems.
+	 * 1024 should be enough based on current supported subsystems.
+	 */
+	char subsystems[PATH_MAX];
+	char *cursor = NULL;
+	char *separator = NULL;
+
 	Assert_PRT_true(NULL != cgroupEntryList);
 
 	requiredSize = portLibrary->str_printf(portLibrary, NULL, 0, "/proc/%d/cgroup", pid);
-	Assert_PRT_true(requiredSize <= PATH_MAX);
+	Assert_PRT_true(requiredSize <= sizeof(cgroupFilePath));
 	portLibrary->str_printf(portLibrary, cgroupFilePath, sizeof(cgroupFilePath), "/proc/%d/cgroup", pid);
 
 	cgroupFile = fopen(cgroupFilePath, "r");
@@ -6119,7 +6127,14 @@ populateCgroupEntryListV2(struct OMRPortLibrary *portLibrary, int pid, OMRCgroup
 		goto _end;
 	}
 
-	if (NULL == fgets(buffer, PATH_MAX, cgroupFile)) {
+	/* There can be multiple lines in the cgroup file. For v2, the line with the
+	 * format '0::<cgroup>' needs to be located.
+	 */
+	while (0 == feof(cgroupFile)) {
+		if (NULL == fgets(buffer, sizeof(buffer), cgroupFile)) {
+			break;
+		}
+
 		if (0 != ferror(cgroupFile)) {
 			int32_t osErrCode = errno;
 			Trc_PRT_populateCgroupEntryList_fgets_failed(2, cgroupFilePath, osErrCode);
@@ -6131,71 +6146,68 @@ populateCgroupEntryListV2(struct OMRPortLibrary *portLibrary, int pid, OMRCgroup
 					osErrCode);
 			goto _end;
 		}
-	} else {
-		/* For v2, the cgroup file contains one line of the format '0::<cgroup>'. */
-		char cgroup[PATH_MAX];
-		/* This array should be large enough to read names of all subsystems. 1024 should be enough based on current supported subsystems. */
-		char subsystems[PATH_MAX];
-		char *cursor = NULL;
-		char *separator = NULL;
 
 		rc = sscanf(buffer, PROC_PID_CGROUPV2_ENTRY_FORMAT, cgroup);
-
 		if (1 == rc) {
-			/* The controller file consists of a single space-delimited line of controllers/subsystems. */
-			requiredSize = portLibrary->str_printf(portLibrary, NULL, 0, "%s/%s/cgroup.controllers", OMR_CGROUP_MOUNT_POINT, cgroup);
-			Assert_PRT_true(requiredSize <= PATH_MAX);
-			portLibrary->str_printf(portLibrary, controllerFilePath, sizeof(controllerFilePath), "%s/%s/cgroup.controllers", OMR_CGROUP_MOUNT_POINT, cgroup);
+			break;
+		}
+	}
 
-			controllerFile = fopen(controllerFilePath, "r");
-			if (NULL == controllerFile) {
-				int32_t osErrCode = errno;
-				Trc_PRT_populateCgroupEntryList_fopen_failed(2, controllerFilePath, osErrCode);
-				rc = portLibrary->error_set_last_error(portLibrary, osErrCode, OMRPORT_ERROR_SYSINFO_PROCESS_CGROUP_FILE_FOPEN_FAILED);
-				goto _end;
-			}
+	if (1 == rc) {
+		/* The controller file consists of a single space-delimited line of controllers/subsystems. */
+		requiredSize = portLibrary->str_printf(portLibrary, NULL, 0, "%s/%s/cgroup.controllers", OMR_CGROUP_MOUNT_POINT, cgroup);
+		Assert_PRT_true(requiredSize <= sizeof(controllerFilePath));
+		portLibrary->str_printf(portLibrary, controllerFilePath, sizeof(controllerFilePath), "%s/%s/cgroup.controllers", OMR_CGROUP_MOUNT_POINT, cgroup);
 
-			if (NULL == fgets(subsystems, PATH_MAX, controllerFile)) {
-				/* No controllers enabled. */
-				rc = 0;
-				goto _end;
-			}
-		} else {
-			Trc_PRT_populateCgroupEntryList_unexpected_format(2, cgroupFilePath);
-			rc = portLibrary->error_set_last_error_with_message_format(
-					portLibrary,
-					OMRPORT_ERROR_SYSINFO_PROCESS_CGROUP_FILE_READ_FAILED,
-					"unexpected format of %s",
-					cgroupFilePath);
+		controllerFile = fopen(controllerFilePath, "r");
+		if (NULL == controllerFile) {
+			int32_t osErrCode = errno;
+			Trc_PRT_populateCgroupEntryList_fopen_failed(2, controllerFilePath, osErrCode);
+			rc = portLibrary->error_set_last_error(portLibrary, osErrCode, OMRPORT_ERROR_SYSINFO_PROCESS_CGROUP_FILE_FOPEN_FAILED);
 			goto _end;
 		}
 
-		cursor = subsystems;
-		do {
-			int32_t i = 0;
-
-			separator = strchr(cursor, ' ');
-			if (NULL != separator) {
-				*separator = '\0';
-			}
-
-			for (i = 0; i < sizeof(supportedSubsystems) / sizeof(supportedSubsystems[0]); i++) {
-				if (OMR_ARE_NO_BITS_SET(available, supportedSubsystems[i].flag)
-					&& (0 == strcmp(cursor, supportedSubsystems[i].name))
-				) {
-					/* In cgroup v2, all cgroups are bound to the single unified hierarchy, '0'. */
-					rc = addCgroupEntry(portLibrary, &cgEntryList, 0, cursor, cgroup, supportedSubsystems[i].flag);
-					if (0 != rc) {
-						goto _end;
-					}
-					available |= supportedSubsystems[i].flag;
-				}
-			}
-			if (NULL != separator) {
-				cursor = separator + 1;
-			}
-		} while (NULL != separator);
+		if (NULL == fgets(subsystems, sizeof(subsystems), controllerFile)) {
+			/* No controllers enabled. */
+			rc = 0;
+			goto _end;
+		}
+	} else {
+		Trc_PRT_populateCgroupEntryList_unexpected_format(2, cgroupFilePath);
+		rc = portLibrary->error_set_last_error_with_message_format(
+				portLibrary,
+				OMRPORT_ERROR_SYSINFO_PROCESS_CGROUP_FILE_READ_FAILED,
+				"unexpected format of %s",
+				cgroupFilePath);
+		goto _end;
 	}
+
+	cursor = subsystems;
+	do {
+		int32_t i = 0;
+
+		separator = strchr(cursor, ' ');
+		if (NULL != separator) {
+			*separator = '\0';
+		}
+
+		for (i = 0; i < sizeof(supportedSubsystems) / sizeof(supportedSubsystems[0]); i++) {
+			if (OMR_ARE_NO_BITS_SET(available, supportedSubsystems[i].flag)
+				&& (0 == strcmp(cursor, supportedSubsystems[i].name))
+			) {
+				/* In cgroup v2, all cgroups are bound to the single unified hierarchy, '0'. */
+				rc = addCgroupEntry(portLibrary, &cgEntryList, 0, cursor, cgroup, supportedSubsystems[i].flag);
+				if (0 != rc) {
+					goto _end;
+				}
+				available |= supportedSubsystems[i].flag;
+			}
+		}
+		if (NULL != separator) {
+			cursor = separator + 1;
+		}
+	} while (NULL != separator);
+
 	rc = 0;
 
 _end:
@@ -6514,7 +6526,7 @@ isRunningInContainer(struct OMRPortLibrary *portLibrary, BOOLEAN *inContainer)
 			char subsystems[PATH_MAX];
 			int32_t hierId = -1;
 
-			if (NULL == fgets(buffer, PATH_MAX, cgroupFile)) {
+			if (NULL == fgets(buffer, sizeof(buffer), cgroupFile)) {
 				break;
 			}
 			if (0 != ferror(cgroupFile)) {

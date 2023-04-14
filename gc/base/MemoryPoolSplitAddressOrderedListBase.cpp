@@ -141,7 +141,10 @@ MM_MemoryPoolSplitAddressOrderedListBase::initialize(MM_EnvironmentBase* env)
 	 */
 	_sweepPoolManager = extensions->sweepPoolManagerSmallObjectArea;
 
-	_currentThreadFreeList = (uintptr_t*)extensions->getForge()->allocate(sizeof(uintptr_t) * _heapFreeListCount, OMR::GC::AllocationCategory::FIXED, OMR_GET_CALLSITE());
+	/* Allocate at least default _maximumHeapFreeListCount number of entries in the free list related tables. */
+	_maximumHeapFreeListCount = OMR_MAX(_maximumHeapFreeListCount, _heapFreeListCount);
+
+	_currentThreadFreeList = (uintptr_t*)extensions->getForge()->allocate(sizeof(uintptr_t) * _maximumHeapFreeListCount, OMR::GC::AllocationCategory::FIXED, OMR_GET_CALLSITE());
 	if (NULL == _currentThreadFreeList) {
 		return false;
 	} else {
@@ -150,7 +153,7 @@ MM_MemoryPoolSplitAddressOrderedListBase::initialize(MM_EnvironmentBase* env)
 		}
 	}
 
-	_heapFreeLists = (J9ModronFreeList*)extensions->getForge()->allocate(sizeof(J9ModronFreeList) * _heapFreeListCount, OMR::GC::AllocationCategory::FIXED, OMR_GET_CALLSITE());
+	_heapFreeLists = (J9ModronFreeList*)extensions->getForge()->allocate(sizeof(J9ModronFreeList) * _maximumHeapFreeListCount, OMR::GC::AllocationCategory::FIXED, OMR_GET_CALLSITE());
 	if (NULL == _heapFreeLists) {
 		return false;
 	} else {
@@ -163,15 +166,9 @@ MM_MemoryPoolSplitAddressOrderedListBase::initialize(MM_EnvironmentBase* env)
 		_referenceHeapFreeList = &(_heapFreeLists[0]._freeList);
 	}
 
-#if defined(OMR_GC_MODRON_SCAVENGER)
-	/* this memoryPool can be used by scavenger, maximum tlh size should be max(_extensions->tlhMaximumSize, _extensions->scavengerScanCacheMaximumSize) */
-	uintptr_t tlhMaximumSize = OMR_MAX(_extensions->tlhMaximumSize, _extensions->scavengerScanCacheMaximumSize);
-#else /* OMR_GC_MODRON_SCAVENGER */
-	uintptr_t tlhMaximumSize = _extensions->tlhMaximumSize;
-#endif /* OMR_GC_MODRON_SCAVENGER */
 	/* set multiple factor = 2 for doubling _maxVeryLargeEntrySizes to avoid run out of _veryLargeEntryPool (minus count during decrement) */
 	_largeObjectAllocateStats = MM_LargeObjectAllocateStats::newInstance(env, (uint16_t)extensions->largeObjectAllocationProfilingTopK, extensions->largeObjectAllocationProfilingThreshold, extensions->largeObjectAllocationProfilingVeryLargeObjectThreshold, (float)extensions->largeObjectAllocationProfilingSizeClassRatio / (float)100.0,
-																		 _extensions->heap->getMaximumMemorySize(), tlhMaximumSize + _minimumFreeEntrySize, _extensions->tlhMinimumSize, 2);
+																		 _extensions->heap->getMaximumMemorySize(), getTlhMaximumSize() + _minimumFreeEntrySize, _extensions->tlhMinimumSize, 2);
 
 	if (NULL == _largeObjectAllocateStats) {
 		return false;
@@ -180,7 +177,7 @@ MM_MemoryPoolSplitAddressOrderedListBase::initialize(MM_EnvironmentBase* env)
 	/* If we ever subclass MM_LargeObjectAllocateStats we will have to allocate this as an array of pointers to MM_LargeObjectAllocateStats and invoke newInstance instead of just initialize
 	 * Than, we may also need to virtualize initialize() and tearDown().
 	 */
-	_largeObjectAllocateStatsForFreeList = (MM_LargeObjectAllocateStats*)extensions->getForge()->allocate(sizeof(MM_LargeObjectAllocateStats) * _heapFreeListCount, OMR::GC::AllocationCategory::FIXED, OMR_GET_CALLSITE());
+	_largeObjectAllocateStatsForFreeList = (MM_LargeObjectAllocateStats*)extensions->getForge()->allocate(sizeof(MM_LargeObjectAllocateStats) * _maximumHeapFreeListCount, OMR::GC::AllocationCategory::FIXED, OMR_GET_CALLSITE());
 
 	if (NULL == _largeObjectAllocateStatsForFreeList) {
 		return false;
@@ -190,7 +187,7 @@ MM_MemoryPoolSplitAddressOrderedListBase::initialize(MM_EnvironmentBase* env)
 
 			/* set multiple factor = 2 for doubling _maxVeryLargeEntrySizes to avoid run out of _veryLargeEntryPool (minus count during decrement) */
 			if (!_largeObjectAllocateStatsForFreeList[i].initialize(env, (uint16_t)extensions->largeObjectAllocationProfilingTopK, extensions->largeObjectAllocationProfilingThreshold, extensions->largeObjectAllocationProfilingVeryLargeObjectThreshold, (float)extensions->largeObjectAllocationProfilingSizeClassRatio / (float)100.0,
-																	_extensions->heap->getMaximumMemorySize(), tlhMaximumSize + _minimumFreeEntrySize, _extensions->tlhMinimumSize, 2)) {
+																	_extensions->heap->getMaximumMemorySize(), getTlhMaximumSize() + _minimumFreeEntrySize, _extensions->tlhMinimumSize, 2)) {
 				return false;
 			}
 		}

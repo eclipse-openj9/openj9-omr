@@ -301,8 +301,15 @@ MM_ConfigurationGenerational::initializeConcurrentScavengerThreadCount(MM_Enviro
 bool
 MM_ConfigurationGenerational::reinitializeGCThreadCountForRestore(MM_EnvironmentBase* env)
 {
+	return reinitializeForRestore(env);
+}
+
+bool
+MM_ConfigurationGenerational::reinitializeForRestore(MM_EnvironmentBase* env)
+{
 	MM_GCExtensionsBase* extensions = env->getExtensions();
 
+	/* TODO: MM_Configuration::reinitializeForRestore should be called in the follow up changes. */
 	bool result = MM_Configuration::reinitializeGCThreadCountForRestore(env);
 
 #if defined(OMR_GC_CONCURRENT_SCAVENGER)

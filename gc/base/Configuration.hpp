@@ -147,6 +147,13 @@ public:
 	/* Number of GC threads supported based on hardware and dispatcher's max. */
 	virtual uintptr_t supportedGCThreadCount(MM_EnvironmentBase* env);
 
+	/**
+	 * Sets the number of gc threads
+	 *
+	 * @param env[in] - the current environment
+	 */
+	virtual void initializeGCThreadCount(MM_EnvironmentBase* env);
+
 #if defined(J9VM_OPT_CRIU_SUPPORT)
 	/**
 	 * Shutdown GC threads on checkpoint.
@@ -164,6 +171,14 @@ public:
 	 * successfully set and accommodated (thread pool resized).
 	 */
 	virtual bool reinitializeGCThreadCountForRestore(MM_EnvironmentBase* env);
+
+	/**
+	 * Update the configuration to reflect the restore environment and parameters.
+	 *
+	 * @param[in] env the current environment.
+	 * @return boolean indicating whether the configuration was successfully updated.
+	 */
+	virtual bool reinitializeForRestore(MM_EnvironmentBase* env) { return true; }
 #endif /* defined(J9VM_OPT_CRIU_SUPPORT) */
 
 	MM_Configuration(MM_EnvironmentBase* env, MM_GCPolicy gcPolicy, MM_AlignmentType alignmentType, uintptr_t defaultRegionSize, uintptr_t defaultArrayletLeafSize, MM_GCWriteBarrierType writeBarrierType, MM_GCAllocationType allocationType)
@@ -204,14 +219,6 @@ protected:
 	 * @return whether NUMAMAnager was initialized or not.  False implies startup failure.
 	 */
 	virtual bool initializeNUMAManager(MM_EnvironmentBase* env);
-	
-	/**
-	 * Sets the number of gc threads
-	 *
-	 * @param env[in] - the current environment
-	 */
-	virtual void initializeGCThreadCount(MM_EnvironmentBase* env);
-	
 private:
 
 	/**

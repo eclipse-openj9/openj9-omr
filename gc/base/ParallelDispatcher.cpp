@@ -652,6 +652,12 @@ MM_ParallelDispatcher::reinitAfterFork(MM_EnvironmentBase *env, uintptr_t newThr
 void
 MM_ParallelDispatcher::contractThreadPool(MM_EnvironmentBase *env, uintptr_t newThreadCount)
 {
+	return prepareForCheckpoint(env, newThreadCount);
+}
+
+void
+MM_ParallelDispatcher::prepareForCheckpoint(MM_EnvironmentBase *env, uintptr_t newThreadCount)
+{
 	Assert_MM_false(_workerThreadsReservedForGC);
 	Assert_MM_false(_inShutdown);
 
@@ -716,6 +722,12 @@ MM_ParallelDispatcher::contractThreadPool(MM_EnvironmentBase *env, uintptr_t new
 
 bool
 MM_ParallelDispatcher::expandThreadPool(MM_EnvironmentBase *env)
+{
+	return reinitializeForRestore(env);
+}
+
+bool
+MM_ParallelDispatcher::reinitializeForRestore(MM_EnvironmentBase *env)
 {
 	Trc_MM_ParallelDispatcher_expandThreadPool_Entry();
 

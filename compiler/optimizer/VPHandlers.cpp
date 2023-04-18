@@ -4187,8 +4187,12 @@ TR::Node *constrainNewArray(OMR::ValuePropagation *vp, TR::Node *node)
       dumpOptDetails(vp->comp(), "size node has no known constraint for newarray %p\n", sizeNode);
       //node->setAllocationCanBeRemoved(false)
       }
-   else
+   else if (sizeConstraint->getLowInt() >= 0 && sizeConstraint->getHighInt() <= maxSize)
+      {
+      // If array size is known to be non-negative and the number of elements will
+      // not exceed the maximum array size, allocation will not throw an exception
       node->setAllocationCanBeRemoved(true);
+      }
 
    // The array size (the first child) can be constrained because of memory
    // limitations on the allocation.
@@ -4299,8 +4303,11 @@ TR::Node *constrainANewArray(OMR::ValuePropagation *vp, TR::Node *node)
       dumpOptDetails(vp->comp(), "size node has no known constraint for anewarray %p\n", sizeNode);
       //node->setAllocationCanBeRemoved(false)
       }
-   else
+   else if (sizeConstraint->getLowInt() >= 0 && sizeConstraint->getHighInt() <= maxSize)
       {
+      // If array size is known to be non-negative, the number of elements
+      // will not exceed the maximum array size, and the type of the
+      // array is known and resolved, allocation will not throw an exception
       if (typeConstraint && typeConstraint->getClassType() &&
           typeConstraint->getClassType()->getClass())
          {

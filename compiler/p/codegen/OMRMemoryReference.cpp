@@ -1593,6 +1593,12 @@ void OMR::Power::MemoryReference::accessStaticItem(TR::Node *node, TR::SymbolRef
          loadAddressConstant(cg, true, nodeForSymbol, 1, reg, NULL, false, TR_BodyInfoAddressLoad);
          return;
          }
+      else if (symbol->isCatchBlockCounter() && cg->needRelocationsForBodyInfoData())
+         {
+         TR::Register *reg = _baseRegister = cg->allocateRegister();
+         loadAddressConstant(cg, true, nodeForSymbol, 1, reg, NULL, false, TR_CatchBlockCounter);
+         return;
+         }
       else if (symbol->isCompiledMethod() && cg->needRelocationsForCurrentMethodPC())
          {
          TR::Register *reg = _baseRegister = cg->allocateRegister();
@@ -1741,6 +1747,12 @@ void OMR::Power::MemoryReference::accessStaticItem(TR::Node *node, TR::SymbolRef
          {
          TR::Register *reg = _baseRegister = cg->allocateRegister();
          loadAddressConstant(cg, cg->needRelocationsForBodyInfoData(), nodeForSymbol, 0, reg, NULL, false, TR_BodyInfoAddressLoad);
+         return;
+         }
+      else if ((refIsUnresolved || cg->needRelocationsForBodyInfoData()) && symbol->isCatchBlockCounter())
+         {
+         TR::Register *reg = _baseRegister = cg->allocateRegister();
+         loadAddressConstant(cg, true, nodeForSymbol, 1, reg, NULL, false, TR_CatchBlockCounter);
          return;
          }
       else if (symbol->isCompiledMethod() && (ref->isUnresolved() || cg->needRelocationsForCurrentMethodPC()))

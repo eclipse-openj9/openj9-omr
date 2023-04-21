@@ -2231,6 +2231,8 @@ generateLoad32BitConstant(TR::CodeGenerator* cg, TR::Node* node, int32_t value, 
             return generateRegLitRefInstruction(cg, TR::InstOpCode::L, node, targetRegister, value, TR_GlobalValue, dependencies, cursor, literalPoolRegister);
          if (sym->isRecompilationCounter())
             return generateRegLitRefInstruction(cg, TR::InstOpCode::L, node, targetRegister, value, TR_BodyInfoAddress, dependencies, cursor, literalPoolRegister);
+         if (sym->isCatchBlockCounter())
+            return generateRegLitRefInstruction(cg, TR::InstOpCode::L, node, targetRegister, value, TR_CatchBlockCounter, dependencies, cursor, literalPoolRegister);
          if (cg->needRelocationsForPersistentProfileInfoData() && sym->isBlockFrequency())
             return generateRegLitRefInstruction(cg, TR::InstOpCode::L, node, targetRegister, value, TR_BlockFrequency, dependencies, cursor, literalPoolRegister);
          if (cg->needRelocationsForPersistentProfileInfoData() && sym->isRecompQueuedFlag())
@@ -2275,6 +2277,10 @@ genLoadLongConstant(TR::CodeGenerator * cg, TR::Node * node, int64_t value, TR::
       {
       TR::Instruction * temp = cursor;
       cursor = generateRegLitRefInstruction(cg, TR::InstOpCode::LG, node, targetRegister, value, TR_BodyInfoAddress, cond, cursor, base);
+      }
+   else if (cg->needRelocationsForBodyInfoData() && sym && sym->isCatchBlockCounter())
+      {
+      cursor = generateRegLitRefInstruction(cg, TR::InstOpCode::LG, node, targetRegister, value, TR_CatchBlockCounter, cond, cursor, base);
       }
    else if (cg->needRelocationsForStatics() && sym && sym->isStatic() && !sym->isClassObject() && !sym->isNotDataAddress())
       {
@@ -8134,6 +8140,10 @@ OMR::Z::TreeEvaluator::checkAndSetMemRefDataSnippetRelocationType(TR::Node * nod
       {
       reloType = TR_BlockFrequency;
       }
+   else if (cg->needRelocationsForBodyInfoData() && node->getSymbol()->isCatchBlockCounter())
+      {
+      reloType = TR_CatchBlockCounter;
+      }
    else if (cg->needRelocationsForPersistentProfileInfoData() && isStatic && node->getSymbol()->isRecompQueuedFlag())
       {
       reloType = TR_RecompQueuedFlag;
@@ -11261,6 +11271,12 @@ OMR::Z::TreeEvaluator::loadaddrEvaluator(TR::Node * node, TR::CodeGenerator * cg
                cursor = generateRegLitRefInstruction(cg, TR::InstOpCode::getLoadOpCode(), node, targetRegister,
                                                      (uintptr_t) node->getSymbol()->getStaticSymbol()->getStaticAddress(),
                                                      TR_BodyInfoAddress, NULL, NULL, NULL);
+               }
+            else if (cg->needRelocationsForBodyInfoData() && node->getSymbol()->isCatchBlockCounter())
+               {
+               cursor = generateRegLitRefInstruction(cg, TR::InstOpCode::getLoadOpCode(), node, targetRegister,
+                                                        (uintptr_t) node->getSymbol()->getStaticSymbol()->getStaticAddress(),
+                                                        TR_CatchBlockCounter, NULL, NULL, NULL);
                }
             else if (cg->needClassAndMethodPointerRelocations() && node->getSymbol()->isClassObject())
                {

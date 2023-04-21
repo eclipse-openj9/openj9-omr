@@ -294,6 +294,8 @@ bool OMR::X86::AMD64::MemoryReference::needsAddressLoadInstruction(intptr_t next
       return true;
    else if (sr.getSymbol() && (sr.getSymbol()->isBlockFrequency() || sr.getSymbol()->isRecompQueuedFlag()) && cg->needRelocationsForPersistentProfileInfoData())
       return true;
+   else if (sr.getSymbol() && sr.getSymbol()->isCatchBlockCounter() && cg->needRelocationsForBodyInfoData())
+      return true;
    else if (cg->comp()->getOption(TR_EnableHCR) && sr.getSymbol() && sr.getSymbol()->isClassObject())
       return true; // If a class gets replaced, it may no longer fit in an immediate
    else if (IS_32BIT_SIGNED(displacement))
@@ -467,6 +469,12 @@ OMR::X86::AMD64::MemoryReference::addMetaDataForCodeAddressWithLoad(
          {
          if (cg->needRelocationsForBodyInfoData())
             cg->addExternalRelocation(new (cg->trHeapMemory()) TR::ExternalRelocation(displacementLocation, 0, TR_BodyInfoAddress, cg),
+                                 __FILE__,__LINE__,containingInstruction->getNode());
+         }
+      else if (sr.getSymbol()->isCatchBlockCounter())
+         {
+         if (cg->needRelocationsForBodyInfoData())
+            cg->addExternalRelocation(new (cg->trHeapMemory()) TR::ExternalRelocation(displacementLocation, 0, TR_CatchBlockCounter, cg),
                                  __FILE__,__LINE__,containingInstruction->getNode());
          }
       else if (sr.getSymbol()->isGCRPatchPoint())

@@ -195,6 +195,13 @@ TR::S390ConstantDataSnippet::addMetaDataForCodeAddress(uint8_t *cursor)
             }
          break;
 
+      case TR_CatchBlockCounter:
+         {
+         TR::Relocation *relocation = new (cg()->trHeapMemory()) TR::ExternalRelocation(cursor, NULL, TR_CatchBlockCounter, cg());
+         cg()->addExternalRelocation(relocation, __FILE__, __LINE__, getNode());
+         }
+         break;
+
       case TR_GlobalValue:
          cg()->addExternalRelocation(new (cg()->trHeapMemory()) TR::ExternalRelocation(cursor, (uint8_t *) TR_CountForRecompile,
                                                                                 TR_GlobalValue, cg()),

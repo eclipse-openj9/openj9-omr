@@ -87,7 +87,6 @@ public:
 
    TR_BitVector & arrayletElementSymRefs() { return _arrayletElementSymRefs; }
    TR_BitVector & unsafeSymRefNumbers() { return _unsafeSymRefNumbers; }
-   TR_BitVector & unsafeArrayElementSymRefs() { return _unsafeArrayElementSymRefs; }
 
    TR_BitVector & gcSafePointSymRefNumbers() { return _gcSafePointSymRefNumbers; }
    TR_BitVector & cpConstantSymRefs() { return _cpConstantSymRefs; }
@@ -167,7 +166,6 @@ protected:
 
    TR_BitVector _arrayletElementSymRefs;
    TR_BitVector _unsafeSymRefNumbers;
-   TR_BitVector _unsafeArrayElementSymRefs;  // subset of _unsafeSymRefNumbers
    TR_BitVector _gcSafePointSymRefNumbers;
    TR_BitVector _cpConstantSymRefs;
    TR_BitVector _cpSymRefs;

@@ -47,7 +47,6 @@ OMR::AliasBuilder::AliasBuilder(TR::SymbolReferenceTable *symRefTab, size_t size
      _arrayElementSymRefs(TR::NumAllTypes, c->trMemory(), heapAlloc, growable),
      _arrayletElementSymRefs(TR::NumAllTypes, c->trMemory(), heapAlloc, growable),
      _unsafeSymRefNumbers(sizeHint, c->trMemory(), heapAlloc, growable),
-     _unsafeArrayElementSymRefs(sizeHint, c->trMemory(), heapAlloc, growable),
      _gcSafePointSymRefNumbers(sizeHint, c->trMemory(), heapAlloc, growable),
      _cpConstantSymRefs(sizeHint, c->trMemory(), heapAlloc, growable),
      _cpSymRefs(sizeHint, c->trMemory(), heapAlloc, growable),

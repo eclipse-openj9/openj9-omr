@@ -196,19 +196,16 @@ public:
 	
 	MMINLINE virtual uintptr_t threadCount() { return _threadCount; }
 	MMINLINE virtual uintptr_t threadCountMaximum() { return _threadCountMaximum; }
-	MMINLINE omrthread_t* getThreadTable() { return _threadTable; }
+	MMINLINE omrthread_t *getThreadTable() { return _threadTable; }
 	MMINLINE virtual uintptr_t activeThreadCount() { return _activeThreadCount; }
-	virtual void setThreadCount(uintptr_t threadCount);
 
 	MMINLINE omrsig_handler_fn getSignalHandler() {return _handler;}
-	MMINLINE void * getSignalHandlerArg() {return _handler_arg;}
+	MMINLINE void *getSignalHandlerArg() {return _handler_arg;}
 
 	virtual void run(MM_EnvironmentBase *env, MM_Task *task, uintptr_t threadCount = UDATA_MAX);
 
 	static MM_ParallelDispatcher *newInstance(MM_EnvironmentBase *env, omrsig_handler_fn handler, void* handler_arg, uintptr_t defaultOSStackSize);
 	virtual void kill(MM_EnvironmentBase *env);
-
-	virtual void reinitAfterFork(MM_EnvironmentBase *env, uintptr_t newThreadCount);
 
 	MM_ParallelDispatcher(MM_EnvironmentBase *env, omrsig_handler_fn handler, void* handler_arg, uintptr_t defaultOSStackSize) :
 		MM_BaseVirtual()

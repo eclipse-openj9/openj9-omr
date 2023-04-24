@@ -74,15 +74,6 @@ public:
 
 #if defined(J9VM_OPT_CRIU_SUPPORT)
 	/**
-	 * Startup GC threads on restore.
-	 *
-	 * @param[in] env the current environment.
-	 * @return bool indicating if the restore thread count was
-	 * successfully set and accommodated (thread pool resized).
-	 */
-	virtual bool reinitializeGCThreadCountForRestore(MM_EnvironmentBase* env);
-
-	/**
 	 * Reinitialize Scavenger specific related thread counts:
 	 *  - concurrent thread count
 	 *  - recommended thread count (Adaptive Threading)

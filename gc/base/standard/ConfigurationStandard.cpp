@@ -52,6 +52,9 @@
 #include "SweepPoolManagerAddressOrderedList.hpp"
 #include "SweepPoolManagerSplitAddressOrderedList.hpp"
 #include "SweepPoolManagerHybrid.hpp"
+#if defined(J9VM_OPT_CRIU_SUPPORT)
+#include "HeapMemoryPoolIterator.hpp"
+#endif /* defined(J9VM_OPT_CRIU_SUPPORT) */
 
 /**
  * Tear down Standard Configuration
@@ -330,3 +333,22 @@ MM_ConfigurationStandard::createHeapRegionManager(MM_EnvironmentBase* env)
 
 	return heapRegionManager;
 }
+
+#if defined(J9VM_OPT_CRIU_SUPPORT)
+bool
+MM_ConfigurationStandard::reinitializeForRestore(MM_EnvironmentBase* env)
+{
+	MM_GCExtensionsBase* extensions = env->getExtensions();
+
+	MM_MemoryPool *memoryPool;
+	MM_HeapMemoryPoolIterator poolIterator(env, extensions->heap);
+
+	while (NULL != (memoryPool = poolIterator.nextPool())) {
+		if (!memoryPool->reinitializeForRestore(env)) {
+			return false;
+		}
+	}
+
+	return true;
+}
+#endif /* defined(J9VM_OPT_CRIU_SUPPORT) */

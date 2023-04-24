@@ -628,13 +628,19 @@ MM_ParallelDispatcher::setThreadInitializationComplete(MM_EnvironmentBase *env)
 
 #if defined(J9VM_OPT_CRIU_SUPPORT)
 void
-MM_ParallelDispatcher::contractThreadPool(MM_EnvironmentBase *env, uintptr_t newThreadCount)
+MM_ParallelDispatcher::prepareForCheckpoint(MM_EnvironmentBase *env, uintptr_t newThreadCount)
 {
-	return prepareForCheckpoint(env, newThreadCount);
+	contractThreadPool(env, newThreadCount);
+}
+
+bool
+MM_ParallelDispatcher::reinitializeForRestore(MM_EnvironmentBase *env)
+{
+	return expandThreadPool(env);
 }
 
 void
-MM_ParallelDispatcher::prepareForCheckpoint(MM_EnvironmentBase *env, uintptr_t newThreadCount)
+MM_ParallelDispatcher::contractThreadPool(MM_EnvironmentBase *env, uintptr_t newThreadCount)
 {
 	Assert_MM_false(_workerThreadsReservedForGC);
 	Assert_MM_false(_inShutdown);
@@ -700,12 +706,6 @@ MM_ParallelDispatcher::prepareForCheckpoint(MM_EnvironmentBase *env, uintptr_t n
 
 bool
 MM_ParallelDispatcher::expandThreadPool(MM_EnvironmentBase *env)
-{
-	return reinitializeForRestore(env);
-}
-
-bool
-MM_ParallelDispatcher::reinitializeForRestore(MM_EnvironmentBase *env)
 {
 	Trc_MM_ParallelDispatcher_expandThreadPool_Entry();
 

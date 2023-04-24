@@ -65,6 +65,16 @@ public:
 	virtual MM_HeapRegionManager* createHeapRegionManager(MM_EnvironmentBase* env);
 	virtual J9Pool* createEnvironmentPool(MM_EnvironmentBase* env);
 
+#if defined(J9VM_OPT_CRIU_SUPPORT)
+	/**
+	 * Update the configuration to reflect the restore environment and parameters.
+	 *
+	 * @param[in] env the current environment.
+	 * @return boolean indicating whether the configuration was successfully updated.
+	 */
+	virtual bool reinitializeForRestore(MM_EnvironmentBase* env);
+#endif /* defined(J9VM_OPT_CRIU_SUPPORT) */
+
 	MM_ConfigurationStandard(MM_EnvironmentBase* env, MM_GCPolicy gcPolicy, uintptr_t regionSize)
 		: MM_Configuration(env, gcPolicy, mm_regionAlignment, regionSize, STANDARD_ARRAYLET_LEAF_SIZE_BYTES, getWriteBarrierType(env), gc_modron_allocation_type_tlh)
 	{

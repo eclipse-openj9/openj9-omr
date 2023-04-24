@@ -92,46 +92,6 @@ public:
 	 * Function members
 	 */
 private:
-protected:
-	virtual void workerEntryPoint(MM_EnvironmentBase *env);
-	virtual void mainEntryPoint(MM_EnvironmentBase *env);
-
-	bool initialize(MM_EnvironmentBase *env);
-	
-	virtual void prepareThreadsForTask(MM_EnvironmentBase *env, MM_Task *task, uintptr_t threadCount);
-	virtual void cleanupAfterTask(MM_EnvironmentBase *env);
-	virtual uintptr_t getThreadPriority();
-
-	/**
-	 * Decides whether the dispatcher also start a separate thread to be the main
-	 * GC thread. Usually no, because the main thread will be the thread that
-	 * requested the GC.
-	 */  
-	virtual bool useSeparateMainThread() { return false; }
-	
-	virtual void acceptTask(MM_EnvironmentBase *env);
-	virtual void completeTask(MM_EnvironmentBase *env);
-	virtual void wakeUpThreads(uintptr_t count);
-	
-	virtual uintptr_t recomputeActiveThreadCountForTask(MM_EnvironmentBase *env, MM_Task *task, uintptr_t newThreadCount); 
-
-	virtual void setThreadInitializationComplete(MM_EnvironmentBase *env);
-	
-	uintptr_t adjustThreadCount(uintptr_t maxThreadCount);
-	
-	/**
-	 * Main routine to fork and startup GC threads.
-	 *
-	 * @param[in] workerThreadCount the thread pool index to start at.
-	 * @param[in] maxWorkerThreadIndex the max thread pool index.
-	 * @return boolean indicating if threads started up successfully.
-	 */
-	virtual bool internalStartupThreads(uintptr_t workerThreadCount, uintptr_t maxWorkerThreadIndex);
-
-public:
-	virtual bool startUpThreads();
-	virtual void shutDownThreads();
-
 #if defined(J9VM_OPT_CRIU_SUPPORT)
 	/**
 	 * Expand/fill the thread pool by starting up threads based on what H/W supports.
@@ -148,10 +108,7 @@ public:
 	 * @param[in] env the current environment.
 	 * @return boolean indicating if threads started up successfully.
 	 */
-	virtual bool reinitializeForRestore(MM_EnvironmentBase *env);
-
-	/* TODO: Remove in follow up changes. */
-	virtual bool expandThreadPool(MM_EnvironmentBase *env);
+	bool expandThreadPool(MM_EnvironmentBase *env);
 
 	/**
 	 * Contract the thread pool by shutting down threads in the pool to obtain newThreadCount.
@@ -167,10 +124,7 @@ public:
 	 * @param[in] newThreadCount the number of threads to keep in the thread pool.
 	 * @return void
 	 */
-	virtual void prepareForCheckpoint(MM_EnvironmentBase *env, uintptr_t newThreadCount);
-
-	/* TODO: Remove in follow up changes. */
-	virtual void contractThreadPool(MM_EnvironmentBase *env, uintptr_t newThreadCount);
+	void contractThreadPool(MM_EnvironmentBase *env, uintptr_t newThreadCount);
 
 	/**
 	 * Reinitialize (resize and allocate) the dispatcher tables so that the thread pool
@@ -182,6 +136,66 @@ public:
 	 * i.e., successfully reallocated or already have capacity).
 	 */
 	bool reinitializeThreadPool(MM_EnvironmentBase *env, uintptr_t newPoolSize);
+#endif /* defined(J9VM_OPT_CRIU_SUPPORT) */
+protected:
+	virtual void workerEntryPoint(MM_EnvironmentBase *env);
+	virtual void mainEntryPoint(MM_EnvironmentBase *env);
+
+	bool initialize(MM_EnvironmentBase *env);
+	
+	virtual void prepareThreadsForTask(MM_EnvironmentBase *env, MM_Task *task, uintptr_t threadCount);
+	void cleanupAfterTask(MM_EnvironmentBase *env);
+	virtual uintptr_t getThreadPriority();
+
+	/**
+	 * Decides whether the dispatcher also start a separate thread to be the main
+	 * GC thread. Usually no, because the main thread will be the thread that
+	 * requested the GC.
+	 */  
+	virtual bool useSeparateMainThread() { return false; }
+	
+	virtual void acceptTask(MM_EnvironmentBase *env);
+	virtual void completeTask(MM_EnvironmentBase *env);
+	virtual void wakeUpThreads(uintptr_t count);
+	
+	virtual uintptr_t recomputeActiveThreadCountForTask(MM_EnvironmentBase *env, MM_Task *task, uintptr_t newThreadCount); 
+
+	void setThreadInitializationComplete(MM_EnvironmentBase *env);
+	
+	uintptr_t adjustThreadCount(uintptr_t maxThreadCount);
+	
+	/**
+	 * Main routine to fork and startup GC threads.
+	 *
+	 * @param[in] workerThreadCount the thread pool index to start at.
+	 * @param[in] maxWorkerThreadIndex the max thread pool index.
+	 * @return boolean indicating if threads started up successfully.
+	 */
+	bool internalStartupThreads(uintptr_t workerThreadCount, uintptr_t maxWorkerThreadIndex);
+
+public:
+	virtual bool startUpThreads();
+	virtual void shutDownThreads();
+
+#if defined(J9VM_OPT_CRIU_SUPPORT)
+	/**
+	 * Reinitialize the dispatcher (i.e thread pool) to accommodate the change
+	 * in restore environment.
+	 *
+	 * @param[in] env the current environment.
+	 * @return boolean indicating whether the dispather was successfully updated.
+	 */
+	virtual bool reinitializeForRestore(MM_EnvironmentBase *env);
+
+	/**
+	 * Release dispatcher threads to improve the overall memory usage and
+	 * speed up restore times that occur due to GC.
+	 *
+	 * @param[in] env the current environment.
+	 * @param[in] newThreadCount the number of threads to keep in the thread pool.
+	 * @return void
+	 */
+	virtual void prepareForCheckpoint(MM_EnvironmentBase *env, uintptr_t newThreadCount);
 
 	/**
 	 * Fetch the size allocated for the thread pool (max threads supported)
@@ -194,10 +208,10 @@ public:
 
 	virtual bool condYieldFromGCWrapper(MM_EnvironmentBase *env, uint64_t timeSlack = 0) { return false; }
 	
-	MMINLINE virtual uintptr_t threadCount() { return _threadCount; }
-	MMINLINE virtual uintptr_t threadCountMaximum() { return _threadCountMaximum; }
+	MMINLINE uintptr_t threadCount() { return _threadCount; }
+	MMINLINE uintptr_t threadCountMaximum() { return _threadCountMaximum; }
 	MMINLINE omrthread_t *getThreadTable() { return _threadTable; }
-	MMINLINE virtual uintptr_t activeThreadCount() { return _activeThreadCount; }
+	MMINLINE uintptr_t activeThreadCount() { return _activeThreadCount; }
 
 	MMINLINE omrsig_handler_fn getSignalHandler() {return _handler;}
 	MMINLINE void *getSignalHandlerArg() {return _handler_arg;}

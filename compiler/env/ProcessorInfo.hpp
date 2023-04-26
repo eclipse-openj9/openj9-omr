@@ -139,6 +139,7 @@ inline uint32_t getFeatureFlags2Mask()
    return  TR_SSE3
          | TR_SSSE3
          | TR_SSE4_1
+         | TR_SSE4_2
          | TR_POPCNT
          | TR_AESNI
          | TR_OSXSAVE

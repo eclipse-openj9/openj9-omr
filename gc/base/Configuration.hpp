@@ -156,29 +156,19 @@ public:
 
 #if defined(J9VM_OPT_CRIU_SUPPORT)
 	/**
-	 * Shutdown GC threads on checkpoint.
-	 *
-	 * @param[in] env the current environment
-	 * @return void
-	 */
-	virtual void adjustGCThreadCountForCheckpoint(MM_EnvironmentBase* env);
-
-	/**
-	 * Startup GC threads on restore.
-	 *
-	 * @param[in] env the current environment
-	 * @return bool indicating if the restore thread count was
-	 * successfully set and accommodated (thread pool resized).
-	 */
-	virtual bool reinitializeGCThreadCountForRestore(MM_EnvironmentBase* env);
-
-	/**
 	 * Update the configuration to reflect the restore environment and parameters.
+	 *
+	 * The standard configurations are currently the only configurations that support
+	 * CRIU and are therefore expected to implement this method.
 	 *
 	 * @param[in] env the current environment.
 	 * @return boolean indicating whether the configuration was successfully updated.
 	 */
-	virtual bool reinitializeForRestore(MM_EnvironmentBase* env) { return true; }
+	virtual bool reinitializeForRestore(MM_EnvironmentBase* env)
+	{
+		Assert_MM_unreachable();
+		return false;
+	}
 #endif /* defined(J9VM_OPT_CRIU_SUPPORT) */
 
 	MM_Configuration(MM_EnvironmentBase* env, MM_GCPolicy gcPolicy, MM_AlignmentType alignmentType, uintptr_t defaultRegionSize, uintptr_t defaultArrayletLeafSize, MM_GCWriteBarrierType writeBarrierType, MM_GCAllocationType allocationType)

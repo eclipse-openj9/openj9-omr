@@ -519,33 +519,3 @@ MM_Configuration::createParallelDispatcher(MM_EnvironmentBase *env, omrsig_handl
 {
 	return MM_ParallelDispatcher::newInstance(env, handler, handler_arg, defaultOSStackSize);
 }
-
-#if defined(J9VM_OPT_CRIU_SUPPORT)
-void
-MM_Configuration::adjustGCThreadCountForCheckpoint(MM_EnvironmentBase* env)
-{
-	MM_GCExtensionsBase* extensions = env->getExtensions();
-	MM_ParallelDispatcher* dispatcher = extensions->dispatcher;
-
-	dispatcher->contractThreadPool(env, extensions->checkpointGCthreadCount);
-}
-
-bool
-MM_Configuration::reinitializeGCThreadCountForRestore(MM_EnvironmentBase* env)
-{
-	MM_GCExtensionsBase* extensions = env->getExtensions();
-
-	uintptr_t checkpointThreadCount = extensions->dispatcher->threadCountMaximum();
-
-	initializeGCThreadCount(env);
-
-	/* Currently, threads don't shutdown during restore, so ensure
-	 * thread count doesn't fall below the checkpoint thread count.
-	 * This adjustment can be removed in the future when dispatcher
-	 * thread shutdown is sufficiently tested at restore.
-	 */
-	extensions->gcThreadCount = OMR_MAX(checkpointThreadCount, extensions->gcThreadCount);
-
-	return extensions->dispatcher->expandThreadPool(env);
-}
-#endif /* defined(J9VM_OPT_CRIU_SUPPORT) */

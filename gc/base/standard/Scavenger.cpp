@@ -323,6 +323,22 @@ MM_Scavenger::tearDown(MM_EnvironmentBase *env)
 	(*mmOmrHooks)->J9HookUnregister(mmOmrHooks, J9HOOK_MM_OMR_GLOBAL_GC_END, hookGlobalCollectionComplete, (void *)this);
 }
 
+#if defined(J9VM_OPT_CRIU_SUPPORT)
+bool
+MM_Scavenger::reinitializeForRestore(MM_EnvironmentBase *env)
+{
+	bool rc = true;
+
+	if (!_scavengeCacheFreeList.reinitializeForRestore(env)
+		|| !_scavengeCacheScanList.reinitializeForRestore(env)
+	) {
+		rc = false;
+	}
+
+	return rc;
+}
+#endif /* defined(J9VM_OPT_CRIU_SUPPORT) */
+
 /**
  * Perform any collector initialization particular to the concurrent collector.
  */

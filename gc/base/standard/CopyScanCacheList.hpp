@@ -66,14 +66,14 @@ private:
 
 		bool initialize(MM_EnvironmentBase *env) {
 			MM_GCExtensionsBase *extensions = env->getExtensions();
-			if (_cacheLock.initialize(env, &extensions->lnrlOptions, "MM_CopyScanCacheList:_sublists[]._cacheLock")) {
+			if (!_cacheLock.initialize(env, &extensions->lnrlOptions, "MM_CopyScanCacheList:_sublists[]._cacheLock")) {
 				return false;
 			}
 			return true;
 		}
 	};
 	
-	struct CopyScanCacheSublist *_sublists;	/**< An array of CopyScanCacheSublist structures which is _sublistCount elements long */
+	CopyScanCacheSublist *_sublists;	/**< An array of CopyScanCacheSublist structures which is _sublistCount elements long */
 	uintptr_t _sublistCount; /**< the number of lists (split for parallelism). Must be at least 1 */
 	
 	MM_CopyScanCacheChunk *_chunkHead; 
@@ -128,6 +128,17 @@ protected:
 public:
 	bool initialize(MM_EnvironmentBase *env, volatile uintptr_t *cachedEntryCount);
 	virtual void tearDown(MM_EnvironmentBase *env);
+
+#if defined(J9VM_OPT_CRIU_SUPPORT)
+	/**
+	 * Split the cache list into multiple sublists based on the cacheListSplit
+	 * computed for the restore configuration.
+	 *
+	 * @param[in] env the current environment.
+	 * @return boolean indicating whether the CopyScanCacheList split failed.
+	 */
+	virtual bool reinitializeForRestore(MM_EnvironmentBase *env);
+#endif /* defined(J9VM_OPT_CRIU_SUPPORT) */
 
 	/**
 	 * Retrieve Allocated cache entry count

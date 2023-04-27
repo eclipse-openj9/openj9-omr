@@ -65,10 +65,8 @@ ifeq (zos,$(OMR_HOST_OS))
     # 31-bit only
     OBJECTS += omrvmem_support_below_bar_31
   endif
-else
-  OBJECTS += protect_helpers
 endif
-
+OBJECTS += protect_helpers
 OBJECTS += omrgetasid
 OBJECTS += omrgetjobid
 OBJECTS += omrgetjobname

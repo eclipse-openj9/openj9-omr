@@ -303,7 +303,7 @@ MM_ConfigurationGenerational::reinitializeForRestore(MM_EnvironmentBase* env)
 {
 	MM_GCExtensionsBase* extensions = env->getExtensions();
 
-	bool result = MM_Configuration::reinitializeForRestore(env);
+	bool result = MM_ConfigurationStandard::reinitializeForRestore(env);
 
 #if defined(OMR_GC_CONCURRENT_SCAVENGER)
 	initializeConcurrentScavengerThreadCount(env);

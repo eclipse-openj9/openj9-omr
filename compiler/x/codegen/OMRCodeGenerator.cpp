@@ -1029,15 +1029,6 @@ bool OMR::X86::CodeGenerator::getSupportsOpCodeForAutoSIMD(TR::CPU *cpu, TR::ILO
       case TR::mload:
       case TR::mloadi:
          return cpu->supportsFeature(OMR_FEATURE_X86_SSE4_1);
-      case TR::vmabs:
-         if (et.isFloatingPoint())
-            return false;
-         break;
-      case TR::vabs:
-         if (!et.isFloatingPoint())
-            {
-            break;
-            }
       case TR::vcmpgt:
       case TR::vmcmpgt:
       case TR::vcmpge:
@@ -1081,6 +1072,13 @@ bool OMR::X86::CodeGenerator::getSupportsOpCodeForAutoSIMD(TR::CPU *cpu, TR::ILO
              default:
                 return false;
              }
+      case TR::vmabs:
+         if (et.isFloatingPoint())
+            return false; // Todo; Implement masked vabs for fp types
+         break;
+      case TR::vabs:
+         if (!et.isFloatingPoint()) break;
+         // Intentional fallthrough. FP vabs requires special handling and cannot be mapped to a single instruction.
       case TR::b2m:
       case TR::s2m:
       case TR::i2m:

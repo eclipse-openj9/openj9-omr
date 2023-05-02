@@ -2373,7 +2373,7 @@ TR::S390RSInstruction::generateBinaryEncoding()
       (*(int16_t *) (cursor + 2)) |= (0xFFF & bos(getSourceImmediate()));
       if (getKind() == TR::Instruction::IsRSY)
          {
-         (*(int8_t *) (cursor + 3)) |= (bos(getSourceImmediate() >> 12));
+         (*(int8_t *) (cursor + 4)) |= (bos(getSourceImmediate() >> 12));
          }
       }
 

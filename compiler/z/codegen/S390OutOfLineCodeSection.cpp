@@ -148,7 +148,7 @@ TR::RegisterDependencyConditions *TR_S390OutOfLineCodeSection::formEvaluatedArgu
                }
             else
                {
-               depConds->addPostCondition(regPair->getLowOrder(), TR::RealRegister::NoReg);
+               depConds->addPostCondition(reg, TR::RealRegister::NoReg);
                }
             }
          }

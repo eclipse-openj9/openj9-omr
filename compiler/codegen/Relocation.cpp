@@ -322,9 +322,9 @@ uint8_t TR::ExternalOrderedPair32BitRelocation::collectModifier()
    int32_t iLoc2 = static_cast<int32_t>(updateLocation2 - relocatableMethodCodeStart);
 
    if ( (iLoc < MIN_SHORT_OFFSET  || iLoc > MAX_SHORT_OFFSET ) || (iLoc2 < MIN_SHORT_OFFSET || iLoc2 > MAX_SHORT_OFFSET ) )
-      return RELOCATION_TYPE_WIDE_OFFSET | RELOCATION_TYPE_ORDERED_PAIR;
+      return RELOCATION_TYPE_WIDE_OFFSET | ITERATED_RELOCATION_TYPE_ORDERED_PAIR;
 
-   return RELOCATION_TYPE_ORDERED_PAIR;
+   return ITERATED_RELOCATION_TYPE_ORDERED_PAIR;
    }
 
 

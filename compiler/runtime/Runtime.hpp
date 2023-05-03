@@ -187,17 +187,20 @@ inline TR_LinkageConventions runtimeHelperLinkage(TR_RuntimeHelper h) { return r
 // Relocation flags and masks
 typedef enum
    {
-   ITERATED_RELOCATION_TYPE_ORDERED_PAIR = 0x20,
+   RELOCATION_TYPE_EIP_OFFSET            = 0x1,
+   RELOCATION_TYPE_WIDE_OFFSET           = 0x2,
 
-   RELOCATION_TYPE_EIP_OFFSET            = 0x40,
-   RELOCATION_TYPE_WIDE_OFFSET           = 0x80,
+   ITERATED_RELOCATION_TYPE_ORDERED_PAIR = 0x4,
 
    // ITERATED_RELOCATION_TYPE_ORDERED_PAIR is not stored in the binary template
    // as the isOrderedPairRelocation API is used to determine whether a given
    // relocation is an Orderd Pair Relocation or not.
    RELOCATION_CROSS_PLATFORM_FLAGS_MASK  = (RELOCATION_TYPE_EIP_OFFSET | RELOCATION_TYPE_WIDE_OFFSET),
+
    RELOCATION_RELOC_FLAGS_MASK           = (~RELOCATION_CROSS_PLATFORM_FLAGS_MASK),
-   } TR_RelocationCrossPlatformMask;
+   RELOCATION_RELOC_FLAGS_SHIFT          = 4,
+
+   } TR_RelocationFlagUtilities;
 
 // These macros are intended for use when HI_VALUE and LO_VALUE will be recombined after LO_VALUE is sign-extended
 // (e.g. when LO_VALUE is used with an instruction that takes a signed 16-bit operand).

@@ -925,6 +925,17 @@ public:
 	virtual bool canCollectorExpand(MM_EnvironmentBase *env, MM_MemorySubSpace *subSpace, uintptr_t expandSize);
 	virtual uintptr_t getCollectorExpandSize(MM_EnvironmentBase *env);
 
+#if defined(J9VM_OPT_CRIU_SUPPORT)
+	/**
+	 * Reinitialize the CopyScanCacheLists (used by Scavenger) by splitting them
+	 * to optimize for the number of restore GC threads.
+	 *
+	 * @param[in] env the current environment.
+	 * @return boolean indicating whether the CopyScanCacheLists were successfully updated.
+	 */
+	virtual bool reinitializeForRestore(MM_EnvironmentBase *env);
+#endif /* defined(J9VM_OPT_CRIU_SUPPORT) */
+
 	MM_Scavenger(MM_EnvironmentBase *env) :
 		MM_Collector()
 		, _cycleTimes()

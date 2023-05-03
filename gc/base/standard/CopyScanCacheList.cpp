@@ -44,13 +44,15 @@ MM_CopyScanCacheList::initialize(MM_EnvironmentBase *env, volatile uintptr_t *ca
 	_sublistCount = extensions->cacheListSplit;
 	Assert_MM_true(0 < _sublistCount);
 
-	_sublists = (struct CopyScanCacheSublist *)extensions->getForge()->allocate(sizeof(struct CopyScanCacheSublist) * _sublistCount, OMR::GC::AllocationCategory::FIXED, OMR_GET_CALLSITE());
+	_sublists = (CopyScanCacheSublist *)extensions->getForge()->allocate(
+			sizeof(CopyScanCacheSublist) * _sublistCount,
+			OMR::GC::AllocationCategory::FIXED, OMR_GET_CALLSITE());
 	if (NULL == _sublists) {
 		result = false;
 	} else {
 		for (uintptr_t i = 0; i < _sublistCount; i++) {
 			new (&_sublists[i]) CopyScanCacheSublist();
-			if (_sublists[i].initialize(env)) {
+			if (!_sublists[i].initialize(env)) {
 				result = false;
 				break;
 			}
@@ -61,6 +63,48 @@ MM_CopyScanCacheList::initialize(MM_EnvironmentBase *env, volatile uintptr_t *ca
 
 	return result;
 }
+
+#if defined(J9VM_OPT_CRIU_SUPPORT)
+bool
+MM_CopyScanCacheList::reinitializeForRestore(MM_EnvironmentBase *env)
+{
+	MM_GCExtensionsBase *extensions = env->getExtensions();
+	bool result = true;
+
+	uintptr_t newSublistCount = extensions->cacheListSplit;
+	Assert_MM_true(0 < newSublistCount);
+
+	if (newSublistCount > _sublistCount) {
+		CopyScanCacheSublist *newSublists = (CopyScanCacheSublist *)extensions->getForge()->allocate(
+						sizeof(CopyScanCacheSublist) * newSublistCount,
+						OMR::GC::AllocationCategory::FIXED, OMR_GET_CALLSITE());
+
+		if (NULL == newSublists) {
+			result = false;
+		} else {
+			for (uintptr_t i = 0; i < _sublistCount; i++) {
+				newSublists[i] = _sublists[i];
+			}
+
+			for (uintptr_t i = _sublistCount; i < newSublistCount; i++) {
+				new (&newSublists[i]) CopyScanCacheSublist();
+				if (!newSublists[i].initialize(env)) {
+					result = false;
+					break;
+				}
+			}
+
+			if (result) {
+				extensions->getForge()->free(_sublists);
+				_sublists = newSublists;
+				_sublistCount = newSublistCount;
+			}
+		}
+	}
+
+	return result;
+}
+#endif /* defined(J9VM_OPT_CRIU_SUPPORT) */
 
 void
 MM_CopyScanCacheList::tearDown(MM_EnvironmentBase *env)

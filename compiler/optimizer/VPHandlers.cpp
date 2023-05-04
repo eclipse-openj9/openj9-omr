@@ -832,7 +832,7 @@ static bool refineUnsafeAccess(OMR::ValuePropagation *vp, TR::Node *node)
 
       if (!performTransformation(
             comp,
-            "%sRefine unsafe shadow acess n%un [%p] to %s array shadow #%d\n",
+            "%sRefine unsafe shadow access n%un [%p] to %s array shadow #%d\n",
             OPT_DETAILS,
             node->getGlobalIndex(),
             node,
@@ -898,7 +898,7 @@ static bool refineUnsafeAccess(OMR::ValuePropagation *vp, TR::Node *node)
 
    if (!performTransformation(
          comp,
-         "%sRefine unsafe shadow acess n%un [%p] to field shadow #%d %.*s.%s %s\n",
+         "%sRefine unsafe shadow access n%un [%p] to field shadow #%d %.*s.%s %s\n",
          OPT_DETAILS,
          node->getGlobalIndex(),
          node,

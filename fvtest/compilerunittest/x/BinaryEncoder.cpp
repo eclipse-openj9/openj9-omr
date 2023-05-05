@@ -695,6 +695,16 @@ INSTANTIATE_TEST_CASE_P(AVX512MaskRegSimdEVEX512Test, XRegRegEncEncodingTest, ::
     std::make_tuple(TR::InstOpCode::VPMOVB2MRegReg,    TR::RealRegister::k2, TR::RealRegister::xmm5,   OMR::X86::EVEX_L128,  "62f27e0829d5")
 )));
 
+INSTANTIATE_TEST_CASE_P(GeneralPurposeRegRegTest, XRegRegEncEncodingTest, ::testing::ValuesIn(*TRTest::MakeVector<std::tuple<TR::InstOpCode::Mnemonic, TR::RealRegister::RegNum, TR::RealRegister::RegNum, OMR::X86::Encoding, TRTest::BinaryInstruction>>(
+    std::make_tuple(TR::InstOpCode::LZCNT2RegReg,   TR::RealRegister::eax,  TR::RealRegister::ecx, OMR::X86::Default, "66f30fbdc1"),
+    std::make_tuple(TR::InstOpCode::LZCNT4RegReg,   TR::RealRegister::eax,  TR::RealRegister::ecx, OMR::X86::Default, "f30fbdc1"),
+    std::make_tuple(TR::InstOpCode::LZCNT8RegReg,   TR::RealRegister::eax,  TR::RealRegister::ecx, OMR::X86::Default, "f3480fbdc1"),
+
+    std::make_tuple(TR::InstOpCode::TZCNT2RegReg,   TR::RealRegister::eax,  TR::RealRegister::ecx, OMR::X86::Default, "66f30fbcc1"),
+    std::make_tuple(TR::InstOpCode::TZCNT4RegReg,   TR::RealRegister::eax,  TR::RealRegister::ecx, OMR::X86::Default, "f30fbcc1"),
+    std::make_tuple(TR::InstOpCode::TZCNT8RegReg,   TR::RealRegister::eax,  TR::RealRegister::ecx, OMR::X86::Default, "f3480fbcc1")
+)));
+
 INSTANTIATE_TEST_CASE_P(Branch, XRegRegEncodingTest, ::testing::ValuesIn(*TRTest::MakeVector<std::tuple<TR::InstOpCode::Mnemonic, TR::RealRegister::RegNum, TR::RealRegister::RegNum, TRTest::BinaryInstruction>>(
     std::make_tuple(TR::InstOpCode::XOR4RegReg,    TR::RealRegister::eax, TR::RealRegister::eax,    "33c0"),
     std::make_tuple(TR::InstOpCode::XOR4RegReg,    TR::RealRegister::ecx, TR::RealRegister::ebp,    "33cd"),

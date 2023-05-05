@@ -894,7 +894,7 @@ OMR::X86::MemoryReference::assignRegisters(
             {
             // Note: a MemRef can be used only once -- if you want to reuse make a copy using
             // generateX86MemoryReference(OMR::X86::MemoryReference  &, intptr_t, TR::CodeGenerator *cg).
-            TR_ASSERT(!_baseRegister->getRealRegister(),"_baseRegister is a Real Register already, are you reusing a Memory Reference?");
+            TR_ASSERT_FATAL(!_baseRegister->getRealRegister(),"_baseRegister is a Real Register already, are you reusing a Memory Reference?");
             assignedBaseRegister = assignGPRegister(currentInstruction, _baseRegister, TR_WordReg, cg);
             }
 
@@ -1588,7 +1588,7 @@ OMR::X86::MemoryReference::generateBinaryEncoding(
 
          if (baseRegisterNumber == TR::RealRegister::vfp)
             {
-            TR_ASSERT(cg->machine()->getRealRegister(baseRegisterNumber)->getAssignedRealRegister(),
+            TR_ASSERT_FATAL(cg->machine()->getRealRegister(baseRegisterNumber)->getAssignedRealRegister(),
                    "virtual frame pointer must be assigned before binary encoding!\n");
 
             base = toRealRegister(cg->machine()->
@@ -1605,7 +1605,7 @@ OMR::X86::MemoryReference::generateBinaryEncoding(
             }
 
          displacement = self()->getDisplacement();
-         TR_ASSERT(IS_32BIT_SIGNED(displacement), "64-bit displacement should have been replaced in TR_AMD64MemoryReference::generateBinaryEncoding");
+         TR_ASSERT_FATAL(IS_32BIT_SIGNED(displacement), "64-bit displacement should have been replaced in TR_AMD64MemoryReference::generateBinaryEncoding");
 
          if (!isForceWideDisplacement() && isEvex && (displacement % displacementDivisor) == 0 && IS_8BIT_SIGNED(displacement / displacementDivisor))
             {

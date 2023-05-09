@@ -432,20 +432,29 @@ OMR::X86::AMD64::MemoryReference::addMetaDataForCodeAddressWithLoad(
                {
                if (cg->comp()->getOption(TR_UseSymbolValidationManager))
                   {
-                  cg->addExternalRelocation(new (cg->trHeapMemory()) TR::ExternalRelocation(displacementLocation,
-                                                                                            (uint8_t *)sr.getSymbol()->castToStaticSymbol()->getStaticAddress(),
-                                                                                            (uint8_t *)TR::SymbolType::typeClass,
-                                                                                            TR_SymbolFromManager,
-                                                                                            cg),
-                                                                                   __FILE__, __LINE__,
-                                                                                   containingInstruction->getNode());
+                  cg->addExternalRelocation(
+                     TR::ExternalRelocation::create(
+                        displacementLocation,
+                        (uint8_t *)sr.getSymbol()->castToStaticSymbol()->getStaticAddress(),
+                        (uint8_t *)TR::SymbolType::typeClass,
+                        TR_SymbolFromManager,
+                        cg),
+                     __FILE__,
+                     __LINE__,
+                     containingInstruction->getNode());
                   }
                else
                   {
-                  cg->addExternalRelocation(new (cg->trHeapMemory()) TR::ExternalRelocation(displacementLocation, (uint8_t *)srCopy,
-                                                                                            (uint8_t *)(uintptr_t)containingInstruction->getNode()->getInlinedSiteIndex(),
-                                                                                            TR_ClassAddress, cg),__FILE__, __LINE__,
-                                                                                            containingInstruction->getNode());
+                  cg->addExternalRelocation(
+                     TR::ExternalRelocation::create(
+                        displacementLocation,
+                        (uint8_t *)srCopy,
+                        (uint8_t *)(uintptr_t)containingInstruction->getNode()->getInlinedSiteIndex(),
+                        TR_ClassAddress,
+                        cg),
+                     __FILE__,
+                     __LINE__,
+                     containingInstruction->getNode());
                   }
                }
             }
@@ -453,46 +462,92 @@ OMR::X86::AMD64::MemoryReference::addMetaDataForCodeAddressWithLoad(
       else if (sr.getSymbol()->isCountForRecompile())
          {
          if (cg->needRelocationsForPersistentInfoData())
-            cg->addExternalRelocation(new (cg->trHeapMemory()) TR::ExternalRelocation(
-                                   displacementLocation, (uint8_t *) TR_CountForRecompile, TR_GlobalValue, cg),
-                                 __FILE__,
-                                 __LINE__,
-                                 containingInstruction->getNode());
+            {
+            cg->addExternalRelocation(
+               TR::ExternalRelocation::create(
+                  displacementLocation,
+                  (uint8_t *) TR_CountForRecompile,
+                  TR_GlobalValue,
+                  cg),
+               __FILE__,
+               __LINE__,
+               containingInstruction->getNode());
+            }
          }
       else if (sr.getSymbol()->isRecompilationCounter())
          {
          if (cg->needRelocationsForBodyInfoData())
-            cg->addExternalRelocation(new (cg->trHeapMemory()) TR::ExternalRelocation(displacementLocation, 0, TR_BodyInfoAddress, cg),
-                                 __FILE__,__LINE__,containingInstruction->getNode());
+            {
+            cg->addExternalRelocation(
+               TR::ExternalRelocation::create(
+                  displacementLocation,
+                  0,
+                  TR_BodyInfoAddress,
+                  cg),
+               __FILE__,
+               __LINE__,
+               containingInstruction->getNode());
+            }
          }
       else if (sr.getSymbol()->isCatchBlockCounter())
          {
          if (cg->needRelocationsForBodyInfoData())
-            cg->addExternalRelocation(new (cg->trHeapMemory()) TR::ExternalRelocation(displacementLocation, 0, TR_CatchBlockCounter, cg),
-                                 __FILE__,__LINE__,containingInstruction->getNode());
+            {
+            cg->addExternalRelocation(
+               TR::ExternalRelocation::create(
+                  displacementLocation,
+                  0,
+                  TR_CatchBlockCounter,
+                  cg),
+               __FILE__,
+               __LINE__,
+               containingInstruction->getNode());
+            }
          }
       else if (sr.getSymbol()->isGCRPatchPoint())
          {
          if (cg->needRelocationsForStatics())
             {
-            TR::ExternalRelocation* r= new (cg->trHeapMemory())
-                           TR::ExternalRelocation(displacementLocation,
-                                                      0,
-                                                      TR_AbsoluteMethodAddress, cg);
-            cg->addExternalRelocation(r, __FILE__, __LINE__, containingInstruction->getNode());
+            cg->addExternalRelocation(
+               TR::ExternalRelocation::create(
+                  displacementLocation,
+                  0,
+                  TR_AbsoluteMethodAddress,
+                  cg),
+               __FILE__,
+               __LINE__,
+               containingInstruction->getNode());
             }
          }
       else if (sr.getSymbol()->isCompiledMethod())
          {
          if (cg->needRelocationsForStatics())
-            cg->addExternalRelocation(new (cg->trHeapMemory()) TR::ExternalRelocation(displacementLocation, 0, TR_RamMethod, cg),
-                                 __FILE__,__LINE__,containingInstruction->getNode());
+            {
+            cg->addExternalRelocation(
+               TR::ExternalRelocation::create(
+                  displacementLocation,
+                  0,
+                  TR_RamMethod,
+                  cg),
+               __FILE__,
+               __LINE__,
+               containingInstruction->getNode());
+            }
          }
       else if (sr.getSymbol()->isStartPC())
          {
          if (cg->needRelocationsForStatics())
-            cg->addExternalRelocation(new (cg->trHeapMemory()) TR::ExternalRelocation(displacementLocation, 0, TR_AbsoluteMethodAddress, cg),
-                                 __FILE__,__LINE__,containingInstruction->getNode());
+            {
+            cg->addExternalRelocation(
+               TR::ExternalRelocation::create(
+                  displacementLocation,
+                  0,
+                  TR_AbsoluteMethodAddress,
+                  cg),
+               __FILE__,
+               __LINE__,
+               containingInstruction->getNode());
+            }
          }
       else if (sr.getSymbol()->isDebugCounter())
          {
@@ -514,12 +569,15 @@ OMR::X86::AMD64::MemoryReference::addMetaDataForCodeAddressWithLoad(
       {
       if (self()->needsCodeAbsoluteExternalRelocation())
          {
-         cg->addExternalRelocation(new (cg->trHeapMemory()) TR::ExternalRelocation(displacementLocation,
-                                                                                 (uint8_t *)0,
-                                                                                 TR_AbsoluteMethodAddress, cg),
-                              __FILE__,
-                              __LINE__,
-                              containingInstruction->getNode());
+         cg->addExternalRelocation(
+            TR::ExternalRelocation::create(
+               displacementLocation,
+               (uint8_t *)0,
+               TR_AbsoluteMethodAddress,
+               cg),
+            __FILE__,
+            __LINE__,
+            containingInstruction->getNode());
          }
       }
 

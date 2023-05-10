@@ -29,6 +29,8 @@
 #include "env/FrontEnd.hpp"
 #include "control/Options.hpp"
 #include "control/Options_inlines.hpp"
+#include "control/CompilationController.hpp"
+#include "control/CompilationRuntime.hpp"
 #include "env/IO.hpp"
 #include "env/defines.h"
 #include "env/CompilerEnv.hpp"
@@ -1041,6 +1043,9 @@ OMR::CodeCacheManager::carveCodeCacheSpaceFromRepository(size_t segmentSize,
    uint8_t* start = NULL;
    uint8_t* end = NULL;
    size_t freeSpace = 0;
+   bool incomplete;
+   TR::CompilationInfo *compInfo = TR::CompilationController::getCompilationInfo();
+   uint64_t freeMem = compInfo->computeFreePhysicalMemory(incomplete);
 
    TR::CodeCacheMemorySegment *repositorySegment = _codeCacheRepositorySegment;
 

@@ -27,6 +27,10 @@
 namespace TR { class CompilationStrategy; }
 namespace TR { class CompilationInfo; }
 
+//#include "control/CompilationRuntime.hpp"
+namespace OMR { class CompilationInfo;}
+namespace OMR { typedef CompilationInfo CompilationInfoConnector; }
+
 //------------------------------- TR::CompilationController ------------------------
 // All methods and fields are static. The most important field is _compilationStrategy
 // that store the compilation strategy in use.
@@ -54,4 +58,23 @@ class CompilationController
 
 } // namespace TR
 
+namespace OMR
+{
+class CompilationInfo
+   {
+   private:
+   bool _cgroupMemorySubsystemEnabled;
+   public:
+   CompilationInfo ();
+
+   /**
+   * @brief Compute free physical memory taking into account container limits
+   *
+   * @param incompleteInfo   [OUTPUT] Boolean indicating that cached/buffered memory couldn't be read
+   * @return                 A value representing the free physicalMemory
+                             or OMRPORT_MEMINFO_NOT_AVAILABLE in case of error
+   */
+   uint64_t computeFreePhysicalMemory(bool &incompleteInfo);
+   };
+}
 #endif

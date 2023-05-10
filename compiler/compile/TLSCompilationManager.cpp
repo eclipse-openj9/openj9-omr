@@ -25,10 +25,10 @@
 
 TR::TLSCompilationManager::TLSCompilationManager(TR::Compilation &comp)
    {
-   tlsSet(OMR::compilation, &comp);
+   TR_TLS_SET(OMR::compilation, &comp);
    }
 
 TR::TLSCompilationManager::~TLSCompilationManager()
    {
-   tlsSet(OMR::compilation, NULL);
+   TR_TLS_SET(OMR::compilation, NULL);
    }

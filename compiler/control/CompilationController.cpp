@@ -58,7 +58,7 @@ bool TR::CompilationController::init(TR::CompilationInfo *compInfo)
    if (TR::Options::getCmdLineOptions() && TR::Options::getCmdLineOptions()->getOption(TR_EnableCompYieldStats))
       TR::Compilation::allocateCompYieldStatsMatrix();
 #endif
-   tlsAlloc(OMR::compilation);
+   TR_TLS_ALLOC(OMR::compilation);
    _tlsCompObjCreated = true;
    return _useController;
    }
@@ -67,7 +67,7 @@ void TR::CompilationController::shutdown()
    {
    if (_tlsCompObjCreated)
       {
-      tlsFree(OMR::compilation);
+      TR_TLS_FREE(OMR::compilation);
       }
       
    if (!_useController)

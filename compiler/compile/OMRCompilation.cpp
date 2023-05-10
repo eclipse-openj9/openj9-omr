@@ -146,7 +146,7 @@ namespace TR { class RegisterMappedSymbol; }
 
 namespace OMR
 {
-tlsDefine(TR::Compilation *, compilation);
+TR_TLS_DEFINE(TR::Compilation *, compilation);
 }
 
 TR::SymbolReference *

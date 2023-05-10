@@ -1343,7 +1343,7 @@ private:
 
 // extern DWORD compilation
 //
-tlsDeclare(TR::Compilation *, compilation);
+TR_TLS_DECLARE(TR::Compilation *, compilation);
 
 }
 namespace TR {
@@ -1352,7 +1352,7 @@ namespace TR {
    /// \note Inlined for performance
    inline TR::Compilation *comp()
       {
-      return tlsGet(OMR::compilation, TR::Compilation *);
+      return TR_TLS_GET(OMR::compilation, TR::Compilation *);
       }
 }
 

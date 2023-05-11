@@ -37,6 +37,9 @@ enum ArithmeticOps : uint32_t
    BinaryArithmeticXor,
    BinaryArithmeticMin,
    BinaryArithmeticMax,
+   BinaryLogicalShiftLeft,
+   BinaryLogicalShiftRight,
+   BinaryArithmeticShiftRight,
    NumBinaryArithmeticOps,
    UnaryArithmeticAbs,
    UnaryArithmeticSqrt,
@@ -88,7 +91,10 @@ static const TR::InstOpCode::Mnemonic VectorBinaryArithmeticOpCodesForReg[NumBin
    { TR::InstOpCode::bad,              TR::InstOpCode::bad,              TR::InstOpCode::PORRegReg,        TR::InstOpCode::PORRegReg,        TR::InstOpCode::bad,              TR::InstOpCode::bad           }, // BinaryArithmeticOr,
    { TR::InstOpCode::bad,              TR::InstOpCode::bad,              TR::InstOpCode::PXORRegReg,       TR::InstOpCode::PXORRegReg,       TR::InstOpCode::bad,              TR::InstOpCode::bad           }, // BinaryArithmeticXor
    { TR::InstOpCode::PMINSBRegReg,     TR::InstOpCode::PMINSWRegReg,     TR::InstOpCode::PMINSDRegReg,     TR::InstOpCode::PMINSQRegReg,     TR::InstOpCode::MINPSRegReg,      TR::InstOpCode::MINPDRegReg   }, // BinaryArithmeticMin
-   { TR::InstOpCode::PMAXSBRegReg,     TR::InstOpCode::PMAXSWRegReg,     TR::InstOpCode::PMAXSDRegReg,     TR::InstOpCode::PMAXSQRegReg,     TR::InstOpCode::MAXPSRegReg,      TR::InstOpCode::MAXPDRegReg   }  // BinaryArithmeticMax
+   { TR::InstOpCode::PMAXSBRegReg,     TR::InstOpCode::PMAXSWRegReg,     TR::InstOpCode::PMAXSDRegReg,     TR::InstOpCode::PMAXSQRegReg,     TR::InstOpCode::MAXPSRegReg,      TR::InstOpCode::MAXPDRegReg   }, // BinaryArithmeticMax
+   { TR::InstOpCode::bad,              TR::InstOpCode::VPSLLVWRegRegReg, TR::InstOpCode::VPSLLVDRegRegReg, TR::InstOpCode::VPSLLVQRegRegReg, TR::InstOpCode::bad,              TR::InstOpCode::bad           }, // BinaryLogicalShiftLeft
+   { TR::InstOpCode::bad,              TR::InstOpCode::VPSRAVWRegRegReg, TR::InstOpCode::VPSRAVDRegRegReg, TR::InstOpCode::VPSRAVQRegRegReg, TR::InstOpCode::bad,              TR::InstOpCode::bad           }, // BinaryLogicalShiftRight
+   { TR::InstOpCode::bad,              TR::InstOpCode::VPSRLVWRegRegReg, TR::InstOpCode::VPSRLVDRegRegReg, TR::InstOpCode::VPSRLVQRegRegReg, TR::InstOpCode::bad,              TR::InstOpCode::bad           }  // BinaryArithmeticShiftRight
    };
 
 static const TR::InstOpCode::Mnemonic VectorBinaryArithmeticOpCodesForMem[NumBinaryArithmeticOps][TR::NumVectorElementTypes] =
@@ -103,7 +109,10 @@ static const TR::InstOpCode::Mnemonic VectorBinaryArithmeticOpCodesForMem[NumBin
    { TR::InstOpCode::bad,              TR::InstOpCode::bad,              TR::InstOpCode::PORRegMem,        TR::InstOpCode::PORRegMem,        TR::InstOpCode::bad,              TR::InstOpCode::bad           }, // BinaryArithmeticOr,
    { TR::InstOpCode::bad,              TR::InstOpCode::bad,              TR::InstOpCode::PXORRegMem,       TR::InstOpCode::PXORRegMem,       TR::InstOpCode::bad,              TR::InstOpCode::bad           }, // BinaryArithmeticXor
    { TR::InstOpCode::PMINSBRegMem,     TR::InstOpCode::PMINSWRegMem,     TR::InstOpCode::PMINSDRegMem,     TR::InstOpCode::PMINSQRegMem,     TR::InstOpCode::bad,              TR::InstOpCode::bad           }, // BinaryArithmeticMin
-   { TR::InstOpCode::PMAXSBRegMem,     TR::InstOpCode::PMAXSWRegMem,     TR::InstOpCode::PMAXSDRegMem,     TR::InstOpCode::PMAXSQRegMem,     TR::InstOpCode::bad,              TR::InstOpCode::bad           }  // BinaryArithmeticMax
+   { TR::InstOpCode::PMAXSBRegMem,     TR::InstOpCode::PMAXSWRegMem,     TR::InstOpCode::PMAXSDRegMem,     TR::InstOpCode::PMAXSQRegMem,     TR::InstOpCode::bad,              TR::InstOpCode::bad           }, // BinaryArithmeticMax
+   { TR::InstOpCode::bad,              TR::InstOpCode::VPSLLVWRegRegMem, TR::InstOpCode::VPSLLVDRegRegMem, TR::InstOpCode::VPSLLVQRegRegMem, TR::InstOpCode::bad,              TR::InstOpCode::bad           }, // BinaryLogicalShiftLeft
+   { TR::InstOpCode::bad,              TR::InstOpCode::VPSRAVWRegRegMem, TR::InstOpCode::VPSRAVDRegRegMem, TR::InstOpCode::VPSRAVQRegRegMem, TR::InstOpCode::bad,              TR::InstOpCode::bad           }, // BinaryLogicalShiftRight
+   { TR::InstOpCode::bad,              TR::InstOpCode::VPSRLVWRegRegMem, TR::InstOpCode::VPSRLVDRegRegMem, TR::InstOpCode::VPSRLVQRegRegMem, TR::InstOpCode::bad,              TR::InstOpCode::bad           }  // BinaryArithmeticShiftRight
    };
 
 static const TR::InstOpCode::Mnemonic VectorUnaryArithmeticOpCodesForReg[NumUnaryArithmeticOps][TR::NumVectorElementTypes] =

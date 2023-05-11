@@ -4032,6 +4032,18 @@ TR::InstOpCode OMR::X86::TreeEvaluator::getNativeSIMDOpcode(TR::ILOpCodes opcode
       bool isMaskOp = OMR::ILOpCode(opcode).isVectorMasked();
       switch (OMR::ILOpCode::getVectorOperation(opcode))
          {
+         case TR::vmshl:
+         case TR::vshl:
+            binaryOp = BinaryLogicalShiftLeft;
+            break;
+         case TR::vmshr:
+         case TR::vshr:
+            binaryOp = BinaryLogicalShiftRight;
+            break;
+         case TR::vmushr:
+         case TR::vushr:
+            binaryOp = BinaryArithmeticShiftRight;
+            break;
          case TR::vmadd:
          case TR::vadd:
             binaryOp = BinaryArithmeticAdd;
@@ -6050,37 +6062,37 @@ OMR::X86::TreeEvaluator::vexpandEvaluator(TR::Node *node, TR::CodeGenerator *cg)
 TR::Register*
 OMR::X86::TreeEvaluator::vshlEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   return TR::TreeEvaluator::unImpOpEvaluator(node, cg);
+   return TR::TreeEvaluator::vectorBinaryArithmeticEvaluator(node, cg);
    }
 
 TR::Register*
 OMR::X86::TreeEvaluator::vmshlEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   return TR::TreeEvaluator::unImpOpEvaluator(node, cg);
+   return TR::TreeEvaluator::vectorBinaryArithmeticEvaluator(node, cg);
    }
 
 TR::Register*
 OMR::X86::TreeEvaluator::vshrEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   return TR::TreeEvaluator::unImpOpEvaluator(node, cg);
+   return TR::TreeEvaluator::vectorBinaryArithmeticEvaluator(node, cg);
    }
 
 TR::Register*
 OMR::X86::TreeEvaluator::vmshrEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   return TR::TreeEvaluator::unImpOpEvaluator(node, cg);
+   return TR::TreeEvaluator::vectorBinaryArithmeticEvaluator(node, cg);
    }
 
 TR::Register*
 OMR::X86::TreeEvaluator::vushrEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   return TR::TreeEvaluator::unImpOpEvaluator(node, cg);
+   return TR::TreeEvaluator::vectorBinaryArithmeticEvaluator(node, cg);
    }
 
 TR::Register*
 OMR::X86::TreeEvaluator::vmushrEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   return TR::TreeEvaluator::unImpOpEvaluator(node, cg);
+   return TR::TreeEvaluator::vectorBinaryArithmeticEvaluator(node, cg);
    }
 
 TR::Register*

@@ -4032,6 +4032,10 @@ TR::InstOpCode OMR::X86::TreeEvaluator::getNativeSIMDOpcode(TR::ILOpCodes opcode
       bool isMaskOp = OMR::ILOpCode(opcode).isVectorMasked();
       switch (OMR::ILOpCode::getVectorOperation(opcode))
          {
+         case TR::vmrol:
+         case TR::vrol:
+            binaryOp = BinaryRotateLeft;
+            break;
          case TR::vmshl:
          case TR::vshl:
             binaryOp = BinaryLogicalShiftLeft;
@@ -6098,13 +6102,13 @@ OMR::X86::TreeEvaluator::vmushrEvaluator(TR::Node *node, TR::CodeGenerator *cg)
 TR::Register*
 OMR::X86::TreeEvaluator::vrolEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   return TR::TreeEvaluator::unImpOpEvaluator(node, cg);
+   return TR::TreeEvaluator::vectorBinaryArithmeticEvaluator(node, cg);
    }
 
 TR::Register*
 OMR::X86::TreeEvaluator::vmrolEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   return TR::TreeEvaluator::unImpOpEvaluator(node, cg);
+   return TR::TreeEvaluator::vectorBinaryArithmeticEvaluator(node, cg);
    }
 
 TR::Register*

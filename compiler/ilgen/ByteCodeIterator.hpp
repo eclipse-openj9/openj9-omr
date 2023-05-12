@@ -46,7 +46,7 @@ public:
       {
       void *operator new(size_t s, void *p) { return p; }
 
-      TryCatchInfo(uint16_t s, uint16_t e, uint16_t h, uint32_t c) :
+      TryCatchInfo(int32_t s, int32_t e, int32_t h, uint32_t c) :
          _startIndex(s),
          _endIndex(e),
          _handlerIndex(h),
@@ -57,7 +57,7 @@ public:
          {
          }
 
-      void initialize(uint16_t s, uint16_t e, uint16_t h, uint32_t c)
+      void initialize(int32_t s, int32_t e, int32_t h, uint32_t c)
          {
          _startIndex = s;
          _endIndex = e;
@@ -70,9 +70,9 @@ public:
          return _handlerIndex == o._handlerIndex && _catchType == o._catchType;
          }
 
-      uint16_t      _startIndex;
-      uint16_t      _endIndex;
-      uint16_t      _handlerIndex;
+      int32_t       _startIndex;
+      int32_t       _endIndex;
+      int32_t       _handlerIndex;
       uint32_t      _catchType;
       TR::Block    * _firstBlock;
       TR::Block    * _lastBlock;

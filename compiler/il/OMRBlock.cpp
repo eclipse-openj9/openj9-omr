@@ -2344,7 +2344,7 @@ OMR::Block::addExceptionRangeForSnippet(uint32_t startPC, uint32_t endPC)
    }
 
 void
-OMR::Block::setHandlerInfo(uint32_t c, uint8_t d, uint16_t i, TR_ResolvedMethod * m, TR::Compilation *comp)
+OMR::Block::setHandlerInfo(uint32_t c, uint8_t d, int32_t i, TR_ResolvedMethod * m, TR::Compilation *comp)
    {
    self()->ensureCatchBlockExtensionExists(comp);
    TR_CatchBlockExtension *cbe = _catchBlockExtension;
@@ -2364,7 +2364,7 @@ OMR::Block::setHandlerInfo(uint32_t c, uint8_t d, uint16_t i, TR_ResolvedMethod 
    }
 
 void
-OMR::Block::setHandlerInfoWithOutBCInfo(uint32_t c, uint8_t d, uint16_t i, TR_ResolvedMethod * m, TR::Compilation *comp)
+OMR::Block::setHandlerInfoWithOutBCInfo(uint32_t c, uint8_t d, int32_t i, TR_ResolvedMethod * m, TR::Compilation *comp)
    {
    self()->ensureCatchBlockExtensionExists(comp);
    TR_CatchBlockExtension *cbe = _catchBlockExtension;
@@ -2396,7 +2396,7 @@ OMR::Block::getInlineDepth()
    return _catchBlockExtension->_inlineDepth;
    }
 
-uint16_t
+int32_t
 OMR::Block::getHandlerIndex()
    {
    TR_ASSERT(_catchBlockExtension, "catch block extension does not exist");

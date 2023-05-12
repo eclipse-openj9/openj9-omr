@@ -331,7 +331,7 @@ class OMR_EXTENSIBLE Block : public TR::CFGNode
       uint32_t                              _catchType;
       TR_ResolvedMethod *                   _owningMethod;
       TR_ByteCodeInfo                       _byteCodeInfo;
-      uint16_t                              _handlerIndex;
+      int32_t                               _handlerIndex;
       uint8_t                               _inlineDepth;
       bool                                  _isSyntheticHandler; // indicate whether the exception handler is inserted by the compiler rather than existing in the source code
       };
@@ -339,13 +339,13 @@ class OMR_EXTENSIBLE Block : public TR::CFGNode
    TR_CatchBlockExtension* getCatchBlockExtension()               { return _catchBlockExtension; }
    void setCatchBlockExtension(TR_CatchBlockExtension *extension) { _catchBlockExtension = extension; }
 
-   void setHandlerInfo(uint32_t c, uint8_t d, uint16_t i, TR_ResolvedMethod * m, TR::Compilation *comp);
-   void setHandlerInfoWithOutBCInfo(uint32_t c, uint8_t d, uint16_t i, TR_ResolvedMethod * m, TR::Compilation *comp); //also used for estimatecodesize dummy blocks
+   void setHandlerInfo(uint32_t c, uint8_t d, int32_t i, TR_ResolvedMethod * m, TR::Compilation *comp);
+   void setHandlerInfoWithOutBCInfo(uint32_t c, uint8_t d, int32_t i, TR_ResolvedMethod * m, TR::Compilation *comp); //also used for estimatecodesize dummy blocks
 
    bool                   isCatchBlock();
    uint32_t               getCatchType();
    uint8_t                getInlineDepth();
-   uint16_t               getHandlerIndex();
+   int32_t                getHandlerIndex();
    TR_ByteCodeInfo        getByteCodeInfo();
    TR_OpaqueClassBlock *  getExceptionClass();
    char *                 getExceptionClassNameChars();

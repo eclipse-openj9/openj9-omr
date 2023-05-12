@@ -712,6 +712,12 @@ static bool refineUnsafeAccess(OMR::ValuePropagation *vp, TR::Node *node)
    if (!sym->isUnsafeShadowSymbol())
       return okToConstrainNormally;
 
+   static const bool disable =
+      feGetEnv("TR_disableUnsafeShadowRefinement") != NULL;
+
+   if (disable)
+      return refuseToConstrainUnsafe(vp, node, "unsafe shadow refinement is disabled");
+
    if (vp->trace())
       {
       traceMsg(

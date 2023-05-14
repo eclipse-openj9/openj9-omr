@@ -1667,6 +1667,8 @@ TR_Debug::getName(TR::SymbolReference * symRef)
              return "<storeFlattenableArrayElementNonHelper>";
          case TR::SymbolReferenceTable::J9JNIMethodIDvTableIndexFieldSymbol:
              return "<J9JNIMethodIDvTableIndexFieldSymbol>";
+         case TR::SymbolReferenceTable::contiguousArrayDataAddrFieldSymbol:
+             return "<contiguousArrayDataAddrFieldSymbol>";
          case TR::SymbolReferenceTable::defaultValueSymbol:
              return "<defaultValue>";
          case TR::SymbolReferenceTable::jitDispatchJ9MethodSymbol:
@@ -2111,6 +2113,7 @@ static const char *commonNonhelperSymbolNames[] =
    "<osrScratchBuffer>",
    "<osrFrameIndex>",
    "<osrReturnAddress>",
+   "<contiguousArrayDataAddrField>",
    "<potentialOSRPointHelper>",
    "<osrFearPointHelper>",
    "<eaEscapeHelper>",

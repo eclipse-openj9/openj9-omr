@@ -151,6 +151,26 @@ OMR::SymbolReferenceTable::findOrCreateContiguousArraySizeSymbolRef()
    return element(contiguousArraySizeSymbol);
    }
 
+#if defined(J9VM_GC_ENABLE_SPARSE_HEAP_ALLOCATION)
+TR::SymbolReference *
+OMR::SymbolReferenceTable::findOrCreateContiguousArrayDataAddrFieldShadowSymRef()
+   {
+   if (!element(contiguousArrayDataAddrFieldSymbol))
+      {
+      TR::Symbol * sym = TR::Symbol::createShadow(trHeapMemory(), TR::Address);
+      sym->setContiguousArrayDataAddrFieldSymbol();
+      element(contiguousArrayDataAddrFieldSymbol) = new (trHeapMemory()) TR::SymbolReference(self(), contiguousArrayDataAddrFieldSymbol, sym);
+      element(contiguousArrayDataAddrFieldSymbol)->setOffset(TR::Compiler->om.offsetOfContiguousDataAddrField());
+      }
+   return element(contiguousArrayDataAddrFieldSymbol);
+   }
+#endif // defined(J9VM_GC_ENABLE_SPARSE_HEAP_ALLOCATION)
+
+TR::SymbolReference *
+OMR::SymbolReferenceTable::findContiguousArrayDataAddrFieldShadowSymRef()
+   {
+   return element(contiguousArrayDataAddrFieldSymbol);
+   }
 
 TR::SymbolReference *
 OMR::SymbolReferenceTable::findOrCreateVftSymbolRef()
@@ -2152,6 +2172,7 @@ const char *OMR::SymbolReferenceTable::_commonNonHelperSymbolNames[] =
    "<osrScratchBuffer>",
    "<osrFrameIndex>",
    "<osrReturnAddress>",
+   "<contiguousArrayDataAddrField>",
    "<potentialOSRPointHelper>",
    "<osrFearPointHelper>",
    "<eaEscapeHelper>",

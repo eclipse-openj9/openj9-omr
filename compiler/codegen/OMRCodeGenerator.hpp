@@ -1763,9 +1763,6 @@ public:
    bool getSupportsPostProcessArrayCopy() {return _flags2.testAny(SupportsPostProcessArrayCopy);}
    void setSupportsPostProcessArrayCopy() {_flags2.set(SupportsPostProcessArrayCopy);}
 
-   bool getOptimizationPhaseIsComplete() {return _flags4.testAny(OptimizationPhaseIsComplete);}
-   void setOptimizationPhaseIsComplete() {_flags4.set(OptimizationPhaseIsComplete);}
-
    bool getSupportsTestUnderMask() {return _flags4.testAny(SupportsTestUnderMask);}
    void setSupportsTestUnderMask() {_flags4.set(SupportsTestUnderMask);}
 
@@ -1915,7 +1912,7 @@ public:
       // AVAILABLE                                        = 0x00000001,
       // AVAILABLE                                        = 0x00000002,
       // AVAILABLE                                        = 0x00000004,
-      OptimizationPhaseIsComplete                         = 0x00000008,
+      // AVAILABLE                                        = 0x00000008,
       // AVAILABLE                                        = 0x00000010,
       IsInOOLSection                                      = 0x00000020,
       // AVAILABLE                                        = 0x00000040,

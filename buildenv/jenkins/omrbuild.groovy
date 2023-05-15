@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright IBM Corp. and others 2020
+ * Copyright IBM Corp. and others 2023
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -17,7 +17,7 @@
  * [1] https://www.gnu.org/software/classpath/license.html
  * [2] https://openjdk.org/legal/assembly-exception.html
  *
- * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0 OR GPL-2.0 WITH Classpath-exception-2.0 OR LicenseRef-GPL-2.0 WITH Assembly-exception
+ * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0 OR GPL-2.0-only WITH Classpath-exception-2.0 OR GPL-2.0-only WITH OpenJDK-assembly-exception-1.0
  *******************************************************************************/
 
 defaultCompile = 'make -j4'
@@ -44,7 +44,7 @@ pullId = params.ghprbPullId
 
 cgroupV1Specs = ["linux_x86"]
 cgroupV2Specs = ["linux_x86-64", "linux_ppc-64_le_gcc"]
-dockerSpecs = ["linux_x86", "linux_x86-64"]
+dockerSpecs = ["linux_x86", "linux_x86-64", "linux_riscv64_cross"]
 
 nodeLabels = []
 runInDocker = false
@@ -172,7 +172,7 @@ SPECS = [
         'builds' : [
             [
                 'buildDir' : cmakeBuildDir,
-                'configureArgs' : '-Wdev -C../cmake/caches/Travis.cmake -DOMR_DDR=OFF  -DCMAKE_TOOLCHAIN_FILE=../cmake/toolchains/riscv64-linux-cross.cmake "-DOMR_EXE_LAUNCHER=/home/jenkins/qemu/build/qemu-riscv64;-L;${CROSS_SYSROOT_RISCV64}" "-DCMAKE_SYSROOT=${CROSS_SYSROOT_RISCV64}"',
+                'configureArgs' : '-Wdev -C../cmake/caches/Travis.cmake -DOMR_DDR=OFF  -DCMAKE_TOOLCHAIN_FILE=../cmake/toolchains/riscv64-linux-cross.cmake "-DOMR_EXE_LAUNCHER=qemu-riscv64-static;-L;${CROSS_SYSROOT_RISCV64}" "-DCMAKE_SYSROOT=${CROSS_SYSROOT_RISCV64}"',
                 'compile' : defaultCompile
             ]
         ],

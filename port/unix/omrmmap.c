@@ -48,6 +48,7 @@
 #include "ut_omrport.h"
 #include "protect_helpers.h"
 #include "omrportpriv.h"
+#include "omrutil.h"
 
 #if defined(J9ZOS390)
 #include "omrvmem.h"
@@ -55,6 +56,10 @@
 #define MAP_FAILED ((void *)(intptr_t)-1)
 #endif /* !defined(MAP_FAILED) */
 #endif /* defined(J9ZOS390) */
+
+#if defined(J9ZOS39064) && !defined(__MAP_64)
+#define __MAP_64 0x10
+#endif /* defined(J9ZOS39064) && !defined(__MAP_64) */
 
 #if defined(AIXPPC)
 #include <sys/shm.h>
@@ -205,11 +210,25 @@ omrmmap_map_file(struct OMRPortLibrary *portLibrary, intptr_t file, uint64_t off
 		spCount++;
 	}
 
-#if defined(J9ZOS39064) && defined(__MAP_64)
+#if defined(J9ZOS39064)
 	if (OMR_ARE_ANY_BITS_SET(flags, OMRPORT_MMAP_FLAG_ZOS_64BIT)) {
-		mmapFlags |= __MAP_64;
+		if (zos_version_at_least(ZOS_V2R4_RELEASE, ZOS_V2R4_VERSION)) {
+			mmapFlags |= __MAP_64;
+		} else {
+			Trc_PRT_mmap_map_file_unix_invalidFlags();
+			errMsg = portLibrary->nls_lookup_message(
+						portLibrary,
+						J9NLS_ERROR | J9NLS_DO_NOT_APPEND_NEWLINE,
+						J9NLS_PORT_MMAP_INVALID_FLAG,
+						NULL);
+			portLibrary->error_set_last_error_with_message(
+						portLibrary,
+						OMRPORT_ERROR_MMAP_MAP_FILE_INVALIDFLAGS,
+						errMsg);
+			return NULL;
+		}
 	}
-#endif /* defined(J9ZOS39064) && defined(__MAP_64) */
+#endif /* defined(J9ZOS39064) */
 
 	if (1 != rwCount) {
 		Trc_PRT_mmap_map_file_unix_invalidFlags();

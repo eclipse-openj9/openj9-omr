@@ -813,6 +813,14 @@ static bool refineUnsafeAccess(OMR::ValuePropagation *vp, TR::Node *node)
             return refuseToConstrainUnsafe(vp, node, "type-punned array access");
          }
 
+      if (sym->isVolatile())
+         {
+         // We don't have a representation for volatile array shadows, and it's
+         // not straightforward to add one because we'd have to move volatile
+         // status to SymbolReference from Symbol.
+         return refuseToConstrainUnsafe(vp, node, "volatile array access");
+         }
+
       TR::SymbolReference *arrayShadow =
          srTab->findOrCreateArrayShadowSymbolRef(elemType, obj);
 
@@ -854,6 +862,23 @@ static bool refineUnsafeAccess(OMR::ValuePropagation *vp, TR::Node *node)
 
    if (i >= layout->count())
       return refuseToConstrainUnsafe(vp, node, "no matching field");
+
+   if (field->_isVolatile != sym->isVolatile())
+      {
+      // We don't have a representation for field shadows with the unexpected
+      // volatility, and it's not straightforward to add one because we'd have
+      // to move volatile status to SymbolReference from Symbol.
+      //
+      // Functionally it would be fine to go on and refine anyway if the field
+      // is volatile. Doing so would still improve aliasing, but it would make
+      // the access itself more expensive, so just leave it alone for now.
+      //
+      const char *mismatch = field->_isVolatile
+         ? "non-volatile access to volatile field"
+         : "volatile access to non-volatile field";
+
+      return refuseToConstrainUnsafe(vp, node, mismatch);
+      }
 
    TR::SymbolReference *refinedSymRef = srTab->findOrFabricateShadowSymbol(
       objClass,

@@ -2573,8 +2573,8 @@ bool OMR::Optimizer::areNodesEquivalent(TR::Node *node1, TR::Node *node2,  TR::C
          // for some reason this tests hasPinningArrayPointer only when the node also is true on _flags.testAny(internalPointer)
          bool haveIPs =    node1->isInternalPointer() && node2->isInternalPointer();
          bool haveNoIPs = !node1->isInternalPointer() && !node2->isInternalPointer();
-         TR::AutomaticSymbol * pinning1 = node1->getOpCode().hasPinningArrayPointer() ? node1->getPinningArrayPointer() : NULL;
-         TR::AutomaticSymbol * pinning2 = node2->getOpCode().hasPinningArrayPointer() ? node2->getPinningArrayPointer() : NULL;
+         TR::AutomaticSymbol * pinning1 = node1->hasPinningArrayPointer() ? node1->getPinningArrayPointer() : NULL;
+         TR::AutomaticSymbol * pinning2 = node2->hasPinningArrayPointer() ? node2->getPinningArrayPointer() : NULL;
          if ((haveIPs && (pinning1 == pinning2)) || haveNoIPs)
             return true;
          else

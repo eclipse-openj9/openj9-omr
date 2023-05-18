@@ -3362,11 +3362,11 @@ TR::TreeTop * OMR_InlinerUtil::storeValueInATemp(
          if (value->getOpCode().hasSymbolReference() && value->getSymbolReference()->getSymbol()->isNotCollected())
             valueRef->getSymbol()->setNotCollected();
 
-         else if (value->getOpCode().isArrayRef())
+         else if (value->getOpCode().isArrayRef() || value->isDataAddrPointer())
             value->setIsInternalPointer(true);
 
          TR::AutomaticSymbol *pinningArray = NULL;
-         if (value->getOpCode().isArrayRef())
+         if (value->getOpCode().isArrayRef() || value->isDataAddrPointer())
             {
             TR::Node *valueChild = value->getFirstChild();
             if (valueChild->isInternalPointer() &&

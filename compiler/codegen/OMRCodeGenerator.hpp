@@ -245,7 +245,7 @@ namespace TR
 namespace OMR
 {
 
-typedef TR::Register *(* TreeEvaluatorFunctionPointer)(TR::Node *node, TR::CodeGenerator *codeGen);
+typedef TR::Register *(* TreeEvaluatorFunctionPointer)(TR::Node *node, TR::CodeGenerator *cg);
 
 class TreeEvaluatorFunctionPointerTable
    {

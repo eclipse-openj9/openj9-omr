@@ -404,7 +404,7 @@ TR::S390zOSSystemLinkage::callNativeFunction(TR::Node * callNode, TR::RegisterDe
    generateInstructionsForCall(callNode, deps, targetAddress, methodAddressReg,
          javaLitOffsetReg, returnFromJNICallLabel, callDataSnippet, isJNIGCPoint);
 
-   TR::CodeGenerator * codeGen = cg();
+   TR::CodeGenerator * cg = this->cg();
 
    TR::Register * retReg = NULL;
    TR::Register * returnRegister = NULL;
@@ -442,11 +442,11 @@ TR::S390zOSSystemLinkage::callNativeFunction(TR::Node * callNode, TR::RegisterDe
             lowReg = deps->searchPostConditionRegister(getLongLowReturnRegister());
             highReg = deps->searchPostConditionRegister(getLongHighReturnRegister());
 
-            generateRSInstruction(codeGen, TR::InstOpCode::SLLG, callNode, highReg, highReg, 32);
+            generateRSInstruction(cg, TR::InstOpCode::SLLG, callNode, highReg, highReg, 32);
             cursor =
-               generateRRInstruction(codeGen, TR::InstOpCode::LR, callNode, highReg, lowReg);
+               generateRRInstruction(cg, TR::InstOpCode::LR, callNode, highReg, lowReg);
 
-            codeGen->stopUsingRegister(lowReg);
+            cg->stopUsingRegister(lowReg);
             retReg = highReg;
             returnRegister = retReg;
             }
@@ -473,7 +473,7 @@ TR::S390zOSSystemLinkage::callNativeFunction(TR::Node * callNode, TR::RegisterDe
 
    if (returnRegister != retReg)
       {
-      generateRRInstruction(codeGen, TR::InstOpCode::getLoadRegOpCode(), callNode, returnRegister, retReg);
+      generateRRInstruction(cg, TR::InstOpCode::getLoadRegOpCode(), callNode, returnRegister, retReg);
       }
 
    return returnRegister;

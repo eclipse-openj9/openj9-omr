@@ -224,7 +224,7 @@ class OMR_EXTENSIBLE TreeEvaluator: public OMR::TreeEvaluator
    static TR::Register *BBEndEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *minmaxEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *sbyteswapEvaluator(TR::Node *node, TR::CodeGenerator *cg);
-   typedef TR::Register *(* EvaluatorComputesCarry)(TR::Node *node, TR::CodeGenerator *codeGen, bool computesCarry);
+   typedef TR::Register *(* EvaluatorComputesCarry)(TR::Node *node, TR::CodeGenerator *cg, bool computesCarry);
    // routines for integers (or addresses) that can fit in one register
    // (see also the integerPair*Evaluator functions)
    static TR::Register *integerStoreEvaluator(TR::Node *node, TR::CodeGenerator *cg);

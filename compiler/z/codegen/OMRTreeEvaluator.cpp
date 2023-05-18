@@ -2187,12 +2187,34 @@ OMR::Z::TreeEvaluator::lbitpermuteEvaluator(TR::Node *node, TR::CodeGenerator *c
    return TR::TreeEvaluator::bitpermuteEvaluator(node, cg);
    }
 
+static TR_ExternalRelocationTargetKind
+getRelocationTargetKindFromSymbol(TR::CodeGenerator* cg, TR::Symbol *sym)
+   {
+   if (!sym)
+      return TR_NoRelocation;
+
+   TR_ExternalRelocationTargetKind reloKind = TR_NoRelocation;
+   if (cg->comp()->compileRelocatableCode() && sym->isDebugCounter())
+      reloKind = TR_DebugCounter;
+   else if (cg->needRelocationsForPersistentInfoData() && (sym->isCountForRecompile()))
+      reloKind = TR_GlobalValue;
+   else if (cg->needRelocationsForBodyInfoData() && sym->isRecompilationCounter())
+      reloKind = TR_BodyInfoAddress;
+   else if (cg->needRelocationsForStatics() && sym->isStatic() && !sym->isClassObject() && !sym->isNotDataAddress())
+      reloKind = TR_DataAddress;
+   else if (cg->needRelocationsForPersistentProfileInfoData() && sym->isBlockFrequency())
+      reloKind = TR_BlockFrequency;
+   else if (cg->needRelocationsForPersistentProfileInfoData() && sym->isRecompQueuedFlag())
+      reloKind = TR_RecompQueuedFlag;
+   else if (cg->needRelocationsForBodyInfoData() && sym->isCatchBlockCounter())
+      reloKind = TR_CatchBlockCounter;
+
+   return reloKind;
+   }
+
 TR::Instruction*
 generateLoad32BitConstant(TR::CodeGenerator* cg, TR::Node* node, int32_t value, TR::Register* targetRegister, bool canSetConditionCode, TR::Instruction* cursor, TR::RegisterDependencyConditions* dependencies, TR::Register* literalPoolRegister)
    {
-   TR::Symbol *sym = NULL;
-   if (node->getOpCode().hasSymbolReference())
-      sym = node->getSymbol();
    bool load64bit = node->getType().isInt64() || node->isExtendedTo64BitAtSource();
 
    if (value >= MIN_IMMEDIATE_VAL && value <= MAX_IMMEDIATE_VAL)
@@ -2221,22 +2243,11 @@ generateLoad32BitConstant(TR::CodeGenerator* cg, TR::Node* node, int32_t value, 
       }
    else
       {
-      if (sym)
+      if (node->getOpCode().hasSymbolReference())
          {
-         if (cg->comp()->compileRelocatableCode() && sym->isDebugCounter())
-            return generateRegLitRefInstruction(cg, TR::InstOpCode::L, node, targetRegister, value, TR_DebugCounter, dependencies, cursor, literalPoolRegister);
-         if (sym->isStatic() && !sym->isClassObject() && !sym->isNotDataAddress())
-            return generateRegLitRefInstruction(cg, TR::InstOpCode::L, node, targetRegister, value, TR_DataAddress, dependencies, cursor, literalPoolRegister);
-         if (sym->isCountForRecompile())
-            return generateRegLitRefInstruction(cg, TR::InstOpCode::L, node, targetRegister, value, TR_GlobalValue, dependencies, cursor, literalPoolRegister);
-         if (sym->isRecompilationCounter())
-            return generateRegLitRefInstruction(cg, TR::InstOpCode::L, node, targetRegister, value, TR_BodyInfoAddress, dependencies, cursor, literalPoolRegister);
-         if (sym->isCatchBlockCounter())
-            return generateRegLitRefInstruction(cg, TR::InstOpCode::L, node, targetRegister, value, TR_CatchBlockCounter, dependencies, cursor, literalPoolRegister);
-         if (cg->needRelocationsForPersistentProfileInfoData() && sym->isBlockFrequency())
-            return generateRegLitRefInstruction(cg, TR::InstOpCode::L, node, targetRegister, value, TR_BlockFrequency, dependencies, cursor, literalPoolRegister);
-         if (cg->needRelocationsForPersistentProfileInfoData() && sym->isRecompQueuedFlag())
-            return generateRegLitRefInstruction(cg, TR::InstOpCode::L, node, targetRegister, value, TR_RecompQueuedFlag, dependencies, cursor, literalPoolRegister);
+         TR_ExternalRelocationTargetKind reloKind = getRelocationTargetKindFromSymbol(cg, node->getSymbol());
+         if (reloKind != TR_NoRelocation)
+            return generateRegLitRefInstruction(cg, TR::InstOpCode::L, node, targetRegister, value, reloKind, dependencies, cursor, literalPoolRegister);
          }
       }
 
@@ -2262,40 +2273,13 @@ genLoadLongConstant(TR::CodeGenerator * cg, TR::Node * node, int64_t value, TR::
 
    TR::Symbol *sym = NULL;
    if (node->getOpCode().hasSymbolReference())
-      sym = node->getSymbol();
+      {
+      TR_ExternalRelocationTargetKind reloKind = getRelocationTargetKindFromSymbol(cg, node->getSymbol());
+      if (reloKind != TR_NoRelocation)
+         return generateRegLitRefInstruction(cg, TR::InstOpCode::LG, node, targetRegister, value, reloKind, cond, cursor, base);
+      }
 
-   if (cg->comp()->compileRelocatableCode() && sym && sym->isDebugCounter())
-      {
-      cursor = generateRegLitRefInstruction(cg, TR::InstOpCode::LG, node, targetRegister, value, TR_DebugCounter, cond, cursor, base);
-      }
-   else if (cg->needRelocationsForPersistentInfoData() && sym && (sym->isCountForRecompile()))
-      {
-      TR::Instruction * temp = cursor;
-      cursor = generateRegLitRefInstruction(cg, TR::InstOpCode::LG, node, targetRegister, value, TR_GlobalValue, cond, cursor, base);
-      }
-   else if (cg->needRelocationsForBodyInfoData() && sym && sym->isRecompilationCounter())
-      {
-      TR::Instruction * temp = cursor;
-      cursor = generateRegLitRefInstruction(cg, TR::InstOpCode::LG, node, targetRegister, value, TR_BodyInfoAddress, cond, cursor, base);
-      }
-   else if (cg->needRelocationsForBodyInfoData() && sym && sym->isCatchBlockCounter())
-      {
-      cursor = generateRegLitRefInstruction(cg, TR::InstOpCode::LG, node, targetRegister, value, TR_CatchBlockCounter, cond, cursor, base);
-      }
-   else if (cg->needRelocationsForStatics() && sym && sym->isStatic() && !sym->isClassObject() && !sym->isNotDataAddress())
-      {
-      TR::Instruction * temp = cursor;
-      cursor = generateRegLitRefInstruction(cg, TR::InstOpCode::LG, node, targetRegister, value, TR_DataAddress, cond, cursor, base);
-      }
-   else if (cg->needRelocationsForPersistentProfileInfoData() && sym && sym->isBlockFrequency())
-      {
-      cursor = generateRegLitRefInstruction(cg, TR::InstOpCode::LG, node, targetRegister, value, TR_BlockFrequency, cond, cursor, base);
-      }
-   else if (cg->needRelocationsForPersistentProfileInfoData() && sym && sym->isRecompQueuedFlag())
-      {
-      cursor = generateRegLitRefInstruction(cg, TR::InstOpCode::LG, node, targetRegister, value, TR_RecompQueuedFlag, cond, cursor, base);
-      }
-   else if (value >= MIN_IMMEDIATE_VAL && value <= MAX_IMMEDIATE_VAL && !comp->compileRelocatableCode())
+   if (value >= MIN_IMMEDIATE_VAL && value <= MAX_IMMEDIATE_VAL && !comp->compileRelocatableCode())
       {
       cursor = generateRIInstruction(cg, TR::InstOpCode::LGHI, node, targetRegister, value, cursor);
       }
@@ -2341,11 +2325,11 @@ TR::Instruction *
 genLoadAddressConstant(TR::CodeGenerator * cg, TR::Node * node, uintptr_t value, TR::Register * targetRegister,
    TR::Instruction * cursor, TR::RegisterDependencyConditions * cond, TR::Register * base)
    {
+   TR_ExternalRelocationTargetKind reloKind = TR_NoRelocation;
    if (cg->profiledPointersRequireRelocation() &&
             node->getOpCodeValue() == TR::aconst &&
             (node->isMethodPointerConstant() || node->isClassPointerConstant()))
       {
-      TR_ExternalRelocationTargetKind reloKind = TR_NoRelocation;
       if (node->isMethodPointerConstant())
          {
          reloKind = TR_MethodPointer;
@@ -2356,44 +2340,51 @@ genLoadAddressConstant(TR::CodeGenerator * cg, TR::Node * node, uintptr_t value,
          reloKind = TR_ClassPointer;
 
       TR_ASSERT(reloKind != TR_NoRelocation, "relocation kind shouldn't be TR_NoRelocation");
-      return generateRegLitRefInstruction(cg, TR::InstOpCode::getLoadOpCode(), node, targetRegister, (uintptr_t) value, reloKind, cond, cursor, base);
       }
+   else if (node->getOpCode().hasSymbolReference())
+      {
+      reloKind = getRelocationTargetKindFromSymbol(cg, node->getSymbol());
+      }
+
+   if (reloKind != TR_NoRelocation)
+      {
+      return generateRegLitRefInstruction(cg, TR::InstOpCode::getLoadOpCode(), node, targetRegister, value, reloKind, cond, cursor, base);
+      }
+
+   cursor = generateRILInstruction(cg, TR::InstOpCode::LLILF, node, targetRegister, static_cast<uint32_t>(value), cursor);
 
    TR::Compilation *comp = cg->comp();
-
+   bool assumePatch = false;
+   bool isCompressedClassPointer = false;
    if (node->isClassUnloadingConst())
       {
-      uintptr_t value = node->getAddress();
-      TR::Instruction *unloadableConstInstr = NULL;
-      if (cg->canUseRelativeLongInstructions(value))
-         {
-         unloadableConstInstr = generateRILInstruction(cg, TR::InstOpCode::LARL, node, targetRegister, reinterpret_cast<void*>(value));
-         }
-      else
-         {
-         unloadableConstInstr = genLoadAddressConstantInSnippet(cg, node, value, targetRegister, NULL, NULL, NULL, true);
-         }
-
       if (node->isMethodPointerConstant())
          {
-         comp->getStaticMethodPICSites()->push_front(unloadableConstInstr);
+         comp->getStaticMethodPICSites()->push_front(cursor);
          }
       else
          {
-         comp->getStaticPICSites()->push_front(unloadableConstInstr);
+         comp->getStaticPICSites()->push_front(cursor);
+         isCompressedClassPointer = comp->useCompressedPointers();
          }
-      return unloadableConstInstr;
+      assumePatch = true;
+      }
+   if (comp->getOption(TR_EnableHCR))
+      {
+      comp->getStaticHCRPICSites()->push_front(cursor);
+      assumePatch = true;
       }
 
-   if (cg->comp()->target().is64Bit())
+   TR_ASSERT(!isCompressedClassPointer || ((value & CONSTANT64(0xFFFFFFFF00000000)) == 0), "Compressed class pointers are assumed to fit in 32 bits");
+   // IIHF is only needed when addresses (besides compressed class pointer) need to be patched or do not fit into 32 bits
+   if (comp->target().is64Bit() && !isCompressedClassPointer && (assumePatch || ((value & CONSTANT64(0xFFFFFFFF00000000)) != 0)))
       {
-      return genLoadLongConstant(cg, node, (uint64_t) value, targetRegister, cursor, cond, base);
+      toS390RILInstruction(cursor)->setisFirstOfAddressPair();
+      uint32_t high32 = static_cast<uint32_t>(value >> 32);
+      cursor = generateRILInstruction(cg, TR::InstOpCode::IIHF, node, targetRegister, high32, cursor);
       }
-   else
-      {
-      // TODO: We should update this API as well to accept a "canSetConditionCode" and forward that argument here rather than passing false blindly.
-      return generateLoad32BitConstant(cg, node, (int32_t) value, targetRegister, false, cursor, cond, base);
-      }
+
+   return cursor;
    }
 
 TR::Instruction *

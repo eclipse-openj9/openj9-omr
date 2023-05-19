@@ -1668,6 +1668,8 @@ TR_Debug::getName(TR::SymbolReference * symRef)
              return "<J9JNIMethodIDvTableIndexFieldSymbol>";
          case TR::SymbolReferenceTable::defaultValueSymbol:
              return "<defaultValue>";
+         case TR::SymbolReferenceTable::jitDispatchJ9MethodSymbol:
+             return "<jitDispatchJ9Method>";
          }
       }
 
@@ -2147,7 +2149,8 @@ static const char *commonNonhelperSymbolNames[] =
    "<computedStaticCallSymbol>",
    "<j9VMThreadFloatTemp1>",
    "<J9JNIMethodIDvTableIndexFieldSymbol>",
-   "<defaultValue>"
+   "<defaultValue>",
+   "<jitDispatchJ9Method>"
    };
 
 const char *

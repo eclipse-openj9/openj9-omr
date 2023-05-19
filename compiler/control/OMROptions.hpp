@@ -1379,7 +1379,7 @@ public:
       _stackPCDumpNumberOfBuffers = 0;
       _stackPCDumpNumberOfFrames = 0;
       _tracingOptimization = false;
-      _delayCompile = 0;
+      _delayCompileWithCPUBurn = 0;
       _disabledOptTransformations = NULL;
       _disabledInlineSites = NULL;
       _disabledOpts = NULL;
@@ -1795,7 +1795,7 @@ public:
    int32_t getInlineCntrWarmCalleeHasTooManyNodesBucketSize() { return _inlineCntrWarmCalleeHasTooManyNodesBucketSize; }
    int32_t getInlineCntrDepthExceededBucketSize() { return _inlineCntrDepthExceededBucketSize; }
    int32_t getInlineCntrAllBucketSize() { return _inlineCntrAllBucketSize; }
-   int32_t getDelayCompile()                    {return _delayCompile;}
+   int32_t getDelayCompileWithCPUBurn() const { return _delayCompileWithCPUBurn; }
    int32_t getMaxInlinedCalls() { return _maxInlinedCalls; }
    int32_t getDumbInlinerBytecodeSizeMaxCutoff() const { return _dumbInlinerBytecodeSizeMaxCutoff; }
    int32_t getDumbInlinerBytecodeSizeMinCutoff() const { return _dumbInlinerBytecodeSizeMinCutoff; }
@@ -2364,7 +2364,7 @@ protected:
    bool                        _disabledOptimizations[OMR::numOpts];
    bool                        _traceOptimizations[OMR::numOpts];
    bool                        _tracingOptimization;
-   int32_t                     _delayCompile;
+   int32_t                     _delayCompileWithCPUBurn;
    TR::SimpleRegex *            _disabledOptTransformations;
    TR::SimpleRegex *            _disabledInlineSites;
    TR::SimpleRegex *            _disabledOpts;

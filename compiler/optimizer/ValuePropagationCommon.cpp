@@ -364,8 +364,6 @@ void OMR::ValuePropagation::initialize()
          _startEBB = NULL;
          }
       }
-
-     _unsafeArrayAccessNodes = new (trStackMemory()) TR_BitVector(comp()->getNodeCount(), trMemory(), stackAlloc, growable);
    }
 
 OMR::ValuePropagation::Relationship *OMR::ValuePropagation::copyRelationships(Relationship *first)

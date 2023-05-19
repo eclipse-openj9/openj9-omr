@@ -128,7 +128,6 @@ OMR::AliasBuilder::createAliasInfo()
    nonIntPrimitiveStaticSymRefs().pack();
    methodSymRefs().pack();
    unsafeSymRefNumbers().pack();
-   unsafeArrayElementSymRefs().pack();
    gcSafePointSymRefNumbers().pack();
 
    setCatchLocalUseSymRefs();

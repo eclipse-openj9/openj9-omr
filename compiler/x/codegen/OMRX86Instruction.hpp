@@ -1877,6 +1877,8 @@ class X86MemImmInstruction : public TR::X86MemInstruction
    virtual uint8_t  getBinaryLengthLowerBound();
 
    virtual void addMetaDataForCodeAddress(uint8_t *cursor);
+   int32_t getReloKind() { return _reloKind; }
+   void setReloKind(int32_t reloKind) { _reloKind = reloKind; }
    };
 
 

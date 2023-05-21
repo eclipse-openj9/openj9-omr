@@ -37,6 +37,7 @@ compiler_library(riscv
 	${CMAKE_CURRENT_LIST_DIR}/codegen/OMRRealRegister.cpp
 	${CMAKE_CURRENT_LIST_DIR}/codegen/OMRRegisterDependency.cpp
 	${CMAKE_CURRENT_LIST_DIR}/codegen/OMRSnippet.cpp
+	${CMAKE_CURRENT_LIST_DIR}/codegen/OMRSnippetDelegate.cpp
 	${CMAKE_CURRENT_LIST_DIR}/codegen/OMRTreeEvaluator.cpp
 	${CMAKE_CURRENT_LIST_DIR}/codegen/OpBinary.cpp
 	${CMAKE_CURRENT_LIST_DIR}/codegen/UnaryEvaluator.cpp

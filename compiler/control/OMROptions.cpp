@@ -227,8 +227,8 @@ TR::OptionTable OMR::Options::_jitOptions[] = {
    {"debugOnEntry",       "D\tinvoke the debugger at the entry of a method",       SET_OPTION_BIT(TR_DebugOnEntry),       "F" },
    {"debugRedundantMonitorElimination",     "O\ttrace statements to debug Monitor Elimination",             SET_OPTION_BIT(TR_DebugRedundantMonitorElimination), "F" },
    {"deferReferenceManipulations", "I\tdefer object reference manipulations to the host runtime.", SET_OPTION_BIT(TR_DeferReferenceManipulations), "F"},
-   {"delayCompile=",      "I<nnn>\tAmount of time in ms before compile is started",
-        TR::Options::set32BitSignedNumeric, offsetof(OMR::Options,_delayCompile), 0, "F%d"},
+   {"delayCompileWithCPUBurn=",      "I<nnn>\tDelay compilation by burning the specified amount of CPU (in ms) before compilation is started",
+        TR::Options::set32BitSignedNumeric, offsetof(OMR::Options, _delayCompileWithCPUBurn), 0, "F%d"},
    {"delayToEnableIdleCpuExploitation=", "M<nnn>\t",
         TR::Options::setStaticNumeric, (intptr_t)&OMR::Options::_delayToEnableIdleCpuExploitation, 0, "F%d", NOT_IN_SUBSET },
    {"disableAbstractInlining",            "O\tdisable inlining of abstract methods with a single implementor", SET_OPTION_BIT(TR_DisableAbstractInlining), "F"},
@@ -2674,7 +2674,7 @@ OMR::Options::jitPreProcess()
    _jProfilingMethodRecompThreshold = 4000;
    _jProfilingLoopRecompThreshold = 2000;
    _blockShufflingSequence = "S";
-   _delayCompile = 0;
+   _delayCompileWithCPUBurn = 0;
    _largeNumberOfLoops = 6500;
 
    // The entry block is under this threshold in methods containing a block

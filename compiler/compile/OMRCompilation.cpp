@@ -935,19 +935,20 @@ int32_t OMR::Compilation::compile()
       self()->setOption(TR_DisablePartialInlining);
 
 #ifdef J9_PROJECT_SPECIFIC
-   if (self()->getOptions()->getDelayCompile())
+   if (self()->getOptions()->getDelayCompileWithCPUBurn())
       {
-      uint64_t limit = (uint64_t)self()->getOptions()->getDelayCompile();
+      uint64_t limit = (uint64_t)self()->getOptions()->getDelayCompileWithCPUBurn();
       uint64_t starttime = self()->getPersistentInfo()->getElapsedTime();
-      fprintf(stderr,"\nDelayCompile: Starting a delay of length %" OMR_PRIu64 " for method %s at time %" OMR_PRIu64 ".", limit, self()->signature(), starttime);
-      fflush(stderr);
+      if (self()->getOptions()->getVerboseOption(TR_VerbosePerformance))
+         TR_VerboseLog::writeLineLocked(TR_Vlog_PERF, "DelayCompileWithCPUBurn: Starting a delay of length %" OMR_PRIu64 " for method %s at time %" OMR_PRIu64 ".", limit, self()->signature(), starttime);
       uint64_t temp=0;
       while(1)
          {
          temp = self()->getPersistentInfo()->getElapsedTime();
          if( ( temp - starttime ) > limit)
             {
-            fprintf(stderr,"\nDelayCompile: Finished delay at time = %" OMR_PRIu64 ", elapsed time = %" OMR_PRIu64 "\n", temp, (temp - starttime));
+            if (self()->getOptions()->getVerboseOption(TR_VerbosePerformance))
+               TR_VerboseLog::writeLineLocked(TR_Vlog_PERF, "DelayCompileWithCPUBurn: Finished delay at time = %" OMR_PRIu64 ", elapsed time = %" OMR_PRIu64 ".", temp, (temp - starttime));
             break;
             }
          }

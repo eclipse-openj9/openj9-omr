@@ -3973,6 +3973,8 @@ TR_Debug::getRuntimeHelperName(int32_t index)
          case TR_PPCAESCBCEncrypt:                                 return "PPCAESCBCEncrypt";
          case TR_PPCAESKeyExpansion:                               return "PPCAESKeyExpansion";
          case TR_PPCcrc32_vpmsum:                                  return "PPCcrc32_vpmsum";
+         case TR_PPCcrc32_no_vpmsum:                               return "PPCcrc32_no_vpmsum";
+         case TR_PPCcrc32_oneByte:                                 return "PPCcrc32_oneByte";
          }
       }
 #elif defined (TR_TARGET_S390)

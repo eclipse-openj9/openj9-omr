@@ -375,10 +375,14 @@ TR_OrderedExceptionHandlerIterator::TR_OrderedExceptionHandlerIterator(TR::Block
       for (auto e = tryBlock->getExceptionSuccessors().begin(); e != tryBlock->getExceptionSuccessors().end(); ++e)
          {
          TR::Block * b = toBlock((*e)->getTo());
-         if (b->getHandlerIndex() >= handlerDim)
-            handlerDim = b->getHandlerIndex() + 1;
-         if (b->getInlineDepth() >= inlineDim)
-            inlineDim = b->getInlineDepth() + 1;
+         if (!b->isOSRCatchBlock())
+            {
+            TR_ASSERT(b->getHandlerIndex()!=-1, "exception handler index is not defined" );
+            if (b->getHandlerIndex() >= handlerDim)
+               handlerDim = b->getHandlerIndex() + 1;
+            if (b->getInlineDepth() >= inlineDim)
+               inlineDim = b->getInlineDepth() + 1;
+            }
          }
 
       _dim = handlerDim * inlineDim;
@@ -388,8 +392,11 @@ TR_OrderedExceptionHandlerIterator::TR_OrderedExceptionHandlerIterator(TR::Block
       for (auto e = tryBlock->getExceptionSuccessors().begin(); e != tryBlock->getExceptionSuccessors().end(); ++e)
          {
          TR::Block * b = toBlock((*e)->getTo());
-         TR_ASSERT((_handlers[((inlineDim - b->getInlineDepth() - 1) * handlerDim) + b->getHandlerIndex()] == NULL), "handler entry is not NULL\n");
-         _handlers[((inlineDim - b->getInlineDepth() - 1) * handlerDim) + b->getHandlerIndex()] = b;
+         if (!b->isOSRCatchBlock())
+            {
+            TR_ASSERT((_handlers[((inlineDim - b->getInlineDepth() - 1) * handlerDim) + b->getHandlerIndex()] == NULL), "handler entry is not NULL\n");
+            _handlers[((inlineDim - b->getInlineDepth() - 1) * handlerDim) + b->getHandlerIndex()] = b;
+            }
          }
       }
    }

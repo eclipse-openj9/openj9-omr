@@ -82,16 +82,16 @@ TR::ARM64ConstantDataSnippet::addMetaDataForCodeAddress(uint8_t *cursor)
                {
                //for optimizations where we are trying to relocate either profiled j9class or getfrom signature we can't use node to get the target address
                //so we need to pass it to relocation in targetaddress2 for now
-               uint8_t * targetAdress2 = NULL;
+               uint8_t * targetAddress2 = NULL;
                if (getNode()->getOpCodeValue() != TR::aconst)
                   {
-                  targetAdress2 = reinterpret_cast<uint8_t *>(*(reinterpret_cast<uint64_t*>(cursor)));
+                  targetAddress2 = reinterpret_cast<uint8_t *>(*(reinterpret_cast<uint64_t*>(cursor)));
                   }
                cg()->addExternalRelocation(
                   TR::ExternalRelocation::create(
                      cursor,
                      reinterpret_cast<uint8_t *>(node),
-                     targetAdress2,
+                     targetAddress2,
                      reloType,
                      cg()),
                   __FILE__,

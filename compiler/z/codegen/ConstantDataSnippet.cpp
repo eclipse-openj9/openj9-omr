@@ -297,19 +297,19 @@ TR::S390ConstantDataSnippet::addMetaDataForCodeAddress(uint8_t *cursor)
             //for optimizations where we are trying to relocate either profiled j9class or getfrom signature we can't use node to get the target address
             //so we need to pass it to relocation in targetaddress2 for now
             //two instances where use this relotype in such way are: profile checkcast and arraystore check object check optimiztaions
-            uint8_t * targetAdress2 = NULL;
+            uint8_t * targetAddress2 = NULL;
             if (getNode()->getOpCodeValue() != TR::aconst)
                {
                if (cg()->comp()->target().is64Bit())
-                  targetAdress2 = (uint8_t *) *((uint64_t*) cursor);
+                  targetAddress2 = (uint8_t *) *((uint64_t*) cursor);
                else
-                  targetAdress2 = (uint8_t *) *((uintptr_t*) cursor);
+                  targetAddress2 = (uint8_t *) *((uintptr_t*) cursor);
                }
             cg()->addExternalRelocation(
                TR::ExternalRelocation::create(
                   cursor,
                   (uint8_t *) getNode(),
-                  targetAdress2,
+                  targetAddress2,
                   (TR_ExternalRelocationTargetKind) reloType,
                   cg()),
                __FILE__,

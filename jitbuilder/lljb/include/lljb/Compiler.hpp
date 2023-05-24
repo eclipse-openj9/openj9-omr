@@ -63,7 +63,7 @@ public:
 
    /**
     * @brief create a mapping between the llvm::Function in a module to
-    * the adress in the codecache with the compiled method
+    * the address in the codecache with the compiled method
     *
     * @param llvmFunc the llvm::Function *
     * @param entry the void *

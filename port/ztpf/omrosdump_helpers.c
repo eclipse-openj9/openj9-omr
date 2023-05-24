@@ -598,7 +598,7 @@ buildELFHeader(Elf64_Ehdr *buffer)
  * 0004 0004    p_flags        Phdr flags (permissions +OS_specific bits)<b>
  * 0008 0008    p_offset    Offset in file (0-relative) of memory image<b>
  * 0010 0008    p_vaddr        Virtual address of memory image @ run time<b>
- * 0018 0008    p_addr        Physical adress of memory image @ run time<b>
+ * 0018 0008    p_addr        Physical address of memory image @ run time<b>
  * 0020 0008    p_filesz    Size of memory image in file<b>
  * 0028 0008    p_memsz        Size of memory image in memory<b>
  * 0030    0008    p_align        Boundary to align to when loaded<b>

@@ -89,6 +89,8 @@ MM_PacketList::reinitializeForRestore(MM_EnvironmentBase *env)
 				_sublistCount = newSublistCount;
 			}
 		}
+	} else {
+		Assert_MM_true(extensions->packetListSplit == _sublistCount);
 	}
 
 	return result;

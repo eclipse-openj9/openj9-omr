@@ -56,6 +56,9 @@ class MM_Configuration : public MM_BaseVirtual
 {
 /* Data members / types */
 public:
+	bool _packetListSplitForced;
+	bool _cacheListSplitForced;
+	bool _splitFreeListAmountForced;
 
 protected:
 	MM_ConfigurationDelegate _delegate;
@@ -154,6 +157,17 @@ public:
 	 */
 	virtual void initializeGCThreadCount(MM_EnvironmentBase* env);
 
+	/**
+	 * Initialize GC parameters that are uninitialized and dependent on the number of GC threads:
+	 *
+	 * MM_GCExtensionsBase::packetListSplit
+	 * MM_GCExtensionsBase::cacheListSplit
+	 * MM_GCExtensionsBase::splitFreeListSplitAmount
+	 *
+	 * @param[in] env the current environment
+	 */
+	void initializeGCParameters(MM_EnvironmentBase* env);
+
 #if defined(J9VM_OPT_CRIU_SUPPORT)
 	/**
 	 * Update the configuration to reflect the restore environment and parameters.
@@ -173,6 +187,9 @@ public:
 
 	MM_Configuration(MM_EnvironmentBase* env, MM_GCPolicy gcPolicy, MM_AlignmentType alignmentType, uintptr_t defaultRegionSize, uintptr_t defaultArrayletLeafSize, MM_GCWriteBarrierType writeBarrierType, MM_GCAllocationType allocationType)
 		: MM_BaseVirtual()
+		, _packetListSplitForced(false)
+		, _cacheListSplitForced(false)
+		, _splitFreeListAmountForced(false)
 		, _delegate(gcPolicy)
 		, _alignmentType(alignmentType)
 		, _defaultRegionSize(defaultRegionSize)
@@ -210,18 +227,6 @@ protected:
 	 */
 	virtual bool initializeNUMAManager(MM_EnvironmentBase* env);
 private:
-
-	/**
-	 * Sets GC parameters that are dependent on the number of gc threads (if not previously initialized):
-	 *
-	 * MM_GCExtensionsBase::packetListSplit
-	 * MM_GCExtensionsBase::cacheListSplit
-	 * MM_GCExtensionsBase::splitFreeListSplitAmount
-	 *
-	 * @param env[in] - the current environment
-	 */
-	void initializeGCParameters(MM_EnvironmentBase* env);
-
 	uintptr_t getAlignment(MM_GCExtensionsBase* extensions, MM_AlignmentType type);
 	bool initializeRegionSize(MM_EnvironmentBase* env);
 	bool initializeArrayletLeafSize(MM_EnvironmentBase* env);

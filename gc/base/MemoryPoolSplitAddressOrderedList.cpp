@@ -1345,10 +1345,7 @@ MM_MemoryPoolSplitAddressOrderedList::reinitializeForRestore(MM_EnvironmentBase 
 
 		_heapFreeListCount = _extensions->splitFreeListSplitAmount;
 	} else {
-		/* Free lists will not be reduced in size, splitFreeListSplitAmount
-		 * must be reset back to its pre-restore value.
-		 */
-		_extensions->splitFreeListSplitAmount = _heapFreeListCount;
+		Assert_MM_true(_extensions->splitFreeListSplitAmount == _heapFreeListCount);
 	}
 
 	return true;

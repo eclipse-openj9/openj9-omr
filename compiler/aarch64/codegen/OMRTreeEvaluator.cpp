@@ -3146,16 +3146,8 @@ OMR::ARM64::TreeEvaluator::inlineVectorMaskedBinaryOp(TR::Node *node, TR::CodeGe
    return resReg;
    }
 
-/**
- * @brief Helper functions for generating instruction sequence for masked unary operations
- *
- * @param[in] node: node
- * @param[in] cg: CodeGenerator
- * @param[in] op: unary opcode
- * @return vector register containing the result
- */
-static TR::Register *
-inlineVectorMaskedUnaryOp(TR::Node *node, TR::CodeGenerator *cg, TR::InstOpCode::Mnemonic op)
+TR::Register *
+OMR::ARM64::TreeEvaluator::inlineVectorMaskedUnaryOp(TR::Node *node, TR::CodeGenerator *cg, TR::InstOpCode::Mnemonic op, unaryEvaluatorHelper evaluatorHelper)
    {
    TR::Node *firstChild = node->getFirstChild();
    TR::Node *secondChild = node->getSecondChild();
@@ -3167,7 +3159,15 @@ inlineVectorMaskedUnaryOp(TR::Node *node, TR::CodeGenerator *cg, TR::InstOpCode:
    TR::Register *resReg = cg->allocateRegister(TR_VRF);
    node->setRegister(resReg);
 
-   generateTrg1Src1Instruction(cg, op, node, resReg, srcReg);
+   TR_ASSERT_FATAL_WITH_NODE(node, (op != TR::InstOpCode::bad) || (evaluatorHelper != NULL), "If op is TR::InstOpCode::bad, evaluatorHelper must not be NULL");
+   if (evaluatorHelper != NULL)
+      {
+      (*evaluatorHelper)(node, resReg, srcReg, cg);
+      }
+   else
+      {
+      generateTrg1Src1Instruction(cg, op, node, resReg, srcReg);
+      }
 
    bool flipMask = false;
    TR::Register *maskReg = evaluateMaskNode(secondChild, flipMask, cg);
@@ -4115,16 +4115,77 @@ OMR::ARM64::TreeEvaluator::vmfirstNonZeroEvaluator(TR::Node *node, TR::CodeGener
    return TR::TreeEvaluator::unImpOpEvaluator(node, cg);
    }
 
+/**
+ * @brief Helper function for vector population count operation
+ *
+ * @param[in] node: node
+ * @param[in] resultReg: the result register
+ * @param[in] srcReg: the argument register
+ * @param[in] cg: CodeGenerator
+ * @return the result register
+ */
+static TR::Register *
+vpopcntEvaluatorHelper(TR::Node *node, TR::Register *resultReg, TR::Register *srcReg, TR::CodeGenerator *cg)
+   {
+   TR::DataType et = node->getDataType().getVectorElementType();
+
+   generateTrg1Src1Instruction(cg, TR::InstOpCode::vcnt16b, node, resultReg, srcReg);
+   generateTrg1Src1Instruction(cg, TR::InstOpCode::vuaddlp16b, node, resultReg, resultReg);
+   if (et != TR::Int16)
+      {
+      generateTrg1Src1Instruction(cg, TR::InstOpCode::vuaddlp8h, node, resultReg, resultReg);
+      if (et == TR::Int64)
+         {
+         generateTrg1Src1Instruction(cg, TR::InstOpCode::vuaddlp4s, node, resultReg, resultReg);
+         }
+      }
+   return resultReg;
+   }
+
 TR::Register*
 OMR::ARM64::TreeEvaluator::vpopcntEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   return TR::TreeEvaluator::unImpOpEvaluator(node, cg);
+   TR::InstOpCode::Mnemonic op = TR::InstOpCode::bad;
+   unaryEvaluatorHelper evaluationHelper = NULL;
+   switch (node->getDataType().getVectorElementType())
+      {
+      case TR::Int8:
+         op = TR::InstOpCode::vcnt16b;
+         break;
+      case TR::Int16:
+      case TR::Int32:
+      case TR::Int64:
+         evaluationHelper = vpopcntEvaluatorHelper;
+         break;
+
+      default:
+         TR_ASSERT_FATAL_WITH_NODE(node, false, "unrecognized vector type %s", node->getDataType().toString());
+         return NULL;
+      }
+   return inlineVectorUnaryOp(node, cg, op, evaluationHelper);
    }
 
 TR::Register*
 OMR::ARM64::TreeEvaluator::vmpopcntEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   return TR::TreeEvaluator::unImpOpEvaluator(node, cg);
+   TR::InstOpCode::Mnemonic op = TR::InstOpCode::bad;
+   unaryEvaluatorHelper evaluationHelper = NULL;
+   switch (node->getDataType().getVectorElementType())
+      {
+      case TR::Int8:
+         op = TR::InstOpCode::vcnt16b;
+         break;
+      case TR::Int16:
+      case TR::Int32:
+      case TR::Int64:
+         evaluationHelper = vpopcntEvaluatorHelper;
+         break;
+
+      default:
+         TR_ASSERT_FATAL_WITH_NODE(node, false, "unrecognized vector type %s", node->getDataType().toString());
+         return NULL;
+      }
+   return inlineVectorMaskedUnaryOp(node, cg, op, evaluationHelper);
    }
 
 TR::Register*

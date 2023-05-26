@@ -919,6 +919,7 @@ const OMR::ARM64::InstOpCode::OpCodeBinaryEntry OMR::ARM64::InstOpCode::binaryEn
 		0x4EE0B800,	/* ABS     	vabs2d   */
 		0x4EA0F800,	/* ABS     	vfabs4s  */
 		0x4EE0F800,	/* ABS     	vfabs2d  */
+		0x6E605800,	/* RBIT  	vrbit16b */
 		0x4E201800,	/* REV16   	vrev16_16b */
 		0x6E200800,	/* REV32   	vrev32_16b */
 		0x6E600800,	/* REV32   	vrev32_8h */
@@ -931,8 +932,20 @@ const OMR::ARM64::InstOpCode::OpCodeBinaryEntry OMR::ARM64::InstOpCode::binaryEn
 		0x4E212800,	/* XTN2    	vxtn2_16b */
 		0x4E612800,	/* XTN2    	vxtn2_8h  */
 		0x4EA12800,	/* XTN2    	vxtn2_4s  */
+		0x4E204800,	/* CLS  	vcls16b */
+		0x4E604800,	/* CLS  	vcls8h  */
+		0x4EA04800,	/* CLS  	vcls4s  */
+		0x6E204800,	/* CLZ  	vclz16b */
+		0x6E604800,	/* CLZ  	vclz8h  */
+		0x6EA04800,	/* CLZ  	vclz4s  */
 		0x0E205800,	/* CNT  	vcnt8b */
 		0x4E205800,	/* CNT  	vcnt16b */
+		0x4E202800,	/* SADDLP	vsaddlp16b */
+		0x4E602800,	/* SADDLP	vsaddlp8h */
+		0x4EA02800,	/* SADDLP	vsaddlp4s */
+		0x6E202800,	/* UADDLP	vuaddlp16b */
+		0x6E602800,	/* UADDLP	vuaddlp8h */
+		0x6EA02800,	/* UADDLP	vuaddlp4s */
 	/* Vector Copy */
 		/* DUP (general) */
 		0x4E010C00,	/* DUP   	vdup16b */

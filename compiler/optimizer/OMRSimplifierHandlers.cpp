@@ -15578,9 +15578,13 @@ TR::Node *selectSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * 
       //       condition
       //       const 0/1
       //       boolean expression
-      else if ((node->getChild(2)->getOpCode().isLoadConst()
+      else if (((node->getChild(2)->getOpCode().isLoadConst()
+                    && (node->getChild(2)->get64bitIntegralValue() == 0
+                        || node->getChild(2)->get64bitIntegralValue() == 1))
                 && isBooleanExpression(node->getChild(1)))
-               || (node->getChild(1)->getOpCode().isLoadConst()
+               || ((node->getChild(1)->getOpCode().isLoadConst()
+                    && (node->getChild(1)->get64bitIntegralValue() == 0
+                        || node->getChild(1)->get64bitIntegralValue() == 1))
                    && isBooleanExpression(node->getChild(2))))
          {
          TR::Node *replacement = NULL;

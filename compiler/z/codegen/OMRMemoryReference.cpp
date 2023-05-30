@@ -1798,8 +1798,11 @@ OMR::Z::MemoryReference::populateMemoryReference(TR::Node * subTree, TR::CodeGen
 
    noteAllNodesWithRefCountNotOne(nodesBefore, subTree, comp);
 
-   if (((comp->useCompressedPointers() && subTree->getOpCodeValue() == TR::l2a))
-           && (subTree->getReferenceCount() == 1) && (subTree->getRegister() == NULL))
+   if (comp->useCompressedPointers() &&
+       (subTree->getOpCodeValue() == TR::l2a) &&
+       (subTree->getReferenceCount() == 1) &&
+       (subTree->getRegister() == NULL) &&
+       !self()->getUnresolvedSnippet()) // If there is unresolved data snippet, l2a cannot be skipped
       {
       noopNode = subTree;
       subTree = subTree->getFirstChild();

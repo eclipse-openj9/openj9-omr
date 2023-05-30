@@ -401,9 +401,10 @@ MM_ParallelDispatcher::shutDownThreads()
 		_statusTable[index] = worker_status_dying;
 	}
 
-	/* Set the active parallel thread count to 1 */
-	/* This allows worker threads to cause a GC during their detach, */
-	/* making them the main in a single threaded GC */
+	/* Set the active parallel thread count to 1. This allows
+	 * worker threads to cause a GC during their detach,
+	 * making them the main in a single threaded GC.
+	 */
 	_threadCount = 1;
 
 	wakeUpThreads(_threadShutdownCount);
@@ -642,7 +643,6 @@ MM_ParallelDispatcher::reinitializeForRestore(MM_EnvironmentBase *env)
 void
 MM_ParallelDispatcher::contractThreadPool(MM_EnvironmentBase *env, uintptr_t newThreadCount)
 {
-	Assert_MM_false(_workerThreadsReservedForGC);
 	Assert_MM_false(_inShutdown);
 
 	Assert_MM_true(_threadShutdownCount == (_poolMaxCapacity - 1));
@@ -661,9 +661,19 @@ MM_ParallelDispatcher::contractThreadPool(MM_EnvironmentBase *env, uintptr_t new
 	if (newThreadCount < _threadCountMaximum) {
 		Trc_MM_ParallelDispatcher_contractThreadPool_Attempt();
 
+		_inShutdown = true;
+
 		omrthread_monitor_enter(_workerThreadMutex);
 
-		_inShutdown = true;
+		while (_workerThreadsReservedForGC) {
+			omrthread_monitor_wait(_workerThreadMutex);
+		}
+
+		/* Set the active parallel thread count to 1. This allows
+		 * worker threads to cause a GC during their detach,
+		 * making them the main in a single threaded GC.
+		 */
+		_threadCount = 1;
 
 		/* Clip the thread pool past newThreadCount. */
 		for (uintptr_t index = newThreadCount; index < _threadCountMaximum; index++) {

@@ -520,8 +520,10 @@ OMR::X86::MemoryReference::populateMemoryReference(
 
    if (comp->useCompressedPointers())
        {
-       if ((subTree->getOpCodeValue() == TR::l2a) && (subTree->getReferenceCount() == 1) &&
-             (subTree->getRegister() == NULL))
+       if ((subTree->getOpCodeValue() == TR::l2a) &&
+           (subTree->getReferenceCount() == 1) &&
+           (subTree->getRegister() == NULL) &&
+           !self()->hasUnresolvedDataSnippet()) // If there is unresolved data snippet, l2a cannot be skipped
           {
           cg->decReferenceCount(subTree);
           subTree = subTree->getFirstChild();

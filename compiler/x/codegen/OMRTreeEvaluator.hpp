@@ -359,6 +359,32 @@ class OMR_EXTENSIBLE TreeEvaluator: public OMR::TreeEvaluator
    static TR::Register *vmxorEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *vmfirstNonZeroEvaluator(TR::Node *node, TR::CodeGenerator *cg);
 
+   static TR::Register *vpopcntEvaluator(TR::Node *node, TR::CodeGenerator *cg);
+   static TR::Register *vmpopcntEvaluator(TR::Node *node, TR::CodeGenerator *cg);
+   static TR::Register *vcompressEvaluator(TR::Node *node, TR::CodeGenerator *cg);
+   static TR::Register *vexpandEvaluator(TR::Node *node, TR::CodeGenerator *cg);
+   static TR::Register *vshlEvaluator(TR::Node *node, TR::CodeGenerator *cg);
+   static TR::Register *vmshlEvaluator(TR::Node *node, TR::CodeGenerator *cg);
+   static TR::Register *vshrEvaluator(TR::Node *node, TR::CodeGenerator *cg);
+   static TR::Register *vmshrEvaluator(TR::Node *node, TR::CodeGenerator *cg);
+   static TR::Register *vushrEvaluator(TR::Node *node, TR::CodeGenerator *cg);
+   static TR::Register *vmushrEvaluator(TR::Node *node, TR::CodeGenerator *cg);
+   static TR::Register *vrolEvaluator(TR::Node *node, TR::CodeGenerator *cg);
+   static TR::Register *vmrolEvaluator(TR::Node *node, TR::CodeGenerator *cg);
+   static TR::Register *mcompressEvaluator(TR::Node *node, TR::CodeGenerator *cg);
+   static TR::Register *vnotzEvaluator(TR::Node *node, TR::CodeGenerator *cg);
+   static TR::Register *vmnotzEvaluator(TR::Node *node, TR::CodeGenerator *cg);
+   static TR::Register *vnolzEvaluator(TR::Node *node, TR::CodeGenerator *cg);
+   static TR::Register *vmnolzEvaluator(TR::Node *node, TR::CodeGenerator *cg);
+   static TR::Register *vbitswapEvaluator(TR::Node *node, TR::CodeGenerator *cg);
+   static TR::Register *vmbitswapEvaluator(TR::Node *node, TR::CodeGenerator *cg);
+   static TR::Register *vbyteswapEvaluator(TR::Node *node, TR::CodeGenerator *cg);
+   static TR::Register *vmbyteswapEvaluator(TR::Node *node, TR::CodeGenerator *cg);
+   static TR::Register *vcompressbitsEvaluator(TR::Node *node, TR::CodeGenerator *cg);
+   static TR::Register *vmcompressbitsEvaluator(TR::Node *node, TR::CodeGenerator *cg);
+   static TR::Register *vexpandbitsEvaluator(TR::Node *node, TR::CodeGenerator *cg);
+   static TR::Register *vmexpandbitsEvaluator(TR::Node *node, TR::CodeGenerator *cg);
+
    // routines for floating point values that can fit in one GPR
    static TR::Register *floatingPointStoreEvaluator(TR::Node *node, TR::CodeGenerator *cg);
 

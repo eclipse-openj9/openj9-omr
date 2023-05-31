@@ -654,6 +654,32 @@ TR::Node * constrainLongBitCount(OMR::ValuePropagation *vp, TR::Node *node);
 #define vmxorVPHandler constrainChildren
 #define vmfirstNonZeroVPHandler constrainChildren
 
+#define vpopcntVPHandler constrainChildren
+#define vmpopcntVPHandler constrainChildren
+#define vcompressVPHandler constrainChildren
+#define vexpandVPHandler constrainChildren
+#define vshlVPHandler constrainChildren
+#define vmshlVPHandler constrainChildren
+#define vshrVPHandler constrainChildren
+#define vmshrVPHandler constrainChildren
+#define vushrVPHandler constrainChildren
+#define vmushrVPHandler constrainChildren
+#define vrolVPHandler constrainChildren
+#define vmrolVPHandler constrainChildren
+#define mcompressVPHandler constrainChildren
+#define vnotzVPHandler constrainChildren
+#define vmnotzVPHandler constrainChildren
+#define vnolzVPHandler constrainChildren
+#define vmnolzVPHandler constrainChildren
+#define vbitswapVPHandler constrainChildren
+#define vmbitswapVPHandler constrainChildren
+#define vbyteswapVPHandler constrainChildren
+#define vmbyteswapVPHandler constrainChildren
+#define vcompressbitsVPHandler constrainChildren
+#define vmcompressbitsVPHandler constrainChildren
+#define vexpandbitsVPHandler constrainChildren
+#define vmexpandbitsVPHandler constrainChildren
+
 #define f2iuVPHandler constrainChildren
 #define f2luVPHandler constrainChildren
 #define f2buVPHandler constrainChildren

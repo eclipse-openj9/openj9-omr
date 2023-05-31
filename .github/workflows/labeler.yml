@@ -8,6 +8,6 @@ jobs:
     if: github.repository == 'eclipse/omr'
     runs-on: ubuntu-latest
     steps:
-    - uses: fjeremic/cron-labeler@0.3.0
+    - uses: fjeremic/cron-labeler@640daafc8ea7f2b94acdfbcc4845e150571aea85 # 0.3.0
       with:
         repo-token: ${{ secrets.GITHUB_TOKEN }}

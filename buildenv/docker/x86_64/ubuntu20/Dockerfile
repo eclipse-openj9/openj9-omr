@@ -20,9 +20,9 @@
 
 # Create the OMR build environment with Ubuntu 20.04.
 
-FROM nvidia/cuda:9.0-devel-ubuntu16.04 AS cuda-dev
+FROM nvidia/cuda:9.0-devel-ubuntu16.04@sha256:f4f3a35506b75cadc0c129bba7260e28365394c1e29965399f94f33d9c758633 AS cuda-dev
 
-FROM ubuntu:20.04 AS base
+FROM ubuntu:20.04@sha256:db8bf6f4fb351aa7a26e27ba2686cf35a6a409f65603e59d4c203e58387dc6b3 AS base
 
 # Workaround for a hang during docker build.
 ENV TZ=America/Toronto

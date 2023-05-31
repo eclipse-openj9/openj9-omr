@@ -2501,9 +2501,9 @@ genLoadAddressConstant(TR::CodeGenerator * cg, TR::Node * node, uintptr_t value,
       return generateRegLitRefInstruction(cg, TR::InstOpCode::getLoadOpCode(), node, targetRegister, value, reloKind, cond, cursor, base);
       }
 
-   cursor = generateRILInstruction(cg, TR::InstOpCode::LLILF, node, targetRegister, static_cast<uint32_t>(value), cursor);
-
    TR::Compilation *comp = cg->comp();
+   cursor = generateRILInstruction(cg, comp->target().is64Bit() ? TR::InstOpCode::LLILF : TR::InstOpCode::IILF, node, targetRegister, static_cast<uint32_t>(value), cursor);
+
    bool assumePatch = false;
    bool isCompressedClassPointer = false;
    if (node->isClassUnloadingConst())

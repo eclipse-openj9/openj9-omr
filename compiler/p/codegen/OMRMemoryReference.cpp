@@ -586,7 +586,10 @@ void OMR::Power::MemoryReference::populateMemoryReference(TR::Node *subTree, TR:
    {
    if (cg->comp()->useCompressedPointers())
       {
-      if (subTree->getOpCodeValue() == TR::l2a && subTree->getReferenceCount() == 1 && subTree->getRegister() == NULL)
+      if ((subTree->getOpCodeValue() == TR::l2a) &&
+          (subTree->getReferenceCount() == 1) &&
+          (subTree->getRegister() == NULL) &&
+          !self()->getUnresolvedSnippet())  // If there is unresolved data snippet, l2a cannot be skipped
          {
          cg->decReferenceCount(subTree);
          subTree = subTree->getFirstChild();

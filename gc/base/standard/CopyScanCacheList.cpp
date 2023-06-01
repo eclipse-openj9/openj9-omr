@@ -100,6 +100,8 @@ MM_CopyScanCacheList::reinitializeForRestore(MM_EnvironmentBase *env)
 				_sublistCount = newSublistCount;
 			}
 		}
+	} else {
+		Assert_MM_true(extensions->cacheListSplit == _sublistCount);
 	}
 
 	return result;

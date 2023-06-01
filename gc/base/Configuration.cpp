@@ -475,15 +475,22 @@ MM_Configuration::initializeGCParameters(MM_EnvironmentBase* env)
 
 	Assert_MM_true(0 < extensions->gcThreadCount);
 
+	uintptr_t splitAmount = (extensions->gcThreadCount - 1) / 8 + 1;
+
+	/* This method might be used again during restore (CRIU) reinit. In which case, the split
+	 * amounts should not be decreased; MAX between the existing and new value should be
+	 * taken. This limitation can be removed when list reinit supports merging lists.
+	 */
+
 	/* initialize packet lock splitting factor */
-	if (0 == extensions->packetListSplit) {
-		extensions->packetListSplit = (extensions->gcThreadCount - 1) / 8  +  1;
+	if (!_packetListSplitForced) {
+		extensions->packetListSplit = OMR_MAX(extensions->packetListSplit, splitAmount);
 	}
 
 #if defined(OMR_GC_MODRON_SCAVENGER)
 	/* initialize scan cache lock splitting factor */
-	if (0 == extensions->cacheListSplit) {
-		extensions->cacheListSplit = (extensions->gcThreadCount - 1) / 8  +  1;
+	if (!_cacheListSplitForced) {
+		extensions->cacheListSplit = OMR_MAX(extensions->cacheListSplit, splitAmount);
 	}
 	if (extensions->scavengerEnabled) {
 		if (MM_GCExtensionsBase::OMR_GC_SCAVENGER_SCANORDERING_NONE == extensions->scavengerScanOrdering) {
@@ -495,16 +502,15 @@ MM_Configuration::initializeGCParameters(MM_EnvironmentBase* env)
 #endif /* OMR_GC_MODRON_SCAVENGER */
 
 	/* initialize default split freelist split amount */
-	if (0 == extensions->splitFreeListSplitAmount) {
+	if (!_splitFreeListAmountForced) {
+		OMRPORT_ACCESS_FROM_OMRPORT(env->getPortLibrary());
+		uintptr_t freeListSplitAmount = (omrsysinfo_get_number_CPUs_by_type(OMRPORT_CPU_ONLINE) - 1) / 8  +  1;
 #if defined(OMR_GC_MODRON_SCAVENGER)
 		if (extensions->scavengerEnabled) {
-			extensions->splitFreeListSplitAmount = (extensions->gcThreadCount - 1) / 8  +  1;
-		} else
-#endif /* OMR_GC_MODRON_SCAVENGER */
-		{
-			OMRPORT_ACCESS_FROM_OMRPORT(env->getPortLibrary());
-			extensions->splitFreeListSplitAmount = (omrsysinfo_get_number_CPUs_by_type(OMRPORT_CPU_ONLINE) - 1) / 8  +  1;
+			freeListSplitAmount = splitAmount;
 		}
+#endif /* OMR_GC_MODRON_SCAVENGER */
+		extensions->splitFreeListSplitAmount = OMR_MAX(extensions->splitFreeListSplitAmount, freeListSplitAmount);
 	}
 }
 

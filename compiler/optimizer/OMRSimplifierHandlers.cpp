@@ -15551,9 +15551,17 @@ TR::Node *selectSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * 
                {
                if (performTransformation(s->comp(), "%sReplacing select with children of constant values 0 and 1 at [" POINTER_PRINTF_FORMAT "] with its condition reversed\n", s->optDetailString(), node))
                   {
-                  TR::Node *replacement = node->getFirstChild();
-                  TR::Node::recreate(replacement, replacement->getOpCode().getOpCodeForReverseBranch());
-                  return s->replaceNode(node, replacement, s->_curTree);
+                  TR::Node *oldFirstChild = node->getFirstChild();
+                  // we will remove the two consts from the node
+                  node->getChild(1)->recursivelyDecReferenceCount();
+                  node->getChild(2)->recursivelyDecReferenceCount();
+                  int32_t numChildren = oldFirstChild->getNumChildren();
+                  TR::Node::recreateWithoutProperties(node, oldFirstChild->getOpCode().getOpCodeForReverseBranch(), numChildren);
+                  for (int i = 0; i < numChildren; ++i)
+                    node->setAndIncChild(i, oldFirstChild->getChild(i));
+
+                  oldFirstChild->recursivelyDecReferenceCount();
+                  return node;
                   }
                }
             else

@@ -220,6 +220,9 @@ bool isConditionCodeSetForCompareToZero(TR::Node *node, bool justTestZeroFlag)
                   return false;
                }
 
+            if (prevInstr->getOpCode().modifiesSomeArithmeticFlags() && prevInstr->getNode() != node)
+               return false;
+
             return true;
             }
          }

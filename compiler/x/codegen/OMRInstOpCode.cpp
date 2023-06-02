@@ -149,6 +149,14 @@ template <typename TBuffer> typename TBuffer::cursor_t OMR::X86::InstOpCode::OpC
          case PREFIX_F3:
             buffer.append('\xf3');
             break;
+         case PREFIX_66_F2:
+            buffer.append('\x66');
+            buffer.append('\xf2');
+            break;
+         case PREFIX_66_F3:
+            buffer.append('\x66');
+            buffer.append('\xf3');
+            break;
          default:
             break;
          }

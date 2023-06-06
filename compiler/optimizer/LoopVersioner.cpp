@@ -3444,7 +3444,7 @@ void TR_LoopVersioner::updateDefinitionsAndCollectProfiledExprs(TR::Node *parent
                 if ((valueInfo->getTopProbability() > MIN_PROFILED_FREQUENCY) &&
                     (valueInfo->getTotalFrequency() > 0) &&
                     !_containsCall &&
-                    !node->getByteCodeInfo().doNotProfile() && !node->isNodeCreatedByPRE() &&
+                    !node->getByteCodeInfo().doNotProfile() && node->canChkNodeCreatedByPRE() && !node->isNodeCreatedByPRE() &&
                     // Only collect nodes from unspecialized blocks to avoid specializing the same nodes twice
                     !block->isSpecialized())
                    {

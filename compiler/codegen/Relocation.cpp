@@ -39,7 +39,7 @@
 #include "infra/Link.hpp"
 #include "runtime/Runtime.hpp"
 
-void TR::Relocation::apply(TR::CodeGenerator *codeGen)
+void TR::Relocation::apply(TR::CodeGenerator *cg)
    {
    TR_ASSERT(0, "Should never get here");
    }
@@ -68,40 +68,40 @@ void TR::LabelRelocation::assertLabelDefined()
       _label);
    }
 
-void TR::LabelRelative8BitRelocation::apply(TR::CodeGenerator *codeGen)
+void TR::LabelRelative8BitRelocation::apply(TR::CodeGenerator *cg)
    {
    assertLabelDefined();
-   codeGen->apply8BitLabelRelativeRelocation((int32_t *)getUpdateLocation(), getLabel());
+   cg->apply8BitLabelRelativeRelocation((int32_t *)getUpdateLocation(), getLabel());
    }
 
-void TR::LabelRelative12BitRelocation::apply(TR::CodeGenerator *codeGen)
+void TR::LabelRelative12BitRelocation::apply(TR::CodeGenerator *cg)
    {
    assertLabelDefined();
-   codeGen->apply12BitLabelRelativeRelocation((int32_t *)getUpdateLocation(), getLabel(), isCheckDisp());
+   cg->apply12BitLabelRelativeRelocation((int32_t *)getUpdateLocation(), getLabel(), isCheckDisp());
    }
 
-void TR::LabelRelative16BitRelocation::apply(TR::CodeGenerator *codeGen)
+void TR::LabelRelative16BitRelocation::apply(TR::CodeGenerator *cg)
    {
    assertLabelDefined();
    if (getAddressDifferenceDivisor() == 1)
-      codeGen->apply16BitLabelRelativeRelocation((int32_t *)getUpdateLocation(), getLabel());
+      cg->apply16BitLabelRelativeRelocation((int32_t *)getUpdateLocation(), getLabel());
    else
-      codeGen->apply16BitLabelRelativeRelocation((int32_t *)getUpdateLocation(), getLabel(), getAddressDifferenceDivisor(), isInstructionOffset());
+      cg->apply16BitLabelRelativeRelocation((int32_t *)getUpdateLocation(), getLabel(), getAddressDifferenceDivisor(), isInstructionOffset());
    }
 
-void TR::LabelRelative24BitRelocation::apply(TR::CodeGenerator *codeGen)
+void TR::LabelRelative24BitRelocation::apply(TR::CodeGenerator *cg)
    {
    assertLabelDefined();
-   codeGen->apply24BitLabelRelativeRelocation((int32_t *)getUpdateLocation(), getLabel());
+   cg->apply24BitLabelRelativeRelocation((int32_t *)getUpdateLocation(), getLabel());
    }
 
-void TR::LabelRelative32BitRelocation::apply(TR::CodeGenerator *codeGen)
+void TR::LabelRelative32BitRelocation::apply(TR::CodeGenerator *cg)
    {
    assertLabelDefined();
-   codeGen->apply32BitLabelRelativeRelocation((int32_t *)getUpdateLocation(), getLabel());
+   cg->apply32BitLabelRelativeRelocation((int32_t *)getUpdateLocation(), getLabel());
    }
 
-void TR::LabelAbsoluteRelocation::apply(TR::CodeGenerator *codeGen)
+void TR::LabelAbsoluteRelocation::apply(TR::CodeGenerator *cg)
    {
    intptr_t *cursor = (intptr_t *)getUpdateLocation();
    assertLabelDefined();
@@ -183,11 +183,11 @@ uint8_t TR::ExternalRelocation::collectModifier()
    return 0;
    }
 
-void TR::ExternalRelocation::addExternalRelocation(TR::CodeGenerator *codeGen)
+void TR::ExternalRelocation::addExternalRelocation(TR::CodeGenerator *cg)
    {
    TR::AheadOfTimeCompile::interceptAOTRelocation(this);
 
-   TR_LinkHead<TR::IteratedExternalRelocation>& aot = codeGen->getAheadOfTimeCompile()->getAOTRelocationTargets();
+   TR_LinkHead<TR::IteratedExternalRelocation>& aot = cg->getAheadOfTimeCompile()->getAOTRelocationTargets();
    uint32_t narrowSize = getNarrowSize();
    uint32_t wideSize = getWideSize();
    flags8_t modifier(collectModifier());
@@ -231,8 +231,8 @@ void TR::ExternalRelocation::addExternalRelocation(TR::CodeGenerator *codeGen)
       }
 
    TR::IteratedExternalRelocation *temp =   _targetAddress2 ?
-      new (codeGen->trHeapMemory()) TR::IteratedExternalRelocation(_targetAddress, _targetAddress2, _kind, modifier, codeGen) :
-      new (codeGen->trHeapMemory()) TR::IteratedExternalRelocation(_targetAddress, _kind, modifier, codeGen);
+      new (cg->trHeapMemory()) TR::IteratedExternalRelocation(_targetAddress, _targetAddress2, _kind, modifier, cg) :
+      new (cg->trHeapMemory()) TR::IteratedExternalRelocation(_targetAddress, _kind, modifier, cg);
 
    aot.add(temp);
 
@@ -242,9 +242,9 @@ void TR::ExternalRelocation::addExternalRelocation(TR::CodeGenerator *codeGen)
    _relocationRecord = temp;
    }
 
-void TR::ExternalRelocation::apply(TR::CodeGenerator *codeGen)
+void TR::ExternalRelocation::apply(TR::CodeGenerator *cg)
    {
-   TR::Compilation *comp = codeGen->comp();
+   TR::Compilation *comp = cg->comp();
    uint8_t * relocatableMethodCodeStart = (uint8_t *)comp->getRelocatableMethodCodeStart();
    getRelocationRecord()->addRelocationEntry((uint32_t)(getUpdateLocation() - relocatableMethodCodeStart));
    }
@@ -286,7 +286,7 @@ TR::ExternalOrderedPair32BitRelocation::ExternalOrderedPair32BitRelocation(
                  uint8_t                         *location2,
                  uint8_t                         *target,
                  TR_ExternalRelocationTargetKind  k,
-                 TR::CodeGenerator                *codeGen) :
+                 TR::CodeGenerator                *cg) :
    TR::ExternalRelocation(), _update2Location(location2)
    {
    setUpdateLocation(location1);
@@ -328,9 +328,9 @@ uint8_t TR::ExternalOrderedPair32BitRelocation::collectModifier()
    }
 
 
-void TR::ExternalOrderedPair32BitRelocation::apply(TR::CodeGenerator *codeGen)
+void TR::ExternalOrderedPair32BitRelocation::apply(TR::CodeGenerator *cg)
    {
-   TR::Compilation *comp = codeGen->comp();
+   TR::Compilation *comp = cg->comp();
 
    TR::IteratedExternalRelocation *rec = getRelocationRecord();
    uint8_t *codeStart = (uint8_t *)comp->getRelocatableMethodCodeStart();
@@ -494,7 +494,7 @@ char *TR::ExternalRelocation::_globalValueNames[TR_NumGlobalValueItems] =
    };
 
 
-TR::IteratedExternalRelocation::IteratedExternalRelocation(uint8_t *target, TR_ExternalRelocationTargetKind k, flags8_t modifier, TR::CodeGenerator *codeGen)
+TR::IteratedExternalRelocation::IteratedExternalRelocation(uint8_t *target, TR_ExternalRelocationTargetKind k, flags8_t modifier, TR::CodeGenerator *cg)
       : TR_Link<TR::IteratedExternalRelocation>(),
         _numberOfRelocationSites(0),
         _targetAddress(target),
@@ -502,14 +502,14 @@ TR::IteratedExternalRelocation::IteratedExternalRelocation(uint8_t *target, TR_E
         _relocationData(NULL),
         _relocationDataCursor(NULL),
         // initial size is size of header for this type
-        _sizeOfRelocationData(codeGen->getAheadOfTimeCompile()->getSizeOfAOTRelocationHeader(k)),
+        _sizeOfRelocationData(cg->getAheadOfTimeCompile()->getSizeOfAOTRelocationHeader(k)),
         _recordModifier(modifier.getValue()),
         _full(false),
         _kind(k)
       {
       }
 
-TR::IteratedExternalRelocation::IteratedExternalRelocation(uint8_t *target, uint8_t *target2, TR_ExternalRelocationTargetKind k, flags8_t modifier, TR::CodeGenerator *codeGen)
+TR::IteratedExternalRelocation::IteratedExternalRelocation(uint8_t *target, uint8_t *target2, TR_ExternalRelocationTargetKind k, flags8_t modifier, TR::CodeGenerator *cg)
       : TR_Link<TR::IteratedExternalRelocation>(),
         _numberOfRelocationSites(0),
         _targetAddress(target),
@@ -517,16 +517,16 @@ TR::IteratedExternalRelocation::IteratedExternalRelocation(uint8_t *target, uint
         _relocationData(NULL),
         _relocationDataCursor(NULL),
         // initial size is size of header for this type
-        _sizeOfRelocationData(codeGen->getAheadOfTimeCompile()->getSizeOfAOTRelocationHeader(k)),
+        _sizeOfRelocationData(cg->getAheadOfTimeCompile()->getSizeOfAOTRelocationHeader(k)),
         _recordModifier(modifier.getValue()),
         _full(false),
         _kind(k)
       {
       }
 
-void TR::IteratedExternalRelocation::initializeRelocation(TR::CodeGenerator *codeGen)
+void TR::IteratedExternalRelocation::initializeRelocation(TR::CodeGenerator *cg)
    {
-   _relocationDataCursor = codeGen->getAheadOfTimeCompile()->initializeAOTRelocationHeader(this);
+   _relocationDataCursor = cg->getAheadOfTimeCompile()->initializeAOTRelocationHeader(this);
    }
 
 void TR::IteratedExternalRelocation::addRelocationEntry(uint32_t locationOffset)

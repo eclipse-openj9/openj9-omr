@@ -50,8 +50,8 @@ class RtypeInstruction : public TR::Instruction
          TR::Register      *treg,
          TR::Register      *s1reg,
          TR::Register      *s2reg,
-         TR::CodeGenerator *codeGen)
-      : TR::Instruction(op, n, codeGen),
+         TR::CodeGenerator *cg)
+      : TR::Instruction(op, n, cg),
         _target1Register(treg),
         _source1Register(s1reg),
         _source2Register(s2reg)
@@ -67,8 +67,8 @@ class RtypeInstruction : public TR::Instruction
          TR::Register      *s1reg,
          TR::Register      *s2reg,
          TR::Instruction   *precedingInstruction,
-         TR::CodeGenerator *codeGen)
-      : TR::Instruction(op, n, precedingInstruction, codeGen),
+         TR::CodeGenerator *cg)
+      : TR::Instruction(op, n, precedingInstruction, cg),
         _target1Register(treg),
         _source1Register(s1reg),
         _source2Register(s2reg)
@@ -181,9 +181,9 @@ class ItypeInstruction : public TR::Instruction
          TR::Register      *treg,
          TR::Register      *s1reg,
          uint32_t          imm,
-         TR::CodeGenerator *codeGen)
+         TR::CodeGenerator *cg)
 
-      : TR::Instruction(op, n, codeGen),
+      : TR::Instruction(op, n, cg),
         _target1Register(treg),
         _source1Register(s1reg),
         _imm(imm)
@@ -198,8 +198,8 @@ class ItypeInstruction : public TR::Instruction
          TR::Register      *s1reg,
          uint32_t          imm,
          TR::Instruction   *precedingInstruction,
-         TR::CodeGenerator *codeGen)
-      : TR::Instruction(op, n, precedingInstruction, codeGen),
+         TR::CodeGenerator *cg)
+      : TR::Instruction(op, n, precedingInstruction, cg),
         _target1Register(treg),
         _source1Register(s1reg),
         _imm(imm)
@@ -214,8 +214,8 @@ class ItypeInstruction : public TR::Instruction
             TR::Register      *s1reg,
             uint32_t          imm,
             TR::RegisterDependencyConditions *cond,
-            TR::CodeGenerator *codeGen)
-      : TR::Instruction(op, n, cond, codeGen),
+            TR::CodeGenerator *cg)
+      : TR::Instruction(op, n, cond, cg),
         _target1Register(treg),
         _source1Register(s1reg),
         _imm(imm)
@@ -231,8 +231,8 @@ class ItypeInstruction : public TR::Instruction
             uint32_t          imm,
             TR::RegisterDependencyConditions *cond,
             TR::Instruction   *precedingInstruction,
-            TR::CodeGenerator *codeGen)
-      : TR::Instruction(op, n, cond, precedingInstruction, codeGen),
+            TR::CodeGenerator *cg)
+      : TR::Instruction(op, n, cond, precedingInstruction, cg),
         _target1Register(treg),
         _source1Register(s1reg),
         _imm(imm)
@@ -332,13 +332,13 @@ class LoadInstruction : public TR::Instruction
          TR::Node          *n,
          TR::Register      *treg,
          TR::MemoryReference *mr,
-         TR::CodeGenerator *codeGen)
-      : TR::Instruction(op, n, codeGen),
+         TR::CodeGenerator *cg)
+      : TR::Instruction(op, n, cg),
         _target1Register(treg),
         _memoryReference(mr)
       {
       useRegister(treg);
-      mr->bookKeepingRegisterUses(this, codeGen);
+      mr->bookKeepingRegisterUses(this, cg);
       }
 
    LoadInstruction(TR::InstOpCode::Mnemonic op,
@@ -346,16 +346,16 @@ class LoadInstruction : public TR::Instruction
          TR::Register      *treg,
          TR::MemoryReference *mr,
          TR::Instruction   *precedingInstruction,
-         TR::CodeGenerator *codeGen)
-      : TR::Instruction(op, n, precedingInstruction, codeGen),
+         TR::CodeGenerator *cg)
+      : TR::Instruction(op, n, precedingInstruction, cg),
         _target1Register(treg),
         _memoryReference(mr)
       {
       useRegister(treg);
-      mr->bookKeepingRegisterUses(this, codeGen);
+      mr->bookKeepingRegisterUses(this, cg);
       // TODO: why incRegisterTotalUseCounts() here but not above?
       // This is how it's done in Aarch64. but could be wrong. Investigate.
-      //mr->incRegisterTotalUseCounts(codeGen);
+      //mr->incRegisterTotalUseCounts(cg);
       }
 
    /**
@@ -455,8 +455,8 @@ class StypeInstruction : public TR::Instruction
          TR::Register      *s1reg,
          TR::Register      *s2reg,
          uint32_t          imm,
-         TR::CodeGenerator *codeGen)
-      : TR::Instruction(op, n, codeGen),
+         TR::CodeGenerator *cg)
+      : TR::Instruction(op, n, cg),
         _source1Register(s1reg),
         _source2Register(s2reg),
         _imm(imm)
@@ -471,8 +471,8 @@ class StypeInstruction : public TR::Instruction
          TR::Register      *s2reg,
          uint32_t          imm,
          TR::Instruction   *precedingInstruction,
-         TR::CodeGenerator *codeGen)
-      : TR::Instruction(op, n, precedingInstruction, codeGen),
+         TR::CodeGenerator *cg)
+      : TR::Instruction(op, n, precedingInstruction, cg),
         _source1Register(s1reg),
         _source2Register(s2reg),
         _imm(imm)
@@ -571,13 +571,13 @@ class StoreInstruction : public TR::Instruction
          TR::Node          *n,
          TR::MemoryReference *mr,
          TR::Register      *sreg,
-         TR::CodeGenerator *codeGen)
-      : TR::Instruction(op, n, codeGen),
+         TR::CodeGenerator *cg)
+      : TR::Instruction(op, n, cg),
         _source1Register(sreg),
         _memoryReference(mr)
       {
       useRegister(sreg);
-      mr->bookKeepingRegisterUses(this, codeGen);
+      mr->bookKeepingRegisterUses(this, cg);
       }
 
    StoreInstruction(TR::InstOpCode::Mnemonic op,
@@ -585,13 +585,13 @@ class StoreInstruction : public TR::Instruction
          TR::MemoryReference *mr,
          TR::Register      *sreg,
          TR::Instruction   *precedingInstruction,
-         TR::CodeGenerator *codeGen)
-      : TR::Instruction(op, n, precedingInstruction, codeGen),
+         TR::CodeGenerator *cg)
+      : TR::Instruction(op, n, precedingInstruction, cg),
         _source1Register(sreg),
         _memoryReference(mr)
       {
       useRegister(sreg);
-      mr->bookKeepingRegisterUses(this, codeGen);
+      mr->bookKeepingRegisterUses(this, cg);
       }
 
    /**
@@ -787,8 +787,8 @@ class UtypeInstruction : public TR::Instruction
          TR::Node          *n,
          uint32_t          imm,
          TR::Register      *treg,
-         TR::CodeGenerator *codeGen)
-      : TR::Instruction(op, n, codeGen),
+         TR::CodeGenerator *cg)
+      : TR::Instruction(op, n, cg),
         _target1Register(treg),
         _imm(imm)
       {
@@ -800,8 +800,8 @@ class UtypeInstruction : public TR::Instruction
          uint32_t          imm,
          TR::Register      *treg,
          TR::RegisterDependencyConditions *cond,
-         TR::CodeGenerator *codeGen)
-      : TR::Instruction(op, n, cond, codeGen),
+         TR::CodeGenerator *cg)
+      : TR::Instruction(op, n, cond, cg),
         _target1Register(treg),
         _imm(imm)
       {
@@ -813,8 +813,8 @@ class UtypeInstruction : public TR::Instruction
          uint32_t          imm,
          TR::Register      *treg,
          TR::Instruction   *precedingInstruction,
-         TR::CodeGenerator *codeGen)
-      : TR::Instruction(op, n, precedingInstruction, codeGen),
+         TR::CodeGenerator *cg)
+      : TR::Instruction(op, n, precedingInstruction, cg),
         _target1Register(treg),
         _imm(imm)
       {
@@ -827,8 +827,8 @@ class UtypeInstruction : public TR::Instruction
          TR::Register      *treg,
          TR::RegisterDependencyConditions *cond,
          TR::Instruction   *precedingInstruction,
-         TR::CodeGenerator *codeGen)
-      : TR::Instruction(op, n, cond, precedingInstruction, codeGen),
+         TR::CodeGenerator *cg)
+      : TR::Instruction(op, n, cond, precedingInstruction, cg),
         _target1Register(treg),
         _imm(imm)
       {
@@ -917,8 +917,8 @@ class JtypeInstruction : public UtypeInstruction
          TR::RegisterDependencyConditions *cond,
          TR::SymbolReference *sr,
          TR::Snippet       *s,
-         TR::CodeGenerator *codeGen)
-      : UtypeInstruction(op, n, 0, treg, cond, codeGen),
+         TR::CodeGenerator *cg)
+      : UtypeInstruction(op, n, 0, treg, cond, cg),
         _symbolReference(sr),
         _symbol(nullptr),
         _snippet(s)
@@ -933,8 +933,8 @@ class JtypeInstruction : public UtypeInstruction
          TR::SymbolReference *sr,
          TR::Snippet       *s,
          TR::Instruction   *precedingInstruction,
-         TR::CodeGenerator *codeGen)
-      : UtypeInstruction(op, n, 0, treg, cond, precedingInstruction, codeGen),
+         TR::CodeGenerator *cg)
+      : UtypeInstruction(op, n, 0, treg, cond, precedingInstruction, cg),
         _symbolReference(sr),
         _symbol(nullptr),
         _snippet(s)
@@ -945,9 +945,9 @@ class JtypeInstruction : public UtypeInstruction
          TR::Node          *n,
          TR::Register      *treg,
          TR::LabelSymbol   *label,
-         TR::CodeGenerator *codeGen)
+         TR::CodeGenerator *cg)
 
-      : UtypeInstruction(op, n, 0, treg, codeGen),
+      : UtypeInstruction(op, n, 0, treg, cg),
         _symbolReference(nullptr),
         _symbol(label)
       {
@@ -958,9 +958,9 @@ class JtypeInstruction : public UtypeInstruction
          TR::Register      *treg,
          TR::LabelSymbol   *label,
          TR::RegisterDependencyConditions *cond,
-         TR::CodeGenerator *codeGen)
+         TR::CodeGenerator *cg)
 
-      : UtypeInstruction(op, n, 0, treg, cond, codeGen),
+      : UtypeInstruction(op, n, 0, treg, cond, cg),
         _symbolReference(nullptr),
         _symbol(label)
       {
@@ -972,9 +972,9 @@ class JtypeInstruction : public UtypeInstruction
          TR::LabelSymbol   *label,
          TR::Snippet       *snippet,
          TR::RegisterDependencyConditions *cond,
-         TR::CodeGenerator *codeGen)
+         TR::CodeGenerator *cg)
 
-      : UtypeInstruction(op, n, 0, treg, cond, codeGen),
+      : UtypeInstruction(op, n, 0, treg, cond, cg),
         _symbolReference(nullptr),
         _symbol(label),
         _snippet(snippet)
@@ -986,8 +986,8 @@ class JtypeInstruction : public UtypeInstruction
          TR::Register      *treg,
          TR::LabelSymbol   *label,
          TR::Instruction   *precedingInstruction,
-         TR::CodeGenerator *codeGen)
-      : UtypeInstruction(op, n, 0, treg, precedingInstruction, codeGen),
+         TR::CodeGenerator *cg)
+      : UtypeInstruction(op, n, 0, treg, precedingInstruction, cg),
         _symbolReference(nullptr),
         _symbol(label)
       {
@@ -999,9 +999,9 @@ class JtypeInstruction : public UtypeInstruction
          TR::LabelSymbol   *label,
          TR::RegisterDependencyConditions *cond,
          TR::Instruction   *precedingInstruction,
-         TR::CodeGenerator *codeGen)
+         TR::CodeGenerator *cg)
 
-      : UtypeInstruction(op, n, 0, treg, cond, precedingInstruction, codeGen),
+      : UtypeInstruction(op, n, 0, treg, cond, precedingInstruction, cg),
         _symbolReference(nullptr),
         _symbol(label)
       {
@@ -1014,9 +1014,9 @@ class JtypeInstruction : public UtypeInstruction
          TR::Snippet       *snippet,
          TR::RegisterDependencyConditions *cond,
          TR::Instruction   *precedingInstruction,
-         TR::CodeGenerator *codeGen)
+         TR::CodeGenerator *cg)
 
-      : UtypeInstruction(op, n, 0, treg, cond, precedingInstruction, codeGen),
+      : UtypeInstruction(op, n, 0, treg, cond, precedingInstruction, cg),
         _symbolReference(nullptr),
         _symbol(label),
         _snippet(snippet)

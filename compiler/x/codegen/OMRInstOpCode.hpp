@@ -237,6 +237,8 @@ class InstOpCode: public OMR::InstOpCode
       PREFIX_66 = 0x1,
       PREFIX_F3 = 0x2,
       PREFIX_F2 = 0x3,
+      PREFIX_66_F2 = 0x4,
+      PREFIX_66_F3 = 0x5,
       };
    enum TR_OpCodeEscape : uint8_t
       {
@@ -265,7 +267,7 @@ class InstOpCode: public OMR::InstOpCode
       {
       uint8_t vex_l : 3;
       uint8_t vex_v : 1;
-      uint8_t prefixes : 2;
+      uint8_t prefixes : 3;
       uint8_t rex_w : 1;
       uint8_t escape : 2;
       uint8_t opcode;

@@ -424,8 +424,6 @@ class OMR_EXTENSIBLE CodeGenerator : public OMR::CodeGenerator
    bool isReturnInstruction(TR::Instruction *instr);
    bool isBranchInstruction(TR::Instruction *instr);
 
-   TR::SymbolReference *getNanoTimeTemp();
-
    /**
     * @brief Computes the 32-bit displacement between the given direct branch instruction
     *        and either the target helper or a trampoline to reach the target helper
@@ -742,8 +740,6 @@ protected:
    bool nodeIsFoldableMemOperand(TR::Node *node, TR::Node *parent, TR_RegisterPressureState *state);
 
    TR::RealRegister             *_frameRegister;
-
-   TR::SymbolReference             *_nanoTimeTemp;
 
    TR::Instruction                 *_lastCatchAppendInstruction;
    TR_BetterSpillPlacement        *_betterSpillPlacements;

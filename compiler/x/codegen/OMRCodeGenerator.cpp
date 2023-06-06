@@ -506,7 +506,6 @@ OMR::X86::CodeGenerator::initializeX86(TR::Compilation *comp)
 
 OMR::X86::CodeGenerator::CodeGenerator(TR::Compilation *comp) :
    OMR::CodeGenerator(comp),
-   _nanoTimeTemp(NULL),
    _assignmentDirection(Backward),
    _lastCatchAppendInstruction(NULL),
    _betterSpillPlacements(NULL),
@@ -1285,23 +1284,6 @@ TR::RealRegister *
 OMR::X86::CodeGenerator::getMethodMetaDataRegister()
    {
    return toRealRegister(self()->getVMThreadRegister());
-   }
-
-TR::SymbolReference *
-OMR::X86::CodeGenerator::getNanoTimeTemp()
-   {
-   if (_nanoTimeTemp == NULL)
-      {
-      TR::AutomaticSymbol *sym;
-#if defined(LINUX) || defined(OSX)
-      sym = TR::AutomaticSymbol::create(self()->trHeapMemory(),TR::Aggregate,sizeof(struct timeval));
-#else
-      sym = TR::AutomaticSymbol::create(self()->trHeapMemory(),TR::Aggregate,8);
-#endif
-      self()->comp()->getMethodSymbol()->addAutomatic(sym);
-      _nanoTimeTemp = new (self()->trHeapMemory()) TR::SymbolReference(self()->comp()->getSymRefTab(), sym);
-      }
-   return _nanoTimeTemp;
    }
 
 bool

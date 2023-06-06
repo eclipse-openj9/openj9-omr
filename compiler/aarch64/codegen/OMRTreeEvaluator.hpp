@@ -416,6 +416,28 @@ public:
     */
    static TR::Register *vmaxInt64Helper(TR::Node *node, TR::Register *resReg, TR::Register *lhsReg, TR::Register *rhsReg, TR::CodeGenerator *cg);
 
+   typedef TR::Register *(*binaryEvaluatorHelper)(TR::Node *node, TR::Register *resReg, TR::Register *lhsRes, TR::Register *rhsReg, TR::CodeGenerator *cg);
+   /**
+    * @brief Helper function for generating instruction sequence for binary operations
+    *
+    * @param[in] node: node
+    * @param[in] cg: CodeGenerator
+    * @param[in] op: binary opcode
+    * @param[in] evaluatorHelper: optional pointer to helper function which generates instruction stream for operation
+    * @return vector register containing the result
+    */
+   static TR::Register *inlineVectorBinaryOp(TR::Node *node, TR::CodeGenerator *cg, TR::InstOpCode::Mnemonic op, binaryEvaluatorHelper evaluatorHelper = NULL);
+   /**
+    * @brief Helper function for generating instruction sequence for masked binary operations
+    *
+    * @param[in] node: node
+    * @param[in] cg: CodeGenerator
+    * @param[in] op: binary opcode
+    * @param[in] evaluatorHelper: optional pointer to helper function which generates instruction stream for operation
+    * @return vector register containing the result
+    */
+   static TR::Register *inlineVectorMaskedBinaryOp(TR::Node *node, TR::CodeGenerator *cg, TR::InstOpCode::Mnemonic op, binaryEvaluatorHelper evaluatorHelper = NULL);
+
    static TR::Register *f2iuEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *f2luEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *f2buEvaluator(TR::Node *node, TR::CodeGenerator *cg);

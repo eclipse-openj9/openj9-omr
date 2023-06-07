@@ -706,10 +706,14 @@ MM_MemorySubSpaceUniSpace::getHeapFreeMaximumHeuristicMultiplier(MM_EnvironmentB
 		gcPercentage = _extensions->getGlobalCollector()->getGCTimePercentage(env);
 	}
 
-	uintptr_t expectedGcPercentage = (_extensions->heapContractionGCRatioThreshold._valueSpecified + _extensions->heapExpansionGCRatioThreshold._valueSpecified) / 2;
-	uintptr_t gcRatio = gcPercentage / expectedGcPercentage;
-	uintptr_t freeMaxMultiplier = OMR_MIN(_extensions->heapFreeMaximumRatioMultiplier + 6 * gcRatio * gcRatio, _extensions->heapFreeMaximumRatioDivisor);
+	float expectedGcPercentage = ((float)_extensions->heapContractionGCRatioThreshold._valueSpecified
+			+ (float)_extensions->heapExpansionGCRatioThreshold._valueSpecified) / 2.0f;
+
+	float gcRatio = (float)gcPercentage / expectedGcPercentage;
 	
+	uintptr_t freeMaxMultiplier = OMR_MIN((uintptr_t)((float)_extensions->heapFreeMaximumRatioMultiplier
+			+ 6.0f * gcRatio * gcRatio), _extensions->heapFreeMaximumRatioDivisor);
+
 	Trc_MM_MemorySubSpaceUniSpace_getHeapFreeMaximumHeuristicMultiplier(env->getLanguageVMThread(), freeMaxMultiplier);
 
 	return freeMaxMultiplier;
@@ -726,10 +730,14 @@ MM_MemorySubSpaceUniSpace::getHeapFreeMinimumHeuristicMultiplier(MM_EnvironmentB
 		gcPercentage = _extensions->getGlobalCollector()->getGCTimePercentage(env);
 	}
 
-	uintptr_t expectedGcPercentage = (_extensions->heapContractionGCRatioThreshold._valueSpecified + _extensions->heapExpansionGCRatioThreshold._valueSpecified) / 2;
-	uintptr_t gcRatio = gcPercentage / expectedGcPercentage;
-	uintptr_t freeMinMultiplier = OMR_MIN(_extensions->heapFreeMinimumRatioMultiplier + 1 * gcRatio * gcRatio, _extensions->heapFreeMinimumRatioDivisor - 5);
+	float expectedGcPercentage = ((float)_extensions->heapContractionGCRatioThreshold._valueSpecified
+			+ (float)_extensions->heapExpansionGCRatioThreshold._valueSpecified) / 2.0f;
+
+	float gcRatio = (float)gcPercentage / expectedGcPercentage;
 	
+	uintptr_t freeMinMultiplier = OMR_MIN((uintptr_t)((float)_extensions->heapFreeMinimumRatioMultiplier
+			+ 1.0f * gcRatio * gcRatio), _extensions->heapFreeMinimumRatioDivisor - 5);
+
 	Trc_MM_MemorySubSpaceUniSpace_getHeapFreeMinimumHeuristicMultiplier(env->getLanguageVMThread(), freeMinMultiplier);
 
 	return freeMinMultiplier;

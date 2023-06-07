@@ -116,14 +116,22 @@ TR::Register *OMR::ARM64::TreeEvaluator::lnegEvaluator(TR::Node *node, TR::CodeG
    return tempReg;
    }
 
-static TR::Register *inlineVectorUnaryOp(TR::Node *node, TR::CodeGenerator *cg, TR::InstOpCode::Mnemonic op)
+TR::Register *OMR::ARM64::TreeEvaluator::inlineVectorUnaryOp(TR::Node *node, TR::CodeGenerator *cg, TR::InstOpCode::Mnemonic op, unaryEvaluatorHelper evaluatorHelper)
    {
    TR::Node *firstChild = node->getFirstChild();
    TR::Register *srcReg = cg->evaluate(firstChild);
-   TR::Register *resReg = (firstChild->getReferenceCount() == 1) ? srcReg : cg->allocateRegister(TR_VRF);
+   TR::Register *resReg = cg->allocateRegister(TR_VRF);
 
    node->setRegister(resReg);
-   generateTrg1Src1Instruction(cg, op, node, resReg, srcReg);
+   TR_ASSERT_FATAL_WITH_NODE(node, (op != TR::InstOpCode::bad) || (evaluatorHelper != NULL), "If op is TR::InstOpCode::bad, evaluatorHelper must not be NULL");
+   if (evaluatorHelper != NULL)
+      {
+      (*evaluatorHelper)(node, resReg, srcReg, cg);
+      }
+   else
+      {
+      generateTrg1Src1Instruction(cg, op, node, resReg, srcReg);
+      }
    cg->decReferenceCount(firstChild);
    return resReg;
    }

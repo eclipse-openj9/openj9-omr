@@ -2358,6 +2358,8 @@ getRelocationTargetKindFromSymbol(TR::CodeGenerator* cg, TR::Symbol *sym)
       reloKind = TR_RecompQueuedFlag;
    else if (cg->needRelocationsForBodyInfoData() && sym->isCatchBlockCounter())
       reloKind = TR_CatchBlockCounter;
+   else if (cg->comp()->compileRelocatableCode() && (sym->isEnterEventHookAddress() || sym->isExitEventHookAddress()))
+      reloKind = TR_MethodEnterExitHookAddress;
 
    return reloKind;
    }
@@ -8289,6 +8291,10 @@ OMR::Z::TreeEvaluator::checkAndSetMemRefDataSnippetRelocationType(TR::Node * nod
       {
       reloType = TR_RecompQueuedFlag;
       }
+   else if (cg->comp()->compileRelocatableCode() && (node->getSymbol()->isEnterEventHookAddress() || node->getSymbol()->isExitEventHookAddress()))
+      {
+      reloType = TR_MethodEnterExitHookAddress;
+      }
 
    if (reloType != 0)
       {
@@ -11466,6 +11472,12 @@ OMR::Z::TreeEvaluator::loadaddrEvaluator(TR::Node * node, TR::CodeGenerator * cg
                cursor = generateRegLitRefInstruction(cg, TR::InstOpCode::getLoadOpCode(), node, targetRegister,
                                                         (uintptr_t) node->getSymbol()->getStaticSymbol()->getStaticAddress(),
                                                         TR_RecompQueuedFlag, NULL, NULL, NULL);
+               }
+            else if (comp->compileRelocatableCode() && sym && (sym->isEnterEventHookAddress() || sym->isExitEventHookAddress()))
+               {
+               cursor = generateRegLitRefInstruction(cg, TR::InstOpCode::getLoadOpCode(), node, targetRegister,
+                                                        (uintptr_t) node->getSymbol()->getStaticSymbol()->getStaticAddress(),
+                                                        TR_MethodEnterExitHookAddress, NULL, NULL, NULL);
                }
             else
                {

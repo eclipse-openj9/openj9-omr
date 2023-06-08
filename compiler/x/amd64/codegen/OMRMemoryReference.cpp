@@ -570,6 +570,22 @@ OMR::X86::AMD64::MemoryReference::addMetaDataForCodeAddressWithLoad(
                                                  counter);
             }
          }
+      else if (sr.getSymbol()->isEnterEventHookAddress() || sr.getSymbol()->isExitEventHookAddress())
+         {
+         if (cg->needRelocationsForStatics())
+            {
+            cg->addExternalRelocation(
+               TR::ExternalRelocation::create(
+                  displacementLocation,
+                  (uint8_t *)srCopy,
+                  NULL,
+                  TR_MethodEnterExitHookAddress,
+                  cg),
+               __FILE__,
+               __LINE__,
+               containingInstruction->getNode());
+            }
+         }
       }
    else
       {

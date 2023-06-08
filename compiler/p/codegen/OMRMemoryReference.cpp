@@ -1490,7 +1490,7 @@ TR::Instruction *OMR::Power::MemoryReference::expandInstruction(TR::Instruction 
             cg,
             TR::InstOpCode::Op_st,
             node,
-            TR::MemoryReference::createWithDisplacement(cg, stackPtr, -saveLen, saveLen), 
+            TR::MemoryReference::createWithDisplacement(cg, stackPtr, -saveLen, saveLen),
             rX,
             prevInstruction
          );
@@ -1504,7 +1504,7 @@ TR::Instruction *OMR::Power::MemoryReference::expandInstruction(TR::Instruction 
             TR::InstOpCode::Op_load,
             node,
             rX,
-            TR::MemoryReference::createWithDisplacement(cg, stackPtr, -saveLen, saveLen), 
+            TR::MemoryReference::createWithDisplacement(cg, stackPtr, -saveLen, saveLen),
             currentInstruction
          );
          }
@@ -1630,6 +1630,12 @@ void OMR::Power::MemoryReference::accessStaticItem(TR::Node *node, TR::SymbolRef
          {
          TR::Register *reg = _baseRegister = cg->allocateRegister();
          loadAddressConstant(cg, true, nodeForSymbol, 1, reg, NULL, false, TR_RecompQueuedFlag);
+         return;
+         }
+      else if ((symbol->isEnterEventHookAddress() || symbol->isExitEventHookAddress()) && cg->comp()->compileRelocatableCode())
+         {
+         TR::Register *reg = _baseRegister = cg->allocateRegister();
+         loadAddressConstant(cg, true, nodeForSymbol, 1, reg, NULL, false, TR_MethodEnterExitHookAddress);
          return;
          }
       else
@@ -1782,7 +1788,12 @@ void OMR::Power::MemoryReference::accessStaticItem(TR::Node *node, TR::SymbolRef
          loadAddressConstant(cg, true, nodeForSymbol, 1, reg, NULL, false, TR_RecompQueuedFlag);
          return;
          }
-
+      else if ((symbol->isEnterEventHookAddress() || symbol->isExitEventHookAddress()) && cg->comp()->compileRelocatableCode())
+         {
+         TR::Register *reg = _baseRegister = cg->allocateRegister();
+         loadAddressConstant(cg, true, nodeForSymbol, 1, reg, NULL, false, TR_MethodEnterExitHookAddress);
+         return;
+         }
       else if (refIsUnresolved || useUnresSnippetToAvoidRelo)
          {
          self()->setUnresolvedSnippet(new (cg->trHeapMemory()) TR::UnresolvedDataSnippet(cg, node, ref, isStore, false));

@@ -348,9 +348,11 @@ typedef enum
    TR_ValidateIsClassVisible              = 112,
    TR_CatchBlockCounter                   = 113,
    TR_StartPC                             = 114,
-   TR_NumExternalRelocationKinds          = 115,
+   TR_MethodEnterExitHookAddress          = 115,
+   TR_NumExternalRelocationKinds          = 116,
    TR_ExternalRelocationTargetKindMask    = 0xff,
    } TR_ExternalRelocationTargetKind;
+
 
 namespace TR {
 

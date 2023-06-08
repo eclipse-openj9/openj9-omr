@@ -1170,6 +1170,10 @@ TR::X86RegImmSymInstruction::autoSetReloKind()
       {
       setReloKind(TR_RecompQueuedFlag);
       }
+   else if (symbol->isEnterEventHookAddress() || symbol->isExitEventHookAddress())
+      {
+      setReloKind(TR_MethodEnterExitHookAddress);
+      }
    }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -4460,6 +4464,8 @@ TR::AMD64RegImm64SymInstruction::autoSetReloKind()
       setReloKind(TR_BlockFrequency);
    else if (symbol->isRecompQueuedFlag())
       setReloKind(TR_RecompQueuedFlag);
+   else if (symbol->isEnterEventHookAddress() || symbol->isExitEventHookAddress())
+      setReloKind(TR_MethodEnterExitHookAddress);
    else
       setReloKind(-1);
    }

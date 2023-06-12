@@ -4497,28 +4497,134 @@ OMR::ARM64::TreeEvaluator::mcompressEvaluator(TR::Node *node, TR::CodeGenerator 
    return TR::TreeEvaluator::unImpOpEvaluator(node, cg);
    }
 
+/**
+ * @brief Helper function for vector number of leading and trailing zeroes
+ *
+ * @param[in] node: node
+ * @param[in] resultReg: the result register
+ * @param[in] srcReg: the argument register
+ * @param[in] cg: CodeGenerator
+ * @return the result register
+ */
+static TR::Register *
+vectorLeadingOrTrailingZeroesHelper(TR::Node *node, TR::Register *resultReg, TR::Register *srcReg, TR::CodeGenerator *cg)
+   {
+   TR::VectorOperation vectorOp = node->getOpCode().getVectorOperation();
+   TR::DataType elementType = node->getDataType().getVectorElementType();
+   TR_ASSERT_FATAL_WITH_NODE(node, (vectorOp == TR::vnolz) || (vectorOp == TR::vmnolz) || (vectorOp == TR::vnotz) || (vectorOp == TR::vmnotz),
+                                   "opcode must be vector number of leading or trailing zeroes");
+   TR_ASSERT_FATAL_WITH_NODE(node, (elementType >= TR::Int8) && (elementType <= TR::Int64), "elementType must be integer");
+   const bool isTrailingZeroes = (vectorOp == TR::vnotz) || (vectorOp == TR::vmnotz);
+   const bool is64bit = (elementType == TR::Int64);
+   const TR::InstOpCode::Mnemonic clzOp = static_cast<TR::InstOpCode::Mnemonic>(TR::InstOpCode::vclz16b + (elementType - TR::Int8));
+
+   TR_ARM64ScratchRegisterManager *srm = cg->generateScratchRegisterManager();
+   TR::Register *dataReg = srcReg;
+   if (isTrailingZeroes)
+      {
+      const TR::InstOpCode::Mnemonic revOp = (elementType == TR::Int16) ? TR::InstOpCode::vrev16_16b :
+                                             (elementType == TR::Int32) ? TR::InstOpCode::vrev32_16b : TR::InstOpCode::vrev64_16b;
+      /* Reverses bit order in each element. */
+      dataReg = srm->findOrCreateScratchRegister(TR_VRF);
+      generateTrg1Src1Instruction(cg, TR::InstOpCode::vrbit16b, node, dataReg, srcReg);
+      if (elementType != TR::Int8)
+         {
+         generateTrg1Src1Instruction(cg, revOp, node, dataReg, dataReg);
+         }
+      }
+   if (is64bit)
+      {
+      TR::Register *tempReg = srm->findOrCreateScratchRegister(TR_VRF);
+      generateTrg1Src1Instruction(cg, TR::InstOpCode::vclz4s, node, resultReg, dataReg);
+      generateVectorShiftImmediateInstruction(cg, TR::InstOpCode::vushr2d, node, tempReg, dataReg, 32);
+      generateTrg1Src1Instruction(cg, TR::InstOpCode::vcmeq4s_zero, node, tempReg, tempReg);
+      /* Clears lower 32-bit of each 64-bit element if upper 32-bit of the corresponding element in the original vector is zero. */
+      generateTrg1Src2Instruction(cg, TR::InstOpCode::vand16b, node, resultReg, resultReg, tempReg);
+      generateTrg1Src1Instruction(cg, TR::InstOpCode::vuaddlp4s, node, resultReg, resultReg);
+      }
+   else
+      {
+      generateTrg1Src1Instruction(cg, clzOp, node, resultReg, dataReg);
+      }
+   srm->stopUsingRegisters();
+
+   return resultReg;
+   }
+
 TR::Register*
 OMR::ARM64::TreeEvaluator::vnotzEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   return TR::TreeEvaluator::unImpOpEvaluator(node, cg);
+   TR_ASSERT_FATAL_WITH_NODE(node, node->getDataType().getVectorLength() == TR::VectorLength128,
+                   "Only 128-bit vectors are supported %s", node->getDataType().toString());
+
+   return inlineVectorUnaryOp(node, cg, TR::InstOpCode::bad, vectorLeadingOrTrailingZeroesHelper);
    }
 
 TR::Register*
 OMR::ARM64::TreeEvaluator::vmnotzEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   return TR::TreeEvaluator::unImpOpEvaluator(node, cg);
+   TR_ASSERT_FATAL_WITH_NODE(node, node->getDataType().getVectorLength() == TR::VectorLength128,
+                   "Only 128-bit vectors are supported %s", node->getDataType().toString());
+
+   return inlineVectorMaskedUnaryOp(node, cg, TR::InstOpCode::bad, vectorLeadingOrTrailingZeroesHelper);
    }
 
 TR::Register*
 OMR::ARM64::TreeEvaluator::vnolzEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   return TR::TreeEvaluator::unImpOpEvaluator(node, cg);
+   TR_ASSERT_FATAL_WITH_NODE(node, node->getDataType().getVectorLength() == TR::VectorLength128,
+                   "Only 128-bit vectors are supported %s", node->getDataType().toString());
+
+   TR::InstOpCode::Mnemonic clzOp = TR::InstOpCode::bad;
+   unaryEvaluatorHelper evaluatorHelper = NULL;
+   switch(node->getDataType().getVectorElementType())
+      {
+      case TR::Int8:
+         clzOp = TR::InstOpCode::vclz16b;
+         break;
+      case TR::Int16:
+         clzOp = TR::InstOpCode::vclz8h;
+         break;
+      case TR::Int32:
+         clzOp = TR::InstOpCode::vclz4s;
+         break;
+      case TR::Int64:
+         evaluatorHelper = vectorLeadingOrTrailingZeroesHelper;
+         break;
+      default:
+         TR_ASSERT(false, "unrecognized vector type %s", node->getDataType().toString());
+         return NULL;
+      }
+   return inlineVectorUnaryOp(node, cg, clzOp, evaluatorHelper);
    }
 
 TR::Register*
 OMR::ARM64::TreeEvaluator::vmnolzEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   return TR::TreeEvaluator::unImpOpEvaluator(node, cg);
+   TR_ASSERT_FATAL_WITH_NODE(node, node->getDataType().getVectorLength() == TR::VectorLength128,
+                   "Only 128-bit vectors are supported %s", node->getDataType().toString());
+
+   TR::InstOpCode::Mnemonic clzOp = TR::InstOpCode::bad;
+   unaryEvaluatorHelper evaluatorHelper = NULL;
+   switch(node->getDataType().getVectorElementType())
+      {
+      case TR::Int8:
+         clzOp = TR::InstOpCode::vclz16b;
+         break;
+      case TR::Int16:
+         clzOp = TR::InstOpCode::vclz8h;
+         break;
+      case TR::Int32:
+         clzOp = TR::InstOpCode::vclz4s;
+         break;
+      case TR::Int64:
+         evaluatorHelper = vectorLeadingOrTrailingZeroesHelper;
+         break;
+      default:
+         TR_ASSERT(false, "unrecognized vector type %s", node->getDataType().toString());
+         return NULL;
+      }
+   return inlineVectorMaskedUnaryOp(node, cg, clzOp, evaluatorHelper);
    }
 
 TR::Register*

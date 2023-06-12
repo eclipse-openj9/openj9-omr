@@ -177,7 +177,7 @@ enum TR_X86ProcessorFeatures8
    TR_IntelProcessorTrace     = 0x02000000,
    // Reserved by Intel       = 0x04000000,
    // Reserved by Intel       = 0x08000000,
-   // Reserved by Intel       = 0x10000000,
+   TR_AVX512CD                = 0x10000000,
    TR_SHA                     = 0x20000000,
    TR_AVX512BW                = 0x40000000,
    TR_AVX512VL                = 0x80000000,
@@ -191,7 +191,8 @@ inline uint32_t getFeatureFlags8Mask()
          | TR_AVX512F
          | TR_AVX512VL
          | TR_AVX512BW
-         | TR_AVX512DQ;
+         | TR_AVX512DQ
+         | TR_AVX512CD;
    }
 
 enum TR_ProcessorDescription

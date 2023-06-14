@@ -465,7 +465,6 @@ omrsysinfo_shutdown(struct OMRPortLibrary *portLibrary)
 int32_t
 omrsysinfo_startup(struct OMRPortLibrary *portLibrary)
 {
-	PPG_isRunningInContainer = FALSE;
 	return 0;
 }
 
@@ -1095,7 +1094,7 @@ omrsysinfo_get_cgroup_subsystem_list(struct OMRPortLibrary *portLibrary)
 BOOLEAN
 omrsysinfo_is_running_in_container(struct OMRPortLibrary *portLibrary)
 {
-	return PPG_isRunningInContainer;
+	return FALSE;
 }
 
 /**

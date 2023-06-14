@@ -151,7 +151,7 @@
 #include <sys/sysinfo.h>
 #include <sys/vfs.h>
 #include <sched.h>
-#elif defined(OSX)
+#elif defined(OSX) /* defined(LINUX) && !defined(OMRZTPF) */
 #include <sys/sysctl.h>
 #endif /* defined(LINUX) && !defined(OMRZTPF) */
 
@@ -163,6 +163,7 @@
 #include "omrportpriv.h"
 #include "omrportpg.h"
 #include "omrportptb.h"
+#include "portnls.h"
 #include "ut_omrport.h"
 
 #if defined(OMRZTPF)
@@ -388,7 +389,12 @@ struct {
  */
 #define OMRPORT_SYSINFO_CGROUP_V1_AVAILABLE 0x1
 #define OMRPORT_SYSINFO_CGROUP_V2_AVAILABLE 0x2
-#define OMRPORT_SYSINFO_RUNNING_IN_CONTAINER 0x4
+
+/* Different states of PPG_processInContainerState. */
+#define OMRPORT_PROCESS_IN_CONTAINER_UNINITIALIZED 0x0
+#define OMRPORT_PROCESS_IN_CONTAINER_TRUE 0x1
+#define OMRPORT_PROCESS_IN_CONTAINER_FALSE 0x2
+#define OMRPORT_PROCESS_IN_CONTAINER_ERROR 0x3
 
 /* Cgroup v1 and v2 memory files */
 #define CGROUP_MEMORY_STAT_FILE "memory.stat"
@@ -567,7 +573,13 @@ static struct OMRCgroupSubsystemMetricMap omrCgroupCpusetMetricMapV2[] = {
 #define OMR_CGROUP_CPUSET_METRIC_MAP_V2_SIZE sizeof(omrCgroupCpusetMetricMapV2) / sizeof(omrCgroupCpusetMetricMapV2[0])
 
 static uint32_t attachedPortLibraries;
-static omrthread_monitor_t cgroupEntryListMonitor;
+
+/* Used to enforce data consistency for
+ * - PPG_cgroupEntryList, and
+ * - PPG_processInContainerState.
+ * Both variables are related and modified in the same code-path.
+ */
+static omrthread_monitor_t cgroupMonitor;
 #endif /* defined(LINUX) */
 
 static intptr_t cwdname(struct OMRPortLibrary *portLibrary, char **result);
@@ -611,7 +623,7 @@ static int32_t getAbsolutePathOfCgroupSubsystemFile(struct OMRPortLibrary *portL
 static int32_t  getHandleOfCgroupSubsystemFile(struct OMRPortLibrary *portLibrary, uint64_t subsystemFlag, const char *fileName, FILE **subsystemFile);
 static int32_t readCgroupMetricFromFile(struct OMRPortLibrary *portLibrary, uint64_t subsystemFlag, const char *fileName, const char *metricKeyInFile, char **fileContent, char *value);
 static int32_t readCgroupSubsystemFile(struct OMRPortLibrary *portLibrary, uint64_t subsystemFlag, const char *fileName, int32_t numItemsToRead, const char *format, ...);
-static int32_t isRunningInContainer(struct OMRPortLibrary *portLibrary, BOOLEAN *inContainer);
+static BOOLEAN isRunningInContainer(struct OMRPortLibrary *portLibrary);
 static int32_t scanCgroupIntOrMax(struct OMRPortLibrary *portLibrary, const char *metricString, uint64_t *val);
 static int32_t readCgroupMemoryFileIntOrMax(struct OMRPortLibrary *portLibrary, const char *fileName, uint64_t *metric);
 static int32_t getCgroupMemoryLimit(struct OMRPortLibrary *portLibrary, uint64_t *limit);
@@ -3916,14 +3928,14 @@ omrsysinfo_shutdown(struct OMRPortLibrary *portLibrary)
 			PPG_si_executableName = NULL;
 		}
 #if defined(LINUX) && !defined(OMRZTPF)
-		omrthread_monitor_enter(cgroupEntryListMonitor);
+		omrthread_monitor_enter(cgroupMonitor);
 		freeCgroupEntries(portLibrary, PPG_cgroupEntryList);
 		PPG_cgroupEntryList = NULL;
-		omrthread_monitor_exit(cgroupEntryListMonitor);
+		omrthread_monitor_exit(cgroupMonitor);
 		attachedPortLibraries -= 1;
 		if (0 == attachedPortLibraries) {
-			omrthread_monitor_destroy(cgroupEntryListMonitor);
-			cgroupEntryListMonitor = NULL;
+			omrthread_monitor_destroy(cgroupMonitor);
+			cgroupMonitor = NULL;
 		}
 #endif /* defined(LINUX) */
 #if (defined(S390) || defined(J9ZOS390))
@@ -3936,9 +3948,6 @@ int32_t
 omrsysinfo_startup(struct OMRPortLibrary *portLibrary)
 {
 	int32_t rc = 0;
-#if defined(LINUX) && !defined(OMRZTPF)
-	BOOLEAN runningInContainer = FALSE;
-#endif /* defined(LINUX) && !defined(OMRZTPF) */
 
 	PPG_criuSupportFlags = 0;
 	PPG_sysinfoControlFlags = 0;
@@ -3950,13 +3959,14 @@ omrsysinfo_startup(struct OMRPortLibrary *portLibrary)
 
 #if defined(LINUX) && !defined(OMRZTPF)
 	PPG_cgroupEntryList = NULL;
-	/* To handle the case where multiple port libraries are started and shutdown,
-	 * as done by some fvtests (eg fvtest/porttest/j9portTest.cpp) that create fake portlibrary
-	 * to test its management and lifecycle,
-	 * we need to ensure globals like cgroupEntryListMonitor are initialized and destroyed only once.
+	PPG_processInContainerState = OMRPORT_PROCESS_IN_CONTAINER_UNINITIALIZED;
+	/* To handle the case where multiple port libraries are started and shutdown, as done
+	 * by some fvtests (eg fvtest/porttest/j9portTest.cpp) that create fake portlibrary to
+	 * test its management and lifecycle, we need to ensure globals, such as cgroupMonitor,
+	 * are initialized and destroyed only once.
 	 */
 	if (0 == attachedPortLibraries) {
-		if (omrthread_monitor_init_with_name(&cgroupEntryListMonitor, 0, "cgroup entry list monitor")) {
+		if (omrthread_monitor_init_with_name(&cgroupMonitor, 0, "cgroup monitor")) {
 			rc = OMRPORT_ERROR_STARTUP_SYSINFO_MONITOR_INIT;
 			goto _end;
 		}
@@ -3968,17 +3978,6 @@ omrsysinfo_startup(struct OMRPortLibrary *portLibrary)
 	} else if (isCgroupV2Available()) {
 		PPG_sysinfoControlFlags |= OMRPORT_SYSINFO_CGROUP_V2_AVAILABLE;
 	}
-	/* isCgroupV1Available must be called before the following function as the latter checks
-	 * a bit set by the former.
-	 */
-	if (0 == isRunningInContainer(portLibrary, &runningInContainer)) {
-		if (runningInContainer) {
-			PPG_sysinfoControlFlags |= OMRPORT_SYSINFO_RUNNING_IN_CONTAINER;
-		}
-	} else {
-		rc = OMRPORT_ERROR_STARTUP_SYSINFO_RUNNING_IN_CONTAINER;
-	}
-
 _end:
 #endif /* defined(LINUX) && !defined(OMRZTPF) */
 	return rc;
@@ -6495,140 +6494,164 @@ _end:
  * Checks if the process is running inside container
  *
  * @param[in] portLibrary pointer to OMRPortLibrary
- * @param[out] inContainer pointer to BOOLEAN which on successful return indicates if
- *      the process is running in container or not.  On error it indicates FALSE.
  *
- * @return 0 on success, otherwise negative error code
+ * @return TRUE if running in a container; otherwise, return FALSE
  */
-static int32_t
-isRunningInContainer(struct OMRPortLibrary *portLibrary, BOOLEAN *inContainer)
+static BOOLEAN
+isRunningInContainer(struct OMRPortLibrary *portLibrary)
 {
-	int32_t rc = 0;
-	FILE *cgroupFile = NULL;
+	if (OMRPORT_PROCESS_IN_CONTAINER_UNINITIALIZED == PPG_processInContainerState) {
+		omrthread_monitor_enter(cgroupMonitor);
+		if (OMRPORT_PROCESS_IN_CONTAINER_UNINITIALIZED == PPG_processInContainerState) {
+			FILE *cgroupFile = NULL;
+			int32_t rc = 0;
 
-	/* Assume we are not in container */
-	*inContainer = FALSE;
+			/* Assume we are not in a container. */
+			BOOLEAN inContainer = FALSE;
 
-	/* Check for existence of files that signify running in a container (Docker and Podman respectively). Not completely
-	 * reliable as these files may not be available, but it should work for most cases.
-	 */
-	if ((0 == access("/.dockerenv", F_OK)) || (0 == access("/run/.containerenv", F_OK))) {
-		*inContainer = TRUE;
-	} else if (OMR_ARE_ANY_BITS_SET(PPG_sysinfoControlFlags, OMRPORT_SYSINFO_CGROUP_V1_AVAILABLE)) {
-		/* Read PID 1's cgroup file /proc/1/cgroup and check cgroup name for each subsystem.
-		 * If cgroup name for each subsystem points to the root cgroup "/",
-		 * then the process is not running in a container.
-		 * For any other cgroup name, assume we are in a container.
-		 * Note that this will not work if namespaces are enabled in the container as all
-		 * cgroup names will be the root cgroup.
-		 */
-		cgroupFile = fopen(OMR_PROC_PID_ONE_CGROUP_FILE, "r");
-
-		if (NULL == cgroupFile) {
-			int32_t osErrCode = errno;
-			Trc_PRT_isRunningInContainer_fopen_failed(OMR_PROC_PID_ONE_CGROUP_FILE, osErrCode);
-			rc = portLibrary->error_set_last_error(portLibrary, osErrCode, OMRPORT_ERROR_SYSINFO_PROCESS_CGROUP_FILE_FOPEN_FAILED);
-			goto _end;
-		}
-
-		while (0 == feof(cgroupFile)) {
-			char buffer[PATH_MAX];
-			char cgroup[PATH_MAX];
-			char subsystems[PATH_MAX];
-			int32_t hierId = -1;
-
-			if (NULL == fgets(buffer, sizeof(buffer), cgroupFile)) {
-				break;
-			}
-			if (0 != ferror(cgroupFile)) {
-				int32_t osErrCode = errno;
-				Trc_PRT_isRunningInContainer_fgets_failed(OMR_PROC_PID_ONE_CGROUP_FILE, osErrCode);
-				rc = portLibrary->error_set_last_error_with_message_format(portLibrary, OMRPORT_ERROR_SYSINFO_PROCESS_CGROUP_FILE_READ_FAILED, "fgets failed to read %s file stream with errno=%d", OMR_PROC_PID_ONE_CGROUP_FILE, osErrCode);
-				goto _end;
-			}
-			rc = sscanf(buffer, PROC_PID_CGROUPV1_ENTRY_FORMAT, &hierId, subsystems, cgroup);
-
-			if (EOF == rc) {
-				break;
-			} else if (1 == rc) {
-				rc = sscanf(buffer, PROC_PID_CGROUP_SYSTEMD_ENTRY_FORMAT, &hierId, cgroup);
-
-				if (2 != rc) {
-					Trc_PRT_isRunningInContainer_unexpected_format(OMR_PROC_PID_ONE_CGROUP_FILE);
-					rc = portLibrary->error_set_last_error_with_message_format(portLibrary, OMRPORT_ERROR_SYSINFO_PROCESS_CGROUP_FILE_READ_FAILED, "unexpected format of %s file", OMR_PROC_PID_ONE_CGROUP_FILE);
+			/* Check for existence of files that signify running in a container (Docker and Podman respectively).
+			 * Not completely reliable as these files may not be available, but it should work for most cases.
+			 */
+			if ((0 == access("/.dockerenv", F_OK)) || (0 == access("/run/.containerenv", F_OK))) {
+				inContainer = TRUE;
+			} else if (OMR_ARE_ANY_BITS_SET(PPG_sysinfoControlFlags, OMRPORT_SYSINFO_CGROUP_V1_AVAILABLE)) {
+				/* Read PID 1's cgroup file /proc/1/cgroup and check cgroup name for each subsystem.
+				 * If cgroup name for each subsystem points to the root cgroup "/",
+				 * then the process is not running in a container.
+				 * For any other cgroup name, assume we are in a container.
+				 * Note that this will not work if namespaces are enabled in the container as all
+				 * cgroup names will be the root cgroup.
+				 */
+				cgroupFile = fopen(OMR_PROC_PID_ONE_CGROUP_FILE, "r");
+				if (NULL == cgroupFile) {
+					int32_t osErrCode = errno;
+					Trc_PRT_isRunningInContainer_fopen_failed(OMR_PROC_PID_ONE_CGROUP_FILE, osErrCode);
+					rc = portLibrary->error_set_last_error_with_message_format(
+							portLibrary, OMRPORT_ERROR_SYSINFO_PROCESS_CGROUP_FILE_FOPEN_FAILED,
+							"failed to open %s file with errno=%d", OMR_PROC_PID_ONE_CGROUP_FILE, osErrCode);
 					goto _end;
 				}
-			} else if (3 != rc) {
-				Trc_PRT_isRunningInContainer_unexpected_format(OMR_PROC_PID_ONE_CGROUP_FILE);
-				rc = portLibrary->error_set_last_error_with_message_format(portLibrary, OMRPORT_ERROR_SYSINFO_PROCESS_CGROUP_FILE_READ_FAILED, "unexpected format of %s file", OMR_PROC_PID_ONE_CGROUP_FILE);
-				goto _end;
+
+				while (0 == feof(cgroupFile)) {
+					char buffer[PATH_MAX];
+					char cgroup[PATH_MAX];
+					char subsystems[PATH_MAX];
+					int32_t hierId = -1;
+
+					if (NULL == fgets(buffer, sizeof(buffer), cgroupFile)) {
+						break;
+					}
+					if (0 != ferror(cgroupFile)) {
+						int32_t osErrCode = errno;
+						Trc_PRT_isRunningInContainer_fgets_failed(OMR_PROC_PID_ONE_CGROUP_FILE, osErrCode);
+						rc = portLibrary->error_set_last_error_with_message_format(
+								portLibrary, OMRPORT_ERROR_SYSINFO_PROCESS_CGROUP_FILE_READ_FAILED,
+								"failed to read %s file stream with errno=%d", OMR_PROC_PID_ONE_CGROUP_FILE, osErrCode);
+						goto _end;
+					}
+					rc = sscanf(buffer, PROC_PID_CGROUPV1_ENTRY_FORMAT, &hierId, subsystems, cgroup);
+
+					if (EOF == rc) {
+						break;
+					} else if (1 == rc) {
+						rc = sscanf(buffer, PROC_PID_CGROUP_SYSTEMD_ENTRY_FORMAT, &hierId, cgroup);
+
+						if (2 != rc) {
+							Trc_PRT_isRunningInContainer_unexpected_format(OMR_PROC_PID_ONE_CGROUP_FILE);
+							rc = portLibrary->error_set_last_error_with_message_format(
+									portLibrary, OMRPORT_ERROR_SYSINFO_PROCESS_CGROUP_FILE_READ_FAILED,
+									"unexpected format of %s file, error code = %d",
+									OMR_PROC_PID_ONE_CGROUP_FILE, rc);
+							goto _end;
+						}
+					} else if (3 != rc) {
+						Trc_PRT_isRunningInContainer_unexpected_format(OMR_PROC_PID_ONE_CGROUP_FILE);
+						rc = portLibrary->error_set_last_error_with_message_format(
+								portLibrary, OMRPORT_ERROR_SYSINFO_PROCESS_CGROUP_FILE_READ_FAILED,
+								"unexpected format of %s file, error code = %d",
+								OMR_PROC_PID_ONE_CGROUP_FILE, rc);
+						goto _end;
+					}
+
+					if ((0 != strcmp(ROOT_CGROUP, cgroup)) && (0 != strcmp(SYSTEMD_INIT_CGROUP, cgroup))) {
+						inContainer = TRUE;
+						break;
+					}
+				}
+				rc = 0;
 			}
 
-			if ((0 != strcmp(ROOT_CGROUP, cgroup)) && (0 != strcmp(SYSTEMD_INIT_CGROUP, cgroup))) {
-				*inContainer = TRUE;
-				break;
-			}
-		}
-		rc = 0;
-	}
-
-	/* Read the first line in /proc/1/sched if it exists.
-	 * Outside a container, the initialization process is either "init" or "systemd".
-	 * A containerized environment can be assumed for any other initialization process.
-	 */
-	if ((0 == rc) && (!*inContainer) && (0 == access(OMR_PROC_PID_ONE_SCHED_FILE, F_OK))) {
-		FILE *schedFile = fopen(OMR_PROC_PID_ONE_SCHED_FILE, "r");
-		char buffer[PATH_MAX];
-
-		if (NULL == schedFile) {
-			int32_t osErrCode = errno;
-			Trc_PRT_isRunningInContainer_fopen_failed(OMR_PROC_PID_ONE_SCHED_FILE, osErrCode);
-			rc = portLibrary->error_set_last_error(
-					portLibrary,
-					osErrCode,
-					OMRPORT_ERROR_SYSINFO_PROCESS_CGROUP_FILE_FOPEN_FAILED);
-			goto _end;
-		}
-
-		if (NULL == fgets(buffer, sizeof(buffer), schedFile)) {
-			if (0 != ferror(schedFile)) {
-				int32_t osErrCode = errno;
-				Trc_PRT_isRunningInContainer_fgets_failed(OMR_PROC_PID_ONE_SCHED_FILE, osErrCode);
-				rc = portLibrary->error_set_last_error_with_message_format(
-						portLibrary,
-						OMRPORT_ERROR_SYSINFO_PROCESS_CGROUP_FILE_READ_FAILED,
-						"fgets failed to read %s file stream with errno=%d",
-						OMR_PROC_PID_ONE_SCHED_FILE,
-						osErrCode);
-				goto _end;
-			}
-		} else {
-			/* Check if the initialization process is either "init " or "systemd ".
-			 * The space after systemd and init allows us to exactly check for those
-			 * strings and filter any strings which either begin with systemd or init.
-			 *
-			 * The first line of /proc/1/sched in a non-containerized environment:
-			 * - systemd (1, #threads: 1)
-			 * - init (1, #threads: 1)
-			 *
-			 * The first line of /proc/1/sched in a containerized environment:
-			 * - bash (1, #threads: 1)
-			 * - sh (1, #threads: 1)
+			/* Read the first line in /proc/1/sched if it exists.
+			 * Outside a container, the initialization process is either "init" or "systemd".
+			 * A containerized environment can be assumed for any other initialization process.
 			 */
+			if ((0 == rc) && (!inContainer) && (0 == access(OMR_PROC_PID_ONE_SCHED_FILE, F_OK))) {
+				char buffer[PATH_MAX];
+				FILE *schedFile = fopen(OMR_PROC_PID_ONE_SCHED_FILE, "r");
+
+				if (NULL == schedFile) {
+					int32_t osErrCode = errno;
+					Trc_PRT_isRunningInContainer_fopen_failed(OMR_PROC_PID_ONE_SCHED_FILE, osErrCode);
+					rc = portLibrary->error_set_last_error_with_message_format(
+							portLibrary, OMRPORT_ERROR_SYSINFO_PROCESS_CGROUP_FILE_FOPEN_FAILED,
+							"failed to open %s file with errno=%d", OMR_PROC_PID_ONE_SCHED_FILE, osErrCode);
+					goto _end;
+				}
+
+				if (NULL == fgets(buffer, sizeof(buffer), schedFile)) {
+					if (0 != ferror(schedFile)) {
+						int32_t osErrCode = errno;
+						Trc_PRT_isRunningInContainer_fgets_failed(OMR_PROC_PID_ONE_SCHED_FILE, osErrCode);
+						rc = portLibrary->error_set_last_error_with_message_format(
+								portLibrary, OMRPORT_ERROR_SYSINFO_PROCESS_CGROUP_FILE_READ_FAILED,
+								"failed to read %s file stream with errno=%d",
+								OMR_PROC_PID_ONE_SCHED_FILE, osErrCode);
+						goto _end;
+					}
+				} else {
+					/* Check if the initialization process is either "init " or "systemd ".
+					 * The space after systemd and init allows us to exactly check for those
+					 * strings and filter any strings which either begin with systemd or init.
+					 *
+					 * The first line of /proc/1/sched in a non-containerized environment:
+					 * - systemd (1, #threads: 1)
+					 * - init (1, #threads: 1)
+					 *
+					 * The first line of /proc/1/sched in a containerized environment:
+					 * - bash (1, #threads: 1)
+					 * - sh (1, #threads: 1)
+					 */
 #define STARTS_WITH(string, prefix) (0 == strncmp(string, prefix, sizeof(prefix) - 1))
-			if (!STARTS_WITH(buffer, "init ") && !STARTS_WITH(buffer, "systemd ")) {
-				*inContainer = TRUE;
-			}
+					if (!STARTS_WITH(buffer, "init ") && !STARTS_WITH(buffer, "systemd ")) {
+						inContainer = TRUE;
+					}
 #undef STARTS_WITH
+				}
+			}
+
+_end:
+			if (NULL != cgroupFile) {
+				fclose(cgroupFile);
+			}
+
+			if (0 != rc) {
+				PPG_processInContainerState = OMRPORT_PROCESS_IN_CONTAINER_ERROR;
+				/* Print a warning message. */
+				portLibrary->nls_printf(
+						portLibrary, J9NLS_WARNING, J9NLS_PORT_RUNNING_IN_CONTAINER_FAILURE,
+						omrerror_last_error_message(portLibrary));
+			} else if (inContainer) {
+				PPG_processInContainerState = OMRPORT_PROCESS_IN_CONTAINER_TRUE;
+			} else {
+				PPG_processInContainerState = OMRPORT_PROCESS_IN_CONTAINER_FALSE;
+			}
 		}
+		omrthread_monitor_exit(cgroupMonitor);
 	}
 
-	Trc_PRT_isRunningInContainer_container_detected((uintptr_t)*inContainer);
-_end:
-	if (NULL != cgroupFile) {
-		fclose(cgroupFile);
-	}
-	return rc;
+	Trc_PRT_isRunningInContainer_container_detected(PPG_processInContainerState);
+
+	return (OMRPORT_PROCESS_IN_CONTAINER_TRUE == PPG_processInContainerState) ? TRUE : FALSE;
 }
 
 /**
@@ -6856,19 +6879,27 @@ omrsysinfo_cgroup_is_system_available(struct OMRPortLibrary *portLibrary)
 	Trc_PRT_sysinfo_cgroup_is_system_available_Entry();
 	if (NULL == PPG_cgroupEntryList) {
 		if (OMR_ARE_ANY_BITS_SET(PPG_sysinfoControlFlags, OMRPORT_SYSINFO_CGROUP_V1_AVAILABLE)) {
-			BOOLEAN inContainer = OMR_ARE_ANY_BITS_SET(PPG_sysinfoControlFlags, OMRPORT_SYSINFO_RUNNING_IN_CONTAINER);
+			BOOLEAN inContainer = isRunningInContainer(portLibrary);
 
-			omrthread_monitor_enter(cgroupEntryListMonitor);
 			if (NULL == PPG_cgroupEntryList) {
-				rc = populateCgroupEntryListV1(portLibrary, getpid(), inContainer, &PPG_cgroupEntryList, &PPG_cgroupSubsystemsAvailable);
+				omrthread_monitor_enter(cgroupMonitor);
+				if (NULL == PPG_cgroupEntryList) {
+					rc = populateCgroupEntryListV1(
+							portLibrary, getpid(), inContainer,
+							&PPG_cgroupEntryList, &PPG_cgroupSubsystemsAvailable);
+				}
+				omrthread_monitor_exit(cgroupMonitor);
 			}
-			omrthread_monitor_exit(cgroupEntryListMonitor);
 		} else if (OMR_ARE_ANY_BITS_SET(PPG_sysinfoControlFlags, OMRPORT_SYSINFO_CGROUP_V2_AVAILABLE)) {
-			omrthread_monitor_enter(cgroupEntryListMonitor);
 			if (NULL == PPG_cgroupEntryList) {
-				rc = populateCgroupEntryListV2(portLibrary, getpid(), &PPG_cgroupEntryList, &PPG_cgroupSubsystemsAvailable);
+				omrthread_monitor_enter(cgroupMonitor);
+				if (NULL == PPG_cgroupEntryList) {
+					rc = populateCgroupEntryListV2(
+							portLibrary, getpid(),
+							&PPG_cgroupEntryList, &PPG_cgroupSubsystemsAvailable);
+				}
+				omrthread_monitor_exit(cgroupMonitor);
 			}
-			omrthread_monitor_exit(cgroupEntryListMonitor);
 		} else {
 			rc = OMRPORT_ERROR_SYSINFO_CGROUP_UNSUPPORTED_PLATFORM;
 		}
@@ -7009,7 +7040,7 @@ BOOLEAN
 omrsysinfo_is_running_in_container(struct OMRPortLibrary *portLibrary)
 {
 #if defined(LINUX) && !defined(OMRZTPF)
-	return OMR_ARE_ANY_BITS_SET(PPG_sysinfoControlFlags, OMRPORT_SYSINFO_RUNNING_IN_CONTAINER);
+	return isRunningInContainer(portLibrary);
 #else /* defined(LINUX) && !defined(OMRZTPF) */
 	return FALSE;
 #endif /* defined(LINUX) && !defined(OMRZTPF) */

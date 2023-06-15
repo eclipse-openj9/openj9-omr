@@ -226,6 +226,7 @@ OMR::Power::CodeGenerator::initialize()
        cg->setSupportsArraySet();
        }
     cg->setSupportsArrayCmp();
+    cg->setSupportsArrayCmpLen();
 
     if (comp->target().cpu.supportsFeature(OMR_FEATURE_PPC_HAS_VSX))
        {

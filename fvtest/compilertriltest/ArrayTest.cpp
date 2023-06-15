@@ -42,7 +42,7 @@ class ArraycmpEqualTest : public TRTest::JitTest, public ::testing::WithParamInt
  */
 class ArraycmpNotEqualTest : public TRTest::JitTest, public ::testing::WithParamInterface<std::tuple<int32_t, int32_t>> {};
 
-TEST_P(ArraycmpEqualTest, ArraycmpLenSameArray) {
+TEST_P(ArraycmpEqualTest, ArraycmpSameArray) {
     SKIP_ON_ARM(MissingImplementation);
     SKIP_ON_RISCV(MissingImplementation);
 
@@ -50,97 +50,7 @@ TEST_P(ArraycmpEqualTest, ArraycmpLenSameArray) {
     char inputTrees[1024] = {0};
     /*
      * "address=0" parameter is needed for arraycmp opcode because "Call" property is set to the opcode.
-     * We need "flags=15" parameter to set arrayCmpLen flag.
-     * arrayCmpLen flag is defined as 0x8000, which is 1 << 15.
      */
-    std::snprintf(inputTrees, sizeof(inputTrees),
-      "(method return=Int32 args=[Address, Address]"
-      "  (block"
-      "    (ireturn"
-      "      (arraycmp address=0 args=[Address, Address] flags=[15]"
-      "        (aload parm=0)"
-      "        (aload parm=1)"
-      "        (iconst %d)))))",
-      length
-      );
-    auto trees = parseString(inputTrees);
-
-    ASSERT_NOTNULL(trees);
-
-    Tril::DefaultCompiler compiler(trees);
-
-    ASSERT_EQ(0, compiler.compile()) << "Compilation failed unexpectedly\n" << "Input trees: " << inputTrees;
-
-    std::vector<unsigned char> s1(length, 0x5c);
-    auto entry_point = compiler.getEntryPoint<int32_t (*)(unsigned char *, unsigned char *)>();
-    EXPECT_EQ(length, entry_point(&s1[0], &s1[0]));
-}
-
-TEST_P(ArraycmpEqualTest, ArraycmpLenEqualConstLen) {
-    SKIP_ON_ARM(MissingImplementation);
-    SKIP_ON_RISCV(MissingImplementation);
-
-    auto length = GetParam();
-    char inputTrees[1024] = {0};
-    std::snprintf(inputTrees, sizeof(inputTrees),
-      "(method return=Int32 args=[Address, Address]"
-      "  (block"
-      "    (ireturn"
-      "      (arraycmp address=0 args=[Address, Address] flags=[15]"
-      "        (aload parm=0)"
-      "        (aload parm=1)"
-      "        (iconst %d)))))",
-      length
-      );
-    auto trees = parseString(inputTrees);
-
-    ASSERT_NOTNULL(trees);
-
-    Tril::DefaultCompiler compiler(trees);
-
-    ASSERT_EQ(0, compiler.compile()) << "Compilation failed unexpectedly\n" << "Input trees: " << inputTrees;
-
-    std::vector<unsigned char> s1(length, 0x5c);
-    std::vector<unsigned char> s2(length, 0x5c);
-    auto entry_point = compiler.getEntryPoint<int32_t (*)(unsigned char *, unsigned char *)>();
-    EXPECT_EQ(length, entry_point(&s1[0], &s2[0]));
-}
-
-TEST_P(ArraycmpEqualTest, ArraycmpLenEqualVariableLen) {
-    SKIP_ON_ARM(MissingImplementation);
-    SKIP_ON_RISCV(MissingImplementation);
-
-    auto length = GetParam();
-    char inputTrees[1024] = {0};
-    std::snprintf(inputTrees, sizeof(inputTrees),
-      "(method return=Int32 args=[Address, Address, Int32]"
-      "  (block"
-      "    (ireturn"
-      "      (arraycmp address=0 args=[Address, Address] flags=[15]"
-      "        (aload parm=0)"
-      "        (aload parm=1)"
-      "        (iload parm=2)))))"
-      );
-    auto trees = parseString(inputTrees);
-
-    ASSERT_NOTNULL(trees);
-
-    Tril::DefaultCompiler compiler(trees);
-
-    ASSERT_EQ(0, compiler.compile()) << "Compilation failed unexpectedly\n" << "Input trees: " << inputTrees;
-
-    std::vector<unsigned char> s1(length, 0x5c);
-    std::vector<unsigned char> s2(length, 0x5c);
-    auto entry_point = compiler.getEntryPoint<int32_t (*)(unsigned char *, unsigned char *, int32_t)>();
-    EXPECT_EQ(length, entry_point(&s1[0], &s2[0], length));
-}
-
-TEST_P(ArraycmpEqualTest, ArraycmpSameArray) {
-    SKIP_ON_ARM(MissingImplementation);
-    SKIP_ON_RISCV(MissingImplementation);
-
-    auto length = GetParam();
-    char inputTrees[1024] = {0};
     std::snprintf(inputTrees, sizeof(inputTrees),
       "(method return=Int32 args=[Address, Address]"
       "  (block"
@@ -224,71 +134,6 @@ TEST_P(ArraycmpEqualTest, ArraycmpEqualVariableLen) {
 }
 
 INSTANTIATE_TEST_CASE_P(ArraycmpTest, ArraycmpEqualTest, ::testing::Range(1, 128));
-
-TEST_P(ArraycmpNotEqualTest, ArraycmpLenNotEqualConstLen) {
-    SKIP_ON_ARM(MissingImplementation);
-    SKIP_ON_RISCV(MissingImplementation);
-
-    auto length = std::get<0>(GetParam());
-    auto offset = std::get<1>(GetParam());
-    char inputTrees[1024] = {0};
-    std::snprintf(inputTrees, sizeof(inputTrees),
-      "(method return=Int32 args=[Address, Address]"
-      "  (block"
-      "    (ireturn"
-      "      (arraycmp address=0 args=[Address, Address] flags=[15]"
-      "        (aload parm=0)"
-      "        (aload parm=1)"
-      "        (iconst %d)))))",
-      length
-      );
-    auto trees = parseString(inputTrees);
-
-    ASSERT_NOTNULL(trees);
-
-    Tril::DefaultCompiler compiler(trees);
-
-    ASSERT_EQ(0, compiler.compile()) << "Compilation failed unexpectedly\n" << "Input trees: " << inputTrees;
-
-    std::vector<unsigned char> s1(length, 0x5c);
-    std::vector<unsigned char> s2(length, 0x5c);
-    s1[offset] = 0x3f;
-
-    auto entry_point = compiler.getEntryPoint<int32_t (*)(unsigned char *, unsigned char *)>();
-    EXPECT_EQ(offset, entry_point(&s1[0], &s2[0]));
-}
-
-TEST_P(ArraycmpNotEqualTest, ArraycmpLenNotEqualVariableLen) {
-    SKIP_ON_ARM(MissingImplementation);
-    SKIP_ON_RISCV(MissingImplementation);
-
-    auto length = std::get<0>(GetParam());
-    auto offset = std::get<1>(GetParam());
-    char inputTrees[1024] = {0};
-    std::snprintf(inputTrees, sizeof(inputTrees),
-      "(method return=Int32 args=[Address, Address, Int32]"
-      "  (block"
-      "    (ireturn"
-      "      (arraycmp address=0 args=[Address, Address] flags=[15]"
-      "        (aload parm=0)"
-      "        (aload parm=1)"
-      "        (iload parm=2)))))"
-      );
-    auto trees = parseString(inputTrees);
-
-    ASSERT_NOTNULL(trees);
-
-    Tril::DefaultCompiler compiler(trees);
-
-    ASSERT_EQ(0, compiler.compile()) << "Compilation failed unexpectedly\n" << "Input trees: " << inputTrees;
-
-    std::vector<unsigned char> s1(length, 0x5c);
-    std::vector<unsigned char> s2(length, 0x5c);
-    s1[offset] = 0x3f;
-
-    auto entry_point = compiler.getEntryPoint<int32_t (*)(unsigned char *, unsigned char *, int32_t)>();
-    EXPECT_EQ(offset, entry_point(&s1[0], &s2[0], length));
-}
 
 TEST_P(ArraycmpNotEqualTest, ArraycmpGreaterThanConstLen) {
     SKIP_ON_ARM(MissingImplementation);
@@ -445,3 +290,180 @@ static std::vector<std::tuple<int32_t, int32_t>> createArraycmpNotEqualParam() {
   return v;
 }
 INSTANTIATE_TEST_CASE_P(ArraycmpTest, ArraycmpNotEqualTest, ::testing::ValuesIn(createArraycmpNotEqualParam()));
+
+
+/**
+ * @brief TestFixture class for arraycmplen test
+ *
+ * @details Used for arraycmplen test with the arrays with same data.
+ * The parameter is the length parameter for the arraycmp evaluator.
+ */
+class ArraycmplenEqualTest : public TRTest::JitTest, public ::testing::WithParamInterface<int32_t> {};
+/**
+ * @brief TestFixture class for arraycmplen test
+ *
+ * @details Used for arraycmplen test which has mismatched element.
+ * The first parameter is the length parameter for the arraycmp evaluator.
+ * The second parameter is the offset of the mismatched element in the arrays.
+ */
+class ArraycmplenNotEqualTest : public TRTest::JitTest, public ::testing::WithParamInterface<std::tuple<int32_t, int32_t>> {};
+
+TEST_P(ArraycmplenEqualTest, ArraycmpLenSameArray) {
+    SKIP_ON_ARM(MissingImplementation);
+    SKIP_ON_RISCV(MissingImplementation);
+
+    auto length = GetParam();
+    char inputTrees[1024] = {0};
+    /*
+     * "address=0" parameter is needed for arraycmp opcode because "Call" property is set to the opcode.
+     */
+    std::snprintf(inputTrees, sizeof(inputTrees),
+      "(method return=Int32 args=[Address, Address]"
+      "  (block"
+      "    (ireturn"
+      "      (arraycmplen address=0 args=[Address, Address]"
+      "        (aload parm=0)"
+      "        (aload parm=1)"
+      "        (iconst %d)))))",
+      length
+      );
+    auto trees = parseString(inputTrees);
+
+    ASSERT_NOTNULL(trees);
+
+    Tril::DefaultCompiler compiler(trees);
+
+    ASSERT_EQ(0, compiler.compile()) << "Compilation failed unexpectedly\n" << "Input trees: " << inputTrees;
+
+    std::vector<unsigned char> s1(length, 0x5c);
+    auto entry_point = compiler.getEntryPoint<int32_t (*)(unsigned char *, unsigned char *)>();
+    EXPECT_EQ(length, entry_point(&s1[0], &s1[0]));
+}
+
+TEST_P(ArraycmplenEqualTest, ArraycmpLenEqualConstLen) {
+    SKIP_ON_ARM(MissingImplementation);
+    SKIP_ON_RISCV(MissingImplementation);
+
+    auto length = GetParam();
+    char inputTrees[1024] = {0};
+    std::snprintf(inputTrees, sizeof(inputTrees),
+      "(method return=Int32 args=[Address, Address]"
+      "  (block"
+      "    (ireturn"
+      "      (arraycmplen address=0 args=[Address, Address]"
+      "        (aload parm=0)"
+      "        (aload parm=1)"
+      "        (iconst %d)))))",
+      length
+      );
+    auto trees = parseString(inputTrees);
+
+    ASSERT_NOTNULL(trees);
+
+    Tril::DefaultCompiler compiler(trees);
+
+    ASSERT_EQ(0, compiler.compile()) << "Compilation failed unexpectedly\n" << "Input trees: " << inputTrees;
+
+    std::vector<unsigned char> s1(length, 0x5c);
+    std::vector<unsigned char> s2(length, 0x5c);
+    auto entry_point = compiler.getEntryPoint<int32_t (*)(unsigned char *, unsigned char *)>();
+    EXPECT_EQ(length, entry_point(&s1[0], &s2[0]));
+}
+
+TEST_P(ArraycmplenEqualTest, ArraycmpLenEqualVariableLen) {
+    SKIP_ON_ARM(MissingImplementation);
+    SKIP_ON_RISCV(MissingImplementation);
+
+    auto length = GetParam();
+    char inputTrees[1024] = {0};
+    std::snprintf(inputTrees, sizeof(inputTrees),
+      "(method return=Int32 args=[Address, Address, Int32]"
+      "  (block"
+      "    (ireturn"
+      "      (arraycmplen address=0 args=[Address, Address]"
+      "        (aload parm=0)"
+      "        (aload parm=1)"
+      "        (iload parm=2)))))"
+      );
+    auto trees = parseString(inputTrees);
+
+    ASSERT_NOTNULL(trees);
+
+    Tril::DefaultCompiler compiler(trees);
+
+    ASSERT_EQ(0, compiler.compile()) << "Compilation failed unexpectedly\n" << "Input trees: " << inputTrees;
+
+    std::vector<unsigned char> s1(length, 0x5c);
+    std::vector<unsigned char> s2(length, 0x5c);
+    auto entry_point = compiler.getEntryPoint<int32_t (*)(unsigned char *, unsigned char *, int32_t)>();
+    EXPECT_EQ(length, entry_point(&s1[0], &s2[0], length));
+}
+
+INSTANTIATE_TEST_CASE_P(ArraycmplenTest, ArraycmplenEqualTest, ::testing::Range(1L, 128L));
+
+TEST_P(ArraycmplenNotEqualTest, ArraycmpLenNotEqualConstLen) {
+    SKIP_ON_ARM(MissingImplementation);
+    SKIP_ON_RISCV(MissingImplementation);
+
+    auto length = std::get<0>(GetParam());
+    auto offset = std::get<1>(GetParam());
+    char inputTrees[1024] = {0};
+    std::snprintf(inputTrees, sizeof(inputTrees),
+      "(method return=Int32 args=[Address, Address]"
+      "  (block"
+      "    (ireturn"
+      "      (arraycmplen address=0 args=[Address, Address]"
+      "        (aload parm=0)"
+      "        (aload parm=1)"
+      "        (iconst %d)))))",
+      length
+      );
+    auto trees = parseString(inputTrees);
+
+    ASSERT_NOTNULL(trees);
+
+    Tril::DefaultCompiler compiler(trees);
+
+    ASSERT_EQ(0, compiler.compile()) << "Compilation failed unexpectedly\n" << "Input trees: " << inputTrees;
+
+    std::vector<unsigned char> s1(length, 0x5c);
+    std::vector<unsigned char> s2(length, 0x5c);
+    s1[offset] = 0x3f;
+
+    auto entry_point = compiler.getEntryPoint<int32_t (*)(unsigned char *, unsigned char *)>();
+    EXPECT_EQ(offset, entry_point(&s1[0], &s2[0]));
+}
+
+TEST_P(ArraycmplenNotEqualTest, ArraycmpLenNotEqualVariableLen) {
+    SKIP_ON_ARM(MissingImplementation);
+    SKIP_ON_RISCV(MissingImplementation);
+
+    auto length = std::get<0>(GetParam());
+    auto offset = std::get<1>(GetParam());
+    char inputTrees[1024] = {0};
+    std::snprintf(inputTrees, sizeof(inputTrees),
+      "(method return=Int32 args=[Address, Address, Int32]"
+      "  (block"
+      "    (ireturn"
+      "      (arraycmplen address=0 args=[Address, Address]"
+      "        (aload parm=0)"
+      "        (aload parm=1)"
+      "        (iload parm=2)))))"
+      );
+    auto trees = parseString(inputTrees);
+
+    ASSERT_NOTNULL(trees);
+
+    Tril::DefaultCompiler compiler(trees);
+
+    ASSERT_EQ(0, compiler.compile()) << "Compilation failed unexpectedly\n" << "Input trees: " << inputTrees;
+
+    std::vector<unsigned char> s1(length, 0x5c);
+    std::vector<unsigned char> s2(length, 0x5c);
+    s1[offset] = 0x3f;
+
+    auto entry_point = compiler.getEntryPoint<int32_t (*)(unsigned char *, unsigned char *, int32_t)>();
+    EXPECT_EQ(offset, entry_point(&s1[0], &s2[0], length));
+}
+
+INSTANTIATE_TEST_CASE_P(ArraycmplenTest, ArraycmplenNotEqualTest, ::testing::ValuesIn(createArraycmpNotEqualParam()));

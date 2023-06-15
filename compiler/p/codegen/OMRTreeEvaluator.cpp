@@ -5446,7 +5446,7 @@ static inline void loadArrayCmpSources(TR::Node *node, TR::InstOpCode::Mnemonic 
       }
    }
 
-static TR::Register *inlineArrayCmpP10(TR::Node *node, TR::CodeGenerator *cg)
+static TR::Register *inlineArrayCmpP10(TR::Node *node, TR::CodeGenerator *cg, bool isArrayCmpLen)
 {
    TR::Node *src1AddrNode = node->getChild(0);
    TR::Node *src2AddrNode = node->getChild(1);
@@ -5511,7 +5511,7 @@ static TR::Register *inlineArrayCmpP10(TR::Node *node, TR::CodeGenerator *cg)
 
    generateTrg1Src1Instruction(cg, TR::InstOpCode::vclzlsbb, node, tempReg, vec0Reg);
 
-   if (!node->isArrayCmpLen())
+   if (!isArrayCmpLen)
       {
       generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::addi, node, returnReg, returnReg, -1);
       }
@@ -5523,7 +5523,7 @@ static TR::Register *inlineArrayCmpP10(TR::Node *node, TR::CodeGenerator *cg)
    // index = index + offset, if we need to return unmatched index, then we are done here
    generateTrg1Src2Instruction(cg, TR::InstOpCode::add, node, returnReg, indexReg, returnReg);
 
-   if (!node->isArrayCmpLen())
+   if (!isArrayCmpLen)
       {
       generateTrg1Src2Instruction(cg, TR::InstOpCode::lbzx, node, tempReg, returnReg, src1AddrReg);
       generateTrg1Src2Instruction(cg, TR::InstOpCode::lbzx, node, indexReg, returnReg, src2AddrReg);
@@ -5566,8 +5566,12 @@ static TR::Register *inlineArrayCmpP10(TR::Node *node, TR::CodeGenerator *cg)
 }
 
 
-static TR::Register *inlineArrayCmp(TR::Node *node, TR::CodeGenerator *cg)
+static TR::Register *inlineArrayCmp(TR::Node *node, TR::CodeGenerator *cg, bool isArrayCmpLen)
    {
+   static char *disableP10ArrayCmp = feGetEnv("TR_DisableP10ArrayCmp");
+   if (cg->comp()->target().cpu.isAtLeast(OMR_PROCESSOR_PPC_P10) && (disableP10ArrayCmp == NULL))
+      return inlineArrayCmpP10(node, cg, isArrayCmpLen);
+
    TR::Node *src1AddrNode = node->getChild(0);
    TR::Node *src2AddrNode = node->getChild(1);
    TR::Node *lengthNode = node->getChild(2);
@@ -5691,7 +5695,7 @@ static TR::Register *inlineArrayCmp(TR::Node *node, TR::CodeGenerator *cg)
 
    generateLabelInstruction(cg, TR::InstOpCode::label, node, resultLabel);
 
-   if (node->isArrayCmpLen())
+   if (isArrayCmpLen)
       generateTrg1Src2Instruction(cg, TR::InstOpCode::subf, node, ccReg, byteLenRemainingRegister, byteLenRegister);
    else
       {
@@ -5747,11 +5751,12 @@ static TR::Register *inlineArrayCmp(TR::Node *node, TR::CodeGenerator *cg)
 
 TR::Register *OMR::Power::TreeEvaluator::arraycmpEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   TR::Compilation *comp = cg->comp();
-   static char *disableP10ArrayCmp = feGetEnv("TR_DisableP10ArrayCmp");
-   if (cg->comp()->target().cpu.isAtLeast(OMR_PROCESSOR_PPC_P10) && !disableP10ArrayCmp)
-      return inlineArrayCmpP10(node, cg);
-   return inlineArrayCmp(node, cg);
+   return inlineArrayCmp(node, cg, false);
+   }
+
+TR::Register *OMR::Power::TreeEvaluator::arraycmplenEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+   {
+   return inlineArrayCmp(node, cg, true);
    }
 
 bool OMR::Power::TreeEvaluator::stopUsingCopyReg(

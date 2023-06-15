@@ -1136,8 +1136,17 @@ OMR::X86::TreeEvaluator::arraycmpEvaluator(
       TR::Node *node,
       TR::CodeGenerator *cg)
    {
-   return node->isArrayCmpLen() ? TR::TreeEvaluator::SSE2ArraycmpLenEvaluator(node, cg) : TR::TreeEvaluator::SSE2ArraycmpEvaluator(node, cg);
+   return TR::TreeEvaluator::SSE2ArraycmpEvaluator(node, cg);
    }
+
+TR::Register *
+OMR::X86::TreeEvaluator::arraycmplenEvaluator(
+      TR::Node *node,
+      TR::CodeGenerator *cg)
+   {
+   return TR::TreeEvaluator::SSE2ArraycmpLenEvaluator(node, cg);
+   }
+
 
 TR::Register *OMR::X86::TreeEvaluator::SSE2ArraycmpEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {

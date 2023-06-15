@@ -672,7 +672,6 @@ bool TR::DeadTreesElimination::fixUpTree(TR::Node *node, TR::TreeTop *treeTop, T
    // for arraycmp node, don't create its tree top anchor
    // fold it into if statment and save jump instruction
    if (node->getOpCodeValue() == TR::arraycmp &&
-      !node->isArrayCmpLen() &&
       comp()->target().cpu.isX86())
       {
       anchorArrayCmp = false;

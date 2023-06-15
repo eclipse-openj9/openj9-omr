@@ -1823,6 +1823,8 @@ bool TR_SinkStores::treeIsSinkableStore(TR::Node *node, bool sinkIndirectLoads, 
             {
             if (node->getOpCodeValue() == TR::arraycmp)
                traceMsg(comp(),"      *arraycmp is a call %d, raises exceptions %d*\n",node->getOpCode().isCall(),node->exceptionsRaised());
+            else if (node->getOpCodeValue() == TR::arraycmplen)
+               traceMsg(comp(),"      *arraycmplen is a call %d, raises exceptions %d*\n",node->getOpCode().isCall(),node->exceptionsRaised());
             else if (node->getOpCodeValue() == TR::arraycopy)
                traceMsg(comp(),"      *arraycopy is a call %d, raises exceptions %d*\n",node->getOpCode().isCall(),node->exceptionsRaised());
             traceMsg(comp(), "      *store is a call or an excepting node*\n");

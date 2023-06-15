@@ -351,7 +351,8 @@ OMR::SymbolReference::getUseDefAliasesBV(bool isDirectCall, bool includeGCSafePo
             return &symRefTab->aliasBuilder.defaultMethodDefAliases();
             }
 
-         if (symRefTab->isNonHelper(self(), TR::SymbolReferenceTable::arrayCmpSymbol))
+         if (symRefTab->isNonHelper(self(), TR::SymbolReferenceTable::arrayCmpSymbol) ||
+             symRefTab->isNonHelper(self(), TR::SymbolReferenceTable::arrayCmpLenSymbol))
             return 0;
 
          switch (self()->getReferenceNumber())

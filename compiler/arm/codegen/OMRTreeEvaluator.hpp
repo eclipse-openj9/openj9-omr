@@ -762,6 +762,7 @@ public:
    static TR::Register *arraytranslateAndTestEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *arraytranslateEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *arraycmpEvaluator(TR::Node *node, TR::CodeGenerator *cg);
+   static TR::Register *arraycmplenEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *BBStartEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *BBEndEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *commonLoadEvaluator(TR::Node *node, TR::InstOpCode::Mnemonic memoryToRegisterOp, int32_t memSize, TR::CodeGenerator *cg);

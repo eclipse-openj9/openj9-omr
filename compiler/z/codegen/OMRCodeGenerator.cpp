@@ -503,6 +503,7 @@ OMR::Z::CodeGenerator::initialize()
       cg->setSupportsArraySet();
       }
    cg->setSupportsArrayCmp();
+   cg->setSupportsArrayCmpLen();
    cg->setSupportsArrayCmpSign();
    if (!comp->compileRelocatableCode())
       {

@@ -558,11 +558,12 @@ public:
 
    bool isFunctionCall() const
       {
-      return isCall()                           &&
-             getOpCodeValue() != TR::arraycopy  &&
-             getOpCodeValue() != TR::arrayset   &&
-             getOpCodeValue() != TR::bitOpMem   &&
-             getOpCodeValue() != TR::arraycmp;
+      return isCall()                              &&
+             getOpCodeValue() != TR::arraycopy     &&
+             getOpCodeValue() != TR::arrayset      &&
+             getOpCodeValue() != TR::bitOpMem      &&
+             getOpCodeValue() != TR::arraycmp      &&
+             getOpCodeValue() != TR::arraycmplen;
       }
 
    bool isCompareDouble()
@@ -637,10 +638,11 @@ public:
 
    bool isMemToMemOp()
       {
-      return getOpCodeValue() == TR::bitOpMem ||
-             getOpCodeValue() == TR::arrayset ||
-             getOpCodeValue() == TR::arraycmp ||
-             getOpCodeValue() == TR::arraycopy;
+      return getOpCodeValue() == TR::bitOpMem      ||
+             getOpCodeValue() == TR::arrayset      ||
+             getOpCodeValue() == TR::arraycmp      ||
+             getOpCodeValue() == TR::arraycopy     ||
+             getOpCodeValue() == TR::arraycmplen;
       }
 
    static TR::ILOpCodes getDataTypeConversion(TR::DataType t1, TR::DataType t2);

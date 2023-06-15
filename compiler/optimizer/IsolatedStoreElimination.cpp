@@ -1628,6 +1628,7 @@ nodeHasSideEffect(TR::Node *node)
       {
       case TR::arrayset:
       case TR::arraycmp:
+      case TR::arraycmplen:
       case TR::arraytranslate:
       case TR::arraytranslateAndTest:
       case TR::long2String:

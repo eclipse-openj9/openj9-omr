@@ -3649,6 +3649,7 @@ OMR::Node::exceptionsRaised()
             possibleExceptions |= TR::Block:: CanCatchBoundCheck;
          break;
       case TR::arraycmp: // does not throw any exceptions
+      case TR::arraycmplen:
          break;
       case TR::checkcast:
          possibleExceptions |= TR::Block:: CanCatchCheckCast;
@@ -6109,28 +6110,6 @@ bool
 OMR::Node::chkTableBackedByRawStorage()
    {
    return self()->getOpCodeValue() == TR::arraytranslate && _flags.testAny(tableBackedByRawStorage);
-   }
-
-bool
-OMR::Node::isArrayCmpLen()
-   {
-   TR_ASSERT(self()->getOpCodeValue() == TR::arraycmp, "Opcode must be arraycmp");
-   return _flags.testAny(arrayCmpLen);
-   }
-
-void
-OMR::Node::setArrayCmpLen(bool v)
-   {
-   TR::Compilation *c = TR::comp();
-   TR_ASSERT(self()->getOpCodeValue() == TR::arraycmp, "Opcode must be arraycmp");
-   if (performNodeTransformation2(c, "O^O NODE FLAGS: Setting arrayCmpLen flag on node %p to %d\n", self(), v))
-      _flags.set(arrayCmpLen, v);
-   }
-
-bool
-OMR::Node::chkArrayCmpLen()
-   {
-   return self()->getOpCodeValue() == TR::arraycmp && _flags.testAny(arrayCmpLen);
    }
 
 bool

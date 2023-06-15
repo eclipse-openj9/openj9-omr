@@ -27,6 +27,7 @@
    arraySetSymbol,
    arrayCopySymbol,
    arrayCmpSymbol,
+   arrayCmpLenSymbol,
    prefetchSymbol,
 
    killsAllMethodSymbol,                           // A dummy method whose alias set includes all

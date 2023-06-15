@@ -611,6 +611,7 @@
 #define long2StringSimplifierHandler dftSimplifier
 #define bitOpMemSimplifierHandler bitOpMemSimplifier
 #define arraycmpSimplifierHandler dftSimplifier
+#define arraycmplenSimplifierHandler dftSimplifier
 #define allocationFenceSimplifierHandler dftSimplifier
 #define loadFenceSimplifierHandler dftSimplifier
 #define storeFenceSimplifierHandler dftSimplifier

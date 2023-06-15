@@ -1191,10 +1191,6 @@ public:
    bool chkTableBackedByRawStorage();
 
    // Flags used by TR::arraycmp
-   bool isArrayCmpLen();
-   void setArrayCmpLen(bool v);
-   bool chkArrayCmpLen();
-
    bool isArrayCmpSign();
    void setArrayCmpSign(bool v);
    bool chkArrayCmpSign();
@@ -1851,7 +1847,6 @@ protected:
       tableBackedByRawStorage               = 0x00008000,
 
       // Flags used by TR::arraycmp
-      arrayCmpLen                           = 0x00008000,
       arrayCmpSign                          = 0x00004000,
 
       // Flags used by TR::arraycopy

@@ -7201,7 +7201,25 @@ OPCODE_MACRO(\
    /* .reverseBranchOpCode  = */ TR::BadILOp, \
    /* .booleanCompareOpCode = */ TR::BadILOp, \
    /* .ifCompareOpCode      = */ TR::BadILOp, \
-   /* .description          =    Inline code for memory comparison of part of an array */ \
+   /* .description          =    Compare two blocks of memory and returning a lexical ordering constant. */ \
+   /*                            The constant indicates whether the first child is lesser, equal, or greater than the second child. */ \
+   /*                            When the arrayCmpSign flag is set, the lesser/equal/greater constants are -1/0/1, otherwise the constants are 1/0/2 */ \
+)
+OPCODE_MACRO(\
+   /* .opcode               = */ arraycmplen, \
+   /* .name                 = */ "arraycmplen", \
+   /* .properties1          = */ ILProp1::Call | ILProp1::HasSymbolRef, \
+   /* .properties2          = */ 0, \
+   /* .properties3          = */ ILProp3::LikeUse | ILProp3::LikeDef | ILProp3::SkipDynamicLitPoolOnInts, \
+   /* .properties4          = */ 0, \
+   /* .dataType             = */ TR::Int32, \
+   /* .typeProperties       = */ ILTypeProp::Size_4 | ILTypeProp::Integer, \
+   /* .childProperties      = */ THREE_CHILD(TR::Address, TR::Address, TR::Int32), \
+   /* .swapChildrenOpCode   = */ TR::BadILOp, \
+   /* .reverseBranchOpCode  = */ TR::BadILOp, \
+   /* .booleanCompareOpCode = */ TR::BadILOp, \
+   /* .ifCompareOpCode      = */ TR::BadILOp, \
+   /* .description          =    Compare two blocks of memory and returning the index of the first mismatched byte */ \
 )
 OPCODE_MACRO(\
    /* .opcode               = */ allocationFence, \

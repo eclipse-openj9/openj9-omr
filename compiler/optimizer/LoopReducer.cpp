@@ -4429,6 +4429,7 @@ TR_LoopReducer::perform()
       !comp()->cg()->getSupportsReferenceArrayCopy() &&
       !comp()->cg()->getSupportsPrimitiveArrayCopy() &&
       !comp()->cg()->getSupportsArrayCmp() &&
+      !comp()->cg()->getSupportsArrayCmpLen() &&
       !comp()->cg()->getSupportsArrayTranslateTRxx() &&
       !comp()->cg()->getSupportsArrayTranslateAndTest())
       {

@@ -708,6 +708,7 @@ class OMR_EXTENSIBLE TreeEvaluator: public OMR::TreeEvaluator
    static TR::Register *arraytranslateEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *arraytranslateAndTestEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *arraycmpEvaluator(TR::Node *node, TR::CodeGenerator *cg);
+   static TR::Register *arraycmplenEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *compareIntsForEquality(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *compareIntsForEquality(TR::InstOpCode::Mnemonic branchOp, TR::LabelSymbol *dstLabel, TR::Node *node,
                                               TR::CodeGenerator *cg, bool isHint=false, bool likeliness=false);

@@ -3029,6 +3029,13 @@ OMR::RV::TreeEvaluator::arraycmpEvaluator(TR::Node *node, TR::CodeGenerator *cg)
 	}
 
 TR::Register *
+OMR::RV::TreeEvaluator::arraycmplenEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+	{
+	// TODO:RV: Enable TR::TreeEvaluator::arraycmplenEvaluator in compiler/aarch64/codegen/TreeEvaluatorTable.hpp when Implemented.
+	return OMR::RV::TreeEvaluator::unImpOpEvaluator(node, cg);
+	}
+
+TR::Register *
 OMR::RV::TreeEvaluator::arraycopyEvaluator(TR::Node *node, TR::CodeGenerator *cg)
 	{
 	// TODO:RV: Enable TR::TreeEvaluator::arraycopyEvaluator in compiler/aarch64/codegen/TreeEvaluatorTable.hpp when Implemented.

@@ -181,6 +181,11 @@ OMR::ARM64::CodeGenerator::initialize()
          {
          cg->setSupportsArrayCmp();
          }
+      static const bool disableArrayCmpLen = feGetEnv("TR_aarch64DisableArrayCmpLen") != NULL;
+      if (!disableArrayCmpLen)
+         {
+         cg->setSupportsArrayCmpLen();
+         }
       }
       if (!comp->getOption(TR_DisableArraySetOpts))
          {

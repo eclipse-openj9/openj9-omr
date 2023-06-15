@@ -3612,6 +3612,12 @@ TR::Register *OMR::ARM::TreeEvaluator::arraycmpEvaluator(TR::Node *node, TR::Cod
    return NULL;
    }
 
+TR::Register *OMR::ARM::TreeEvaluator::arraycmplenEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+   {
+   TR_UNIMPLEMENTED();
+   return NULL;
+   }
+
 bool OMR::ARM::TreeEvaluator::stopUsingCopyReg(
       TR::Node* node,
       TR::Register*& reg,

@@ -1925,6 +1925,11 @@ MM_ParallelGlobalGC::reinitializeForRestore(MM_EnvironmentBase *env)
 	) {
 		rc = false;
 	}
+#if defined(OMR_GC_MODRON_SCAVENGER)
+	else if (_extensions->scavengerEnabled && (NULL != _extensions->scavenger)) {
+		rc = _extensions->scavenger->reinitializeForRestore(env);
+	}
+#endif /* defined(OMR_GC_MODRON_SCAVENGER) */
 
 	return rc;
 }

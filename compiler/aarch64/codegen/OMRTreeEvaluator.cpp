@@ -4952,7 +4952,7 @@ TR::Instruction *loadAddressConstantInSnippet(TR::CodeGenerator *cg, TR::Node *n
 
    if (isClassUnloadingConst)
       {
-      if (node->isMethodPointerConstant())
+      if (node->chkMethodPointerConstant())
          {
          cg->getMethodSnippetsToBePatchedOnClassUnload()->push_front(snippet);
          }

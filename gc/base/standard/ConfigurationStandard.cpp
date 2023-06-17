@@ -107,7 +107,7 @@ MM_GlobalCollector*
 MM_ConfigurationStandard::createCollectors(MM_EnvironmentBase* env)
 {
 #if defined(OMR_GC_MODRON_CONCURRENT_MARK) || defined(OMR_GC_MODRON_CONCCURENT_SWEEP)
-	MM_GCExtensionsBase *extensions = env->getExtensions();
+	MM_GCExtensionsBase* extensions = env->getExtensions();
 #endif /* OMR_GC_MODRON_CONCURRENT_MARK || OMR_GC_CONCURRENT_SWEEP */
 
 #if defined(OMR_GC_MODRON_CONCURRENT_MARK)
@@ -340,7 +340,9 @@ MM_ConfigurationStandard::reinitializeForRestore(MM_EnvironmentBase* env)
 {
 	MM_GCExtensionsBase* extensions = env->getExtensions();
 
-	MM_MemoryPool *memoryPool;
+	MM_Configuration::reinitializeForRestore(env);
+
+	MM_MemoryPool* memoryPool;
 	MM_HeapMemoryPoolIterator poolIterator(env, extensions->heap);
 
 	while (NULL != (memoryPool = poolIterator.nextPool())) {

@@ -109,10 +109,10 @@ public:
 	virtual MM_MemorySpace* createDefaultMemorySpace(MM_EnvironmentBase* env, MM_Heap* heap, MM_InitializationParameters* parameters) = 0;
 	MM_EnvironmentBase* createEnvironment(MM_GCExtensionsBase* extensions, OMR_VMThread* vmThread);
 	virtual J9Pool* createEnvironmentPool(MM_EnvironmentBase* env) = 0;
-	virtual MM_ParallelDispatcher* createParallelDispatcher(MM_EnvironmentBase *env, omrsig_handler_fn handler, void* handler_arg, uintptr_t defaultOSStackSize);
+	virtual MM_ParallelDispatcher* createParallelDispatcher(MM_EnvironmentBase* env, omrsig_handler_fn handler, void* handler_arg, uintptr_t defaultOSStackSize);
 
-	bool initializeHeapRegionDescriptor(MM_EnvironmentBase *env, MM_HeapRegionDescriptor *region) { return _delegate.initializeHeapRegionDescriptorExtension(env, region); }
-	void teardownHeapRegionDescriptor(MM_EnvironmentBase *env, MM_HeapRegionDescriptor *region) { _delegate.teardownHeapRegionDescriptorExtension(env, region); }
+	bool initializeHeapRegionDescriptor(MM_EnvironmentBase* env, MM_HeapRegionDescriptor* region) { return _delegate.initializeHeapRegionDescriptorExtension(env, region); }
+	void teardownHeapRegionDescriptor(MM_EnvironmentBase* env, MM_HeapRegionDescriptor* region) { _delegate.teardownHeapRegionDescriptorExtension(env, region); }
 
 	MMINLINE MM_GCWriteBarrierType getBarrierType() { return _writeBarrierType; }
 
@@ -134,7 +134,7 @@ public:
 	 * Delegated method to determine when to start tracking heap fragmentation, which should be inhibited
 	 * until the heap has grown to a stable operational size.
 	 */
-	MMINLINE bool canCollectFragmentationStats(MM_EnvironmentBase *env) { return _delegate.canCollectFragmentationStats(env); }
+	MMINLINE bool canCollectFragmentationStats(MM_EnvironmentBase* env) { return _delegate.canCollectFragmentationStats(env); }
 
 	/**
 	 * Called once during startup to indicate that the default memory space has been allocated.
@@ -178,11 +178,7 @@ public:
 	 * @param[in] env the current environment.
 	 * @return boolean indicating whether the configuration was successfully updated.
 	 */
-	virtual bool reinitializeForRestore(MM_EnvironmentBase* env)
-	{
-		Assert_MM_unreachable();
-		return false;
-	}
+	virtual bool reinitializeForRestore(MM_EnvironmentBase* env);
 #endif /* defined(J9VM_OPT_CRIU_SUPPORT) */
 
 	MM_Configuration(MM_EnvironmentBase* env, MM_GCPolicy gcPolicy, MM_AlignmentType alignmentType, uintptr_t defaultRegionSize, uintptr_t defaultArrayletLeafSize, MM_GCWriteBarrierType writeBarrierType, MM_GCAllocationType allocationType)

@@ -89,7 +89,7 @@ MM_Configuration::tearDown(MM_EnvironmentBase* env)
 	/* DefaultMemorySpace needs to be killed before
 	 * ext->heap is freed in MM_Configuration::tearDown. */
 	if (NULL != extensions->heap) {
-		MM_MemorySpace *modronMemorySpace = extensions->heap->getDefaultMemorySpace();
+		MM_MemorySpace* modronMemorySpace = extensions->heap->getDefaultMemorySpace();
 		if  (NULL != modronMemorySpace) {
 			modronMemorySpace->kill(env);
 		}
@@ -153,7 +153,7 @@ void
 MM_Configuration::destroyCollectors(MM_EnvironmentBase* env)
 {
 	MM_GCExtensionsBase* extensions = env->getExtensions();
-	MM_Collector *collector = extensions->getGlobalCollector();
+	MM_Collector* collector = extensions->getGlobalCollector();
 
 	if (NULL != collector) {
 		collector->kill(env);
@@ -279,7 +279,7 @@ bool
 MM_Configuration::initializeRunTimeObjectAlignmentAndCRShift(MM_EnvironmentBase* env, MM_Heap* heap)
 {
 	MM_GCExtensionsBase* extensions = env->getExtensions();
-	OMR_VM *omrVM = env->getOmrVM();
+	OMR_VM* omrVM = env->getOmrVM();
 
 #if defined(OMR_GC_COMPRESSED_POINTERS)
 	if (env->compressObjectReferences()) {
@@ -521,7 +521,31 @@ MM_Configuration::initializeNUMAManager(MM_EnvironmentBase* env)
 }
 
 MM_ParallelDispatcher *
-MM_Configuration::createParallelDispatcher(MM_EnvironmentBase *env, omrsig_handler_fn handler, void* handler_arg, uintptr_t defaultOSStackSize)
+MM_Configuration::createParallelDispatcher(MM_EnvironmentBase* env, omrsig_handler_fn handler, void* handler_arg, uintptr_t defaultOSStackSize)
 {
 	return MM_ParallelDispatcher::newInstance(env, handler, handler_arg, defaultOSStackSize);
 }
+
+#if defined(J9VM_OPT_CRIU_SUPPORT)
+bool
+MM_Configuration::reinitializeForRestore(MM_EnvironmentBase* env)
+{
+	MM_GCExtensionsBase* extensions = env->getExtensions();
+
+	/* The initialization of the GC thread count can only happen if it is not enforced by the user. */
+	initializeGCThreadCount(env);
+
+	/* Currently, threads don't shutdown during reinitialization, so it is important to
+	 * prevent the thread count from dropping below the number of checkpoint threads.
+	 * This adjustment may no longer be necessary in the future once the shutdown behavior
+	 * of dispatcher threads during restore is thoroughly tested.
+	 */
+	extensions->gcThreadCount = OMR_MAX(
+			extensions->dispatcher->threadCountMaximum(),
+			extensions->gcThreadCount);
+
+	initializeGCParameters(env);
+
+	return true;
+}
+#endif /* defined(J9VM_OPT_CRIU_SUPPORT) */

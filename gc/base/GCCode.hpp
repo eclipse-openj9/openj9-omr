@@ -46,7 +46,7 @@ public:
 	
 	/**
 	 * Determine if the GC is implicit or explicit (i.e. triggered externally).
-	 * @return true if the gc code indicates an explicit GC
+	 * @return true if the GC code indicates an explicit GC
 	 */
 	bool isExplicitGC() const;
 	
@@ -58,10 +58,16 @@ public:
 	
 	/**
 	 * Determine if the GC should be aggressive.
-	 * @return true if the gc code indicates an aggressive GC
+	 * @return true if the GC code indicates an aggressive GC
 	 */
 	bool isAggressiveGC() const;
 	
+	/**
+	 * Determine if the GC is implicit aggressive.
+	 * @return true if the GC code indicates an implicit aggressive GC
+	 */
+	bool isImplicitAggressiveGC() const;
+
 	/**
 	 * Determine if it is a percolate GC call.
 	 * @return true if it is a percolate call

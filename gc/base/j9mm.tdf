@@ -1016,3 +1016,6 @@ TraceEvent=Trc_MM_ParallelDispatcher_contractThreadPool_Success noEnv Overhead=1
 TraceExit=Trc_MM_ParallelDispatcher_contractThreadPool_Exit noEnv Overhead=1 Level=1 Group=dispatcher Template="contractThreadPool Exit: gcThreadCount: %zu"
 
 TraceException=Trc_MM_ParallelDispatcher_internalStartupThreads_Failed noEnv Overhead=1 Level=1 Group=dispatcher Template="Failed to startup threads: workerThreadCount: %zu, maxWorkerThreadIndex: %zu, _threadShutdownCount: %zu"
+
+TraceExit=Trc_MM_MemorySubSpaceUniSpace_timeForHeapContract_Exit8 Overhead=1 Level=1 Group=resize Template="MM_MemorySubSpace_timeForHeapContract Exit8 Heap cannot contract in implicit aggressive GC"
+TraceExit=Trc_MM_MemorySubSpaceUniSpace_timeForHeapContract_Exit9 Overhead=1 Level=1 Group=resize Template="MM_MemorySubSpace_timeForHeapContract Exit9 Contraction required due to SoftMX request, size = %zu bytes"

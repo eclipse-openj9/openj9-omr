@@ -357,6 +357,7 @@ void TR_LocalReordering::moveStoresEarlierIfRhsAnchored(TR::Block *block, TR::Tr
        !node->getOpCode().isTreeTop() &&
        !node->getOpCode().isCall() &&
        (node->getOpCodeValue() != TR::New) &&
+       (node->getOpCodeValue() != TR::newvalue) &&
        (node->getOpCodeValue() != TR::newarray) &&
        (node->getOpCodeValue() != TR::anewarray) &&
        (node->getOpCodeValue() != TR::multianewarray) &&

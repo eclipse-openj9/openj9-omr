@@ -35,13 +35,13 @@
 #include <sys/time.h>
 #include "omrport.h"
 
-#if defined(OSX)
+#if defined(OSX) || defined(LINUX)
 /* Frequency is nanoseconds / second */
 #define OMRTIME_HIRES_CLOCK_FREQUENCY J9CONST_U64(1000000000)
-#else /* defined(OSX) */
+#else /* defined(OSX) || defined(LINUX) */
 /* Frequency is microseconds / second */
 #define OMRTIME_HIRES_CLOCK_FREQUENCY J9CONST_U64(1000000)
-#endif /* defined(OSX) */
+#endif /* defined(OSX) || defined(LINUX) */
 
 #define OMRTIME_NANOSECONDS_PER_SECOND J9CONST_I64(1000000000)
 
@@ -161,7 +161,14 @@ omrtime_hires_clock(struct OMRPortLibrary *portLibrary)
 {
 #if defined(OSX)
 	return clock_gettime_nsec_np(CLOCK_MONOTONIC_RAW);
-#else /* defined(OSX) */
+#elif defined(LINUX) /* defined(OSX) */
+	uint64_t ret = 0;
+	struct timespec ts;
+	if (0 == clock_gettime(CLOCK_MONOTONIC_RAW, &ts)) {
+		ret = ((uint64_t)ts.tv_sec * OMRTIME_NANOSECONDS_PER_SECOND) + (uint64_t)ts.tv_nsec;
+	}
+	return ret;
+#else /* defined(LINUX) */
 	struct timeval tp;
 
 	gettimeofday(&tp, NULL);

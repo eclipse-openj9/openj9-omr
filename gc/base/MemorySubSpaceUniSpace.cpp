@@ -257,17 +257,23 @@ MM_MemorySubSpaceUniSpace::timeForHeapContract(MM_EnvironmentBase *env, MM_Alloc
 		return false;
 	}
 
-	/* Don't shrink if we have not met the allocation request
-	 * ..we will be expanding soon if possible anyway
+	/* Don't shrink if this is implicit aggressive GC or we have not met the allocation request,
+	 * we will be expanding soon if possible anyway
 	 */
 	if (allocDescription) {
+		if (env->_cycleState->_gcCode.isImplicitAggressiveGC()) {
+			_contractionSize = 0;
+			Trc_MM_MemorySubSpaceUniSpace_timeForHeapContract_Exit8(env->getLanguageVMThread());
+			return false;
+		}
+
 		/* MS in allocDescription may be NULL so get from env */
 		MM_MemorySpace *memorySpace = env->getMemorySpace();
 		uintptr_t largestFreeChunk = memorySpace->findLargestFreeEntry(env, allocDescription);
 
 		if (allocDescription->getBytesRequested() > largestFreeChunk) {
-			Trc_MM_MemorySubSpaceUniSpace_timeForHeapContract_Exit4(env->getLanguageVMThread(), allocDescription->getBytesRequested(), largestFreeChunk);
 			_contractionSize = 0;
+			Trc_MM_MemorySubSpaceUniSpace_timeForHeapContract_Exit4(env->getLanguageVMThread(), allocDescription->getBytesRequested(), largestFreeChunk);
 			return false;
 		}
 	}
@@ -282,6 +288,7 @@ MM_MemorySubSpaceUniSpace::timeForHeapContract(MM_EnvironmentBase *env, MM_Alloc
 			/* the softmx is less than the currentsize so we're going to attempt an aggressive contract */
 			_contractionSize = activeMemorySize - actualSoftMx;
 			_extensions->heap->getResizeStats()->setLastContractReason(SOFT_MX_CONTRACT);
+			Trc_MM_MemorySubSpaceUniSpace_timeForHeapContract_Exit9(env->getLanguageVMThread(), _contractionSize);
 			return true;
 		}
 	}
@@ -315,8 +322,8 @@ MM_MemorySubSpaceUniSpace::timeForHeapContract(MM_EnvironmentBase *env, MM_Alloc
 		gcCount = _extensions->globalGCStats.gcCount;
 #endif /* defined(OMR_GC_MODRON_STANDARD) || defined(OMR_GC_REALTIME) */
 		if (_extensions->heap->getResizeStats()->getLastHeapExpansionGCCount() + _extensions->heapContractionStabilizationCount > gcCount) {
-			Trc_MM_MemorySubSpaceUniSpace_timeForHeapContract_Exit5(env->getLanguageVMThread());
 			_contractionSize = 0;
+			Trc_MM_MemorySubSpaceUniSpace_timeForHeapContract_Exit5(env->getLanguageVMThread());
 			return false;	
 		}	
 	} else {
@@ -333,8 +340,8 @@ MM_MemorySubSpaceUniSpace::timeForHeapContract(MM_EnvironmentBase *env, MM_Alloc
 		uintptr_t freeBytesAtSystemGCStart = _extensions->heap->getResizeStats()->getFreeBytesAtSystemGCStart();
 		
 		if (freeBytesAtSystemGCStart < minimumFree) {
-	 		Trc_MM_MemorySubSpaceUniSpace_timeForHeapContract_Exit6(env->getLanguageVMThread(), freeBytesAtSystemGCStart, minimumFree);
 			_contractionSize = 0;
+			Trc_MM_MemorySubSpaceUniSpace_timeForHeapContract_Exit6(env->getLanguageVMThread(), freeBytesAtSystemGCStart, minimumFree);
 	 		return false;	
 		}	
 	 }	

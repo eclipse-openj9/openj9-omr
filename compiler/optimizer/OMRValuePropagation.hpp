@@ -367,14 +367,27 @@ class ValuePropagation : public TR::Optimization
    TR_YesNoMaybe isCastClassObject(TR::VPClassType *type);
 
    /**
-    * Determine whether the component type of an array is, or might be, a value
+    * Determine whether the component type of an array is, or might be, a primitive value
     * type.
     * \param arrayConstraint The \ref TR::VPConstraint type constraint for the array reference
-    * \return \c TR_yes if the array's component type is definitely a value type;\n
-    *         \c TR_no if it is definitely not a value type; or\n
-    *         \c TR_maybe otherwise.
+    * \returns \c TR_yes if the array's component type is definitely a primitive value type;\n
+    *          \c TR_no if it is definitely not a primitive value type; or\n
+    *          \c TR_maybe otherwise.
     */
-   virtual TR_YesNoMaybe isArrayCompTypeValueType(TR::VPConstraint *arrayConstraint);
+   virtual TR_YesNoMaybe isArrayCompTypePrimitiveValueType(TR::VPConstraint *arrayConstraint);
+
+   /**
+    * \brief
+    *    Determines whether the array element is, or might be, flattened.
+    *
+    * \param arrayConstraint
+    *    The \ref TR::VPConstraint type constraint for the array reference.
+    *
+    * \returns \c TR_yes if the array element is flattened;\n
+    *          \c TR_no if it is definitely not flattened; or\n
+    *          \c TR_maybe otherwise.
+    */
+   virtual TR_YesNoMaybe isArrayElementFlattened(TR::VPConstraint *arrayConstraint);
 
    /**
     * Determine whether assignment of the supplied object reference to an element of the
@@ -599,6 +612,29 @@ class ValuePropagation : public TR::Optimization
       TR::SymbolReference *_arraycopySymRef;
       };
 
+   struct TR_NeedRuntimeTestNullRestrictedArrayCopy
+     {
+     TR_ALLOC(TR_Memory::ValuePropagation)
+
+     TR_NeedRuntimeTestNullRestrictedArrayCopy(TR::Node *dstArrRef, TR::Node *srcArrRef,
+                                               TR::TreeTop *ptt, TR::TreeTop *ntt,
+                                               TR::Block *originBlock, TR::Block *slowBlock,
+                                               bool testDstArray)
+        : _dstArrayRefNode(dstArrRef),  _srcArrayRefNode(srcArrRef), _prevTT(ptt), _nextTT(ntt), _originBlock(originBlock), _slowBlock(slowBlock), _needRuntimeTestDstArray(testDstArray)
+        {}
+
+     TR::Node *_dstArrayRefNode;
+     TR::Node *_srcArrayRefNode;
+
+     TR::TreeTop *_prevTT;
+     TR::TreeTop *_nextTT;
+
+     TR::Block *_originBlock;
+     TR::Block *_slowBlock;
+
+     bool _needRuntimeTestDstArray;
+     };
+
    TR::TreeTop *createPrimitiveOrReferenceCompareNode(TR::Node *);
    TR::TreeTop *createArrayStoreCompareNode(TR::Node *, TR::Node *);
 
@@ -662,6 +698,8 @@ class ValuePropagation : public TR::Optimization
 
 #ifdef J9_PROJECT_SPECIFIC
    void transformRTMultiLeafArrayCopy(TR_RealTimeArrayCopy *rtArrayCopyTree);
+
+   void transformNullRestrictedArrayCopy(TR_NeedRuntimeTestNullRestrictedArrayCopy *nullRestrictedArrayCopyTree);
 #endif
 
    TR::TreeTop *buildSameLeafTest(TR::Node *offset,TR::Node *len,TR::Node *spineShiftNode);
@@ -952,6 +990,7 @@ class ValuePropagation : public TR::Optimization
    List<TR_TreeTopWrtBarFlag> _referenceArrayCopyTrees;
    List<TR_RealTimeArrayCopy> _needRunTimeCheckArrayCopy;
    List<TR_RealTimeArrayCopy> _needMultiLeafArrayCopy;
+   List<TR_NeedRuntimeTestNullRestrictedArrayCopy> _needRuntimeTestNullRestrictedArrayCopy;
    List<TR_ArrayCopySpineCheck> _arrayCopySpineCheck;
    List<TR::TreeTop> _multiLeafCallsToInline;
    List<TR_TreeTopNodePair> _scalarizedArrayCopies;

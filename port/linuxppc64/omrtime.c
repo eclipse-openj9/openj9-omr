@@ -165,14 +165,16 @@ omrtime_nano_time(struct OMRPortLibrary *portLibrary)
 uint64_t
 omrtime_hires_clock(struct OMRPortLibrary *portLibrary)
 {
-	struct timeval tp;
-
+	uint64_t ret = 0;
 	if (systemcfgP_nanos) {
-		return __getNanos();
+		ret = __getNanos();
+	} else {
+		struct timespec ts;
+		if (0 == clock_gettime(CLOCK_MONOTONIC_RAW, &ts)) {
+			ret = ((uint64_t)ts.tv_sec * OMRTIME_NANOSECONDS_PER_SECOND) + (uint64_t)ts.tv_nsec;
+		}
 	}
-
-	gettimeofday(&tp, NULL);
-	return ((int64_t)tp.tv_sec) * OMRTIME_HIRES_CLOCK_FREQUENCY + tp.tv_usec * (OMRTIME_HIRES_CLOCK_FREQUENCY / 1000000);
+	return ret;
 }
 /**
  * Query OS for clock frequency

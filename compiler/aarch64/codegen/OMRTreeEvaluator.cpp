@@ -4627,28 +4627,150 @@ OMR::ARM64::TreeEvaluator::vmnolzEvaluator(TR::Node *node, TR::CodeGenerator *cg
    return inlineVectorMaskedUnaryOp(node, cg, clzOp, evaluatorHelper);
    }
 
+/**
+ * @brief Helper function for vector bit swap
+ *
+ * @param[in] node: node
+ * @param[in] resultReg: the result register
+ * @param[in] srcReg: the argument register
+ * @param[in] cg: CodeGenerator
+ * @return the result register
+ */
+static TR::Register *
+vectorBitSwapHelper(TR::Node *node, TR::Register *resultReg, TR::Register *srcReg, TR::CodeGenerator *cg)
+   {
+   TR::VectorOperation vectorOp = node->getOpCode().getVectorOperation();
+   TR::DataType elementType = node->getDataType().getVectorElementType();
+   TR_ASSERT_FATAL_WITH_NODE(node, (vectorOp == TR::vbitswap) || (vectorOp == TR::vmbitswap),
+                                   "opcode must be vector bitswap");
+   /* We do not expect elementType = TR::Int8 here. */
+   TR_ASSERT_FATAL_WITH_NODE(node, (elementType >= TR::Int16) && (elementType <= TR::Int64), "elementType must be integer");
+   const TR::InstOpCode::Mnemonic revOp = (elementType == TR::Int16) ? TR::InstOpCode::vrev16_16b :
+                                          (elementType == TR::Int32) ? TR::InstOpCode::vrev32_16b : TR::InstOpCode::vrev64_16b;
+
+   /* Reverses bit order in each element. */
+   generateTrg1Src1Instruction(cg, TR::InstOpCode::vrbit16b, node, resultReg, srcReg);
+   generateTrg1Src1Instruction(cg, revOp, node, resultReg, resultReg);
+
+   return resultReg;
+   }
+
 TR::Register*
 OMR::ARM64::TreeEvaluator::vbitswapEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   return TR::TreeEvaluator::unImpOpEvaluator(node, cg);
+   TR_ASSERT_FATAL_WITH_NODE(node, node->getDataType().getVectorLength() == TR::VectorLength128,
+                   "Only 128-bit vectors are supported %s", node->getDataType().toString());
+
+   TR::InstOpCode::Mnemonic bitSwapOp = TR::InstOpCode::bad;
+   unaryEvaluatorHelper evaluatorHelper = NULL;
+   switch(node->getDataType().getVectorElementType())
+      {
+      case TR::Int8:
+         bitSwapOp = TR::InstOpCode::vrbit16b;
+         break;
+      case TR::Int16:
+      case TR::Int32:
+      case TR::Int64:
+         evaluatorHelper = vectorBitSwapHelper;
+         break;
+      default:
+         TR_ASSERT_FATAL_WITH_NODE(node, false, "unrecognized vector type %s", node->getDataType().toString());
+         return NULL;
+      }
+   return inlineVectorUnaryOp(node, cg, bitSwapOp, evaluatorHelper);
    }
 
 TR::Register*
 OMR::ARM64::TreeEvaluator::vmbitswapEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   return TR::TreeEvaluator::unImpOpEvaluator(node, cg);
+   TR_ASSERT_FATAL_WITH_NODE(node, node->getDataType().getVectorLength() == TR::VectorLength128,
+                   "Only 128-bit vectors are supported %s", node->getDataType().toString());
+
+   TR::InstOpCode::Mnemonic bitSwapOp = TR::InstOpCode::bad;
+   unaryEvaluatorHelper evaluatorHelper = NULL;
+   switch(node->getDataType().getVectorElementType())
+      {
+      case TR::Int8:
+         bitSwapOp = TR::InstOpCode::vrbit16b;
+         break;
+      case TR::Int16:
+      case TR::Int32:
+      case TR::Int64:
+         evaluatorHelper = vectorBitSwapHelper;
+         break;
+      default:
+         TR_ASSERT_FATAL_WITH_NODE(node, false, "unrecognized vector type %s", node->getDataType().toString());
+         return NULL;
+      }
+   return inlineVectorMaskedUnaryOp(node, cg, bitSwapOp, evaluatorHelper);
    }
 
 TR::Register*
 OMR::ARM64::TreeEvaluator::vbyteswapEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   return TR::TreeEvaluator::unImpOpEvaluator(node, cg);
+   TR_ASSERT_FATAL_WITH_NODE(node, node->getDataType().getVectorLength() == TR::VectorLength128,
+                   "Only 128-bit vectors are supported %s", node->getDataType().toString());
+
+   TR::InstOpCode::Mnemonic byteSwapOp = TR::InstOpCode::bad;
+   switch(node->getDataType().getVectorElementType())
+      {
+      case TR::Int8:
+         {
+         /* byteswap on vectors with byte elements is no-op */
+         TR::Register *reg = cg->evaluate(node->getFirstChild());
+         node->setRegister(reg);
+         cg->decReferenceCount(node->getFirstChild());
+         return reg;
+         }
+      case TR::Int16:
+         byteSwapOp = TR::InstOpCode::vrev16_16b;
+         break;
+      case TR::Int32:
+         byteSwapOp = TR::InstOpCode::vrev32_16b;
+         break;
+      case TR::Int64:
+         byteSwapOp = TR::InstOpCode::vrev64_16b;
+         break;
+      default:
+         TR_ASSERT_FATAL_WITH_NODE(node, false, "unrecognized vector type %s", node->getDataType().toString());
+         return NULL;
+      }
+      return inlineVectorUnaryOp(node, cg, byteSwapOp);
    }
 
 TR::Register*
 OMR::ARM64::TreeEvaluator::vmbyteswapEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   return TR::TreeEvaluator::unImpOpEvaluator(node, cg);
+   TR_ASSERT_FATAL_WITH_NODE(node, node->getDataType().getVectorLength() == TR::VectorLength128,
+                   "Only 128-bit vectors are supported %s", node->getDataType().toString());
+
+   TR::InstOpCode::Mnemonic byteSwapOp = TR::InstOpCode::bad;
+   switch(node->getDataType().getVectorElementType())
+      {
+      case TR::Int8:
+         {
+         /* byteswap on vectors with byte elements is no-op */
+         TR::Register *reg = cg->evaluate(node->getFirstChild());
+         cg->evaluate(node->getSecondChild());
+         node->setRegister(reg);
+         cg->decReferenceCount(node->getFirstChild());
+         cg->decReferenceCount(node->getSecondChild());
+         return reg;
+         }
+      case TR::Int16:
+         byteSwapOp = TR::InstOpCode::vrev16_16b;
+         break;
+      case TR::Int32:
+         byteSwapOp = TR::InstOpCode::vrev32_16b;
+         break;
+      case TR::Int64:
+         byteSwapOp = TR::InstOpCode::vrev64_16b;
+         break;
+      default:
+         TR_ASSERT_FATAL_WITH_NODE(node, false, "unrecognized vector type %s", node->getDataType().toString());
+         return NULL;
+      }
+      return inlineVectorMaskedUnaryOp(node, cg, byteSwapOp);
    }
 
 TR::Register*

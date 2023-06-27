@@ -2483,7 +2483,7 @@ TR::X86RegInstruction  *OMR::X86::TreeEvaluator::generateRegisterShift(TR::Node 
       intptr_t shiftAmount = TR::TreeEvaluator::integerConstNodeValue(secondChild, cg) & TR::TreeEvaluator::shiftMask(nodeIs64Bit);
       if (shiftAmount == 0)
          {
-         targetRegister = cg->evaluate(firstChild);
+         targetRegister = TR::TreeEvaluator::intOrLongClobberEvaluate(firstChild, (SHIFT_MAY_HAVE_ADDRESS_CHILD) ? TR::TreeEvaluator::getNodeIs64Bit(firstChild, cg) : nodeIs64Bit, cg);
          }
       else
          {

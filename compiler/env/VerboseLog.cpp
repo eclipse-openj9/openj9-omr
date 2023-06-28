@@ -125,3 +125,13 @@ void TR_VerboseLog::initialize(void *config)
    {
    _config = config;
    }
+
+// This is never called. It's just a place to put static_assert() where
+// definitions in this file are available (for e.g. array initializers) and
+// where private members of TR_VerboseLog are also visible.
+void TR_VerboseLog::privateStaticAsserts()
+   {
+   static_assert(
+      sizeof(_vlogTable) / sizeof(_vlogTable[0]) == TR_Vlog_numTags,
+      "TR_VlogTag and _vlogTable are out of sync");
+   }

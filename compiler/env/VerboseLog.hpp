@@ -120,7 +120,11 @@ class TR_VerboseLog
 
    //only called once early on, after we can print to the vlog
    static void initialize(void *config);
+
    private:
+
+   static void privateStaticAsserts();
+
    static void vwrite(const char *format, va_list args); //defined in each front end
    static void writeTimeStamp();
    static const char *_vlogTable[];

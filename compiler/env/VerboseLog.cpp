@@ -63,6 +63,7 @@ const char * TR_VerboseLog::_vlogTable[] =
    "#PROFILING: ",
    "#JITServer: ",
    "#AOTCOMPRESSION: ",
+   "#BenefitInliner: ",
    "#FSD: ",
    "#VECTOR API: ",
    "#CHECKPOINT RESTORE: ",

@@ -9046,6 +9046,8 @@ TR::Node *ldivSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
       firstChild = node->getFirstChild();
       secondChild = node->getSecondChild();
       if ((firstChild->getOpCodeValue() == TR::i2l) && (secondChild->getOpCodeValue() == TR::i2l) &&
+          // Make sure the generated idiv won't be able to overflow
+          (firstChild->isNonNegative() || secondChild->isNonNegative()) &&
           performTransformation(s->comp(), "%sReduced ldiv [%p] of two i2l children to i2l of idiv \n", s->optDetailString(), node))
          {
          TR::TreeTop *curTree = s->_curTree;

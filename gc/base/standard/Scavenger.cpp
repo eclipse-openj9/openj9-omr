@@ -3288,7 +3288,7 @@ MM_Scavenger::getFreeCache(MM_EnvironmentStandard *env)
 	if (NULL == cache) {
 		env->_scavengerStats._scanCacheOverflow = 1;
 		OMRPORT_ACCESS_FROM_OMRPORT(env->getPortLibrary());
-		uint64_t duration = omrtime_current_time_millis();
+		uint64_t duration = omrtime_hires_clock();
 
 		bool resizePerformed = false;
 		omrthread_monitor_enter(_freeCacheMonitor);
@@ -3305,7 +3305,7 @@ MM_Scavenger::getFreeCache(MM_EnvironmentStandard *env)
 			/* Still need a new cache and nothing left reserved - create it in Heap */
 			cache = createCacheInHeap(env);
 		}
-		duration = omrtime_current_time_millis() - duration;
+		duration = omrtime_hires_clock() - duration;
 		env->_scavengerStats._scanCacheAllocationDurationDuringSavenger += duration;
 
 	}

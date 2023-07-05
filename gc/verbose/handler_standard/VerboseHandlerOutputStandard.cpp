@@ -275,7 +275,7 @@ MM_VerboseHandlerOutputStandard::handleGCOPStanza(MM_EnvironmentBase* env, const
 	}
 
 	char tagTemplate[200];
-	getTagTemplate(tagTemplate, sizeof(tagTemplate), manager->getIdAndIncrement(), type ,contextID, duration, omrtime_current_time_millis());
+	getTagTemplate(tagTemplate, sizeof(tagTemplate), manager->getIdAndIncrement(), type ,contextID, duration, omrtime_hires_clock());
 	writer->formatAndOutput(env, 0, "<gc-op %s />", tagTemplate);
 	writer->flush(env);
 }
@@ -502,7 +502,7 @@ MM_VerboseHandlerOutputStandard::handleScavengePercolate(J9HookInterface** hook,
 	MM_VerboseWriterChain* writer = manager->getWriterChain();
 
 	char tagTemplate[200];
-	getTagTemplate(tagTemplate, sizeof(tagTemplate), omrtime_current_time_millis());
+	getTagTemplate(tagTemplate, sizeof(tagTemplate), omrtime_hires_clock());
 	enterAtomicReportingBlock();
 	writer->formatAndOutput(env, 0, "<percolate-collect id=\"%zu\" from=\"%s\" to=\"%s\" reason=\"%s\" %s/>", manager->getIdAndIncrement(), "nursery", "global", getPercolateReasonAsString((PercolateReason)event->reason), tagTemplate);
 	writer->flush(env);
@@ -664,7 +664,7 @@ MM_VerboseHandlerOutputStandard::handleConcurrentKickoff(J9HookInterface** hook,
 	OMRPORT_ACCESS_FROM_ENVIRONMENT(env);
 	char tagTemplate[200];
 	enterAtomicReportingBlock();
-	getTagTemplate(tagTemplate, sizeof(tagTemplate), manager->getIdAndIncrement(), omrtime_current_time_millis());
+	getTagTemplate(tagTemplate, sizeof(tagTemplate), manager->getIdAndIncrement(), omrtime_hires_clock());
 	writer->formatAndOutput(env, 0, "<concurrent-kickoff %s>", tagTemplate);
 
 	const char* reasonString = getConcurrentKickoffReason(eventData);
@@ -726,7 +726,7 @@ MM_VerboseHandlerOutputStandard::handleConcurrentHalted(J9HookInterface** hook, 
 
 	char tagTemplate[200];
 	enterAtomicReportingBlock();
-	getTagTemplate(tagTemplate, sizeof(tagTemplate), manager->getIdAndIncrement(), omrtime_current_time_millis());
+	getTagTemplate(tagTemplate, sizeof(tagTemplate), manager->getIdAndIncrement(), omrtime_hires_clock());
 	writer->formatAndOutput(env, 0, "<concurrent-halted %s>", tagTemplate);
 
 	handleConcurrentHaltedInternal(env, eventData);
@@ -787,7 +787,7 @@ MM_VerboseHandlerOutputStandard::handleConcurrentCollectionStart(J9HookInterface
 
 	char tagTemplate[200];
 	enterAtomicReportingBlock();
-	getTagTemplate(tagTemplate, sizeof(tagTemplate), manager->getIdAndIncrement(), event->contextid, omrtime_current_time_millis());
+	getTagTemplate(tagTemplate, sizeof(tagTemplate), manager->getIdAndIncrement(), event->contextid, omrtime_hires_clock());
 	writer->formatAndOutput(env, 0, "<concurrent-global-final %s intervalms=\"%llu.%03llu\" >",
 		tagTemplate, deltaTime / 1000, deltaTime % 1000);
 	handleConcurrentCollectionStartInternal(env, eventData);
@@ -826,7 +826,7 @@ MM_VerboseHandlerOutputStandard::handleConcurrentAborted(J9HookInterface** hook,
 	OMRPORT_ACCESS_FROM_ENVIRONMENT(env);
 	char tagTemplate[100];
 	enterAtomicReportingBlock();
-	getTagTemplate(tagTemplate, sizeof(tagTemplate), manager->getIdAndIncrement(), omrtime_current_time_millis());
+	getTagTemplate(tagTemplate, sizeof(tagTemplate), manager->getIdAndIncrement(), omrtime_hires_clock());
 	writer->formatAndOutput(env, 0, "<concurrent-aborted %s>", tagTemplate);
 
 	const char* reason;

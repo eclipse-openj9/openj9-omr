@@ -118,7 +118,7 @@ MM_VerboseWriterFileLogging::initializeTokens(MM_EnvironmentBase *env)
 	OMRPORT_ACCESS_FROM_OMRPORT(env->getPortLibrary());
 	char pidBuffer[64];
 	
-	_tokens = omrstr_create_tokens(omrtime_current_time_millis());
+	_tokens = omrstr_create_tokens(omrtime_hires_clock());
 	if (_tokens == NULL) {
 		return false;
 	}

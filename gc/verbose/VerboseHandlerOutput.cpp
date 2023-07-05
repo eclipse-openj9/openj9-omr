@@ -291,7 +291,7 @@ MM_VerboseHandlerOutput::outputInitializedStanza(MM_EnvironmentBase *env, MM_Ver
 
 	OMRPORT_ACCESS_FROM_OMRPORT(env->getPortLibrary());
 	Assert_MM_true(_manager->getInitializedTime() != 0);
-	getTagTemplate(tagTemplate, sizeof(tagTemplate), _manager->getIdAndIncrement(), omrtime_current_time_millis());
+	getTagTemplate(tagTemplate, sizeof(tagTemplate), _manager->getIdAndIncrement(), omrtime_hires_clock());
 
 	buffer->formatAndOutput(env, 0, "<initialized %s>", tagTemplate);
 	buffer->formatAndOutput(env, 1, "<attribute name=\"gcPolicy\" value=\"%s\" />", _extensions->gcModeString);
@@ -476,7 +476,7 @@ MM_VerboseHandlerOutput::handleCycleStart(J9HookInterface** hook, uintptr_t even
 	char tagTemplate[200];
 	uintptr_t id = _manager->getIdAndIncrement();
 	env->_cycleState->_verboseContextID = id;
-	getTagTemplate(tagTemplate, sizeof(tagTemplate), id, cycleType, 0 /* Needs context id */, omrtime_current_time_millis());
+	getTagTemplate(tagTemplate, sizeof(tagTemplate), id, cycleType, 0 /* Needs context id */, omrtime_hires_clock());
 
 	enterAtomicReportingBlock();
 	if (!deltaTimeSuccess) {
@@ -504,7 +504,7 @@ MM_VerboseHandlerOutput::handleCycleContinue(J9HookInterface** hook, uintptr_t e
 	const char* newCycleType = getCurrentCycleType(env);
 	const char* oldCycleType = getCycleType(event->oldCycleType);
 	char tagTemplate[200];
-	getTagTemplateWithOldType(tagTemplate, sizeof(tagTemplate), _manager->getIdAndIncrement(), oldCycleType, newCycleType, env->_cycleState->_verboseContextID, omrtime_current_time_millis());
+	getTagTemplateWithOldType(tagTemplate, sizeof(tagTemplate), _manager->getIdAndIncrement(), oldCycleType, newCycleType, env->_cycleState->_verboseContextID, omrtime_hires_clock());
 
 	enterAtomicReportingBlock();
 	writer->formatAndOutput(env, 0, "<cycle-continue %s />", tagTemplate);
@@ -523,7 +523,7 @@ MM_VerboseHandlerOutput::handleCycleEnd(J9HookInterface** hook, uintptr_t eventN
 	const char* cycleType = getCurrentCycleType(env);
 	char tagTemplate[200];
 	char fixupTagTemplate[100];
-	getTagTemplate(tagTemplate, sizeof(tagTemplate), _manager->getIdAndIncrement(), cycleType, env->_cycleState->_verboseContextID, omrtime_current_time_millis());
+	getTagTemplate(tagTemplate, sizeof(tagTemplate), _manager->getIdAndIncrement(), cycleType, env->_cycleState->_verboseContextID, omrtime_hires_clock());
 
 	enterAtomicReportingBlock();
 	if(hasCycleEndInnerStanzas()) {
@@ -536,7 +536,7 @@ MM_VerboseHandlerOutput::handleCycleEnd(J9HookInterface** hook, uintptr_t eventN
 
 	if ((OMR_GC_CYCLE_TYPE_GLOBAL == event->cycleType) && (FIXUP_NONE != event->fixHeapForWalkReason)) {
 		uint64_t fixupDuration = event->fixHeapForWalkTime;
-		getTagTemplate(fixupTagTemplate, sizeof(fixupTagTemplate), omrtime_current_time_millis());
+		getTagTemplate(fixupTagTemplate, sizeof(fixupTagTemplate), omrtime_hires_clock());
 		writer->formatAndOutput(env, 0, "<heap-fixup timems=\"%llu.%03llu\" reason=\"%s\"  %s />", fixupDuration / 1000, fixupDuration % 1000, getHeapFixupReasonString(event->fixHeapForWalkReason), fixupTagTemplate);
 	}
 
@@ -598,7 +598,7 @@ MM_VerboseHandlerOutput::handleExclusiveStart(J9HookInterface** hook, uintptr_t 
 	getThreadName(escapedLastResponderName,sizeof(escapedLastResponderName),lastResponder);
 
 	char tagTemplate[200];
-	getTagTemplate(tagTemplate, sizeof(tagTemplate), manager->getIdAndIncrement(), omrtime_current_time_millis());
+	getTagTemplate(tagTemplate, sizeof(tagTemplate), manager->getIdAndIncrement(), omrtime_hires_clock());
 	enterAtomicReportingBlock();
 	if (!deltaTimeSuccess) {
 		writer->formatAndOutput(env, 0, "<warning details=\"clock error detected, following timing may be inaccurate\" />");
@@ -627,7 +627,7 @@ MM_VerboseHandlerOutput::handleExclusiveEnd(J9HookInterface** hook, uintptr_t ev
 
 
 	char tagTemplate[200];
-	getTagTemplate(tagTemplate, sizeof(tagTemplate), manager->getIdAndIncrement(), omrtime_current_time_millis());
+	getTagTemplate(tagTemplate, sizeof(tagTemplate), manager->getIdAndIncrement(), omrtime_hires_clock());
 	enterAtomicReportingBlock();
 	if (!deltaTimeSuccess) {
 		writer->formatAndOutput(env, 0, "<warning details=\"clock error detected, following timing may be inaccurate\" />");
@@ -658,7 +658,7 @@ MM_VerboseHandlerOutput::handleSystemGCStart(J9HookInterface** hook, uintptr_t e
 
 	manager->setLastSystemGCTime(currentTime);
 	char tagTemplate[200];
-	getTagTemplate(tagTemplate, sizeof(tagTemplate), manager->getIdAndIncrement(), omrtime_current_time_millis());
+	getTagTemplate(tagTemplate, sizeof(tagTemplate), manager->getIdAndIncrement(), omrtime_hires_clock());
 	enterAtomicReportingBlock();
 	if (!deltaTimeSuccess) {
 		writer->formatAndOutput(env, 0, "<warning details=\"clock error detected, following timing may be inaccurate\" />");
@@ -677,7 +677,7 @@ MM_VerboseHandlerOutput::handleSystemGCEnd(J9HookInterface** hook, uintptr_t eve
 	MM_EnvironmentBase* env = MM_EnvironmentBase::getEnvironment(event->currentThread);
 	OMRPORT_ACCESS_FROM_ENVIRONMENT(env);
 	char tagTemplate[200];
-	getTagTemplate(tagTemplate, sizeof(tagTemplate), manager->getIdAndIncrement(), omrtime_current_time_millis());
+	getTagTemplate(tagTemplate, sizeof(tagTemplate), manager->getIdAndIncrement(), omrtime_hires_clock());
 	enterAtomicReportingBlock();
 	writer->formatAndOutput(env, 0, "<sys-end %s />", tagTemplate);
 	writer->flush(env);
@@ -714,7 +714,7 @@ MM_VerboseHandlerOutput::handleAllocationFailureStart(J9HookInterface** hook, ui
 	bool deltaTimeSuccess = getTimeDeltaInMicroSeconds(&deltaTime, previousTime, currentTime);
 
 	char tagTemplate[200];
-	getTagTemplate(tagTemplate, sizeof(tagTemplate), omrtime_current_time_millis());
+	getTagTemplate(tagTemplate, sizeof(tagTemplate), omrtime_hires_clock());
 	enterAtomicReportingBlock();
 	if (!deltaTimeSuccess) {
 		writer->formatAndOutput(env, 0, "<warning details=\"clock error detected, following timing may be inaccurate\" />");
@@ -746,7 +746,7 @@ MM_VerboseHandlerOutput::handleFailedAllocationCompleted(J9HookInterface** hook,
 	OMRPORT_ACCESS_FROM_ENVIRONMENT(env);
 	char tagTemplate[200];
 	enterAtomicReportingBlock();
-	getTagTemplate(tagTemplate, sizeof(tagTemplate), omrtime_current_time_millis());
+	getTagTemplate(tagTemplate, sizeof(tagTemplate), omrtime_hires_clock());
 	uintptr_t id = manager->getIdAndIncrement();
 	uintptr_t bytesRequested = event->bytesRequested;
 	if (TRUE == event->succeeded) {
@@ -768,7 +768,7 @@ MM_VerboseHandlerOutput::handleAllocationFailureEnd(J9HookInterface** hook, uint
 	MM_EnvironmentBase* env = MM_EnvironmentBase::getEnvironment(event->currentThread);
 	OMRPORT_ACCESS_FROM_ENVIRONMENT(env);
 	char tagTemplate[200];
-	getTagTemplate(tagTemplate, sizeof(tagTemplate), manager->getIdAndIncrement(), omrtime_current_time_millis());
+	getTagTemplate(tagTemplate, sizeof(tagTemplate), manager->getIdAndIncrement(), omrtime_hires_clock());
 
 	const bool succeeded = allocDescription->getAllocationSucceeded();
 	const char *successString = succeeded? "true" : "false";
@@ -804,7 +804,7 @@ MM_VerboseHandlerOutput::handleAcquiredExclusiveToSatisfyAllocation(J9HookInterf
 	uintptr_t indentLevel = _manager->getIndentLevel();
 
 	char tagTemplate[200];
-	getTagTemplate(tagTemplate, sizeof(tagTemplate), _manager->getIdAndIncrement(), omrtime_current_time_millis());
+	getTagTemplate(tagTemplate, sizeof(tagTemplate), _manager->getIdAndIncrement(), omrtime_hires_clock());
 	enterAtomicReportingBlock();
 	writer->formatAndOutput(env, indentLevel, "<event %s>", tagTemplate);
 	writer->formatAndOutput(env, indentLevel + 1, "<warning details=\"exclusive access acquired to satisfy allocation\" />");
@@ -910,7 +910,7 @@ MM_VerboseHandlerOutput::handleGCStart(J9HookInterface** hook, uintptr_t eventNu
 	MM_CollectionStatistics *stats = (MM_CollectionStatistics *)event->stats;
 	OMRPORT_ACCESS_FROM_ENVIRONMENT(env);
 	char tagTemplate[200];
-	getTagTemplate(tagTemplate, sizeof(tagTemplate), _manager->getIdAndIncrement(), getCurrentCycleType(env), env->_cycleState->_verboseContextID, omrtime_current_time_millis());
+	getTagTemplate(tagTemplate, sizeof(tagTemplate), _manager->getIdAndIncrement(), getCurrentCycleType(env), env->_cycleState->_verboseContextID, omrtime_hires_clock());
 
 	enterAtomicReportingBlock();
 	writer->formatAndOutput(env, 0, "<gc-start %s>", tagTemplate);
@@ -950,7 +950,7 @@ MM_VerboseHandlerOutput::handleGCEnd(J9HookInterface** hook, uintptr_t eventNum,
 	getTagTemplateWithDuration(	tagTemplate, sizeof(tagTemplate), _manager->getIdAndIncrement(),
 								getCurrentCycleType(env), env->_cycleState->_verboseContextID,
 								durationInMicroseconds, userTimeInMicroseconds, systemTimeInMicroseconds,
-								omrtime_current_time_millis(), stallTimeInMicroseconds);
+								omrtime_hires_clock(), stallTimeInMicroseconds);
 								
 	uintptr_t activeThreads = env->getExtensions()->dispatcher->activeThreadCount();
 
@@ -974,7 +974,7 @@ MM_VerboseHandlerOutput::handleConcurrentStart(J9HookInterface** hook, UDATA eve
 	OMRPORT_ACCESS_FROM_ENVIRONMENT(env);
 	UDATA contextId = stats->_cycleID;
 	char tagTemplate[200];
-	getTagTemplate(tagTemplate, sizeof(tagTemplate), _manager->getIdAndIncrement(), getConcurrentTypeString(stats->_concurrentCycleType), contextId, omrtime_current_time_millis());
+	getTagTemplate(tagTemplate, sizeof(tagTemplate), _manager->getIdAndIncrement(), getConcurrentTypeString(stats->_concurrentCycleType), contextId, omrtime_hires_clock());
 
 	enterAtomicReportingBlock();
 	writer->formatAndOutput(env, 0, "<concurrent-start %s>", tagTemplate);
@@ -995,7 +995,7 @@ MM_VerboseHandlerOutput::handleConcurrentEnd(J9HookInterface** hook, UDATA event
 	UDATA contextId = stats->_cycleID;
 	char tagTemplate[200];
 	const char* reasonForTermination = getConcurrentTerminationReason(stats);
-	getTagTemplate(tagTemplate, sizeof(tagTemplate), _manager->getIdAndIncrement(), getConcurrentTypeString(stats->_concurrentCycleType), contextId, omrtime_current_time_millis(), reasonForTermination);
+	getTagTemplate(tagTemplate, sizeof(tagTemplate), _manager->getIdAndIncrement(), getConcurrentTypeString(stats->_concurrentCycleType), contextId, omrtime_hires_clock(), reasonForTermination);
 
 	enterAtomicReportingBlock();
 	writer->formatAndOutput(env, 0, "<concurrent-end %s>", tagTemplate);
@@ -1057,7 +1057,7 @@ MM_VerboseHandlerOutput::outputHeapResizeInfo(MM_EnvironmentBase *env, uintptr_t
 		reasonString = "unknown";
 	}
 
-	getTagTemplate(tagTemplate, sizeof(tagTemplate), omrtime_current_time_millis());
+	getTagTemplate(tagTemplate, sizeof(tagTemplate), omrtime_hires_clock());
 
 	writer->formatAndOutput(env, indent, "<heap-resize id=\"%zu\" type=\"%s\" space=\"%s\" amount=\"%zu\" count=\"%zu\" timems=\"%llu.%03llu\" reason=\"%s\" %s />", id, resizeTypeName, getSubSpaceType(subSpaceType), resizeAmount, resizeCount, timeInMicroSeconds / 1000, timeInMicroSeconds % 1000, reasonString, tagTemplate);
 	writer->flush(env);
@@ -1083,7 +1083,7 @@ MM_VerboseHandlerOutput::outputCollectorHeapResizeInfo(MM_EnvironmentBase *env, 
 		reasonString = "unknown";
 	}
 
-	getTagTemplate(tagTemplate, sizeof(tagTemplate), omrtime_current_time_millis());
+	getTagTemplate(tagTemplate, sizeof(tagTemplate), omrtime_hires_clock());
 
 	writer->formatAndOutput(env, indent, "<heap-resize type=\"%s\" space=\"%s\" amount=\"%zu\" count=\"%zu\" timems=\"%llu.%03llu\" reason=\"%s\" />", resizeTypeName, getSubSpaceType(subSpaceType), resizeAmount, resizeCount, timeInMicroSeconds / 1000, timeInMicroSeconds % 1000, reasonString);
 }
@@ -1105,7 +1105,7 @@ MM_VerboseHandlerOutput::handleExcessiveGCRaised(J9HookInterface** hook, uintptr
 	uintptr_t indentLevel = _manager->getIndentLevel();
 
 	char tagTemplate[200];
-	getTagTemplate(tagTemplate, sizeof(tagTemplate), _manager->getIdAndIncrement(), omrtime_current_time_millis());
+	getTagTemplate(tagTemplate, sizeof(tagTemplate), _manager->getIdAndIncrement(), omrtime_hires_clock());
 	enterAtomicReportingBlock();
 	writer->formatAndOutput(env, indentLevel, "<event %s>", tagTemplate);
 
@@ -1178,7 +1178,7 @@ MM_VerboseHandlerOutput::handleGCOPOuterStanzaStart(MM_EnvironmentBase* env, con
 	}
 
 	char tagTemplate[200];
-	getTagTemplate(tagTemplate, sizeof(tagTemplate), manager->getIdAndIncrement(), type ,contextID, duration, omrtime_current_time_millis());
+	getTagTemplate(tagTemplate, sizeof(tagTemplate), manager->getIdAndIncrement(), type ,contextID, duration, omrtime_hires_clock());
 	writer->formatAndOutput(env, 0, "<gc-op %s>", tagTemplate);
 }
 

@@ -2650,8 +2650,9 @@ static bool isMaskThenShiftRightCandidate(TR::CodeGenerator *cg, TR::Node *node,
 
    // If the operation is signed, then the mask must clear the sign bit. If the sign bit is not
    // cleared, then a rotate and mask instruction would not correctly bring in the sign bit when
-   // shifting.
-   if (!isUnsigned && (mask & (1LL << (operandBits - 1))) != 0)
+   // shifting. If shiftAmount is 0, it is also okay if the mask does not clear the sign bit since
+   // the value will not get shifted.
+   if (!(isUnsigned || (0 == shiftAmount)) && (mask & (1LL << (operandBits - 1))) != 0)
       return false;
 
    // When using an rldicl instruction (for 64-bit operands), the mask must be entirely confined to
@@ -2668,6 +2669,7 @@ static TR::Register *integerShiftRight(TR::Node *node, uint32_t operandSize, boo
    uint64_t operandMask = operandBits == 64 ? 0xffffffffffffffffULL : ((1ULL << operandBits) - 1);
 
    TR::Register *trg = cg->allocateRegister();
+   bool decRefGrandchildren = false;
 
    if (node->getSecondChild()->getOpCode().isLoadConst())
       {
@@ -2683,30 +2685,123 @@ static TR::Register *integerShiftRight(TR::Node *node, uint32_t operandSize, boo
       // shift operations together using the rlwinm or rldicl instructions.
       if (isMaskThenShiftRightCandidate(cg, node, operandBits, rhs, isUnsigned))
          {
-         TR::Register *lhs = cg->evaluate(node->getFirstChild()->getFirstChild());
+         TR::Node *lhsNode = node->getFirstChild()->getFirstChild();
+         TR::Register *lhs = cg->evaluate(lhsNode);
          uint64_t mask = (operandMask & node->getFirstChild()->getSecondChild()->get64bitIntegralValueAsUnsigned()) >> rhs;
 
          if (mask == 0)
+            {
             generateTrg1ImmInstruction(cg, TR::InstOpCode::li, node, trg, 0);
+            }
          else if (operandSize > 4)
-            generateTrg1Src1Imm2Instruction(cg, TR::InstOpCode::rldicl, node, trg, lhs, (64 - rhs), mask);
+            {
+            if ((0 != rhs) || (mask != operandMask))
+               {
+               generateTrg1Src1Imm2Instruction(cg, TR::InstOpCode::rldicl, node, trg, lhs, (64 - rhs) % 64, mask);
+               }
+            else if (!cg->canClobberNodesRegister(lhsNode))
+               {
+               /*
+                * If the shift amount is 0 and the mask covers the entire value, the input value does not change.
+                * As such, it can just be passed on.
+                */
+               generateTrg1Src1Instruction(cg, TR::InstOpCode::mr, node, trg, lhs);
+               }
+            else
+               {
+               /*
+                * If the shift amount is 0 and the mask covers the entire value, the input value does not change.
+                * As such, it can just be passed on.
+                * Also, the source register can be clobbered so the source can be passed on in the same register.
+                */
+               cg->stopUsingRegister(trg);
+               trg = lhs;
+               }
+            }
          else
-            generateTrg1Src1Imm2Instruction(cg, TR::InstOpCode::rlwinm, node, trg, lhs, (32 - rhs), mask);
+            {
+            if ((0 != rhs) || (mask != operandMask))
+               {
+               generateTrg1Src1Imm2Instruction(cg, TR::InstOpCode::rlwinm, node, trg, lhs, (32 - rhs) % 32, mask);
+               }
+            else if (!cg->canClobberNodesRegister(lhsNode))
+               {
+               /*
+                * If the shift amount is 0 and the mask covers the entire value, the input value does not change.
+                * As such, it can just be passed on.
+                */
+               generateTrg1Src1Instruction(cg, TR::InstOpCode::mr, node, trg, lhs);
+               }
+            else
+               {
+               /*
+                * If the shift amount is 0 and the mask covers the entire value, the input value does not change.
+                * As such, it can just be passed on.
+                * Also, the source register can be clobbered so the source can be passed on in the same register.
+                */
+               cg->stopUsingRegister(trg);
+               trg = lhs;
+               }
+            }
 
-         cg->decReferenceCount(node->getFirstChild()->getFirstChild());
-         cg->decReferenceCount(node->getFirstChild()->getSecondChild());
+         decRefGrandchildren = true;
          }
-      else if (isUnsigned)
+      else if (isUnsigned || (0 == rhs))
          {
-         TR::Register *lhs = cg->evaluate(node->getFirstChild());
+         TR::Node *lhsNode = node->getFirstChild();
+         TR::Register *lhs = cg->evaluate(lhsNode);
          uint64_t mask = operandMask >> rhs;
 
          if (mask == 0)
+            {
             generateTrg1ImmInstruction(cg, TR::InstOpCode::li, node, trg, 0);
+            }
          else if (operandSize > 4)
-            generateTrg1Src1Imm2Instruction(cg, TR::InstOpCode::rldicl, node, trg, lhs, (64 - rhs), mask);
+            {
+            if (0 != rhs)
+               {
+               generateTrg1Src1Imm2Instruction(cg, TR::InstOpCode::rldicl, node, trg, lhs, (64 - rhs) % 64, mask);
+               }
+            else if (!cg->canClobberNodesRegister(lhsNode))
+               {
+               /*
+                * If the shift amount is 0, the input value does not change. As such, it can just be passed on.
+                */
+               generateTrg1Src1Instruction(cg, TR::InstOpCode::mr, node, trg, lhs);
+               }
+            else
+               {
+               /*
+                * If the shift amount is 0, the input value does not change. As such, it can just be passed on.
+                * Also, the source register can be clobbered so the source can be passed on in the same register.
+                */
+               cg->stopUsingRegister(trg);
+               trg = lhs;
+               }
+            }
          else
-            generateTrg1Src1Imm2Instruction(cg, TR::InstOpCode::rlwinm, node, trg, lhs, (32 - rhs), mask);
+            {
+            if (0 != rhs)
+               {
+               generateTrg1Src1Imm2Instruction(cg, TR::InstOpCode::rlwinm, node, trg, lhs, (32 - rhs) % 32, mask);
+               }
+            else if (!cg->canClobberNodesRegister(lhsNode))
+               {
+               /*
+                * If the shift amount is 0, the input value does not change. As such, it can just be passed on.
+                */
+               generateTrg1Src1Instruction(cg, TR::InstOpCode::mr, node, trg, lhs);
+               }
+            else
+               {
+               /*
+                * If the shift amount is 0, the input value does not change. As such, it can just be passed on.
+                * Also, the source register can be clobbered so the source can be passed on in the same register.
+                */
+               cg->stopUsingRegister(trg);
+               trg = lhs;
+               }
+            }
          }
       else
          {
@@ -2758,6 +2853,12 @@ static TR::Register *integerShiftRight(TR::Node *node, uint32_t operandSize, boo
       }
 
    node->setRegister(trg);
+
+   if (decRefGrandchildren)
+      {
+      cg->decReferenceCount(node->getFirstChild()->getFirstChild());
+      cg->decReferenceCount(node->getFirstChild()->getSecondChild());
+      }
    cg->decReferenceCount(node->getFirstChild());
    cg->decReferenceCount(node->getSecondChild());
 

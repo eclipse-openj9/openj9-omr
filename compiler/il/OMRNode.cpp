@@ -3821,7 +3821,7 @@ OMR::Node::createStoresForVar(TR::SymbolReference * &nodeRef, TR::TreeTop *inser
       }
 
    if (isInternalPointer &&
-       (self()->getOpCode().isArrayRef() || self()->isDataAddrPointer())&&
+       self()->getOpCode().isArrayRef() &&
        (comp->getSymRefTab()->getNumInternalPointers() >= (comp->maxInternalPointers()/2) ||
         comp->cg()->supportsComplexAddressing()) &&
        (self()->getReferenceCount() == 1))
@@ -3833,7 +3833,7 @@ OMR::Node::createStoresForVar(TR::SymbolReference * &nodeRef, TR::TreeTop *inser
       TR::Node *intOrLongNode = NULL;
 
 
-      if ( (!firstChild->getOpCode().isArrayRef() || self()->isDataAddrPointer()) &&
+      if (!firstChild->getOpCode().isArrayRef() &&
           !firstChild->isInternalPointer()  /* &&
              (!firstChild->getOpCode().isLoadVarDirect() ||
               !firstChild->getSymbolReference()->getSymbol()->isAuto()) */)
@@ -3888,7 +3888,7 @@ OMR::Node::createStoresForVar(TR::SymbolReference * &nodeRef, TR::TreeTop *inser
       if (isInternalPointer)
          {
          TR::AutomaticSymbol *pinningArray = NULL;
-         if (self()->getOpCode().isArrayRef() || self()->isDataAddrPointer())
+         if (self()->getOpCode().isArrayRef())
             {
             child = self()->getFirstChild();
             if (child->isInternalPointer() && !child->isDataAddrPointer())

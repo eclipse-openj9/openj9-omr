@@ -4501,6 +4501,10 @@ vectorRotateHelper(TR::Node *node, TR::Register *resultReg, TR::Register *lhsReg
    TR::DataType elementType = node->getDataType().getVectorElementType();
    TR_ASSERT_FATAL_WITH_NODE(node, (elementType >= TR::Int8) && (elementType <= TR::Int64), "elementType must be integer");
    TR::Register *tempReg = cg->allocateRegister(TR_VRF);
+   TR::Register *temp2Reg = cg->allocateRegister(TR_VRF);
+   TR::Register *temp3Reg = cg->allocateRegister(TR_VRF);
+   TR::InstOpCode::Mnemonic cmpOp = static_cast<TR::InstOpCode::Mnemonic>(TR::InstOpCode::vcmlt16b_zero + (elementType - TR::Int8));
+   TR::InstOpCode::Mnemonic addOp = static_cast<TR::InstOpCode::Mnemonic>(TR::InstOpCode::vadd16b + (elementType - TR::Int8));
    TR::InstOpCode::Mnemonic negOp = static_cast<TR::InstOpCode::Mnemonic>(TR::InstOpCode::vneg16b + (elementType - TR::Int8));
    TR::InstOpCode::Mnemonic shiftOp = static_cast<TR::InstOpCode::Mnemonic>(TR::InstOpCode::vushl16b + (elementType - TR::Int8));
    TR::InstOpCode::Mnemonic subOp = static_cast<TR::InstOpCode::Mnemonic>(TR::InstOpCode::vsub16b + (elementType - TR::Int8));
@@ -4522,13 +4526,26 @@ vectorRotateHelper(TR::Node *node, TR::Register *resultReg, TR::Register *lhsReg
       generateTrg1ImmInstruction(cg, movOp, node, tempReg, sizeInBits);
       }
 
-   /* (lhs << rhs) || (lhs >>> (sizeInBits - rhs)) */
-   generateTrg1Src2Instruction(cg, subOp, node, tempReg, rhsReg, tempReg);
-   generateTrg1Src2Instruction(cg, shiftOp, node, resultReg, lhsReg, rhsReg);
-   generateTrg1Src2Instruction(cg, shiftOp, node, tempReg, lhsReg, tempReg);
+   /*
+    * cmlt_zero temp2Reg, rhsReg
+    * add       temp3Reg, rhsReg, tempReg     ; rhs + sizeInBits
+    * bif       temp3Reg, rhsReg, temp2Reg    ; leftShitAmount = (rhs < 0) ? (rhs + sizeInBits) : rhs
+    * sub       temp2Reg, temp3Reg, tempReg
+    * ushl      resultReg, lhsReg, temp3Reg
+    * ushl      tempReg, lhsReg, temp2Reg
+    * orr       resultReg, resultReg, tempReg ; (lhs << leftShitAmount) || (lhs >>> (sizeInBits - leftShitAmount))
+    */
+   generateTrg1Src1Instruction(cg, cmpOp, node, temp2Reg, rhsReg);
+   generateTrg1Src2Instruction(cg, addOp, node, temp3Reg, rhsReg, tempReg);
+   generateTrg1Src2Instruction(cg, TR::InstOpCode::vbif16b, node, temp3Reg, rhsReg, temp2Reg);
+   generateTrg1Src2Instruction(cg, subOp, node, temp2Reg, temp3Reg, tempReg);
+   generateTrg1Src2Instruction(cg, shiftOp, node, resultReg, lhsReg, temp3Reg);
+   generateTrg1Src2Instruction(cg, shiftOp, node, tempReg, lhsReg, temp2Reg);
    generateTrg1Src2Instruction(cg, TR::InstOpCode::vorr16b, node, resultReg, resultReg, tempReg);
 
    cg->stopUsingRegister(tempReg);
+   cg->stopUsingRegister(temp2Reg);
+   cg->stopUsingRegister(temp3Reg);
 
    return resultReg;
    }

@@ -23,11 +23,6 @@
 #include "thread_api.h"
 #include "threadExtendedTestHelpers.hpp"
 
-#if defined(OSX) && defined(OMR_ARCH_AARCH64)
-/* See OMR Issue #6774 */
-#define TestOtherThreadCputime DISABLED_TestOtherThreadCputime
-#endif /* defined(OSX) && defined(OMR_ARCH_AARCH64) */
-
 #define NUM_ITERATIONS	50
 
 #define LONG_MILLI_TIMEOUT	900000

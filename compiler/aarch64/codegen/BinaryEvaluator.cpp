@@ -1568,7 +1568,7 @@ static TR::Register *shiftHelper(TR::Node *node, TR::ARM64ShiftCode shiftType, T
    TR::Node *secondChild = node->getSecondChild();
    TR::ILOpCodes secondOp = secondChild->getOpCodeValue();
    TR::Register *srcReg = cg->evaluate(firstChild);
-   TR::Register *trgReg = cg->allocateRegister();
+   TR::Register *trgReg = NULL;
    bool is64bit = node->getDataType().isInt64();
    const uint32_t operandBits = TR::DataType::getSize(node->getDataType()) * 8;
 
@@ -1577,37 +1577,48 @@ static TR::Register *shiftHelper(TR::Node *node, TR::ARM64ShiftCode shiftType, T
    if (secondOp == TR::iconst)
       {
       int32_t value = secondChild->getInt();
-      uint32_t shift = is64bit ? (value & 0x3F) : (value & 0x1F);
-      TR::Register *shiftSrcReg = srcReg;
-      switch (shiftType)
+      if (value == 0 && firstChild->getReferenceCount() == 1)
          {
-         case TR::SH_LSL:
-            generateLogicalShiftLeftImmInstruction(cg, node, trgReg, shiftSrcReg, shift, is64bit);
-            break;
-         case TR::SH_LSR:
-            if (operandBits < 32)
-               {
-               generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::ubfmw, node, trgReg, srcReg, operandBits - 1); // uxth or uxtb
-               shiftSrcReg = trgReg;
-               }
-            generateLogicalShiftRightImmInstruction(cg, node, trgReg, shiftSrcReg, shift, is64bit);
-            break;
-         case TR::SH_ASR:
-            if (operandBits < 32)
-               {
-               generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::sbfmw, node, trgReg, srcReg, operandBits - 1); // sxth or sxtb
-               shiftSrcReg = trgReg;
-               }
-            generateArithmeticShiftRightImmInstruction(cg, node, trgReg, shiftSrcReg, shift, is64bit);
-            break;
-         default:
-            TR_ASSERT(false, "Unsupported shift type.");
+         trgReg = srcReg;
+         }
+      else
+         {
+         uint32_t shift = is64bit ? (value & 0x3F) : (value & 0x1F);
+         TR::Register *shiftSrcReg = srcReg;
+         trgReg = cg->allocateRegister();
+
+         switch (shiftType)
+            {
+            case TR::SH_LSL:
+               generateLogicalShiftLeftImmInstruction(cg, node, trgReg, shiftSrcReg, shift, is64bit);
+               break;
+            case TR::SH_LSR:
+               if (operandBits < 32)
+                  {
+                  generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::ubfmw, node, trgReg, srcReg, operandBits - 1); // uxth or uxtb
+                  shiftSrcReg = trgReg;
+                  }
+               generateLogicalShiftRightImmInstruction(cg, node, trgReg, shiftSrcReg, shift, is64bit);
+               break;
+            case TR::SH_ASR:
+               if (operandBits < 32)
+                  {
+                  generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::sbfmw, node, trgReg, srcReg, operandBits - 1); // sxth or sxtb
+                  shiftSrcReg = trgReg;
+                  }
+               generateArithmeticShiftRightImmInstruction(cg, node, trgReg, shiftSrcReg, shift, is64bit);
+               break;
+            default:
+               TR_ASSERT(false, "Unsupported shift type.");
+            }
          }
       }
    else
       {
       TR::Register *shiftAmountReg = cg->evaluate(secondChild);
       TR::Register *shiftSrcReg = srcReg;
+      trgReg = cg->allocateRegister();
+
       switch (shiftType)
          {
          case TR::SH_LSL:

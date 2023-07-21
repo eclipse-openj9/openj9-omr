@@ -669,11 +669,11 @@ TEST(PortSysinfoTest, sysinfo_test_sysinfo_set_limit_ADDRESS_SPACE)
 	uint64_t originalCurLimit;
 	uint64_t originalMaxLimit;
 	uint64_t currentLimit;
-#if defined(OSX) && defined(OMR_ARCH_AARCH64)
+#if defined(OSX)
 	const uint64_t as1 = 420000000000;
-#else /* defined(OSX) && defined(OMR_ARCH_AARCH64) */
+#else /* defined(OSX) */
 	const uint64_t as1 = 300000;
-#endif /* defined(OSX) && defined(OMR_ARCH_AARCH64) */
+#endif /* defined(OSX) */
 
 	reportTestEntry(OMRPORTLIB, testName);
 

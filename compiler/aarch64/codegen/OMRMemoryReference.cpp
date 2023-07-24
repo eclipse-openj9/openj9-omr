@@ -65,6 +65,7 @@ static void loadRelocatableConstant(TR::Node *node,
                                     TR::CodeGenerator *cg)
    {
    TR::Compilation *comp = cg->comp();
+   TR_ASSERT_FATAL(!ref->isUnresolved(), "Symbol Reference (%p) must be resolved", ref);
 
    TR::Symbol *symbol = ref->getSymbol();
    bool isStatic = symbol->isStatic();
@@ -85,41 +86,33 @@ static void loadRelocatableConstant(TR::Node *node,
       return;
       }
 
-   if (ref->isUnresolved() || comp->compileRelocatableCode())
-      {
-      TR::Node *GCRnode = node;
-      if (!GCRnode)
-         GCRnode = cg->getCurrentEvaluationTreeTop()->getNode();
+   TR::Node *GCRnode = node;
+   if (!GCRnode)
+      GCRnode = cg->getCurrentEvaluationTreeTop()->getNode();
 
-      if (symbol->isCountForRecompile())
-         {
-         loadAddressConstant(cg, GCRnode, TR_CountForRecompile, reg, NULL, false, TR_GlobalValue);
-         }
-      else if (symbol->isRecompilationCounter())
-         {
-         loadAddressConstant(cg, GCRnode, 1, reg, NULL, false, TR_BodyInfoAddressLoad);
-         }
-      else if (symbol->isCatchBlockCounter())
-         {
-         loadAddressConstant(cg, GCRnode, 1, reg, NULL, false, TR_CatchBlockCounter);
-         }
-      else if (symbol->isCompiledMethod())
-         {
-         loadAddressConstant(cg, GCRnode, 1, reg, NULL, false, TR_RamMethodSequence);
-         }
-      else if (isStaticField && !ref->isUnresolved())
-         {
-         loadAddressConstant(cg, GCRnode, 1, reg, NULL, false, TR_DataAddress);
-         }
-      else if (isClass && !ref->isUnresolved())
-         {
-         loadAddressConstant(cg, GCRnode, (intptr_t)ref, reg, NULL, false, TR_ClassAddress);
-         }
-      else
-         {
-         mr->setUnresolvedSnippet(new (cg->trHeapMemory()) TR::UnresolvedDataSnippet(cg, node, ref, node->getOpCode().isStore(), false));
-         cg->addSnippet(mr->getUnresolvedSnippet());
-         }
+   if (symbol->isCountForRecompile() && cg->needRelocationsForPersistentInfoData())
+      {
+      loadAddressConstant(cg, true, GCRnode, TR_CountForRecompile, reg, NULL, TR_GlobalValue);
+      }
+   else if (symbol->isRecompilationCounter() && cg->needRelocationsForBodyInfoData())
+      {
+      loadAddressConstant(cg, true, GCRnode, 1, reg, NULL, TR_BodyInfoAddressLoad);
+      }
+   else if (symbol->isCatchBlockCounter() && cg->needRelocationsForBodyInfoData())
+      {
+      loadAddressConstant(cg, true, GCRnode, 1, reg, NULL, TR_CatchBlockCounter);
+      }
+   else if (symbol->isCompiledMethod() && cg->needRelocationsForCurrentMethodPC())
+      {
+      loadAddressConstant(cg, true, GCRnode, 1, reg, NULL, TR_RamMethodSequence);
+      }
+   else if (isStaticField && !ref->isUnresolved() && cg->needRelocationsForStatics())
+      {
+      loadAddressConstant(cg, true, GCRnode, 1, reg, NULL, TR_DataAddress);
+      }
+   else if (isClass && !ref->isUnresolved() && cg->needClassAndMethodPointerRelocations())
+      {
+      loadAddressConstant(cg, true, GCRnode, (intptr_t)ref, reg, NULL, TR_ClassAddress);
       }
    else
       {

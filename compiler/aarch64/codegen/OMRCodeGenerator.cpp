@@ -865,7 +865,7 @@ TR::Instruction *OMR::ARM64::CodeGenerator::generateDebugCounterBump(TR::Instruc
    TR::Register *addrReg = self()->allocateRegister();
    TR::Register *counterReg = self()->allocateRegister();
 
-   cursor = loadAddressConstant(self(), node, addr, addrReg, cursor, false, TR_DebugCounter);
+   cursor = loadAddressConstant(self(), self()->comp()->compileRelocatableCode(), node, addr, addrReg, cursor, TR_DebugCounter);
    cursor = generateTrg1MemInstruction(self(), TR::InstOpCode::ldrimmw, node, counterReg, TR::MemoryReference::createWithDisplacement(self(), addrReg, 0), cursor);
    cursor = generateTrg1Src1ImmInstruction(self(), TR::InstOpCode::addimmw, node, counterReg, counterReg, delta, cursor);
    cursor = generateMemSrc1Instruction(self(), TR::InstOpCode::strimmw, node, TR::MemoryReference::createWithDisplacement(self(), addrReg, 0), counterReg, cursor);
@@ -892,7 +892,7 @@ TR::Instruction *OMR::ARM64::CodeGenerator::generateDebugCounterBump(TR::Instruc
    TR::Register *addrReg = self()->allocateRegister();
    TR::Register *counterReg = self()->allocateRegister();
 
-   cursor = loadAddressConstant(self(), node, addr, addrReg, cursor, false, TR_DebugCounter);
+   cursor = loadAddressConstant(self(), self()->comp()->compileRelocatableCode(), node, addr, addrReg, cursor, TR_DebugCounter);
    cursor = generateTrg1MemInstruction(self(), TR::InstOpCode::ldrimmw, node, counterReg, TR::MemoryReference::createWithDisplacement(self(), addrReg, 0), cursor);
    cursor = generateTrg1Src2Instruction(self(), TR::InstOpCode::addw, node, counterReg, counterReg, deltaReg, cursor);
    cursor = generateMemSrc1Instruction(self(), TR::InstOpCode::strimmw, node, TR::MemoryReference::createWithDisplacement(self(), addrReg, 0), counterReg, cursor);
@@ -929,7 +929,7 @@ TR::Instruction *OMR::ARM64::CodeGenerator::generateDebugCounterBump(TR::Instruc
    TR::Register *addrReg = srm.findOrCreateScratchRegister();
    TR::Register *counterReg = srm.findOrCreateScratchRegister();
 
-   cursor = loadAddressConstant(self(), node, addr, addrReg, cursor, false, TR_DebugCounter);
+   cursor = loadAddressConstant(self(), self()->comp()->compileRelocatableCode(), node, addr, addrReg, cursor, TR_DebugCounter);
    cursor = generateTrg1MemInstruction(self(), TR::InstOpCode::ldrimmw, node, counterReg, TR::MemoryReference::createWithDisplacement(self(), addrReg, 0), cursor);
    cursor = generateTrg1Src1ImmInstruction(self(), TR::InstOpCode::addimmw, node, counterReg, counterReg, delta, cursor);
    cursor = generateMemSrc1Instruction(self(), TR::InstOpCode::strimmw, node, TR::MemoryReference::createWithDisplacement(self(), addrReg, 0), counterReg, cursor);
@@ -949,7 +949,7 @@ TR::Instruction *OMR::ARM64::CodeGenerator::generateDebugCounterBump(TR::Instruc
    TR::Register *addrReg = srm.findOrCreateScratchRegister();
    TR::Register *counterReg = srm.findOrCreateScratchRegister();
 
-   cursor = loadAddressConstant(self(), node, addr, addrReg, cursor, false, TR_DebugCounter);
+   cursor = loadAddressConstant(self(), self()->comp()->compileRelocatableCode(), node, addr, addrReg, cursor, TR_DebugCounter);
    cursor = generateTrg1MemInstruction(self(), TR::InstOpCode::ldrimmw, node, counterReg, TR::MemoryReference::createWithDisplacement(self(), addrReg, 0), cursor);
    cursor = generateTrg1Src2Instruction(self(), TR::InstOpCode::addw, node, counterReg, counterReg, deltaReg, cursor);
    cursor = generateMemSrc1Instruction(self(), TR::InstOpCode::strimmw, node, TR::MemoryReference::createWithDisplacement(self(), addrReg, 0), counterReg, cursor);

@@ -83,6 +83,20 @@ extern TR::Instruction *loadConstant32(TR::CodeGenerator *cg, TR::Node *node, in
  */
 extern TR::Instruction *loadConstant64(TR::CodeGenerator *cg, TR::Node *node, int64_t value, TR::Register *trgReg, TR::Instruction *cursor = NULL);
 
+/**
+ * @brief Generates instructions for loading the specified constant value into a register
+ *
+ * @param cg            : CodeGenerator
+ * @param isRelocatable : Generates relocatable code if true
+ * @param node          : node
+ * @param value         : integer value
+ * @param trgReg        : target register
+ * @param cursor        : instruction cursor
+ * @param typeAddress   : type of address
+ * @return instruction cursor
+ */
+extern TR::Instruction *loadAddressConstant(TR::CodeGenerator *cg, bool isRelocatable, TR::Node *node, intptr_t value, TR::Register *trgReg, TR::Instruction *cursor=NULL, int16_t typeAddress=-1);
+
 extern TR::Instruction *loadAddressConstant(TR::CodeGenerator *cg, TR::Node *node, intptr_t value, TR::Register *trgReg, TR::Instruction *cursor=NULL, bool isPicSite=false, int16_t typeAddress=-1);
 
 /* @brief Generates instruction for loading address constant to register using constant data snippet

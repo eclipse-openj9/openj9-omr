@@ -5978,6 +5978,17 @@ loadAddressConstantRelocatable(TR::CodeGenerator *cg, TR::Node *node, intptr_t v
    }
 
 TR::Instruction *
+loadAddressConstant(TR::CodeGenerator *cg, bool isRelocatable, TR::Node *node, intptr_t value, TR::Register *trgReg, TR::Instruction *cursor, int16_t typeAddress)
+   {
+   if (isRelocatable)
+      {
+      return loadAddressConstantRelocatable(cg, node, value, trgReg, cursor, typeAddress);
+      }
+
+   return loadConstant64(cg, node, value, trgReg, cursor);
+   }
+
+TR::Instruction *
 loadAddressConstant(TR::CodeGenerator *cg, TR::Node *node, intptr_t value, TR::Register *trgReg, TR::Instruction *cursor, bool isPicSite, int16_t typeAddress)
    {
    if (cg->comp()->compileRelocatableCode())

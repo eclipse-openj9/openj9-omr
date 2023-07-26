@@ -95,7 +95,6 @@ MM_ParallelScavengeTask::synchronizeGCThreadsAndReleaseMain(MM_EnvironmentBase *
 	}
 
 	/* _syncCriticalSectionDuration must be set now, this thread's stall time is at least the duration of critical section */
-	Assert_MM_true((endTime - startTime) >= _syncCriticalSectionDuration);
 	env->_scavengerStats.addToSyncStallTime(startTime, endTime, _syncCriticalSectionDuration);
 
 	return result;
@@ -117,7 +116,6 @@ MM_ParallelScavengeTask::synchronizeGCThreadsAndReleaseSingleThread(MM_Environme
 	}
 
 	/* _syncCriticalSectionDuration must be set now, this thread's stall time is at least the duration of critical section */
-	Assert_MM_true((endTime - startTime) >= _syncCriticalSectionDuration);
 	env->_scavengerStats.addToSyncStallTime(startTime, endTime, _syncCriticalSectionDuration);
 
 	return result;

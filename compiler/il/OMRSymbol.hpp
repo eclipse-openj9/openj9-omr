@@ -293,6 +293,12 @@ public:
    void setIsCatchBlockCounter()            { _flags2.set(CatchBlockCounter); }
    bool isCatchBlockCounter()               { return _flags2.testAny(CatchBlockCounter); }
 
+   void setIsEnterEventHookAddress()        { _flags2.set(EnterEventHookAddress); }
+   bool isEnterEventHookAddress()           { return _flags2.testAny(EnterEventHookAddress); }
+
+   void setIsExitEventHookAddress()         { _flags2.set(ExitEventHookAddress); }
+   bool isExitEventHookAddress()            { return _flags2.testAny(ExitEventHookAddress); }
+
    inline bool isNamed();
 
    // flag methods specific to Autos
@@ -600,6 +606,8 @@ public:
        */
       StaticDefaultValueInstance = 0x00020000,
       CatchBlockCounter          = 0x00040000,
+      EnterEventHookAddress      = 0x00080000,
+      ExitEventHookAddress       = 0x00100000,
       };
 
 protected:

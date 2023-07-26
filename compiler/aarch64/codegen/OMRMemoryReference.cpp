@@ -114,6 +114,10 @@ static void loadRelocatableConstant(TR::Node *node,
       {
       loadAddressConstant(cg, true, GCRnode, (intptr_t)ref, reg, NULL, TR_ClassAddress);
       }
+   else if (symbol->isEnterEventHookAddress() || symbol->isExitEventHookAddress())
+      {
+      loadAddressConstant(cg, true, GCRnode, 1, reg, NULL, TR_MethodEnterExitHookAddress);
+      }
    else
       {
       loadConstant64(cg, node, addr, reg);

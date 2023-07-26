@@ -307,8 +307,8 @@ class IteratedExternalRelocation : public TR_Link<TR::IteratedExternalRelocation
       {return _recordModifier.testAny(RELOCATION_TYPE_WIDE_OFFSET);}
    void setNeedsWideOffsets() {_recordModifier.set(RELOCATION_TYPE_WIDE_OFFSET);}
 
-   bool isOrderedPair() {return _recordModifier.testAny(RELOCATION_TYPE_ORDERED_PAIR);}
-   void setOrderedPair() {_recordModifier.set(RELOCATION_TYPE_ORDERED_PAIR);}
+   bool isOrderedPair() {return _recordModifier.testAny(ITERATED_RELOCATION_TYPE_ORDERED_PAIR);}
+   void setOrderedPair() {_recordModifier.set(ITERATED_RELOCATION_TYPE_ORDERED_PAIR);}
 
    uint8_t getModifierValue() {return _recordModifier.getValue();}
    void    setModifierValue(uint8_t v) {_recordModifier.setValue(0x00, v);}

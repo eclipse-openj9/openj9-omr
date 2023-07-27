@@ -269,6 +269,18 @@ public:
 
    bool canAddNewCodeCache();
 
+   /**
+    * @brief Answers whether there is enough physical memory available to perform
+    * code cache allocation for the requested size.
+    *
+    * Downstream projects can provide an implementation for this method to check
+    * for safe memory limits before code cache allocation.
+    *
+    * @param requestedCodeCacheSize: requested code cache size
+    *
+    * @return true if there is enough physical memory; false otherwise
+    */
+   bool isSufficientPhysicalMemoryAvailableForAllocation(size_t requestedCodeCacheSize);
    // Code Cache Consolidation
    TR::CodeCache *allocateRepositoryCodeCache();
    TR::CodeCacheMemorySegment *allocateCodeCacheRepository(size_t repositorySize);

@@ -220,6 +220,8 @@ uint8_t *TR::ARM64ImmSymInstruction::generateBinaryEncoding()
 
             intptr_t distance = destination - (intptr_t)cursor;
             insertImmediateField(toARM64Cursor(cursor), distance);
+            cg()->addProjectSpecializedRelocation(cursor, reinterpret_cast<uint8_t *>(getSymbolReference()->getMethodAddress()), NULL, TR_MethodCallAddress,
+                                                   __FILE__, __LINE__, getNode());
             }
          }
       }

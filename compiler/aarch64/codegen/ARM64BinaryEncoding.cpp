@@ -177,7 +177,7 @@ uint8_t *TR::ARM64ImmSymInstruction::generateBinaryEncoding()
          {
          TR::MethodSymbol *method = symRef->getSymbol()->getMethodSymbol();
 
-         if (method && method->isHelper())
+         if (method && method->isHelper() || cg()->callUsesHelperImplementation(symRef->getSymbol()))
             {
             intptr_t destination = (intptr_t)symRef->getMethodAddress();
 

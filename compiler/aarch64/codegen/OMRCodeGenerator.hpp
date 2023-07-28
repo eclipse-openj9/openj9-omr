@@ -556,6 +556,16 @@ public:
    bool canTransformUnsafeCopyToArrayCopy();
 
    /**
+    * @brief Answers whether a method call is implemented using an internal runtime
+    *           helper routine (ex. a j2iTransition)
+    *
+    * @param[in] sym : The symbol holding the call information
+    *
+    * @return : true if the call is represented by a helper; false otherwise.
+    */
+   bool callUsesHelperImplementation(TR::Symbol *sym) { return false; }
+
+   /**
     * @brief Generates instructions for incrementing debug counter
     * @param[in] cursor:   instruction cursor
     * @param[in] counter:  debug counter

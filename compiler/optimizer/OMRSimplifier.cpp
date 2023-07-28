@@ -158,6 +158,7 @@ OMR::Simplifier::Simplifier(TR::OptimizationManager *manager)
      _performLowerTreeNodePairs(getTypedAllocator<std::pair<TR::TreeTop*, TR::Node*>>(self()->allocator()))
    {
    _invalidateUseDefInfo      = false;
+   _invalidateValueNumberInfo = false;
    _alteredBlock = false;
    _blockRemoved = false;
 

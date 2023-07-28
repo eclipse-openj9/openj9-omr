@@ -294,6 +294,20 @@ TR::ExternalOrderedPair32BitRelocation::ExternalOrderedPair32BitRelocation(
    setTargetKind(k);
    }
 
+TR::ExternalOrderedPair32BitRelocation::ExternalOrderedPair32BitRelocation(
+                 uint8_t                         *location1,
+                 uint8_t                         *location2,
+                 uint8_t                         *target,
+                 uint8_t                         *target2,
+                 TR_ExternalRelocationTargetKind  k,
+                 TR::CodeGenerator                *cg) :
+   TR::ExternalRelocation(), _update2Location(location2)
+   {
+   setUpdateLocation(location1);
+   setTargetAddress(target);
+   setTargetAddress2(target2);
+   setTargetKind(k);
+   }
 
 uint8_t TR::ExternalOrderedPair32BitRelocation::collectModifier()
    {

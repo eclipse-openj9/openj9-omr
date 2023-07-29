@@ -556,6 +556,15 @@ public:
    *     Vector size in bytes
    */
    int32_t                getVectorSize();
+
+   /** \brief
+   *     Returns number of lanes in a vector
+   *
+   *  \return
+   *     Number of lanes in a vector
+   */
+   int32_t                getVectorNumLanes();
+
    static int32_t         getSize(TR::DataType dt);
    static void            setSize(TR::DataType dt, int32_t newValue);
 

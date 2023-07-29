@@ -49,7 +49,8 @@ namespace ILTypeProp
       Unsigned                          = 0x00001000,
       VectorResult                      = 0x00002000,
       MaskResult                        = 0x00004000,
-      LastOMRILTypeProp                 = MaskResult
+      VectorElementResult               = 0x00008000,
+      LastOMRILTypeProp                 = VectorElementResult
       };
    }
 

@@ -668,7 +668,7 @@ VECTOR_OPERATION_MACRO(\
    /* .properties3             = */ ILProp3::VectorReduction, \
    /* .properties4             = */ 0, \
    /* .dataType                = */ TR::NoType, \
-   /* .typeProperties          = */ TR::NoType, \
+   /* .typeProperties          = */ ILTypeProp::VectorElementResult, \
    /* .childProperties         = */ ONE_CHILD(ILChildProp::UnspecifiedChildType), \
    /* .swapChildrenOperation   = */ TR::vBadOperation, \
    /* .reverseBranchOperation  = */ TR::vBadOperation, \
@@ -684,7 +684,7 @@ VECTOR_OPERATION_MACRO(\
    /* .properties3             = */ ILProp3::VectorReduction, \
    /* .properties4             = */ 0, \
    /* .dataType                = */ TR::NoType, \
-   /* .typeProperties          = */ TR::NoType, \
+   /* .typeProperties          = */ ILTypeProp::VectorElementResult, \
    /* .childProperties         = */ ONE_CHILD(ILChildProp::UnspecifiedChildType), \
    /* .swapChildrenOperation   = */ TR::vBadOperation, \
    /* .reverseBranchOperation  = */ TR::vBadOperation, \
@@ -700,7 +700,7 @@ VECTOR_OPERATION_MACRO(\
    /* .properties3             = */ ILProp3::VectorReduction, \
    /* .properties4             = */ 0, \
    /* .dataType                = */ TR::NoType, \
-   /* .typeProperties          = */ TR::NoType, \
+   /* .typeProperties          = */ ILTypeProp::VectorElementResult, \
    /* .childProperties         = */ ONE_CHILD(ILChildProp::UnspecifiedChildType), \
    /* .swapChildrenOperation   = */ TR::vBadOperation, \
    /* .reverseBranchOperation  = */ TR::vBadOperation, \
@@ -716,7 +716,7 @@ VECTOR_OPERATION_MACRO(\
    /* .properties3             = */ ILProp3::VectorReduction, \
    /* .properties4             = */ 0, \
    /* .dataType                = */ TR::NoType, \
-   /* .typeProperties          = */ TR::NoType, \
+   /* .typeProperties          = */ ILTypeProp::VectorElementResult, \
    /* .childProperties         = */ ONE_CHILD(ILChildProp::UnspecifiedChildType), \
    /* .swapChildrenOperation   = */ TR::vBadOperation, \
    /* .reverseBranchOperation  = */ TR::vBadOperation, \
@@ -732,7 +732,7 @@ VECTOR_OPERATION_MACRO(\
    /* .properties3             = */ ILProp3::VectorReduction, \
    /* .properties4             = */ 0, \
    /* .dataType                = */ TR::NoType, \
-   /* .typeProperties          = */ TR::NoType, \
+   /* .typeProperties          = */ ILTypeProp::VectorElementResult, \
    /* .childProperties         = */ ONE_CHILD(ILChildProp::UnspecifiedChildType), \
    /* .swapChildrenOperation   = */ TR::vBadOperation, \
    /* .reverseBranchOperation  = */ TR::vBadOperation, \
@@ -748,7 +748,7 @@ VECTOR_OPERATION_MACRO(\
    /* .properties3             = */ ILProp3::VectorReduction, \
    /* .properties4             = */ 0, \
    /* .dataType                = */ TR::NoType, \
-   /* .typeProperties          = */ TR::NoType, \
+   /* .typeProperties          = */ ILTypeProp::VectorElementResult, \
    /* .childProperties         = */ ONE_CHILD(ILChildProp::UnspecifiedChildType), \
    /* .swapChildrenOperation   = */ TR::vBadOperation, \
    /* .reverseBranchOperation  = */ TR::vBadOperation, \
@@ -764,7 +764,7 @@ VECTOR_OPERATION_MACRO(\
    /* .properties3             = */ ILProp3::VectorReduction, \
    /* .properties4             = */ 0, \
    /* .dataType                = */ TR::NoType, \
-   /* .typeProperties          = */ TR::NoType, \
+   /* .typeProperties          = */ ILTypeProp::VectorElementResult, \
    /* .childProperties         = */ ONE_CHILD(ILChildProp::UnspecifiedChildType), \
    /* .swapChildrenOperation   = */ TR::vBadOperation, \
    /* .reverseBranchOperation  = */ TR::vBadOperation, \
@@ -780,7 +780,7 @@ VECTOR_OPERATION_MACRO(\
    /* .properties3             = */ ILProp3::VectorReduction, \
    /* .properties4             = */ 0, \
    /* .dataType                = */ TR::NoType, \
-   /* .typeProperties          = */ TR::NoType, \
+   /* .typeProperties          = */ ILTypeProp::VectorElementResult, \
    /* .childProperties         = */ ONE_CHILD(ILChildProp::UnspecifiedChildType), \
    /* .swapChildrenOperation   = */ TR::vBadOperation, \
    /* .reverseBranchOperation  = */ TR::vBadOperation, \
@@ -796,7 +796,7 @@ VECTOR_OPERATION_MACRO(\
    /* .properties3             = */ ILProp3::VectorReduction, \
    /* .properties4             = */ 0, \
    /* .dataType                = */ TR::NoType, \
-   /* .typeProperties          = */ TR::NoType, \
+   /* .typeProperties          = */ ILTypeProp::VectorElementResult, \
    /* .childProperties         = */ ONE_CHILD(ILChildProp::UnspecifiedChildType), \
    /* .swapChildrenOperation   = */ TR::vBadOperation, \
    /* .reverseBranchOperation  = */ TR::vBadOperation, \
@@ -987,14 +987,14 @@ VECTOR_OPERATION_MACRO(\
    /* .properties2             = */ ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, \
    /* .properties3             = */ 0, \
    /* .properties4             = */ 0, \
-   /* .dataType                = */ TR::Int32, \
-   /* .typeProperties          = */ TR::NoType, \
+   /* .dataType                = */ TR::NoType, \
+   /* .typeProperties          = */ ILTypeProp::VectorResult, \
    /* .childProperties         = */ TWO_SAME_CHILD(ILChildProp::UnspecifiedChildType), \
    /* .swapChildrenOperation   = */ TR::vBadOperation, \
    /* .reverseBranchOperation  = */ TR::vBadOperation, \
    /* .booleanCompareOpCode    = */ TR::BadILOp, \
    /* .ifCompareOpCode         = */ TR::BadILOp, \
-   /* .description             =    get first non-zero vector element */ \
+   /* .description             =    lanewise first non-zero*/ \
 )
 VECTOR_OPERATION_MACRO(\
    /* .operation               = */ vgetelem, \
@@ -1004,7 +1004,7 @@ VECTOR_OPERATION_MACRO(\
    /* .properties3             = */ 0, \
    /* .properties4             = */ 0, \
    /* .dataType                = */ TR::NoType, \
-   /* .typeProperties          = */ TR::NoType, \
+   /* .typeProperties          = */ ILTypeProp::VectorElementResult, \
    /* .childProperties         = */ TWO_SAME_CHILD(ILChildProp::UnspecifiedChildType), \
    /* .swapChildrenOperation   = */ TR::vBadOperation, \
    /* .reverseBranchOperation  = */ TR::vBadOperation, \
@@ -1479,7 +1479,7 @@ VECTOR_OPERATION_MACRO(\
    /* .properties3             = */ ILProp3::VectorReduction, \
    /* .properties4             = */ 0, \
    /* .dataType                = */ TR::NoType, \
-   /* .typeProperties          = */ TR::NoType, \
+   /* .typeProperties          = */ ILTypeProp::VectorElementResult, \
    /* .childProperties         = */ TWO_SAME_CHILD(ILChildProp::UnspecifiedChildType), \
    /* .swapChildrenOperation   = */ TR::vBadOperation, \
    /* .reverseBranchOperation  = */ TR::vBadOperation, \
@@ -1495,7 +1495,7 @@ VECTOR_OPERATION_MACRO(\
    /* .properties3             = */ ILProp3::VectorReduction, \
    /* .properties4             = */ 0, \
    /* .dataType                = */ TR::NoType, \
-   /* .typeProperties          = */ TR::NoType, \
+   /* .typeProperties          = */ ILTypeProp::VectorElementResult, \
    /* .childProperties         = */ TWO_SAME_CHILD(ILChildProp::UnspecifiedChildType), \
    /* .swapChildrenOperation   = */ TR::vBadOperation, \
    /* .reverseBranchOperation  = */ TR::vBadOperation, \
@@ -1511,7 +1511,7 @@ VECTOR_OPERATION_MACRO(\
    /* .properties3             = */ 0, \
    /* .properties4             = */ 0, \
    /* .dataType                = */ TR::NoType, \
-   /* .typeProperties          = */ TR::NoType, \
+   /* .typeProperties          = */ ILTypeProp::VectorElementResult, \
    /* .childProperties         = */ TWO_SAME_CHILD(ILChildProp::UnspecifiedChildType), \
    /* .swapChildrenOperation   = */ TR::vBadOperation, \
    /* .reverseBranchOperation  = */ TR::vBadOperation, \
@@ -1527,7 +1527,7 @@ VECTOR_OPERATION_MACRO(\
    /* .properties3             = */ ILProp3::VectorReduction, \
    /* .properties4             = */ 0, \
    /* .dataType                = */ TR::NoType, \
-   /* .typeProperties          = */ TR::NoType, \
+   /* .typeProperties          = */ ILTypeProp::VectorElementResult, \
    /* .childProperties         = */ TWO_SAME_CHILD(ILChildProp::UnspecifiedChildType), \
    /* .swapChildrenOperation   = */ TR::vBadOperation, \
    /* .reverseBranchOperation  = */ TR::vBadOperation, \
@@ -1543,7 +1543,7 @@ VECTOR_OPERATION_MACRO(\
    /* .properties3             = */ ILProp3::VectorReduction, \
    /* .properties4             = */ 0, \
    /* .dataType                = */ TR::NoType, \
-   /* .typeProperties          = */ TR::NoType, \
+   /* .typeProperties          = */ ILTypeProp::VectorElementResult, \
    /* .childProperties         = */ TWO_SAME_CHILD(ILChildProp::UnspecifiedChildType), \
    /* .swapChildrenOperation   = */ TR::vBadOperation, \
    /* .reverseBranchOperation  = */ TR::vBadOperation, \
@@ -1559,7 +1559,7 @@ VECTOR_OPERATION_MACRO(\
    /* .properties3             = */ ILProp3::VectorReduction, \
    /* .properties4             = */ 0, \
    /* .dataType                = */ TR::NoType, \
-   /* .typeProperties          = */ TR::NoType, \
+   /* .typeProperties          = */ ILTypeProp::VectorElementResult, \
    /* .childProperties         = */ TWO_SAME_CHILD(ILChildProp::UnspecifiedChildType), \
    /* .swapChildrenOperation   = */ TR::vBadOperation, \
    /* .reverseBranchOperation  = */ TR::vBadOperation, \
@@ -1575,7 +1575,7 @@ VECTOR_OPERATION_MACRO(\
    /* .properties3             = */ ILProp3::VectorReduction, \
    /* .properties4             = */ 0, \
    /* .dataType                = */ TR::NoType, \
-   /* .typeProperties          = */ TR::NoType, \
+   /* .typeProperties          = */ ILTypeProp::VectorElementResult, \
    /* .childProperties         = */ TWO_SAME_CHILD(ILChildProp::UnspecifiedChildType), \
    /* .swapChildrenOperation   = */ TR::vBadOperation, \
    /* .reverseBranchOperation  = */ TR::vBadOperation, \
@@ -1591,7 +1591,7 @@ VECTOR_OPERATION_MACRO(\
    /* .properties3             = */ ILProp3::VectorReduction, \
    /* .properties4             = */ 0, \
    /* .dataType                = */ TR::NoType, \
-   /* .typeProperties          = */ TR::NoType, \
+   /* .typeProperties          = */ ILTypeProp::VectorElementResult, \
    /* .childProperties         = */ TWO_SAME_CHILD(ILChildProp::UnspecifiedChildType), \
    /* .swapChildrenOperation   = */ TR::vBadOperation, \
    /* .reverseBranchOperation  = */ TR::vBadOperation, \
@@ -1607,7 +1607,7 @@ VECTOR_OPERATION_MACRO(\
    /* .properties3             = */ ILProp3::VectorReduction, \
    /* .properties4             = */ 0, \
    /* .dataType                = */ TR::NoType, \
-   /* .typeProperties          = */ TR::NoType, \
+   /* .typeProperties          = */ ILTypeProp::VectorElementResult, \
    /* .childProperties         = */ TWO_SAME_CHILD(ILChildProp::UnspecifiedChildType), \
    /* .swapChildrenOperation   = */ TR::vBadOperation, \
    /* .reverseBranchOperation  = */ TR::vBadOperation, \
@@ -1686,14 +1686,14 @@ VECTOR_OPERATION_MACRO(\
    /* .properties2             = */ ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, \
    /* .properties3             = */ 0, \
    /* .properties4             = */ 0, \
-   /* .dataType                = */ TR::Int32, \
-   /* .typeProperties          = */ TR::NoType, \
+   /* .dataType                = */ TR::NoType, \
+   /* .typeProperties          = */ ILTypeProp::VectorResult, \
    /* .childProperties         = */ THREE_SAME_CHILD(ILChildProp::UnspecifiedChildType), \
    /* .swapChildrenOperation   = */ TR::vBadOperation, \
    /* .reverseBranchOperation  = */ TR::vBadOperation, \
    /* .booleanCompareOpCode    = */ TR::BadILOp, \
    /* .ifCompareOpCode         = */ TR::BadILOp, \
-   /* .description             =    get first non-zero vector element masked */ \
+   /* .description             =    masked lanewise first non-zero */ \
 )
 VECTOR_OPERATION_MACRO(\
    /* .operation               = */ vmpopcnt, \

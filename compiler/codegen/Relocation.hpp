@@ -400,13 +400,14 @@ class ExternalRelocation : public TR::Relocation
         _relocationRecord(NULL)
         {}
 
-   uint8_t *getTargetAddress()           {return _targetAddress;}
-   uint8_t *setTargetAddress(uint8_t *p) {return (_targetAddress = p);}
+   uint8_t *getTargetAddress()            { return _targetAddress;        }
+   uint8_t *setTargetAddress(uint8_t *p)  { return (_targetAddress = p);  }
 
-   uint8_t *getTargetAddress2()          {return _targetAddress2;}
+   uint8_t *getTargetAddress2()           { return _targetAddress2;       }
+   uint8_t *setTargetAddress2(uint8_t *p) { return (_targetAddress2 = p); }
 
-   TR_ExternalRelocationTargetKind getTargetKind()                                  {return _kind;}
-   TR_ExternalRelocationTargetKind setTargetKind(TR_ExternalRelocationTargetKind k) {return (_kind = k);}
+   TR_ExternalRelocationTargetKind getTargetKind()                                  { return _kind;       }
+   TR_ExternalRelocationTargetKind setTargetKind(TR_ExternalRelocationTargetKind k) { return (_kind = k); }
 
    TR::IteratedExternalRelocation *getRelocationRecord()
       {return _relocationRecord;}
@@ -456,6 +457,13 @@ class ExternalOrderedPair32BitRelocation: public TR::ExternalRelocation
    ExternalOrderedPair32BitRelocation(uint8_t *location1,
                                       uint8_t *location2,
                                       uint8_t *target,
+                                      TR_ExternalRelocationTargetKind  k,
+                                      TR::CodeGenerator *cg);
+
+   ExternalOrderedPair32BitRelocation(uint8_t *location1,
+                                      uint8_t *location2,
+                                      uint8_t *target,
+                                      uint8_t *target2,
                                       TR_ExternalRelocationTargetKind  k,
                                       TR::CodeGenerator *cg);
 

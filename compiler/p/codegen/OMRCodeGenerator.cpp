@@ -2166,6 +2166,7 @@ OMR::Power::CodeGenerator::addMetaDataForLoadIntConstantFixed(
    else if (typeAddress == TR_MethodEnterExitHookAddress)
       {
       self()->addExternalRelocation(new (self()->trHeapMemory()) TR::ExternalOrderedPair32BitRelocation((uint8_t *)firstInstruction,
+                                                                                          (uint8_t *)secondInstruction,
                                                                                           (uint8_t *)node->getSymbolReference(),
                                                                                           (uint8_t *)orderedPairSequence2,
                                                                                           (TR_ExternalRelocationTargetKind)TR_MethodEnterExitHookAddress, self()),

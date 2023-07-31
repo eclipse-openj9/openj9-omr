@@ -256,9 +256,7 @@ OMR::Power::CodeGenerator::initialize()
    cg->setSupportsJavaFloatSemantics();
 
    cg->setSupportsDivCheck();
-   cg->setSupportsLoweringConstIDiv();
-   if (comp->target().is64Bit())
-      cg->setSupportsLoweringConstLDiv();
+   cg->setSupportsIMulHigh();
    cg->setSupportsLoweringConstLDivPower2();
 
    static bool disableDCAS = (feGetEnv("TR_DisablePPCDCAS") != NULL);

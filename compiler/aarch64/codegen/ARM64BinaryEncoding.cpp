@@ -177,7 +177,7 @@ uint8_t *TR::ARM64ImmSymInstruction::generateBinaryEncoding()
          {
          TR::MethodSymbol *method = symRef->getSymbol()->getMethodSymbol();
 
-         if (method && method->isHelper() || cg()->callUsesHelperImplementation(symRef->getSymbol()))
+         if (method && method->isHelper())
             {
             intptr_t destination = (intptr_t)symRef->getMethodAddress();
 
@@ -192,15 +192,6 @@ uint8_t *TR::ARM64ImmSymInstruction::generateBinaryEncoding()
             intptr_t distance = destination - (intptr_t)cursor;
             insertImmediateField(toARM64Cursor(cursor), distance);
             setAddrImmediate(destination);
-
-            cg()->addExternalRelocation(
-               TR::ExternalRelocation::create(
-                  cursor,
-                  (uint8_t *)symRef,
-                  TR_HelperAddress, cg()),
-               __FILE__,
-               __LINE__,
-               getNode());
             }
          else
             {
@@ -220,6 +211,20 @@ uint8_t *TR::ARM64ImmSymInstruction::generateBinaryEncoding()
 
             intptr_t distance = destination - (intptr_t)cursor;
             insertImmediateField(toARM64Cursor(cursor), distance);
+            }
+         if (method && method->isHelper() || cg()->callUsesHelperImplementation(symRef->getSymbol()))
+            {
+            cg()->addExternalRelocation(
+               TR::ExternalRelocation::create(
+                  cursor,
+                  (uint8_t *)symRef,
+                  TR_HelperAddress, cg()),
+               __FILE__,
+               __LINE__,
+               getNode());
+            }
+         else
+            {
             cg()->addProjectSpecializedRelocation(cursor, reinterpret_cast<uint8_t *>(getSymbolReference()->getMethodAddress()), NULL, TR_MethodCallAddress,
                                                    __FILE__, __LINE__, getNode());
             }

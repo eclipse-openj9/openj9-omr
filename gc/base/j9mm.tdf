@@ -1019,3 +1019,9 @@ TraceException=Trc_MM_ParallelDispatcher_internalStartupThreads_Failed noEnv Ove
 
 TraceExit=Trc_MM_MemorySubSpaceUniSpace_timeForHeapContract_Exit8 Overhead=1 Level=1 Group=resize Template="MM_MemorySubSpace_timeForHeapContract Exit8 Heap cannot contract in implicit aggressive GC"
 TraceExit=Trc_MM_MemorySubSpaceUniSpace_timeForHeapContract_Exit9 Overhead=1 Level=1 Group=resize Template="MM_MemorySubSpace_timeForHeapContract Exit9 Contraction required due to SoftMX request, size = %zu bytes"
+
+TraceEvent=Trc_MM_MSSSS_flip_step Overhead=1 Level=1 Group=scavenge Template="MSSSS::flip %s"
+TraceEvent=Trc_MM_MSSSS_flip_backout Overhead=1 Level=1 Group=scavenger Template="MSSSS::flip backout %s_allocateSpaceBase/Top %zx/%zx _survivorSpaceBase/Top %zx/%zx sizes %zu %zu"
+TraceEvent=Trc_MM_MSSSS_flip_restore_tilt_after_percolate Overhead=1 Level=1 Group=scavenger Template="MSSSS::flip restore_tilt_after_percolate last free entry %zx size %zu"
+TraceEvent=Trc_MM_MSSSS_flip_restore_tilt_after_percolate_with_stats Overhead=1 Level=1 Group=scavenge Template="MSSSS::flip restore_tilt_after_percolate heapAlignedLastFreeEntry %zu section (%zu) aligned size %zu"
+TraceEvent=Trc_MM_MSSSS_flip_restore_tilt_after_percolate_current_status Overhead=1 Level=1 Group=scavenge Template="MSSSS::flip restore_tilt_after_percolate %sallocateSize %zu survivorSize %zu"

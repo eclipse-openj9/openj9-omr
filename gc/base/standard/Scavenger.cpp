@@ -4632,7 +4632,6 @@ MM_Scavenger::internalGarbageCollect(MM_EnvironmentBase *envBase, MM_MemorySubSp
 		return true;
 	}
 
-#if defined(OMR_GC_CONCURRENT_SCAVENGER)
 	if (IS_CONCURRENT_ENABLED && isBackOutFlagRaised()) {
 		bool result = percolateGarbageCollect(env, subSpace, NULL, ABORTED_SCAVENGE, J9MMCONSTANT_IMPLICIT_GC_PERCOLATE_ABORTED_SCAVENGE);
 
@@ -4640,7 +4639,6 @@ MM_Scavenger::internalGarbageCollect(MM_EnvironmentBase *envBase, MM_MemorySubSp
 
 		return true;
 	}
-#endif
 
 	/* First, if the previous scavenge had a failed tenure of a size greater than the threshold,
 	 * ask parent MSS to try a collect.
@@ -4792,6 +4790,14 @@ MM_Scavenger::internalGarbageCollect(MM_EnvironmentBase *envBase, MM_MemorySubSp
 #endif
 	{
 		mainThreadGarbageCollect(env, allocDescription);
+		/* We want to recursively call percolate gc here in order that the excessive gc
+		 * identifies the outermost gc and records the metrics correctly.
+		 */
+		if (isBackOutFlagRaised()) {
+			bool result = percolateGarbageCollect(env, subSpace, NULL, ABORTED_SCAVENGE, J9MMCONSTANT_IMPLICIT_GC_PERCOLATE_ABORTED_SCAVENGE);
+			Assert_MM_true(result);
+			return true;
+		}
 	}
 
 	/* If we know now that the next scavenge will cause a peroclate broadcast

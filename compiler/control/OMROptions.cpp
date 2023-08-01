@@ -389,6 +389,7 @@ TR::OptionTable OMR::Options::_jitOptions[] = {
    {"disableInlining",                    "O\tdisable IL inlining",                            TR::Options::disableOptimization, inlining, 0, "P"},
    {"disableInliningDuringVPAtWarm",       "O\tdisable inlining during VP for warm bodies",    SET_OPTION_BIT(TR_DisableInliningDuringVPAtWarm), "F"},
    {DisableInliningOfNativesString,       "O\tdisable inlining of natives",                    SET_OPTION_BIT(TR_DisableInliningOfNatives), "F"},
+   {"disableInliningUnrecognizedIntrinsics", "M\tdisable inlining of IntrinsicCandidate that is not a recognized method",               SET_OPTION_BIT(TR_DisableInliningUnrecognizedIntrinsics), "F"},
    {"disableInnerPreexistence",           "O\tdisable inner preexistence",                     TR::Options::disableOptimization, innerPreexistence, 0, "P"},
    {"disableIntegerCompareSimplification",      "O\tdisable byte/short/int/long compare simplification  ",      SET_OPTION_BIT(TR_DisableIntegerCompareSimplification), "F"},
    {"disableInterfaceCallCaching",                          "O\tdisable interfaceCall caching   ",      SET_OPTION_BIT(TR_disableInterfaceCallCaching), "F"},

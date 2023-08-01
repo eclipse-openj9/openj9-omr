@@ -464,28 +464,29 @@ MM_MemorySubSpaceSemiSpace::tearDown(MM_EnvironmentBase *env)
 void
 MM_MemorySubSpaceSemiSpace::flip(MM_EnvironmentBase *env, Flip_step step)
 {
-#if defined(OMR_GC_CONCURRENT_SCAVENGER)
-	OMRPORT_ACCESS_FROM_OMRPORT(env->getPortLibrary());
-	bool debug = _extensions->debugTiltedScavenge;
-#endif
 	switch (step) {
 	case set_evacuate:
+		Trc_MM_MSSSS_flip_step(env->getLanguageVMThread(), "set_evacuate");
 		_memorySubSpaceEvacuate = _memorySubSpaceAllocate;
 		_memorySubSpaceEvacuate->isAllocatable(false);
 		break;
 	case set_allocate:
+		Trc_MM_MSSSS_flip_step(env->getLanguageVMThread(), "set_allocate");
 		_memorySubSpaceAllocate = _memorySubSpaceSurvivor;
 		_memorySubSpaceAllocate->isAllocatable(true);
 		/* Let know MemorySpace about new default MemorySubSpace */
 		getMemorySpace()->setDefaultMemorySubSpace(getDefaultMemorySubSpace());
 		break;
 	case disable_allocation:
+		Trc_MM_MSSSS_flip_step(env->getLanguageVMThread(), "disable_allocation");
 		_memorySubSpaceAllocate->isAllocatable(false);
 		break;
 	case restore_allocation:
+		Trc_MM_MSSSS_flip_step(env->getLanguageVMThread(), "restore_allocation");
 		_memorySubSpaceAllocate->isAllocatable(true);
 		break;
 	case restore_allocation_and_set_survivor:
+		Trc_MM_MSSSS_flip_step(env->getLanguageVMThread(), "restore_allocation_and_set_survivor");
 		_memorySubSpaceAllocate->isAllocatable(true);
 		_memorySubSpaceSurvivor = _memorySubSpaceEvacuate;
 #if defined(OMR_GC_CONCURRENT_SCAVENGER)
@@ -509,20 +510,20 @@ MM_MemorySubSpaceSemiSpace::flip(MM_EnvironmentBase *env, Flip_step step)
 			_memorySubSpaceAllocate = _memorySubSpaceEvacuate;
 			_memorySubSpaceEvacuate = _memorySubSpaceSurvivor;
 			getMemorySpace()->setDefaultMemorySubSpace(getDefaultMemorySubSpace());
-			if (debug) {
-				omrtty_printf("tilt backout _allocateSpaceBase/Top %llx/%llx _survivorSpaceBase/Top %llx/%llx tilt sizes %llx %llx\n",
-						_allocateSpaceBase, _allocateSpaceTop, _survivorSpaceBase, _survivorSpaceTop,
-						(uintptr_t)_allocateSpaceTop - (uintptr_t)_allocateSpaceBase +  (uintptr_t)_survivorSpaceTop - (uintptr_t)_survivorSpaceBase, (uintptr_t)0);
-			}
+			Trc_MM_MSSSS_flip_backout(
+				env->getLanguageVMThread(),
+				"",
+				_allocateSpaceBase, _allocateSpaceTop, _survivorSpaceBase, _survivorSpaceTop,
+				(uintptr_t)_allocateSpaceTop - (uintptr_t)_allocateSpaceBase +  (uintptr_t)_survivorSpaceTop - (uintptr_t)_survivorSpaceBase, (uintptr_t)0);
 		} else {
 			_memorySubSpaceSurvivor = _memorySubSpaceEvacuate;
 			cacheRanges(_memorySubSpaceAllocate, &_allocateSpaceBase, &_allocateSpaceTop);
 			cacheRanges(_memorySubSpaceSurvivor, &_survivorSpaceBase, &_survivorSpaceTop);
-			if (debug) {
-				omrtty_printf("tilt backout forced flip _allocateSpaceBase/Top %llx/%llx _survivorSpaceBase/Top %llx/%llx tilt sizes %llx %llx\n",
-						_allocateSpaceBase, _allocateSpaceTop, _survivorSpaceBase, _survivorSpaceTop,
-						(uintptr_t)_allocateSpaceTop - (uintptr_t)_allocateSpaceBase +  (uintptr_t)_survivorSpaceTop - (uintptr_t)_survivorSpaceBase, (uintptr_t)0);
-			}
+			Trc_MM_MSSSS_flip_backout(
+				env->getLanguageVMThread(),
+				"forced flip ",
+				_allocateSpaceBase, _allocateSpaceTop, _survivorSpaceBase, _survivorSpaceTop,
+				(uintptr_t)_allocateSpaceTop - (uintptr_t)_allocateSpaceBase +  (uintptr_t)_survivorSpaceTop - (uintptr_t)_survivorSpaceBase, (uintptr_t)0);
 		}
 
 		/* Tilt 100% on PhysicalSubArena level (leave SubSpaces unchanged). Give everything to the low address (Allocate) part */
@@ -540,10 +541,9 @@ MM_MemorySubSpaceSemiSpace::flip(MM_EnvironmentBase *env, Flip_step step)
 		MM_HeapLinkedFreeHeader *lastFreeEntry = getDefaultMemorySubSpace()->getMemoryPool()->getLastFreeEntry();
 		if (NULL != lastFreeEntry) {
 			lastFreeEntrySize = lastFreeEntry->getSize();
-			if (debug) {
-				omrtty_printf("tilt restore_tilt_after_percolate last free entry %llx size %llx\n",
-						lastFreeEntry, lastFreeEntrySize);
-			}
+			Trc_MM_MSSSS_flip_restore_tilt_after_percolate(
+				env->getLanguageVMThread(),
+				lastFreeEntry, lastFreeEntrySize);
 			/* rely on the last free entry only if at the very end of SemiSpace (no objects after it) */
 			if (((uintptr_t)lastFreeEntry + lastFreeEntrySize) != OMR_MAX((uintptr_t)_allocateSpaceTop, (uintptr_t)_survivorSpaceTop)) {
 				lastFreeEntrySize = 0;
@@ -555,11 +555,11 @@ MM_MemorySubSpaceSemiSpace::flip(MM_EnvironmentBase *env, Flip_step step)
 		/* Region size is aligned to Concurrent Scavenger Page Section size already */
 		heapAlignedLastFreeEntrySize = MM_Math::roundToFloor(_extensions->regionSize, heapAlignedLastFreeEntrySize);
 
-		if (debug) {
-			omrtty_printf("tilt restore_tilt_after_percolate heapAlignedLastFreeEntry %llx section (%llx) aligned size %llx\n",
-					lastFreeEntrySize, _extensions->getConcurrentScavengerPageSectionSize(), heapAlignedLastFreeEntrySize);
-		}
-
+		Trc_MM_MSSSS_flip_restore_tilt_after_percolate_with_stats(
+			env->getLanguageVMThread(),
+			lastFreeEntrySize,
+			_extensions->getConcurrentScavengerPageSectionSize(),
+			heapAlignedLastFreeEntrySize);
 		/* allocate/survivor base/top still hold the values from before when we did 100% tilt */
 		uintptr_t allocateSize = (uintptr_t)_allocateSpaceTop - (uintptr_t)_allocateSpaceBase;
 		uintptr_t survivorSize = (uintptr_t)_survivorSpaceTop - (uintptr_t)_survivorSpaceBase;
@@ -567,18 +567,15 @@ MM_MemorySubSpaceSemiSpace::flip(MM_EnvironmentBase *env, Flip_step step)
 			allocateSize = survivorSize;
 			survivorSize = (uintptr_t)_allocateSpaceTop - (uintptr_t)_allocateSpaceBase;
 		}
-
-		if (debug) {
-			omrtty_printf("tilt restore_tilt_after_percolate allocateSize %llx survivorSize %llx\n", allocateSize, survivorSize);
-		}
+		Trc_MM_MSSSS_flip_restore_tilt_after_percolate_current_status(
+			env->getLanguageVMThread(), "", allocateSize, survivorSize);
 		if (heapAlignedLastFreeEntrySize < survivorSize) {
 			allocateSize += (survivorSize - heapAlignedLastFreeEntrySize);
 			survivorSize = heapAlignedLastFreeEntrySize;
 		}
-		if (debug) {
-			omrtty_printf("tilt restore_tilt_after_percolate adjusted allocateSize %llx survivorSize %llx\n", allocateSize, survivorSize);
-		}
-
+		Trc_MM_MSSSS_flip_restore_tilt_after_percolate_current_status(
+			env->getLanguageVMThread(), "adjusted ",
+			allocateSize, survivorSize);
 		tilt(env, allocateSize, survivorSize);
 
 		/* Restore allocation, which we had disabled in the backout step */

@@ -781,14 +781,15 @@ OMR::X86::TreeEvaluator::fwrtbariEvaluator(TR::Node *node, TR::CodeGenerator *cg
 // also used for iistore, astore and iastore
 TR::Register *OMR::X86::TreeEvaluator::integerStoreEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-
-   TR::Node *valueChild;
+   TR::Node *valueChild = NULL;
    TR::Register *valueReg = NULL;
    bool genLockedOpOutOfline = true;
    TR::Compilation *comp = cg->comp();
 
    bool usingCompressedPointers = false;
-   bool usingLowMemHeap = false;
+   TR::Node *origRef = NULL; // input to compression sequence (when there is one)
+   bool isCompressedNullStore = false;
+   bool isCompressedWithoutShift = false;
 
    node->getFirstChild()->oneParentSupportsLazyClobber(comp);
    if (node->getOpCode().isIndirect())
@@ -798,38 +799,24 @@ TR::Register *OMR::X86::TreeEvaluator::integerStoreEvaluator(TR::Node *node, TR:
       if (comp->useCompressedPointers() &&
             (node->getSymbolReference()->getSymbol()->getDataType() == TR::Address))
          {
-         // pattern match the sequence
-         //     iistore f     iistore f         <- node
-         //       aload O       aload O
-         //     value           l2i
-         //                       lshr
-         //                         lsub        <- translatedNode
-         //                           a2l
-         //                             value   <- valueChild
-         //                           lconst HB
-         //                         iconst shftKonst
-         //
-         // -or- if the field is known to be null or usingLowMemHeap
-         // iistore f
-         //    aload O
-         //    l2i
-         //      a2l
-         //        value  <- valueChild
-         //
-         TR::Node *translatedNode = valueChild;
-         bool isSequence = false;
-         if (translatedNode->getOpCodeValue() == TR::l2i)
+         if (valueChild->getOpCodeValue() == TR::l2i)
             {
-            translatedNode = translatedNode->getFirstChild();
-            isSequence = true;
+            TR::Node *inner = valueChild->getChild(0);
+            bool haveShift = inner->getOpCode().isRightShift();
+            if (haveShift)
+               inner = inner->getChild(0);
+
+            if (inner->getOpCodeValue() == TR::a2l)
+               {
+               usingCompressedPointers = true;
+               origRef = inner->getChild(0);
+               isCompressedNullStore =
+                  valueChild->isZero() || inner->isZero() || origRef->isNull();
+
+               // Ignore the shift (if any) if the value is null anyway.
+               isCompressedWithoutShift = !haveShift || isCompressedNullStore;
+               }
             }
-         if (translatedNode->getOpCode().isRightShift())
-            translatedNode = translatedNode->getFirstChild(); //optional
-
-         usingLowMemHeap = true;
-
-         if (isSequence)
-            usingCompressedPointers = true;
          }
       }
    else
@@ -842,24 +829,31 @@ TR::Register *OMR::X86::TreeEvaluator::integerStoreEvaluator(TR::Node *node, TR:
    TR::Node                *originalValueChild = valueChild;
 
    bool childIsConstant = false;
+   int64_t childConstValue = TR::getMinSigned<TR::Int64>();
 
-   if (valueChild->getOpCode().isLoadConst() &&
-       valueChild->getRegister() == NULL &&
-       !usingCompressedPointers)
+   if (valueChild->getOpCode().isLoadConst() && valueChild->getRegister() == NULL)
       {
       childIsConstant = true;
+      childConstValue = valueChild->getConstValue();
+      }
+   else if (isCompressedNullStore && origRef->getRegister() == NULL)
+      {
+      childIsConstant = true;
+      childConstValue = 0;
       }
 
-   if (childIsConstant && (size <= 4 || IS_32BIT_SIGNED(valueChild->getLongInt())))
+   if (childIsConstant && (size <= 4 || IS_32BIT_SIGNED(childConstValue)))
       {
+      cg->recursivelyDecReferenceCount(valueChild); // skip evaluation of entire subtree
+
       TR::LabelSymbol * dstStored = NULL;
       TR::RegisterDependencyConditions *deps = NULL;
-      int32_t konst = valueChild->getInt();
 
-      // Note that we can use getInt() here for all sizes, since only the
+      // Note that we can truncate to 32-bit here for all sizes, since only the
       // low order "size" bytes of the int will be used by the instruction,
       // and longs only get here if the constant fits in 32 bits.
       //
+      int32_t konst = (int32_t)childConstValue;
       tempMR = generateX86MemoryReference(node, cg);
 
       if (size == 1)
@@ -896,15 +890,21 @@ TR::Register *OMR::X86::TreeEvaluator::integerStoreEvaluator(TR::Node *node, TR:
          }
 
       TR::Register *translatedReg = valueReg;
-      bool valueRegNeededInFuture = true;
-      // try to avoid unnecessary sign-extension
+
+      // try to avoid unnecessary sign-extension (or reg-reg moves in the case
+      // of a compression sequence)
       if (valueChild->getRegister()       == 0 &&
           valueChild->getReferenceCount() == 1 &&
           (valueChild->getOpCodeValue() == TR::l2i ||
            valueChild->getOpCodeValue() == TR::l2s ||
            valueChild->getOpCodeValue() == TR::l2b))
          {
-         valueChild = valueChild->getFirstChild();
+         valueChild = isCompressedWithoutShift ? origRef : valueChild->getChild(0);
+
+         // Skipping evaluation of originalValueChild, but not valueChild.
+         cg->incReferenceCount(valueChild);
+         cg->recursivelyDecReferenceCount(originalValueChild);
+
          if (cg->comp()->target().is64Bit())
             translatedReg = cg->evaluate(valueChild);
          else
@@ -915,23 +915,7 @@ TR::Register *OMR::X86::TreeEvaluator::integerStoreEvaluator(TR::Node *node, TR:
          translatedReg = cg->evaluate(valueChild);
          }
 
-      if (usingCompressedPointers && !usingLowMemHeap)
-         {
-         // do the translation and handle stores of nulls
-         //
-         valueReg = cg->evaluate(node->getSecondChild());
-
-         // check for stored value being null
-         //
-         generateRegRegInstruction(TR::InstOpCode::TESTRegReg(), node, translatedReg, translatedReg, cg);
-         generateRegRegInstruction(TR::InstOpCode::CMOVERegReg(), node, valueReg, translatedReg, cg);
-         }
-      else
-         {
-         valueReg = translatedReg;
-         if (valueChild->getReferenceCount() == 0)
-            valueRegNeededInFuture = false;
-         }
+      valueReg = translatedReg;
 
       // If the evaluation of the child resulted in a NULL register value, the
       // store has already been done by the child
@@ -1018,9 +1002,9 @@ TR::Register *OMR::X86::TreeEvaluator::integerStoreEvaluator(TR::Node *node, TR:
          {
          TR_ASSERT(valueChild->isDirectMemoryUpdate(), "Null valueReg should only occur in direct memory upates");
          }
-      }
 
-   cg->decReferenceCount(valueChild);
+      cg->decReferenceCount(valueChild);
+      }
 
    if (tempMR)
       tempMR->decNodeReferenceCounts(cg);
@@ -1050,9 +1034,6 @@ TR::Register *OMR::X86::TreeEvaluator::integerStoreEvaluator(TR::Node *node, TR:
 
    if (instr && node->getOpCode().isIndirect())
       cg->setImplicitExceptionPoint(instr);
-
-   if (usingCompressedPointers)
-      cg->decReferenceCount(node->getSecondChild());
 
    if (comp->useAnchors() && node->getOpCode().isIndirect())
       node->setStoreAlreadyEvaluated(true);

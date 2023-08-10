@@ -423,16 +423,15 @@ OMR::X86::CodeGenerator::initializeX86(TR::Compilation *comp)
    // TODO (#5642): Re-enable byteswap support on x86 and Power
    // self()->setSupportsByteswap();
 
-   // Enables following optimizations:
-   // + Fast division by constant in TreeSimplifier
-   // +
+   // allows [i/l]div to decompose to [i/l]mulh in TreeSimplifier
+   //
    static char * enableMulHigh = feGetEnv("TR_X86MulHigh");
    if (enableMulHigh)
       {
-      self()->setSupportsIMulHigh();
+      self()->setSupportsLoweringConstIDiv();
 
       if (comp->target().is64Bit())
-         self()->setSupportsLMulHigh();
+         self()->setSupportsLoweringConstLDiv();
       }
 
    self()->setSpillsFPRegistersAcrossCalls(); // TODO:AMD64: Are the preserved XMMRs relevant here?

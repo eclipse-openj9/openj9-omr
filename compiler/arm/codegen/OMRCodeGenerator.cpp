@@ -153,7 +153,7 @@ OMR::ARM::CodeGenerator::initialize()
    cg->setSupportsAlignedAccessOnly();
    cg->setSupportsPrimitiveArrayCopy();
    cg->setSupportsReferenceArrayCopy();
-   cg->setSupportsIMulHigh();
+   cg->setSupportsLoweringConstIDiv();
    cg->setSupportsNewInstanceImplOpt();
 
 #ifdef J9_PROJECT_SPECIFIC

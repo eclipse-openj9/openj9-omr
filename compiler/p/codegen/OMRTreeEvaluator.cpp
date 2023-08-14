@@ -5447,7 +5447,7 @@ static inline void loadArrayCmpSources(TR::Node *node, TR::InstOpCode::Mnemonic 
    }
 
 static TR::Register *inlineArrayCmpP10(TR::Node *node, TR::CodeGenerator *cg, bool isArrayCmpLen)
-{
+   {
    TR::Node *src1AddrNode = node->getChild(0);
    TR::Node *src2AddrNode = node->getChild(1);
    TR::Node *lengthNode = node->getChild(2);
@@ -5458,6 +5458,7 @@ static TR::Register *inlineArrayCmpP10(TR::Node *node, TR::CodeGenerator *cg, bo
    TR::Register *returnReg =  cg->allocateRegister(TR_GPR);
    TR::Register *tempReg = cg->gprClobberEvaluate(lengthNode);
    TR::Register *temp2Reg = cg->allocateRegister(TR_GPR);
+   TR::Register *pairReg = nullptr;
 
    TR::Register *vec0Reg = cg->allocateRegister(TR_VRF);
    TR::Register *vec1Reg = cg->allocateRegister(TR_VRF);
@@ -5469,17 +5470,32 @@ static TR::Register *inlineArrayCmpP10(TR::Node *node, TR::CodeGenerator *cg, bo
    TR::LabelSymbol *endLabel = generateLabelSymbol(cg);
    TR::LabelSymbol *resultLabel = generateLabelSymbol(cg);
 
+   bool is64bit = cg->comp()->target().is64Bit();
+
+   if (isArrayCmpLen && !is64bit)
+      {
+      pairReg = tempReg;
+      tempReg = tempReg->getLowOrder();
+      }
+
    generateLabelInstruction(cg, TR::InstOpCode::label, node, startLabel);
    startLabel->setStartInternalControlFlow();
 
    generateTrg1ImmInstruction(cg, TR::InstOpCode::li, node, indexReg, 0);
-   generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::cmpi4, node, condReg, tempReg, 16);
+   generateTrg1Src1ImmInstruction(cg, (is64bit && isArrayCmpLen) ? TR::InstOpCode::cmpi8 : TR::InstOpCode::cmpli4, node, condReg, tempReg, 16);
 
    // We don't need length anymore as we can calculate the appropriate index by using indexReg and the remainder
    generateTrg1Src1Imm2Instruction(cg, TR::InstOpCode::rlwinm, node, returnReg, tempReg, 0, 0xF);
    generateConditionalBranchInstruction(cg, TR::InstOpCode::blt, node, residueStartLabel, condReg);
 
-   generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::srawi, node, tempReg, tempReg, 4);
+   if (is64bit && isArrayCmpLen)
+      {
+      generateShiftRightLogicalImmediateLong(cg, node, tempReg, tempReg, 4);
+      }
+   else
+      {
+      generateShiftRightLogicalImmediate(cg, node, tempReg, tempReg, 4);
+      }
    generateSrc1Instruction(cg, TR::InstOpCode::mtctr, node, tempReg);
 
    generateLabelInstruction(cg, TR::InstOpCode::label, node, loopStartLabel);
@@ -5535,6 +5551,10 @@ static TR::Register *inlineArrayCmpP10(TR::Node *node, TR::CodeGenerator *cg, bo
       generateTrg1Src1Imm2Instruction(cg, TR::InstOpCode::rlwinm, node, returnReg, tempReg, 2, 3);
       generateTrg1Src2Instruction(cg, TR::InstOpCode::add, node, returnReg, returnReg, tempReg);
       }
+   else if (!is64bit)
+      {
+      generateTrg1ImmInstruction(cg, TR::InstOpCode::li, node, temp2Reg, 0);
+      }
 
    int32_t numRegs = 9;
 
@@ -5555,15 +5575,27 @@ static TR::Register *inlineArrayCmpP10(TR::Node *node, TR::CodeGenerator *cg, bo
    generateDepLabelInstruction(cg, TR::InstOpCode::label, node, endLabel, dependencies);
    endLabel->setEndInternalControlFlow();
 
-   node->setRegister(returnReg);
+   if (isArrayCmpLen && !is64bit)
+      {
+      TR::Register *lowReturnReg = returnReg;
+      returnReg = cg->allocateRegisterPair(returnReg, temp2Reg);
+      node->setRegister(returnReg);
+      TR::Register *liveRegs[4] = { src1AddrReg, src2AddrReg, lowReturnReg, temp2Reg };
+      dependencies->stopUsingDepRegs(cg, 4, liveRegs);
+      cg->stopUsingRegister(pairReg);
+      }
+   else
+      {
+      node->setRegister(returnReg);
+      TR::Register *liveRegs[3] = { src1AddrReg, src2AddrReg, returnReg };
+      dependencies->stopUsingDepRegs(cg, 3, liveRegs);
+      }
    cg->decReferenceCount(src1AddrNode);
    cg->decReferenceCount(src2AddrNode);
    cg->decReferenceCount(lengthNode);
-   TR::Register *liveRegs[3] = { src1AddrReg, src2AddrReg, returnReg };
-   dependencies->stopUsingDepRegs(cg, 3, liveRegs);
 
    return returnReg;
-}
+   }
 
 
 static TR::Register *inlineArrayCmp(TR::Node *node, TR::CodeGenerator *cg, bool isArrayCmpLen)
@@ -5597,11 +5629,22 @@ static TR::Register *inlineArrayCmp(TR::Node *node, TR::CodeGenerator *cg, bool 
    TR::Register *src1AddrReg = cg->gprClobberEvaluate(src1AddrNode);
    TR::Register *src2AddrReg = cg->gprClobberEvaluate(src2AddrNode);
 
-   byteLen = 4;
-   if (cg->comp()->target().is64Bit())
+   bool is64bit = cg->comp()->target().is64Bit();
+
+   if (is64bit)
+      {
       byteLen = 8;
+      }
+   else
+      {
+      byteLen = 4;
+      }
 
    byteLenRegister = cg->evaluate(lengthNode);
+   if (isArrayCmpLen && !is64bit)
+      {
+      byteLenRegister = byteLenRegister->getLowOrder();
+      }
    byteLenRemainingRegister = cg->allocateRegister(TR_GPR);
    tempReg = cg->allocateRegister(TR_GPR);
 
@@ -5617,13 +5660,20 @@ static TR::Register *inlineArrayCmp(TR::Node *node, TR::CodeGenerator *cg, bool 
    condReg2 =  cg->allocateRegister(TR_CCR);
 
    mid2Label = generateLabelSymbol(cg);
-   generateTrg1Src1ImmInstruction(cg, (byteLen == 8) ? TR::InstOpCode::cmpi8 : TR::InstOpCode::cmpi4, node, condReg2, byteLenRemainingRegister, byteLen);
+   generateTrg1Src1ImmInstruction(cg, (is64bit && isArrayCmpLen) ? TR::InstOpCode::cmpi8 : TR::InstOpCode::cmpli4, node, condReg2, byteLenRemainingRegister, byteLen);
    generateConditionalBranchInstruction(cg, TR::InstOpCode::blt, node, mid2Label, condReg2);
 
    generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::addi2, node, src1AddrReg, src1AddrReg, -1*byteLen);
    generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::addi2, node, src2AddrReg, src2AddrReg, -1*byteLen);
 
-   generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::srawi, node, tempReg, byteLenRemainingRegister, (byteLen == 8) ? 3 : 2);
+   if (is64bit && isArrayCmpLen)
+      {
+      generateShiftRightLogicalImmediateLong(cg, node, tempReg, byteLenRemainingRegister, (byteLen == 8) ? 3 : 2);
+      }
+   else
+      {
+      generateShiftRightLogicalImmediate(cg, node, tempReg, byteLenRemainingRegister, (byteLen == 8) ? 3 : 2);
+      }
    generateSrc1Instruction(cg, TR::InstOpCode::mtctr, node, tempReg);
 
    loopStartLabel = generateLabelSymbol(cg);
@@ -5650,7 +5700,21 @@ static TR::Register *inlineArrayCmp(TR::Node *node, TR::CodeGenerator *cg, bool 
       generateTrg1MemInstruction (cg, TR::InstOpCode::ldu, node, src2Reg, TR::MemoryReference::createWithDisplacement(cg, src2AddrReg, 8, 8));
       }
 
-   TR::Register *ccReg =  cg->allocateRegister(TR_GPR);
+   TR::Register *ccReg = nullptr;
+   TR::Register *lowReturnReg = nullptr;
+   TR::Register *highReturnReg = nullptr;
+
+   if (!is64bit && isArrayCmpLen)
+      {
+      lowReturnReg = cg->allocateRegister(TR_GPR);
+      highReturnReg = cg->allocateRegister(TR_GPR);
+      ccReg = cg->allocateRegisterPair(lowReturnReg, highReturnReg);
+      }
+   else
+      {
+      ccReg = cg->allocateRegister(TR_GPR);
+      }
+
 
    generateTrg1Src2Instruction(cg, (byteLen == 8) ? TR::InstOpCode::cmp8 : TR::InstOpCode::cmp4, node, condReg, src1Reg, src2Reg);
    generateConditionalBranchInstruction(cg, TR::InstOpCode::bne, node, residueStartLabel, condReg);
@@ -5664,12 +5728,17 @@ static TR::Register *inlineArrayCmp(TR::Node *node, TR::CodeGenerator *cg, bool 
 
    generateTrg1Instruction(cg, TR::InstOpCode::mfctr, node, byteLenRemainingRegister);
 
-   generateTrg1Src1ImmInstruction(cg, (byteLen == 8) ? TR::InstOpCode::cmpi8 : TR::InstOpCode::cmpi4, node, condReg2, byteLenRemainingRegister, 0);
+   generateTrg1Src1ImmInstruction(cg, (is64bit && isArrayCmpLen) ? TR::InstOpCode::cmpi8 : TR::InstOpCode::cmpli4, node, condReg2, byteLenRemainingRegister, 0);
    generateTrg1Src2Instruction(cg, TR::InstOpCode::subf, node, byteLenRemainingRegister, byteLenRemainingRegister, tempReg);
-   generateShiftLeftImmediate(cg, node, byteLenRemainingRegister, byteLenRemainingRegister, (byteLen == 8) ? 3 : 2);
+
+   if (is64bit && isArrayCmpLen)
+      generateShiftLeftImmediateLong(cg, node, byteLenRemainingRegister, byteLenRemainingRegister, (byteLen == 8) ? 3 : 2);
+   else
+      generateShiftLeftImmediate(cg, node, byteLenRemainingRegister, byteLenRemainingRegister, (byteLen == 8) ? 3 : 2);
+
    generateConditionalBranchInstruction(cg, TR::InstOpCode::bne, node, midLabel, condReg2);
 
-   generateTrg1Src2Instruction(cg, (byteLen == 8) ? TR::InstOpCode::cmp8 : TR::InstOpCode::cmp4, node, condReg2, byteLenRemainingRegister, byteLenRegister);
+   generateTrg1Src2Instruction(cg, (is64bit && isArrayCmpLen) ? TR::InstOpCode::cmp8 : TR::InstOpCode::cmpl4, node, condReg2, byteLenRemainingRegister, byteLenRegister);
    generateLabelInstruction(cg, TR::InstOpCode::label, node, midLabel);
    generateTrg1Src2Instruction(cg, TR::InstOpCode::subf, node, byteLenRemainingRegister, byteLenRemainingRegister, byteLenRegister);
    generateLabelInstruction(cg, TR::InstOpCode::label, node, mid2Label);
@@ -5696,10 +5765,20 @@ static TR::Register *inlineArrayCmp(TR::Node *node, TR::CodeGenerator *cg, bool 
    generateLabelInstruction(cg, TR::InstOpCode::label, node, resultLabel);
 
    if (isArrayCmpLen)
-      generateTrg1Src2Instruction(cg, TR::InstOpCode::subf, node, ccReg, byteLenRemainingRegister, byteLenRegister);
+      {
+      if (is64bit)
+         {
+         generateTrg1Src2Instruction(cg, TR::InstOpCode::subf, node, ccReg, byteLenRemainingRegister, byteLenRegister);
+         }
+      else
+         {
+         generateTrg1Src2Instruction(cg, TR::InstOpCode::subf, node, lowReturnReg, byteLenRemainingRegister, byteLenRegister);
+         generateTrg1ImmInstruction(cg, TR::InstOpCode::li, node, highReturnReg, 0);
+         }
+      }
    else
       {
-      generateTrg1Src1ImmInstruction(cg, (byteLen == 8) ? TR::InstOpCode::cmpi8 : TR::InstOpCode::cmpi4, node, condReg2, byteLenRemainingRegister, 0);
+      generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::cmpli4, node, condReg2, byteLenRemainingRegister, 0);
       generateConditionalBranchInstruction(cg, TR::InstOpCode::bne, node, result2Label, condReg2);
       generateTrg1ImmInstruction(cg, TR::InstOpCode::li, node, ccReg, 0);
       generateLabelInstruction(cg, TR::InstOpCode::b, node, residueEndLabel);
@@ -5710,6 +5789,10 @@ static TR::Register *inlineArrayCmp(TR::Node *node, TR::CodeGenerator *cg, bool 
       }
 
    int32_t numRegs = 10;
+   if (!is64bit && isArrayCmpLen)
+      {
+      numRegs = 11;
+      }
 
    TR::RegisterDependencyConditions *dependencies = new (cg->trHeapMemory()) TR::RegisterDependencyConditions(0, numRegs, cg->trMemory());
    dependencies->addPostCondition(src1Reg, TR::RealRegister::NoReg);
@@ -5719,7 +5802,15 @@ static TR::Register *inlineArrayCmp(TR::Node *node, TR::CodeGenerator *cg, bool 
    dependencies->addPostCondition(byteLenRegister, TR::RealRegister::NoReg);
    dependencies->addPostCondition(byteLenRemainingRegister, TR::RealRegister::NoReg);
    dependencies->addPostCondition(tempReg, TR::RealRegister::NoReg);
-   dependencies->addPostCondition(ccReg, TR::RealRegister::NoReg);
+   if (!is64bit && isArrayCmpLen)
+      {
+      dependencies->addPostCondition(lowReturnReg, TR::RealRegister::NoReg);
+      dependencies->addPostCondition(highReturnReg, TR::RealRegister::NoReg);
+      }
+   else
+      {
+      dependencies->addPostCondition(ccReg, TR::RealRegister::NoReg);
+      }
    dependencies->addPostCondition(condReg, TR::RealRegister::NoReg);
    dependencies->addPostCondition(condReg2, TR::RealRegister::NoReg);
 

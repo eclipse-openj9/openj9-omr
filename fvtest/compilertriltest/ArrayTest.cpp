@@ -265,8 +265,9 @@ TEST_P(ArraycmpNotEqualTest, ArraycmpLessThanVariableLen) {
     EXPECT_EQ(returnValueForArraycmpLessThan, entry_point(&s1[0], &s2[0], length));
 }
 
-static std::vector<std::tuple<int32_t, int32_t>> createArraycmpNotEqualParam() {
-  std::vector<std::tuple<int32_t, int32_t>> v;
+template <typename intXX_t>
+static std::vector<std::tuple<intXX_t, intXX_t>> createArraycmpNotEqualParam() {
+  std::vector<std::tuple<intXX_t, intXX_t>> v;
   /* Small arrays */
   for (int i = 1; i < 32; i++) {
     for (int j = 0; j < i; j++) {
@@ -289,7 +290,7 @@ static std::vector<std::tuple<int32_t, int32_t>> createArraycmpNotEqualParam() {
   }
   return v;
 }
-INSTANTIATE_TEST_CASE_P(ArraycmpTest, ArraycmpNotEqualTest, ::testing::ValuesIn(createArraycmpNotEqualParam()));
+INSTANTIATE_TEST_CASE_P(ArraycmpTest, ArraycmpNotEqualTest, ::testing::ValuesIn(createArraycmpNotEqualParam<int32_t>()));
 
 
 /**
@@ -298,7 +299,7 @@ INSTANTIATE_TEST_CASE_P(ArraycmpTest, ArraycmpNotEqualTest, ::testing::ValuesIn(
  * @details Used for arraycmplen test with the arrays with same data.
  * The parameter is the length parameter for the arraycmp evaluator.
  */
-class ArraycmplenEqualTest : public TRTest::JitTest, public ::testing::WithParamInterface<int32_t> {};
+class ArraycmplenEqualTest : public TRTest::JitTest, public ::testing::WithParamInterface<int64_t> {};
 /**
  * @brief TestFixture class for arraycmplen test
  *
@@ -306,7 +307,7 @@ class ArraycmplenEqualTest : public TRTest::JitTest, public ::testing::WithParam
  * The first parameter is the length parameter for the arraycmp evaluator.
  * The second parameter is the offset of the mismatched element in the arrays.
  */
-class ArraycmplenNotEqualTest : public TRTest::JitTest, public ::testing::WithParamInterface<std::tuple<int32_t, int32_t>> {};
+class ArraycmplenNotEqualTest : public TRTest::JitTest, public ::testing::WithParamInterface<std::tuple<int64_t, int64_t>> {};
 
 TEST_P(ArraycmplenEqualTest, ArraycmpLenSameArray) {
     SKIP_ON_ARM(MissingImplementation);
@@ -318,13 +319,13 @@ TEST_P(ArraycmplenEqualTest, ArraycmpLenSameArray) {
      * "address=0" parameter is needed for arraycmp opcode because "Call" property is set to the opcode.
      */
     std::snprintf(inputTrees, sizeof(inputTrees),
-      "(method return=Int32 args=[Address, Address]"
+      "(method return=Int64 args=[Address, Address]"
       "  (block"
-      "    (ireturn"
+      "    (lreturn"
       "      (arraycmplen address=0 args=[Address, Address]"
       "        (aload parm=0)"
       "        (aload parm=1)"
-      "        (iconst %d)))))",
+      "        (lconst %" OMR_PRId64 ")))))",
       length
       );
     auto trees = parseString(inputTrees);
@@ -336,7 +337,7 @@ TEST_P(ArraycmplenEqualTest, ArraycmpLenSameArray) {
     ASSERT_EQ(0, compiler.compile()) << "Compilation failed unexpectedly\n" << "Input trees: " << inputTrees;
 
     std::vector<unsigned char> s1(length, 0x5c);
-    auto entry_point = compiler.getEntryPoint<int32_t (*)(unsigned char *, unsigned char *)>();
+    auto entry_point = compiler.getEntryPoint<int64_t (*)(unsigned char *, unsigned char *)>();
     EXPECT_EQ(length, entry_point(&s1[0], &s1[0]));
 }
 
@@ -347,13 +348,13 @@ TEST_P(ArraycmplenEqualTest, ArraycmpLenEqualConstLen) {
     auto length = GetParam();
     char inputTrees[1024] = {0};
     std::snprintf(inputTrees, sizeof(inputTrees),
-      "(method return=Int32 args=[Address, Address]"
+      "(method return=Int64 args=[Address, Address]"
       "  (block"
-      "    (ireturn"
+      "    (lreturn"
       "      (arraycmplen address=0 args=[Address, Address]"
       "        (aload parm=0)"
       "        (aload parm=1)"
-      "        (iconst %d)))))",
+      "        (lconst %" OMR_PRId64 ")))))",
       length
       );
     auto trees = parseString(inputTrees);
@@ -366,7 +367,7 @@ TEST_P(ArraycmplenEqualTest, ArraycmpLenEqualConstLen) {
 
     std::vector<unsigned char> s1(length, 0x5c);
     std::vector<unsigned char> s2(length, 0x5c);
-    auto entry_point = compiler.getEntryPoint<int32_t (*)(unsigned char *, unsigned char *)>();
+    auto entry_point = compiler.getEntryPoint<int64_t (*)(unsigned char *, unsigned char *)>();
     EXPECT_EQ(length, entry_point(&s1[0], &s2[0]));
 }
 
@@ -377,13 +378,13 @@ TEST_P(ArraycmplenEqualTest, ArraycmpLenEqualVariableLen) {
     auto length = GetParam();
     char inputTrees[1024] = {0};
     std::snprintf(inputTrees, sizeof(inputTrees),
-      "(method return=Int32 args=[Address, Address, Int32]"
+      "(method return=Int64 args=[Address, Address, Int64]"
       "  (block"
-      "    (ireturn"
+      "    (lreturn"
       "      (arraycmplen address=0 args=[Address, Address]"
       "        (aload parm=0)"
       "        (aload parm=1)"
-      "        (iload parm=2)))))"
+      "        (lload parm=2)))))"
       );
     auto trees = parseString(inputTrees);
 
@@ -395,11 +396,11 @@ TEST_P(ArraycmplenEqualTest, ArraycmpLenEqualVariableLen) {
 
     std::vector<unsigned char> s1(length, 0x5c);
     std::vector<unsigned char> s2(length, 0x5c);
-    auto entry_point = compiler.getEntryPoint<int32_t (*)(unsigned char *, unsigned char *, int32_t)>();
+    auto entry_point = compiler.getEntryPoint<int64_t (*)(unsigned char *, unsigned char *, int64_t)>();
     EXPECT_EQ(length, entry_point(&s1[0], &s2[0], length));
 }
 
-INSTANTIATE_TEST_CASE_P(ArraycmplenTest, ArraycmplenEqualTest, ::testing::Range(1L, 128L));
+INSTANTIATE_TEST_CASE_P(ArraycmplenTest, ArraycmplenEqualTest, ::testing::Range(static_cast<int64_t>(1), static_cast<int64_t>(128)));
 
 TEST_P(ArraycmplenNotEqualTest, ArraycmpLenNotEqualConstLen) {
     SKIP_ON_ARM(MissingImplementation);
@@ -409,13 +410,13 @@ TEST_P(ArraycmplenNotEqualTest, ArraycmpLenNotEqualConstLen) {
     auto offset = std::get<1>(GetParam());
     char inputTrees[1024] = {0};
     std::snprintf(inputTrees, sizeof(inputTrees),
-      "(method return=Int32 args=[Address, Address]"
+      "(method return=Int64 args=[Address, Address]"
       "  (block"
-      "    (ireturn"
+      "    (lreturn"
       "      (arraycmplen address=0 args=[Address, Address]"
       "        (aload parm=0)"
       "        (aload parm=1)"
-      "        (iconst %d)))))",
+      "        (lconst %" OMR_PRId64 ")))))",
       length
       );
     auto trees = parseString(inputTrees);
@@ -430,7 +431,7 @@ TEST_P(ArraycmplenNotEqualTest, ArraycmpLenNotEqualConstLen) {
     std::vector<unsigned char> s2(length, 0x5c);
     s1[offset] = 0x3f;
 
-    auto entry_point = compiler.getEntryPoint<int32_t (*)(unsigned char *, unsigned char *)>();
+    auto entry_point = compiler.getEntryPoint<int64_t (*)(unsigned char *, unsigned char *)>();
     EXPECT_EQ(offset, entry_point(&s1[0], &s2[0]));
 }
 
@@ -442,13 +443,13 @@ TEST_P(ArraycmplenNotEqualTest, ArraycmpLenNotEqualVariableLen) {
     auto offset = std::get<1>(GetParam());
     char inputTrees[1024] = {0};
     std::snprintf(inputTrees, sizeof(inputTrees),
-      "(method return=Int32 args=[Address, Address, Int32]"
+      "(method return=Int64 args=[Address, Address, Int64]"
       "  (block"
-      "    (ireturn"
+      "    (lreturn"
       "      (arraycmplen address=0 args=[Address, Address]"
       "        (aload parm=0)"
       "        (aload parm=1)"
-      "        (iload parm=2)))))"
+      "        (lload parm=2)))))"
       );
     auto trees = parseString(inputTrees);
 
@@ -462,8 +463,8 @@ TEST_P(ArraycmplenNotEqualTest, ArraycmpLenNotEqualVariableLen) {
     std::vector<unsigned char> s2(length, 0x5c);
     s1[offset] = 0x3f;
 
-    auto entry_point = compiler.getEntryPoint<int32_t (*)(unsigned char *, unsigned char *, int32_t)>();
+    auto entry_point = compiler.getEntryPoint<int64_t (*)(unsigned char *, unsigned char *, int64_t)>();
     EXPECT_EQ(offset, entry_point(&s1[0], &s2[0], length));
 }
 
-INSTANTIATE_TEST_CASE_P(ArraycmplenTest, ArraycmplenNotEqualTest, ::testing::ValuesIn(createArraycmpNotEqualParam()));
+INSTANTIATE_TEST_CASE_P(ArraycmplenTest, ArraycmplenNotEqualTest, ::testing::ValuesIn(createArraycmpNotEqualParam<int64_t>()));

@@ -1301,7 +1301,8 @@ TR::Register *OMR::X86::TreeEvaluator::SSE2ArraycmpLenEvaluator(TR::Node *node, 
 
    TR::Register *s1Reg = cg->gprClobberEvaluate(s1AddrNode, TR::InstOpCode::MOVRegReg());
    TR::Register *s2Reg = cg->gprClobberEvaluate(s2AddrNode, TR::InstOpCode::MOVRegReg());
-   TR::Register *strLenReg = cg->gprClobberEvaluate(lengthNode, TR::InstOpCode::MOVRegReg());
+   TR::Register *strLenReg = cg->longClobberEvaluate(lengthNode);
+   TR::Register *highReg = NULL;
    TR::Register *equalTestReg = cg->allocateRegister(TR_GPR);
    TR::Register *s2ByteReg = cg->allocateRegister(TR_GPR);
    TR::Register *byteCounterReg = cg->allocateRegister(TR_GPR);
@@ -1311,6 +1312,14 @@ TR::Register *OMR::X86::TreeEvaluator::SSE2ArraycmpLenEvaluator(TR::Node *node, 
    TR::Register *xmm2Reg = cg->allocateRegister(TR_FPR);
 
    TR::Machine *machine = cg->machine();
+
+   if (cg->comp()->target().is32Bit() && strLenReg->getRegisterPair())
+      {
+      // On 32-bit, the length is guaranteed to fit into the bottom 32 bits
+      strLenReg = strLenReg->getLowOrder();
+      // The high 32 bits will all be zero, so we can save this reg to zero-extend the final result
+      highReg = strLenReg->getHighOrder();
+      }
 
    generateRegImmInstruction(TR::InstOpCode::MOVRegImm4(), node, resultReg, 0, cg);
    generateLabelInstruction(TR::InstOpCode::label, node, startLabel, cg);
@@ -1378,6 +1387,17 @@ TR::Register *OMR::X86::TreeEvaluator::SSE2ArraycmpLenEvaluator(TR::Node *node, 
    deps->addPostCondition(s1Reg, TR::RealRegister::NoReg, cg);
 
    generateLabelInstruction(TR::InstOpCode::label, node, doneLabel, deps, cg);
+
+   if (cg->comp()->target().is32Bit())
+      {
+      if (highReg == NULL)
+         {
+         highReg = cg->allocateRegister(TR_GPR);
+         generateRegImmInstruction(TR::InstOpCode::MOVRegImm4(), node, highReg, 0, cg);
+         }
+      resultReg = cg->allocateRegisterPair(resultReg, highReg);
+      }
+
    node->setRegister(resultReg);
 
    cg->decReferenceCount(s1AddrNode);

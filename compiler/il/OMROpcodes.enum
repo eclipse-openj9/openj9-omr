@@ -7212,9 +7212,9 @@ OPCODE_MACRO(\
    /* .properties2          = */ 0, \
    /* .properties3          = */ ILProp3::LikeUse | ILProp3::LikeDef | ILProp3::SkipDynamicLitPoolOnInts, \
    /* .properties4          = */ 0, \
-   /* .dataType             = */ TR::Int32, \
-   /* .typeProperties       = */ ILTypeProp::Size_4 | ILTypeProp::Integer, \
-   /* .childProperties      = */ THREE_CHILD(TR::Address, TR::Address, TR::Int32), \
+   /* .dataType             = */ TR::Int64, \
+   /* .typeProperties       = */ ILTypeProp::Size_8 | ILTypeProp::Integer | ILTypeProp::Unsigned, \
+   /* .childProperties      = */ THREE_CHILD(TR::Address, TR::Address, TR::Int64), \
    /* .swapChildrenOpCode   = */ TR::BadILOp, \
    /* .reverseBranchOpCode  = */ TR::BadILOp, \
    /* .booleanCompareOpCode = */ TR::BadILOp, \

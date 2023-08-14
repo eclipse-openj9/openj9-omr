@@ -5714,7 +5714,7 @@ OMR::Node::chkThrowInsertedByOSR()
 bool
 OMR::Node::isTheVirtualCallNodeForAGuardedInlinedCall()
    {
-   if (self()->getOpCode().isCall())
+   if (self()->getOpCode().isCall() && !self()->isArrayCopyCall())
       return _flags.testAny(virtualCallNodeForAGuardedInlinedCall);
    else
       return false;
@@ -5739,7 +5739,7 @@ OMR::Node::resetIsTheVirtualCallNodeForAGuardedInlinedCall()
 bool
 OMR::Node::chkTheVirtualCallNodeForAGuardedInlinedCall()
    {
-   return self()->getOpCode().isCall() && _flags.testAny(virtualCallNodeForAGuardedInlinedCall);
+   return self()->getOpCode().isCall() && !self()->isArrayCopyCall() && _flags.testAny(virtualCallNodeForAGuardedInlinedCall);
    }
 
 /**

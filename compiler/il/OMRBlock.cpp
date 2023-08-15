@@ -1175,12 +1175,13 @@ static TR::SymbolReference * createSymRefForNode(TR::Compilation *comp, TR::Reso
                   valueChild = valueChild->getFirstChild();
                // If the node we are uncommoning is internal pointer and while iterating a child we found a node that is not
                // Array Reference, There are only two possibilities.
-               // 1. It is  internal poiter which was commoned means could be stored into register or on temp slot.
+               // 1. It is internal pointer which was commoned means could be stored into register or on temp slot.
                // 2. Itself is a pointer to array object.
                TR::SymbolReference *valueChildSymRef = valueChild->getSymbolReference();
                if (valueChildSymRef != NULL &&
-                  ((valueChild->getOpCode().isLoadVarDirect() && valueChildSymRef->getSymbol()->isAuto()) ||
-                  (valueChild->getOpCode().isLoadReg() && valueChildSymRef->getSymbol()->castToAutoSymbol()->isInternalPointer())))
+                   valueChildSymRef->getSymbol()->isAuto() &&
+                  (valueChild->getOpCode().isLoadVarDirect() ||
+                        (valueChild->getOpCode().isLoadReg() && valueChildSymRef->getSymbol()->castToAutoSymbol()->isInternalPointer())))
                   {
                   if (valueChildSymRef->getSymbol()->castToAutoSymbol()->isInternalPointer())
                      {

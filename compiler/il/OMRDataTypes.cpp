@@ -141,6 +141,15 @@ OMR::DataType::getVectorSize()
    return 0;
    }
 
+int32_t
+OMR::DataType::getVectorNumLanes()
+   {
+   TR_ASSERT_FATAL(isVector() || isMask(), "getVectorNumlanes() can only be called on vector or mask type\n");
+
+   return getVectorSize() / getSize(getVectorElementType());
+   }
+
+
 static int32_t OMRDataTypeSizes[] =
    {
    0,                 // TR::NoType

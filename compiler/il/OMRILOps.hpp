@@ -208,6 +208,31 @@ public:
       }
 
   /** \brief
+   *     Returns vector type
+   *
+   *  \return
+   *     Vector type
+   */
+   TR::DataType getVectorDataType() const
+      {
+      return getVectorDataType(_opCode);
+      }
+
+  /** \brief
+   *     Returns vector type
+   *
+   *  \param op
+   *     Opcode
+   *
+   *  \return
+   *     Vector type
+   */
+   static TR::DataType getVectorDataType(ILOpCode op)
+      {
+      return getVectorResultDataType(op);
+      }
+
+  /** \brief
    *     Returns vector result type
    *
    *  \return
@@ -342,14 +367,13 @@ public:
             TR::DataType dt = getVectorResultDataType(op);
             return TR::DataType::createMaskType(dt.getVectorElementType(), dt.getVectorLength());
             }
-         else if (opcode.isMaskReduction())
+         else if (opcode.isVectorElementResult())
             {
-            return _opCodeProperties[opcode.getTableIndex()].dataType;
+            return getVectorResultDataType(op).getVectorElementType();
             }
          else
             {
-            // scalar result type (e.g. reduction)
-            return getVectorResultDataType(op).getVectorElementType();
+            return _opCodeProperties[opcode.getTableIndex()].dataType;
             }
          }
 
@@ -384,6 +408,7 @@ public:
    bool isFloatingPoint()            const { return typeProperties().testAny(ILTypeProp::Floating_Point); }
    bool isVectorResult()             const { return typeProperties().testAny(ILTypeProp::VectorResult); }
    bool isMaskResult()               const { return typeProperties().testAny(ILTypeProp::MaskResult); }
+   bool isVectorElementResult()      const { return typeProperties().testAny(ILTypeProp::VectorElementResult); }
    bool isIntegerOrAddress()         const { return typeProperties().testAny(ILTypeProp::Integer | ILTypeProp::Address); }
    bool is1Byte()                    const { return typeProperties().testAny(ILTypeProp::Size_1); }
    bool is2Byte()                    const { return typeProperties().testAny(ILTypeProp::Size_2); }

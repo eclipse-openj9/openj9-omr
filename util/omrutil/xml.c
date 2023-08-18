@@ -30,54 +30,75 @@ uintptr_t
 escapeXMLString(OMRPortLibrary *portLibrary, char *outBuf, uintptr_t outBufLen, const char *string, uintptr_t stringLen)
 {
 	uintptr_t stringPos = 0;
-	uintptr_t outBufPos = 0;
-	OMRPORT_ACCESS_FROM_OMRPORT(portLibrary);
 
-	if (0 == outBufLen) {
-		return 0;
-	}
-	/* null terminate in case we can't fit anything in the buffer */
-	outBuf[0] = '\0';
+	if (0 != outBufLen) {
+		uintptr_t outBufPos = 0;
 
-	for (stringPos = 0; stringPos < stringLen; ++stringPos) {
-		uintptr_t tmpBufLen = 0;
-		char tmpBuf[8];
+		for (stringPos = 0; stringPos < stringLen; ++stringPos) {
+			const char *xml = &string[stringPos];
+			uintptr_t xmlLength = 1;
+			const uint8_t ch = (uint8_t)*xml;
 
-		switch (string[stringPos]) {
-		case '<':
-			strcpy(tmpBuf, "&lt;");
-			break;
-		case '>':
-			strcpy(tmpBuf, "&gt;");
-			break;
-		case '&':
-			strcpy(tmpBuf, "&amp;");
-			break;
-		case '\'':
-			strcpy(tmpBuf, "&apos;");
-			break;
-		case '\"':
-			strcpy(tmpBuf, "&quot;");
-			break;
-		default:
-			if (((uint8_t)(string[stringPos])) < 0x20) {
-				/* use XML escape sequence for characters below 0x20 */
-				omrstr_printf(tmpBuf, sizeof(tmpBuf), "&#x%X;", (uint32_t)string[stringPos]);
-			} else {
-				tmpBuf[0] = string[stringPos];
-				tmpBuf[1] = '\0';
+			switch (ch) {
+			case '<':
+				xml = "&lt;";
+				xmlLength = 4;
+				break;
+			case '>':
+				xml = "&gt;";
+				xmlLength = 4;
+				break;
+			case '&':
+				xml = "&amp;";
+				xmlLength = 5;
+				break;
+			case '\'':
+				xml = "&apos;";
+				xmlLength = 6;
+				break;
+			case '\"':
+				xml = "&quot;";
+				xmlLength = 6;
+				break;
+			case 0x09:
+				xml = "&#9;";
+				xmlLength = 4;
+				break;
+			case 0x0A:
+				xml = "&#xA;";
+				xmlLength = 5;
+				break;
+			case 0x0D:
+				xml = "&#xD;";
+				xmlLength = 5;
+				break;
+			default:
+				if (ch < 0x20) {
+					/* use Unicode replacement for characters
+					 * which are not legal in XML version 1.0
+					 */
+					xml = "&#xFFFD;";
+					xmlLength = 8;
+				}
+				break;
 			}
-			break;
+
+			if (xmlLength >= (outBufLen - outBufPos)) {
+				/* there's not enough space in the output buffer */
+				break;
+			}
+
+			if (1 == xmlLength) {
+				outBuf[outBufPos] = *xml;
+			} else {
+				memcpy(&outBuf[outBufPos], xml, xmlLength);
+			}
+			outBufPos += xmlLength;
 		}
 
-		/* finish if the output buffer is full */
-		tmpBufLen = strlen(tmpBuf);
-		if (outBufPos + tmpBufLen > outBufLen - 1) {
-			break;
-		}
-
-		strcpy(outBuf + outBufPos, tmpBuf);
-		outBufPos += tmpBufLen;
+		/* null terminate */
+		outBuf[outBufPos] = '\0';
 	}
+
 	return stringPos;
 }

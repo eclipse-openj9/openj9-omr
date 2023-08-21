@@ -71,18 +71,20 @@ EsSharedLibraryLookupName(uintptr_t descriptor, char *name, uintptr_t *func)
 uintptr_t
 omrsl_open_shared_library(struct OMRPortLibrary *portLibrary, char *name, uintptr_t *descriptor, uintptr_t flags)
 {
-	HINSTANCE dllHandle;
-	UINT prevMode;
-	DWORD error;
-	uintptr_t notFound;
+	HINSTANCE dllHandle = NULL;
+	UINT prevMode = 0;
+	DWORD error = 0;
+	uintptr_t notFound = 0;
 	const char *errorMessage = NULL;
 	char errBuf[512];
 	char mangledName[EsMaxPath + 1];
 	char *openName = name;
 	wchar_t portLibDir[EsMaxPath];
-	wchar_t unicodeBuffer[UNICODE_BUFFER_SIZE], *unicodeName;
+	wchar_t unicodeBuffer[UNICODE_BUFFER_SIZE];
+	wchar_t *unicodeName = NULL;
 	BOOLEAN decorate = OMR_ARE_ALL_BITS_SET(flags, OMRPORT_SLOPEN_DECORATE);
 	BOOLEAN openExec = OMR_ARE_ALL_BITS_SET(flags, OMRPORT_SLOPEN_OPEN_EXECUTABLE);
+	BOOLEAN openNoLoad = OMR_ARE_ALL_BITS_SET(flags, OMRPORT_SLOPEN_NO_LOAD);
 	uintptr_t pathLength = 0;
 
 	Trc_PRT_sl_open_shared_library_Entry(name, flags);
@@ -166,31 +168,25 @@ omrsl_open_shared_library(struct OMRPortLibrary *portLibrary, char *name, uintpt
 
 	Trc_PRT_sl_open_shared_library_Event1(openName);
 
+	if (openNoLoad) {
+		dllHandle = GetModuleHandleW(unicodeName);
+		Trc_PRT_sl_open_shared_library_noload(dllHandle);
+		goto exitOnSuccess;
+	}
+
 	/* LoadLibraryExW will try appending .DLL if necessary.
 	 * LOAD_LIBRARY_SEARCH_DLL_LOAD_DIR causes the operating system to search for dependencies in the same folder.
 	 * This behaviour is similar to LOAD_WITH_ALTERED_SEARCH_PATH.
 	 */
 	dllHandle = LoadLibraryExW(unicodeName, NULL, LOAD_LIBRARY_SEARCH_DEFAULT_DIRS | LOAD_LIBRARY_SEARCH_DLL_LOAD_DIR);
 	if (dllHandle >= (HINSTANCE)HINSTANCE_ERROR) {
-		*descriptor = (uintptr_t)dllHandle;
-		SetErrorMode(prevMode);
-		if (unicodeBuffer != unicodeName) {
-			portLibrary->mem_free_memory(portLibrary, unicodeName);
-		}
-		Trc_PRT_sl_open_shared_library_Exit1(dllHandle);
-		return 0;
+		goto exitOnSuccess;
 	}
 
 	/* LoadLibrary will try appending .DLL if necessary. */
 	dllHandle = LoadLibraryW(unicodeName);
 	if (dllHandle >= (HINSTANCE)HINSTANCE_ERROR) {
-		*descriptor = (uintptr_t)dllHandle;
-		SetErrorMode(prevMode);
-		if (unicodeBuffer != unicodeName) {
-			portLibrary->mem_free_memory(portLibrary, unicodeName);
-		}
-		Trc_PRT_sl_open_shared_library_Exit1(dllHandle);
-		return 0;
+		goto exitOnSuccess;
 	}
 
 	/* record the error */
@@ -208,13 +204,7 @@ omrsl_open_shared_library(struct OMRPortLibrary *portLibrary, char *name, uintpt
 				portLibDir[EsMaxPath - 1] = L'\0';
 				dllHandle = LoadLibraryExW(portLibDir, NULL, LOAD_WITH_ALTERED_SEARCH_PATH);
 				if (dllHandle >= (HINSTANCE)HINSTANCE_ERROR) {
-					*descriptor = (uintptr_t)dllHandle;
-					SetErrorMode(prevMode);
-					if (unicodeBuffer != unicodeName) {
-						portLibrary->mem_free_memory(portLibrary, unicodeName);
-					}
-					Trc_PRT_sl_open_shared_library_Exit1(dllHandle);
-					return 0;
+					goto exitOnSuccess;
 				}
 			}
 		}
@@ -315,6 +305,15 @@ omrsl_open_shared_library(struct OMRPortLibrary *portLibrary, char *name, uintpt
 	SetErrorMode(prevMode);
 	Trc_PRT_sl_open_shared_library_Exit2(notFound ? OMRPORT_SL_NOT_FOUND : OMRPORT_SL_INVALID);
 	return portLibrary->error_set_last_error_with_message(portLibrary, notFound ? OMRPORT_SL_NOT_FOUND : OMRPORT_SL_INVALID, errBuf);
+
+exitOnSuccess:
+	*descriptor = (uintptr_t)dllHandle;
+	SetErrorMode(prevMode);
+	if (unicodeBuffer != unicodeName) {
+		portLibrary->mem_free_memory(portLibrary, unicodeName);
+	}
+	Trc_PRT_sl_open_shared_library_Exit1(dllHandle);
+	return 0;
 }
 
 /**

@@ -1624,3 +1624,5 @@ TraceException=Trc_PRT_sysinfo_get_number_CPUs_by_type_read_failed Group=sysinfo
 
 TraceExit-Exception=Trc_PRT_mmap_map_file_unix_filestatfailed_exit Group=mmap Overhead=1 Level=1 NoEnv Template="omrmmap_map_file: Could not get stats about the file"
 TraceExit-Exception=Trc_PRT_mmap_map_file_cannotallocatehandle_exit Group=mmap Overhead=1 Level=1 NoEnv Template="omrmmap_map_file: Could not allocate memory for handle"
+
+TraceEvent=Trc_PRT_sl_open_shared_library_noload Group=sl Overhead=1 Level=3 NoEnv Template="omrsl_open_shared_library tests if a library is already loaded, returns handle=%p"

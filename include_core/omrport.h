@@ -833,6 +833,9 @@ typedef struct J9ProcessorInfos {
 #define OMRPORT_SL_ZOS_31BIT_TARGET_MASK 0xFFFFFFFF /* Mask used to convert 31-bit tagged handles/addresses to proper values. */
 #endif /* defined(J9ZOS39064) */
 
+/* Supported on Linux/OSX/Unix/Windows platforms. */
+#define OMRPORT_SLOPEN_NO_LOAD 32
+
 #define OMRPORT_ARCH_X86       "x86"
 #define OMRPORT_ARCH_PPC       "ppc" 				/* in line with IBM JDK 1.22 and above for AIX and Linux/PPC */
 #define OMRPORT_ARCH_PPC64     "ppc64"

@@ -130,13 +130,14 @@ omrsl_close_shared_library(struct OMRPortLibrary *portLibrary, uintptr_t descrip
 uintptr_t
 omrsl_open_shared_library(struct OMRPortLibrary *portLibrary, char *name, uintptr_t *descriptor, uintptr_t flags)
 {
-	void *handle;
+	void *handle = NULL;
 	char *openName = name;
 	char mangledName[MAX_STRING_LENGTH + 1];
 	char errBuf[MAX_ERR_BUF_LENGTH];
 	int lazyOrNow = OMR_ARE_ALL_BITS_SET(flags, OMRPORT_SLOPEN_LAZY) ? RTLD_LAZY : RTLD_NOW;
 	BOOLEAN decorate = OMR_ARE_ALL_BITS_SET(flags, OMRPORT_SLOPEN_DECORATE);
 	BOOLEAN openExec = OMR_ARE_ALL_BITS_SET(flags, OMRPORT_SLOPEN_OPEN_EXECUTABLE);
+	BOOLEAN openNoLoad = OMR_ARE_ALL_BITS_SET(flags, OMRPORT_SLOPEN_NO_LOAD);
 	uintptr_t pathLength = 0;
 
 	Trc_PRT_sl_open_shared_library_Entry(name, flags);
@@ -158,6 +159,13 @@ omrsl_open_shared_library(struct OMRPortLibrary *portLibrary, char *name, uintpt
 	}
 
 	Trc_PRT_sl_open_shared_library_Event1(openName);
+
+	if (openNoLoad) {
+		/* One of RTLD_LAZY and RTLD_NOW must be included in the flag. */
+		handle = dlopen(openExec ? NULL : openName, RTLD_NOLOAD | lazyOrNow);
+		Trc_PRT_sl_open_shared_library_noload(handle);
+		goto exitOnSuccess;
+	}
 
 	/* dlopen(2) called with NULL filename opens a handle to current executable. */
 	handle = dlopen(openExec ? NULL : openName, lazyOrNow);
@@ -211,7 +219,8 @@ omrsl_open_shared_library(struct OMRPortLibrary *portLibrary, char *name, uintpt
 		}
 	}
 
-	*descriptor = (uintptr_t) handle;
+exitOnSuccess:
+	*descriptor = (uintptr_t)handle;
 	Trc_PRT_sl_open_shared_library_Exit1(*descriptor);
 	return 0;
 }

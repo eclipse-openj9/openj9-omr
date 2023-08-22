@@ -1739,11 +1739,15 @@ public:
    bool getSupportsLDivAndLRemWithThreeChildren() {return _flags2.testAny(SupportsLDivAndLRemWithThreeChildren);}
    void setSupportsLDivAndLRemWithThreeChildren() {_flags2.set(SupportsLDivAndLRemWithThreeChildren);}
 
-   bool getSupportsLoweringConstIDiv() {return _flags2.testAny(SupportsLoweringConstIDiv);}
-   void setSupportsLoweringConstIDiv() {_flags2.set(SupportsLoweringConstIDiv);}
+   bool getSupportsLoweringConstIDiv() {return getSupportsIMulHigh();}
 
-   bool getSupportsLoweringConstLDiv() {return _flags2.testAny(SupportsLoweringConstLDiv);}
-   void setSupportsLoweringConstLDiv() {_flags2.set(SupportsLoweringConstLDiv);}
+   bool getSupportsLoweringConstLDiv() {return getSupportsLMulHigh();}
+
+   bool getSupportsIMulHigh() {return _flags2.testAny(SupportsIMulHigh);}
+   void setSupportsIMulHigh() {_flags2.set(SupportsIMulHigh);}
+
+   bool getSupportsLMulHigh() {return _flags2.testAny(SupportsLMulHigh);}
+   void setSupportsLMulHigh() {_flags2.set(SupportsLMulHigh);}
 
    bool getSupportsLoweringConstLDivPower2() {return _flags2.testAny(SupportsLoweringConstLDivPower2);}
    void setSupportsLoweringConstLDivPower2() {_flags2.set(SupportsLoweringConstLDivPower2);}
@@ -1842,8 +1846,8 @@ public:
       SupportsVirtualGuardNOPing                          = 0x00000008,
       SupportsEfficientNarrowIntComputation               = 0x00000010,
       SupportsNewInstanceImplOpt                          = 0x00000020,
-      SupportsLoweringConstIDiv                           = 0x00000040,
-      SupportsLoweringConstLDiv                           = 0x00000080,
+      SupportsIMulHigh                                    = 0x00000040,
+      SupportsLMulHigh                                    = 0x00000080,
       SupportsArrayTranslate                              = 0x00000100,
       HasDoubleWordAlignedStack                           = 0x00000200,
       SupportsReadOnlyLocks                               = 0x00000400,

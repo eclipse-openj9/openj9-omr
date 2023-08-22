@@ -479,7 +479,7 @@ OMR::Z::CodeGenerator::initialize()
 
    cg->setUsesRegisterPairsForLongs();
    cg->setSupportsDivCheck();
-   cg->setSupportsLoweringConstIDiv();
+   cg->setSupportsIMulHigh();
    cg->setSupportsTestUnderMask();
 
    // Initialize to be 8 bytes for bodyInfo / methodInfo

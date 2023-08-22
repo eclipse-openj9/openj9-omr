@@ -41,9 +41,11 @@
 #include "control/Recompilation.hpp"
 #include "cs2/hashtab.h"
 #include "env/CompilerEnv.hpp"
+#include "env/IO.hpp"
+#include "env/jittypes.h"
 #include "env/ObjectModel.hpp"
 #include "env/TRMemory.hpp"
-#include "env/jittypes.h"
+#include "env/TypeLayout.hpp"
 #include "optimizer/TransformUtil.hpp"
 #include "il/Block.hpp"
 #include "il/DataTypes.hpp"
@@ -83,7 +85,6 @@
 #include "optimizer/LocalValuePropagation.hpp"
 #include "ras/Debug.hpp"
 #include "ras/DebugCounter.hpp"
-#include "env/IO.hpp"
 
 #ifdef J9_PROJECT_SPECIFIC
 #include "env/VMJ9.h"
@@ -127,6 +128,7 @@ OMR::ValuePropagation::ValuePropagation(TR::OptimizationManager *manager)
      _referenceArrayCopyTrees(trMemory()),
      _needRunTimeCheckArrayCopy(trMemory()),
      _needMultiLeafArrayCopy(trMemory()),
+     _needRuntimeTestNullRestrictedArrayCopy(trMemory()),
      _arrayCopySpineCheck(trMemory()),
      _multiLeafCallsToInline(trMemory()),
      _converterCalls(trMemory()),
@@ -963,6 +965,13 @@ void OMR::ValuePropagation::transformArrayCopyCall(TR::Node *node)
    bool isMultiLeafArrayCopy = false;
    bool isRecognizedMultiLeafArrayCopy = false;
 
+   bool doRuntimeNullRestrictedTest = false;
+   bool needRuntimeTestDstArray = true; // needRuntimeTestDstArray is used only if doRuntimeNullRestrictedTest is true
+   bool areBothArraysFlattenedPrimitiveValueType = false;
+   bool isValueTypeArrayFlatteningEnabled = TR::Compiler->om.isValueTypeArrayFlatteningEnabled();
+   TR_YesNoMaybe isDstArrayCompTypePrimitiveValueType = TR_no;
+   TR_YesNoMaybe isSrcArrayCompTypePrimitiveValueType = TR_no;
+
    if (trace() && comp()->generateArraylets())
       traceMsg(comp(), "Detected arraylet arraycopy: %p\n", node);
 
@@ -1279,6 +1288,129 @@ void OMR::ValuePropagation::transformArrayCopyCall(TR::Node *node)
                }
             }
          }
+
+      if (trace())
+         {
+         traceMsg(comp(), "%s: n%dn %p transformTheCall %d referenceArray1 %d referenceArray2 %d primitiveArray1 %d primitiveArray2 %d primitiveTransform %d referenceTransform %d\n", __FUNCTION__,
+            node->getGlobalIndex(), node, transformTheCall,
+            referenceArray1, referenceArray2, primitiveArray1, primitiveArray2, primitiveTransform, referenceTransform);
+         traceMsg(comp(), "%s: n%dn %p transformTheCall %d areFlattenableValueTypesEnabled %d srcObjNode n%dn %p dstObjNode n%dn %p srcVN %d dstVN %d\n", __FUNCTION__,
+            node->getGlobalIndex(), node, transformTheCall, TR::Compiler->om.areFlattenableValueTypesEnabled(),
+            srcObjNode->getGlobalIndex(), srcObjNode, dstObjNode->getGlobalIndex(), dstObjNode, srcVN, dstVN);
+         }
+
+      static char *disableNullRestrictedArrayCopyXForm = feGetEnv("TR_DisableNullRestrictedArraycopyXForm");
+
+      // JEP 401: If null restricted value type is enabled, we need to preform null check on the value being stored
+      // in order to throw a NullPointerException if the array is null-restricted and the value to write is null.
+      // If it is this case, System.arraycopy cannot be transformed into arraycopy instructions.
+      //
+      if (transformTheCall &&
+          TR::Compiler->om.areFlattenableValueTypesEnabled() &&  // Null restricted value type is enabled
+          !disableNullRestrictedArrayCopyXForm &&
+          !isStringCompressedArrayCopy &&
+          !isStringDecompressedArrayCopy &&
+          !primitiveArray1 &&
+          !primitiveArray2 &&
+          (copyLen != _constantZeroConstraint)) // Not zero length copy
+         {
+         isDstArrayCompTypePrimitiveValueType = isArrayCompTypePrimitiveValueType(dstObject);
+         isSrcArrayCompTypePrimitiveValueType = isArrayCompTypePrimitiveValueType(srcObject);
+
+         switch (isDstArrayCompTypePrimitiveValueType)
+            {
+            case TR_yes:
+               {
+               if (isSrcArrayCompTypePrimitiveValueType == TR_yes)
+                  {
+                  // Array flattening is not enabled
+                  //    - If both source and destination arrays are primitive VT, they don't contain
+                  //      NULL value. There is no need to check null store
+                  //    - Also because flattening is not enabled, we don't need to concern about copying
+                  //      between flattened arrays
+                  //
+                  // Array flattening is enabled
+                  //    - If both source and destination arrays are primitive VT
+                  //        - (1) Both arrays are not flattened, there is no need to do anything
+                  //        - (2) Both arrays are flattened, elementSize needs to be updated in order to
+                  //          use arraycopy instructions
+                  //        - (3) Either of the arrays might or might be flattened, System.arraycopy
+                  //          should not be transformed into arraycopy instructions.
+                  //
+                  if (isValueTypeArrayFlatteningEnabled)
+                     {
+                     if (trace())
+                        traceMsg(comp(), "%s: n%dn %p isArrayElementFlattened dst %d src %d\n", __FUNCTION__, node->getGlobalIndex(), node,
+                           isArrayElementFlattened(dstObject), isArrayElementFlattened(srcObject));
+
+                     if ((isArrayElementFlattened(dstObject) == TR_yes) &&
+                         (isArrayElementFlattened(srcObject) == TR_yes))
+                        {
+                        areBothArraysFlattenedPrimitiveValueType = true;
+                        elementSize = TR::Compiler->cls.flattenedArrayElementSize(comp(), dstObject->getClass());
+
+                        if (trace())
+                           traceMsg(comp(), "%s: n%dn %p elementSize %d\n", __FUNCTION__, node->getGlobalIndex(), node, elementSize);
+                        }
+                     else if ((isArrayElementFlattened(dstObject) != TR_no) ||
+                              (isArrayElementFlattened(srcObject) != TR_no))
+                        {
+                        transformTheCall = false;
+                        }
+                     }
+                  }
+               else // isSrcArrayCompTypePrimitiveValueType == TR_no or TR_maybe
+                  {
+                  // The destination is primitive VT array and the source might or might not
+                  // be primitive VT array, do not transform because we need to do null store check and
+                  // consider if the arrays are flattened
+                  transformTheCall = false;
+                  }
+               break;
+               }
+            case TR_maybe:
+               {
+               // If the destination array might or might not be primitive VT array at compile time,
+               // runtime tests are required regardless of the source array type.
+               doRuntimeNullRestrictedTest = true;
+               break;
+               }
+            default: // TR_no == isDstArrayCompTypePrimitiveValueType
+               {
+               if (isValueTypeArrayFlatteningEnabled)
+                  {
+                  if (isSrcArrayCompTypePrimitiveValueType == TR_yes)
+                     {
+                     if (isArrayElementFlattened(srcObject) == TR_yes)
+                        {
+                        if (trace())
+                           traceMsg(comp(), "%s: n%dn %p dst array is identity type and source array is flattened VT array\n", __FUNCTION__, node->getGlobalIndex(), node);
+
+                        transformTheCall = false;
+                        }
+                     // else: As long as the source array is not flattened, no need to do anything here
+                     }
+                  else if (isSrcArrayCompTypePrimitiveValueType == TR_maybe)
+                     {
+                     // The source might or might not be a primitive VT array. If it is primitive VT array that is flattened,
+                     // the arraycopy instruction cannot handle copying from flattened array into non-flattened array since the
+                     // destination array is identity type. Need to add runtime check here
+                     doRuntimeNullRestrictedTest = true;
+                     // We already know the destination array is identity type. No need to insert runtime test here
+                     needRuntimeTestDstArray = false;
+                     }
+                  // else: isSrcArrayCompTypePrimitiveValueType == TR_no, both destination and source arrays are
+                  // identity arrays. No need to do anything here
+                  }
+               // else: As long as array flattening is not enabled, no need to do anything here
+               break;
+               }
+            }
+         }
+
+      if (trace())
+         traceMsg(comp(), "%s: n%dn %p transformTheCall %d isSrcArrayCompTypePrimitiveValueType %d isDstArrayCompTypePrimitiveValueType %d doRuntimeNullRestrictedTest %d\n", __FUNCTION__,
+         node->getGlobalIndex(), node, transformTheCall, isSrcArrayCompTypePrimitiveValueType, isDstArrayCompTypePrimitiveValueType, doRuntimeNullRestrictedTest);
       }
 #else
    bool isStringCompressedArrayCopy = false;
@@ -1288,6 +1420,132 @@ void OMR::ValuePropagation::transformArrayCopyCall(TR::Node *node)
    if (transformTheCall && performTransformation(comp(), "%sChanging call %s [%p] to arraycopy\n", OPT_DETAILS, node->getOpCode().getName(), node))
       {
       TR::ResolvedMethodSymbol* methodSymbol = comp()->getMethodSymbol();
+
+#ifdef J9_PROJECT_SPECIFIC
+      if (doRuntimeNullRestrictedTest)
+         {
+         if (trace())
+            {
+            comp()->dumpMethodTrees("Trees before modifying for null restricted array check");
+            comp()->getDebug()->print(comp()->getOutFile(), comp()->getFlowGraph());
+            }
+         /*
+               ==== Before ===
+  _curTree---> n9n       treetop
+               n8n         call  java/lang/System.arraycopy(Ljava/lang/Object;ILjava/lang/Object;II)V
+               n3n           aload  <parm 0 [LSomeInterface;>[#419  Parm]
+               n4n           iconst 0
+               n5n           aload  <parm 1 [LSomeInterface;>[#420  Parm]
+               n6n           iconst 0
+               n7n           iload  TestSystemArraycopy4.ARRAY_SIZE I[#421  Static]
+
+               ==== After ===
+               n48n      astore  <temp slot 3>[#429  Auto]
+               n3n         aload  <parm 0 [LSomeInterface;>[#419  Parm]
+               n52n      astore  <temp slot 5>[#431  Auto]
+               n5n         aload  <parm 1 [LSomeInterface;>[#420  Parm]
+    prevTT---> n56n      istore  <temp slot 7>[#433  Auto]
+               n7n         iload  TestSystemArraycopy4.ARRAY_SIZE I[#421  Static]
+  _curTree---> n9n       treetop
+               n8n         call  java/lang/System.arraycopy(Ljava/lang/Object;ILjava/lang/Object;II)V
+               n3n           ==>aload
+               n4n           iconst 0
+               n5n           ==>aload
+               n6n           iconst 0
+               n7n           ==>iload
+    nextTT---> ...
+               ...
+               ...
+ slowBlock---> n39n      BBStart <block_-1>
+               n41n      treetop
+               n42n        call  java/lang/System.arraycopy(Ljava/lang/Object;ILjava/lang/Object;II)V [#428  final native static Method] [flags 0x20500 0x0 ] (dontTransformArrayCopyCall )
+               n49n          aload  <temp slot 3>[#429  Auto]
+               n51n          iconst 0
+               n53n          aload  <temp slot 5>[#431  Auto]
+               n55n          iconst 0
+               n57n          iload  <temp slot 7>[#433  Auto]
+               n40n      BBEnd </block_-1>
+            */
+
+         // Create the block that contains the System.arraycopy call which will be the slow path
+         TR::Block *slowBlock = TR::Block::createEmptyBlock(node, comp(), UNKNOWN_COLD_BLOCK_COUNT);
+         slowBlock->setIsCold(true);
+
+         TR::Node *newCallNode = node->duplicateTree(false); // No need to duplicate the children of the call since they will be replaced next with temp load
+         // It is important to set setDontTransformArrayCopyCall on the new call node. Otherwise, the new call node could get
+         // transformed again by VP
+         newCallNode->setDontTransformArrayCopyCall();
+
+         TR::Node *ttNode = TR::Node::create(TR::treetop, 1, newCallNode);
+         TR::TreeTop *newCallTree = TR::TreeTop::create(comp());
+         newCallTree->setNode(ttNode);
+
+         slowBlock->append(newCallTree);
+
+         TR::Node *oldCallNode = node;
+         if (trace())
+            traceMsg(comp(),"Creating temps for children of the original call node n%dn %p. new call node n%dn %p\n", oldCallNode->getGlobalIndex(), oldCallNode, newCallNode->getGlobalIndex(), newCallNode);
+
+         // Create temporaries for System.arraycopy arguments and replace the children of the new call node with the temps
+         for (int32_t i = 0 ; i < oldCallNode->getNumChildren(); ++i)
+            {
+            TR::Node *child = oldCallNode->getChild(i);
+
+            TR::Node *value = NULL;
+            if (child->getOpCode().isLoadConst())
+               {
+               value = TR::Node::copy(child);
+               value->setReferenceCount(0);
+               }
+            else
+               {
+               TR::SymbolReference *newSymbolReference = comp()->getSymRefTab()->createTemporary(comp()->getMethodSymbol(), child->getDataType());
+               TR::Node *savedChildNode = TR::Node::createStore(oldCallNode, newSymbolReference, child);
+               TR::TreeTop *savedChildTree = TR::TreeTop::create(comp(), savedChildNode);
+
+               _curTree->insertBefore(savedChildTree);
+
+               if (trace())
+                  traceMsg(comp(),"Created child n%dn %p for old child n%dn %p of the original call node\n", savedChildNode->getGlobalIndex(), savedChildNode, child->getGlobalIndex(), child);
+
+               // Create the child for the new call node with a load of the new sym ref
+               value = TR::Node::createLoad(newCallNode, newSymbolReference);
+               }
+
+            if (trace())
+               traceMsg(comp(),"Created child n%dn %p for new call node n%dn %p\n", value->getGlobalIndex(), value, newCallNode->getGlobalIndex(), newCallNode);
+
+            newCallNode->getChild(i)->recursivelyDecReferenceCount();
+            newCallNode->setAndIncChild(i, value);
+            }
+
+         // prevTT is required so that we can insert runtime array component type check after prevTT
+         TR::TreeTop *prevTT = _curTree->getPrevTreeTop();
+
+         // nextTT is required so that we can jump from the slow block to the block that contains the treetop after System.arraycopy
+         TR::TreeTop *nextTT = _curTree->getNextTreeTop();
+         while ((nextTT->getNode()->getOpCodeValue() == TR::BBEnd) ||
+                (nextTT->getNode()->getOpCodeValue() == TR::BBStart))
+            nextTT = nextTT->getNextTreeTop();
+
+         if (trace())
+            traceMsg(comp(), "%s: n%dn %p current block_%d slowBlock block_%d newCallTree n%dn %p srcObjNode n%dn %p dstObjNode n%dn %p prevTT n%dn %p nextTT n%dn %p\n",
+               __FUNCTION__, node->getGlobalIndex(), node, _curTree->getEnclosingBlock()->getNumber(), slowBlock->getNumber(),
+               newCallTree->getNode()->getGlobalIndex(), newCallTree->getNode(),
+               srcObjNode->getGlobalIndex(), srcObjNode, dstObjNode->getGlobalIndex(), dstObjNode,
+               prevTT->getNode()->getGlobalIndex(), prevTT->getNode(), nextTT->getNode()->getGlobalIndex(), nextTT->getNode());
+
+         _needRuntimeTestNullRestrictedArrayCopy.add(new (trStackMemory()) TR_NeedRuntimeTestNullRestrictedArrayCopy(dstObjNode, srcObjNode,
+                                                                                                                     prevTT, nextTT,
+                                                                                                                     _curTree->getEnclosingBlock(), slowBlock,
+                                                                                                                     needRuntimeTestDstArray));
+         if (trace())
+            {
+            comp()->dumpMethodTrees("Trees after modifying for null restricted array check");
+            comp()->getDebug()->print(comp()->getOutFile(), comp()->getFlowGraph());
+            }
+         }
+#endif
 
       bool canSkipAllChecksOnArrayCopy = methodSymbol->safeToSkipChecksOnArrayCopies() || isRecognizedMultiLeafArrayCopy || isStringCompressedArrayCopy || isStringDecompressedArrayCopy;
 
@@ -1463,6 +1721,8 @@ void OMR::ValuePropagation::transformArrayCopyCall(TR::Node *node)
          else if (srcArrayInfo)
             stride = srcArrayInfo->elementSize();
 
+         stride = areBothArraysFlattenedPrimitiveValueType ? elementSize : stride;
+
          if (stride != 0)
             srcArrayLength->setArrayStride(stride);
          }
@@ -1475,6 +1735,8 @@ void OMR::ValuePropagation::transformArrayCopyCall(TR::Node *node)
             stride = TR::Compiler->om.sizeofReferenceField();
          else if (dstArrayInfo)
             stride = dstArrayInfo->elementSize();
+
+         stride = areBothArraysFlattenedPrimitiveValueType ? elementSize : stride;
 
          if (stride != 0)
             dstArrayLength->setArrayStride(stride);
@@ -1666,6 +1928,9 @@ void OMR::ValuePropagation::transformArrayCopyCall(TR::Node *node)
       // -------------------------------------------------------------------
       // Arraycopy length node
       // -------------------------------------------------------------------
+
+      if (trace())
+         traceMsg(comp(), "%s: n%dn %p elementSize %d stride n%dn %p\n", __FUNCTION__, node->getGlobalIndex(), node, elementSize, stride ? stride->getGlobalIndex() : -1, stride);
 
       len = generateLenForArrayCopy(comp(), elementSize, stride, srcObjNode, copyLenNode, node);
 
@@ -3309,6 +3574,286 @@ void OMR::ValuePropagation::transformRTMultiLeafArrayCopy(TR_RealTimeArrayCopy *
    _multiLeafCallsToInline.add(newCallTree);
    if (comp()->getMethodHotness() >= warm)
       requestOpt(OMR::globalValuePropagation);
+   }
+
+
+void OMR::ValuePropagation::transformNullRestrictedArrayCopy(TR_NeedRuntimeTestNullRestrictedArrayCopy *nullRestrictedArrayCopy)
+   {
+   /*
+    *     Array Flattening Is NOT Enabled:
+    *    ================================
+    *
+    *           Is dstArray primitive VT?
+    *                 (null restricted)
+    *                        |
+    *              +---------+---------+
+    *              |                   |
+    *             Yes                  No
+    *              |                   |
+    *              v                   v
+    *      System.arrayCopy        arraycopy
+    *          (slowBlock)
+    *
+    *
+    *
+    *    Array Flattening IS Enabled:
+    *    ================================
+    *
+    *           Is dstArray primitive VT?
+    *                 (null restricted)
+    *                       |
+    *             +---------+---------+
+    *             |                   |
+    *            Yes                  No
+    *             |                   |
+    *             v                   v
+    *     System.arrayCopy      Is srcArray primitive VT?
+    *        (slowBlock)           (could be flattened)
+    *                                       |
+    *                             +---------+---------+
+    *                             |                   |
+    *                            Yes                  No
+    *                             |                   |
+    *                             v                   v
+    *                        System.arraycopy     arraycopy
+    *                           (slowBlock)
+    *
+    *
+    *    No need to check dstArray(needTestDstArray=false):
+    *    ================================
+    *
+    *             Is srcArray primitive VT?
+    *               (could be flattened)
+    *                        |
+    *              +---------+---------+
+    *              |                   |
+    *             Yes                  No
+    *              |                   |
+    *              v                   v
+    *      System.arrayCopy        arraycopy
+    *          (slowBlock)
+    *
+    *
+    */
+
+   /*
+    * Example of after the transformation
+            n48n      astore  <temp slot 3>[#429  Auto]
+            n3n         aload  <parm 0 [LSomeInterface;>[#419  Parm]
+            n189n     astore  <temp slot 19>[#445  Auto]
+            n3n         ==>aload
+            ...
+            n52n      astore  <temp slot 5>[#431  Auto]
+            n5n         aload  <parm 1 [LSomeInterface;>[#420  Parm]
+            ...
+            n56n      istore  <temp slot 7>[#433  Auto]
+            n7n         iload  TestSystemArraycopy4.ARRAY_SIZE I[#421  Static]
+            ...
+            n157n     ificmpne --> block_10 BBStart at n39n ()
+            n155n       iand
+            n153n         iloadi  <isClassFlags>
+            n152n           aloadi  <componentClass>
+            n151n             aloadi  <vft-symbol>
+ dstArray-> n5n                 ==>aload
+            n154n         iconst 0x400000
+            n156n       iconst 0
+            n188n     BBEnd </block_2> =====
+
+            BBStart <block_12> (freq 8001)
+            n186n     ificmpne --> block_10 BBStart at n39n ()
+            n184n       iand
+            n182n         iloadi  <isClassFlags>
+            n181n           aloadi  <componentClass>
+            n180n             aloadi  <vft-symbol>
+ srcArray-> n190n               aload  <temp slot 19>[#445  Auto]
+            n183n         iconst 0x400000
+            n185n       iconst 0
+            n159n     BBEnd </block_12> =====
+            ...
+            ...
+            ...
+slowBlock-> n39n      BBStart <block_10> (freq 0) (cold)
+            n41n      treetop
+            n42n        call  java/lang/System.arraycopy(Ljava/lang/Object;ILjava/lang/Object;II)V
+            n49n          aload  <temp slot 3>[#429  Auto]
+            n51n          iconst 0
+            n53n          aload  <temp slot 5>[#431  Auto]
+            n55n          iconst 0
+            n57n          iload  <temp slot 7>[#433  Auto]
+            n150n     goto --> block_7 BBStart at n137n
+            n40n      BBEnd </block_10> (cold)
+    */
+
+   TR::CFG *cfg = comp()->getFlowGraph();
+   cfg->invalidateStructure();
+
+   TR::TreeTop *prevTT = nullRestrictedArrayCopy->_prevTT;
+   TR::TreeTop *nextTT = nullRestrictedArrayCopy->_nextTT;
+
+   TR::Block *prevBlock = prevTT->getEnclosingBlock();
+   TR::Block *nextBlock = nextTT->getEnclosingBlock();
+
+   if (prevBlock == nextBlock)
+      nextBlock = prevBlock->split(nextTT, cfg, true, true);
+
+   TR::Block *tmpBlock = nextBlock;
+   bool isNextBlockExtendedBlock = false;
+   bool isPrevBlockOfExtendedBlockEmpty = true;
+
+   // Due to previous arraycopy sub transformations, the block that contains the nextTT, nextBlock,
+   // could have become an extended block of its previous block. Because we can't jump to the middle
+   // of a chain of extended blocks, a proper next block needs to be found in order for the slow block
+   // that contains the call tree to jump to.
+   //
+   // For example, if nextBlock is block_3, there are two cases we need to look at
+   // in terms of the previous blocks of nextBlock
+   //
+   // (1) All preceding blocks are empty
+   //     - The slow block can jump to the first block of the chain of extended blocks, which is block_1
+   //
+   //        BBStart <block_1>
+   //        BBEnd <block_1>
+   //        BBStart <block_2> (extension of previous block)
+   //        BBEnd <block_2>
+   //        BBStart <block_3> (extension of previous block) //<--- nextBlock
+   //           n3n     return
+   //        BBEnd <block_3>
+   //
+   // (2) There is at least one block that is not empty
+   //     - We need to split at nextBlock, which is to split at block_3
+   //
+   //        BBStart <block_1>
+   //        BBEnd <block_1>
+   //        BBStart <block_2> (extension of previous block)
+   //           n2n      treetop //<--- isPrevBlockOfExtendedBlockEmpty = false
+   //           ...
+   //        BBEnd <block_2>
+   //        BBStart <block_3> (extension of previous block) //<--- split at nextBlock
+   //           n3n      return
+   //        BBEnd <block_3>
+   //
+   while (tmpBlock->isExtensionOfPreviousBlock())
+      {
+      isNextBlockExtendedBlock = true;
+
+      tmpBlock = tmpBlock->getPrevBlock();
+      TR::TreeTop *bbStart = tmpBlock->getEntry();
+      TR::TreeTop *bbEnd = tmpBlock->getExit();
+
+      if (bbStart->getNextTreeTop() != bbEnd)
+         {
+         isPrevBlockOfExtendedBlockEmpty = false;
+         break;
+         }
+      }
+
+   if (isNextBlockExtendedBlock)
+      {
+      if (isPrevBlockOfExtendedBlockEmpty)
+         {
+         nextBlock = tmpBlock;
+         if (trace())
+            {
+            traceMsg(comp(), "%s: prevBlockOfExtendedBlockEmpty 1 prevTT n%dn prevBlock block_%d nextTT n%dn nextBlock block_%d\n", __FUNCTION__,
+               prevTT->getNode()->getGlobalIndex(), prevBlock->getNumber(), nextTT->getNode()->getGlobalIndex(), nextBlock->getNumber());
+            }
+         }
+      else
+         {
+         nextBlock = nextBlock->split(nextTT, cfg, true, true);
+         if (trace())
+            {
+            traceMsg(comp(), "%s: split at nextTT. prevTT n%dn prevBlock block_%d nextTT n%dn nextBlock block_%d\n", __FUNCTION__,
+               prevTT->getNode()->getGlobalIndex(), prevBlock->getNumber(), nextTT->getNode()->getGlobalIndex(), nextBlock->getNumber());
+            }
+         }
+      }
+
+   bool needTestSrcArray = TR::Compiler->om.isValueTypeArrayFlatteningEnabled();
+   bool needTestDstArray = nullRestrictedArrayCopy->_needRuntimeTestDstArray;
+
+   TR_ASSERT_FATAL(needTestSrcArray || needTestDstArray, "needTestSrcArray %d needTestDstArray %d should not both be false\n", needTestSrcArray, needTestDstArray);
+
+   TR::Node *dstArrayRefNode = nullRestrictedArrayCopy->_dstArrayRefNode;
+   TR::Node *srcArrayRefNode = nullRestrictedArrayCopy->_srcArrayRefNode;
+
+   TR::Block *originBlock = nullRestrictedArrayCopy->_originBlock;
+   TR::Block *slowBlock = nullRestrictedArrayCopy->_slowBlock;
+
+   cfg->addNode(slowBlock);
+
+   if (trace())
+      {
+      traceMsg(comp(), "%s: srcArrayRefNode n%dn %p dstArrayRefNode n%dn %p originBlock block_%d slowBlock block_%d needTestSrcArray %d needTestDstArray %d\n", __FUNCTION__,
+         srcArrayRefNode->getGlobalIndex(), srcArrayRefNode, dstArrayRefNode->getGlobalIndex(), dstArrayRefNode, originBlock->getNumber(), slowBlock->getNumber(), needTestSrcArray, needTestDstArray);
+
+      traceMsg(comp(), "%s: prevTT n%dn prevBlock block_%d nextTT n%dn nextBlock block_%d\n", __FUNCTION__,
+         prevTT->getNode()->getGlobalIndex(), prevBlock->getNumber(), nextTT->getNode()->getGlobalIndex(), nextBlock->getNumber());
+      }
+
+   TR::TreeTop *lastTreeTop = comp()->getMethodSymbol()->getLastTreeTop();
+   lastTreeTop->insertTreeTopsAfterMe(slowBlock->getEntry(), slowBlock->getExit());
+
+   // Set up the slow block to jump to the block after the call block
+   TR::Node *gotoNode = TR::Node::create(dstArrayRefNode, TR::Goto);
+   gotoNode->setBranchDestination(nextBlock->getEntry());
+
+   TR::TreeTop *gotoTree = TR::TreeTop::create(comp(), gotoNode, NULL, NULL);
+   slowBlock->append(gotoTree);
+
+   TR::TreeTop *ifDstTree = NULL;
+   if (needTestDstArray)
+      {
+      // Create the test node to check if the destination array component type is primitive VT (null restricted value type).
+      TR::Node *ifNode = comp()->fej9()->checkArrayCompClassPrimitiveValueType(dstArrayRefNode, TR::ificmpne);
+      // If the destination array component type is primitive VT (null restricted value type),
+      // jump to the slow path (slowBlock)
+      ifNode->setBranchDestination(slowBlock->getEntry());
+
+      ifDstTree = TR::TreeTop::create(comp(), ifNode);
+      prevTT->insertAfter(ifDstTree);
+
+      // Split the block after the ifDstTree
+      prevBlock->split(ifDstTree->getNextTreeTop(), cfg, true, true);
+      }
+
+   // If destination is not null restricted value type array and array flattening is enabled, we need to check
+   // the source array component type.  If it is null restricted value type, the current arraycopy instructions
+   // can't handle copying between flattened and non-flattened arrays.
+   if (needTestSrcArray)
+      {
+      // If the source array component type is primitive VT (null restricted value type),
+      // jump to the slow path (slowBlock)
+      TR::Node *ifNode = comp()->fej9()->checkArrayCompClassPrimitiveValueType(srcArrayRefNode, TR::ificmpne);
+      ifNode->setBranchDestination(slowBlock->getEntry());
+
+      TR::TreeTop *ifSrcTree = TR::TreeTop::create(comp(), ifNode);
+
+      if (ifDstTree)
+         {
+         ifDstTree->insertAfter(ifSrcTree);
+
+         // Split the block before the ifSrcTree
+         TR::Block *newBlock = prevBlock->split(ifSrcTree, cfg, true, true);
+
+         cfg->addEdge(TR::CFGEdge::createEdge(newBlock, slowBlock, trMemory()));
+         }
+      else
+         {
+         prevTT->insertAfter(ifSrcTree);
+
+         // Split the block after the ifSrcTree
+         prevBlock->split(ifSrcTree->getNextTreeTop(), cfg, true, true);
+
+         cfg->addEdge(TR::CFGEdge::createEdge(prevBlock, slowBlock, trMemory()));
+         }
+      }
+
+   cfg->copyExceptionSuccessors(originBlock, slowBlock);
+
+   if (needTestDstArray)
+      cfg->addEdge(TR::CFGEdge::createEdge(prevBlock, slowBlock, trMemory()));
+   cfg->addEdge(TR::CFGEdge::createEdge(slowBlock, nextBlock, trMemory()));
    }
 #endif
 

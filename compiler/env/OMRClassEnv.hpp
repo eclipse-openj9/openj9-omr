@@ -89,6 +89,30 @@ public:
    bool isAnonymousClass(TR::Compilation *comp, TR_OpaqueClassBlock *clazz) { return false; }
    bool isValueTypeClass(TR_OpaqueClassBlock *) { return false; }
 
+   /** \brief
+    *    Returns the size of the flattened array element
+    *
+    *    When array elements are flattened, the array element is inlined into the array. For example,
+    *       Class Point {
+    *          int x;
+    *          int y;
+    *       }
+    *    Point pointArray[];
+    *
+    *    If pointArray is not flattened, the size of pointArray[i] is the size of the reference pointer size.
+    *    If pointArray is flattened, the size of pointArray[i] is the total size of x and y and plus padding if there is any.
+    *
+    *  \param comp
+    *    The compilation object
+    *
+    *  \param arrayClass
+    *    The array class that is to be checked
+    *
+    *  \return
+    *    Size of the flattened array element
+    */
+   int32_t flattenedArrayElementSize(TR::Compilation *comp, TR_OpaqueClassBlock *arrayClass) { return 0; }
+
    /**
     * \brief
     *    Checks whether instances of the specified class can be trivially initialized by

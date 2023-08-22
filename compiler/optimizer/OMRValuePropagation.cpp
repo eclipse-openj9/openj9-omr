@@ -1690,11 +1690,15 @@ TR_YesNoMaybe OMR::ValuePropagation::isCastClassObject(TR::VPClassType *type)
    }
 
 
-TR_YesNoMaybe OMR::ValuePropagation::isArrayCompTypeValueType(TR::VPConstraint *arrayConstraint)
+TR_YesNoMaybe OMR::ValuePropagation::isArrayCompTypePrimitiveValueType(TR::VPConstraint *arrayConstraint)
    {
-   return TR::Compiler->om.areValueTypesEnabled() ? TR_maybe : TR_no;
+   return TR::Compiler->om.areFlattenableValueTypesEnabled() ? TR_maybe : TR_no;
    }
 
+TR_YesNoMaybe OMR::ValuePropagation::isArrayElementFlattened(TR::VPConstraint *arrayConstraint)
+   {
+   return (TR::Compiler->om.areFlattenableValueTypesEnabled() && TR::Compiler->om.isValueTypeArrayFlatteningEnabled()) ? TR_maybe : TR_no;
+   }
 
 bool OMR::ValuePropagation::isArrayStoreCheckNeeded(TR::Node *arrayRef, TR::Node *objectRef, bool &mustFail,
            TR_OpaqueClassBlock* &storeClassForCheck, TR_OpaqueClassBlock* &componentClassForCheck)
@@ -7283,7 +7287,6 @@ void OMR::ValuePropagation::doDelayedTransformations()
    for (converterCallTree = convIt.getFirst();
 		   converterCallTree; converterCallTree = convIt.getNext())
       {
-
       transformConverterCall(converterCallTree);
       }
    _converterCalls.deleteAll();
@@ -7354,6 +7357,33 @@ void OMR::ValuePropagation::doDelayedTransformations()
          transformRTMultiLeafArrayCopy(rtArrayCopyTree);
          }
       _needMultiLeafArrayCopy.deleteAll();
+      }
+
+   if (TR::Compiler->om.areFlattenableValueTypesEnabled())
+      {
+      ListIterator<TR_NeedRuntimeTestNullRestrictedArrayCopy> tt(&_needRuntimeTestNullRestrictedArrayCopy);
+      TR_NeedRuntimeTestNullRestrictedArrayCopy *nullRestrictedArrayCopyTree;
+
+      for (nullRestrictedArrayCopyTree = tt.getFirst();
+           nullRestrictedArrayCopyTree; nullRestrictedArrayCopyTree = tt.getNext())
+         {
+         if (trace())
+            {
+            TR::CFG *cfg = comp()->getFlowGraph();
+            comp()->dumpMethodTrees("Trees before transformNullRestrictedArrayCopy");
+            comp()->getDebug()->print(comp()->getOutFile(), cfg);
+            }
+
+         transformNullRestrictedArrayCopy(nullRestrictedArrayCopyTree);
+
+         if (trace())
+            {
+            TR::CFG *cfg = comp()->getFlowGraph();
+            comp()->dumpMethodTrees("Trees after transformNullRestrictedArrayCopy");
+            comp()->getDebug()->print(comp()->getOutFile(), cfg);
+            }
+         }
+      _needRuntimeTestNullRestrictedArrayCopy.deleteAll();
       }
 #endif
 

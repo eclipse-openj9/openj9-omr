@@ -59,6 +59,14 @@ class ObjectModel
    bool mayRequireSpineChecks() { return false; }
 
    bool areValueTypesEnabled() { return false; }
+   /**
+   * @brief: Returns true if flattenable value type is enabled
+   */
+   bool areFlattenableValueTypesEnabled() { return false; }
+   /**
+   * @brief: Returns true if value type array element flattening is enabled
+   */
+   bool isValueTypeArrayFlatteningEnabled() { return false; }
 
    bool generateCompressedObjectHeaders() { return false; }
 

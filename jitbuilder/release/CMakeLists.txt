@@ -1,5 +1,5 @@
 ###############################################################################
-# Copyright IBM Corp. and others 2017
+# Copyright IBM Corp. and others 2023
 #
 # This program and the accompanying materials are made available under
 # the terms of the Eclipse Public License 2.0 which accompanies this
@@ -42,6 +42,7 @@ create_jitbuilder_test(iterfib         cpp/samples/IterativeFib.cpp)
 create_jitbuilder_test(nestedloop      cpp/samples/NestedLoop.cpp)
 create_jitbuilder_test(pow2            cpp/samples/Pow2.cpp)
 create_jitbuilder_test(simple          cpp/samples/Simple.cpp)
+create_jitbuilder_test(thunk           cpp/samples/Thunk.cpp)
 create_jitbuilder_test(worklist        cpp/samples/Worklist.cpp)
 create_jitbuilder_test(power           cpp/samples/Power.cpp)
 
@@ -55,6 +56,7 @@ if(OMR_JITBUILDER_TEST_EXTENDED)
 	create_jitbuilder_test(fieldaddress      cpp/samples/FieldAddress.cpp)
 	create_jitbuilder_test(linkedlist        cpp/samples/LinkedList.cpp)
 	create_jitbuilder_test(localarray        cpp/samples/LocalArray.cpp)
+	create_jitbuilder_test(matmult           cpp/samples/MatMult.cpp)
 	create_jitbuilder_test(operandarraytests cpp/samples/OperandArrayTests.cpp)
 	create_jitbuilder_test(operandstacktests cpp/samples/OperandStackTests.cpp)
 	create_jitbuilder_test(pointer           cpp/samples/Pointer.cpp)

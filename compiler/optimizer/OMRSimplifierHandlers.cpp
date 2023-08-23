@@ -8690,7 +8690,7 @@ TR::Node *idivSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
                }
             node->getFirstChild()->incReferenceCount();
             }
-         else if (s->cg()->getSupportsLoweringConstIDiv() && !isPowerOf2(divisor) &&
+         else if (s->cg()->getSupportsIMulHigh() && !isPowerOf2(divisor) &&
                   performTransformation(s->comp(), "%sMagic number idiv opt in node %p\n", s->optDetailString(), node))
             {
              // leave idiv as is if the divisor is 2^n. CodeGen generates a fast instruction squence for it.
@@ -8981,7 +8981,7 @@ TR::Node *ldivSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
                node->getFirstChild()->incReferenceCount();
                }
             }       // end power of 2
-         else if (s->cg()->getSupportsLoweringConstLDiv() && !isPowerOf2(divisor))
+         else if (s->cg()->getSupportsLMulHigh() && !isPowerOf2(divisor))
             {
              // otherwise, expose the magic number squence to allow optimization
              // lowered tree will look like this:
@@ -9322,7 +9322,7 @@ TR::Node *iremSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
                }
             }
          else if (node->getOpCodeValue() == TR::irem &&
-                  s->cg()->getSupportsLoweringConstIDiv() && !isPowerOf2(divisor) &&
+                  s->cg()->getSupportsIMulHigh() && !isPowerOf2(divisor) &&
                   !skipRemLowering(divisor, s) &&
                   performTransformation(s->comp(), "%sMagic number irem opt in node %p\n", s->optDetailString(), node))
             {
@@ -9447,7 +9447,7 @@ TR::Node *lremSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
             }
          // Disabled pending approval of design 1055.
 #ifdef TR_DESIGN_1055
-         else if (s->cg()->getSupportsLoweringConstLDiv() && !isPowerOf2(divisor) && !skipRemLowering(divisor, s))
+         else if (s->cg()->getSupportsLMulHigh() && !isPowerOf2(divisor) && !skipRemLowering(divisor, s))
             {
             // otherwise, expose the magic number squence to allow optimization
             // lowered tree will look like this:

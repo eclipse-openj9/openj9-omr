@@ -428,10 +428,10 @@ OMR::X86::CodeGenerator::initializeX86(TR::Compilation *comp)
    static char * enableMulHigh = feGetEnv("TR_X86MulHigh");
    if (enableMulHigh)
       {
-      self()->setSupportsLoweringConstIDiv();
+      self()->setSupportsIMulHigh();
 
       if (comp->target().is64Bit())
-         self()->setSupportsLoweringConstLDiv();
+         self()->setSupportsLMulHigh();
       }
 
    self()->setSpillsFPRegistersAcrossCalls(); // TODO:AMD64: Are the preserved XMMRs relevant here?

@@ -22,6 +22,9 @@
 project(tril_project)
 
 set(OMR_WARNINGS_AS_ERRORS OFF)
+if(NOT OMR_TEST_COMPILER)
+    message(FATAL_ERROR "tril requries -DOMR_TEST_COMPILER=1")
+endif(NOT OMR_TEST_COMPILER)
 
 add_subdirectory(tril)
 add_subdirectory(test)

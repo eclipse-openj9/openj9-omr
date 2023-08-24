@@ -2022,6 +2022,7 @@ OMR::IlBuilder::ComputedCall(const char *functionName, int32_t numArgs, ...)
    TR_ASSERT_FATAL(resolvedMethod, "Could not identify function %s\n", functionName);
 
    TR::SymbolReference *methodSymRef = symRefTab()->findOrCreateComputedStaticMethodSymbol(JITTED_METHOD_INDEX, -1, resolvedMethod);
+   methodSymRef->getSymbol()->getMethodSymbol()->setLinkage(TR_System);
    return genCall(methodSymRef, numArgs, argValues, false /*isDirectCall*/);
    }
 
@@ -2041,6 +2042,7 @@ OMR::IlBuilder::ComputedCall(const char *functionName, int32_t numArgs, TR::IlVa
    TR_ASSERT_FATAL(resolvedMethod, "Could not identify function %s\n", functionName);
 
    TR::SymbolReference *methodSymRef = symRefTab()->findOrCreateComputedStaticMethodSymbol(JITTED_METHOD_INDEX, -1, resolvedMethod);
+   methodSymRef->getSymbol()->getMethodSymbol()->setLinkage(TR_System);
    return genCall(methodSymRef, numArgs, argValues, false /*isDirectCall*/);
    }
 
@@ -2143,6 +2145,7 @@ OMR::IlBuilder::Call(const char *functionName, int32_t numArgs, ...)
    TR_ASSERT_FATAL(resolvedMethod, "Could not identify function %s\n", functionName);
 
    TR::SymbolReference *methodSymRef = symRefTab()->findOrCreateStaticMethodSymbol(JITTED_METHOD_INDEX, -1, resolvedMethod);
+   methodSymRef->getSymbol()->getMethodSymbol()->setLinkage(TR_System);
    return genCall(methodSymRef, numArgs, argValues);
    }
 
@@ -2156,6 +2159,7 @@ OMR::IlBuilder::Call(const char *functionName, int32_t numArgs, TR::IlValue ** a
    TR_ASSERT_FATAL(resolvedMethod, "Could not identify function %s\n", functionName);
 
    TR::SymbolReference *methodSymRef = symRefTab()->findOrCreateStaticMethodSymbol(JITTED_METHOD_INDEX, -1, resolvedMethod);
+   methodSymRef->getSymbol()->getMethodSymbol()->setLinkage(TR_System);
    return genCall(methodSymRef, numArgs, argValues);
    }
 

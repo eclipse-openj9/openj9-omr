@@ -2332,7 +2332,25 @@ TR::Register *OMR::X86::TreeEvaluator::arraytranslateEvaluator(TR::Node *node, T
 
 static void packUsingShift(TR::Node* node, TR::Register* tempReg, TR::Register* sourceReg, int32_t size, TR::CodeGenerator* cg)
    {
-   generateRegRegInstruction(TR::InstOpCode::MOV8RegReg, node, tempReg, sourceReg, cg);
+   TR::InstOpCode movInsn = TR::InstOpCode::bad;
+
+   switch (size)
+      {
+      case 1:
+         movInsn = TR::InstOpCode::MOVZXReg2Reg1;
+         break;
+      case 2:
+         movInsn = TR::InstOpCode::MOVZXReg4Reg2;
+         break;
+      case 4:
+         movInsn = TR::InstOpCode::MOVZXReg8Reg4;
+         break;
+      default:
+         TR_ASSERT_FATAL(false, "Unexpected element size in arrayset evaluator");
+         break;
+      }
+
+   generateRegRegInstruction(movInsn.getMnemonic(), node, tempReg, sourceReg, cg);
    generateRegImmInstruction(TR::InstOpCode::SHL8RegImm1, node, sourceReg, size*8, cg);
    generateRegRegInstruction(TR::InstOpCode::OR8RegReg, node, sourceReg, tempReg, cg);
    }

@@ -299,7 +299,12 @@ main(int argc, char *argv[])
 				/* The format of the printed list is:
 				 * #: <offset in string data> [<string length>] <string data>
 				 */
-				omrfile_printf(OMRPORT_TTY_OUT, "%5u: %8zx [%zu] %.*s\n", stringNum, (uintptr_t)(currentString - stringDataStart), blobString->length, blobString->length, blobString->data);
+				omrfile_printf(OMRPORT_TTY_OUT, "%5u: %8zx [%u] %.*s\n",
+						stringNum,
+						(uintptr_t)(currentString - stringDataStart),
+						blobString->length,
+						blobString->length,
+						blobString->data);
 
 				/* NOTE stringTableDataSize includes the space for the lengths */
 				currentString += blobString->length + sizeof(blobString->length) + padding;
@@ -393,7 +398,7 @@ main(int argc, char *argv[])
 							builtStruct->superNameLength,
 							builtStruct->superName);
 				}
-				omrfile_printf(OMRPORT_TTY_OUT, " sizeOf: %zu\n"
+				omrfile_printf(OMRPORT_TTY_OUT, " sizeOf: %u\n"
 						" fieldCount: %zu\n"
 						" constCount: %zu\n",
 						builtStruct->size,

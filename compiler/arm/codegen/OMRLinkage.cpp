@@ -399,21 +399,7 @@ TR::Register *OMR::ARM::Linkage::pushIntegerWordArg(TR::Node *child)
 
 TR::Register *OMR::ARM::Linkage::pushAddressArg(TR::Node *child)
    {
-   TR::CodeGenerator *cg      = self()->cg();
-   TR::Register         *pushRegister = NULL;
-   if (child->getRegister() == NULL && child->getOpCode().isLoadConst())
-      {
-      pushRegister = cg->allocateRegister();
-      if (child->isMethodPointerConstant())
-         loadAddressConstant(self()->cg(), child, child->getAddress(), pushRegister, NULL, false, TR_RamMethodSequence);
-      else
-         loadAddressConstant(self()->cg(), child, child->getAddress(), pushRegister);
-      }
-   else
-      {
-      pushRegister = cg->evaluate(child);
-      child->setRegister(pushRegister);
-      }
+   TR::Register *pushRegister = self()->cg()->evaluate(child);
    child->decReferenceCount();
    return pushRegister;
    }

@@ -169,17 +169,20 @@ namespace TR { class Register; }
 #define X86FeatureProp_EVEX128RequiresAVX512VL   0x00001000 // EVEX-128 encoded version requires AVX-512VL
 #define X86FeatureProp_EVEX128RequiresAVX512BW   0x00002000 // EVEX-128 encoded version requires AVX-512BW
 #define X86FeatureProp_EVEX128RequiresAVX512DQ   0x00004000 // EVEX-128 encoded version requires AVX-512DQ
-#define X86FeatureProp_EVEX256Supported          0x00008000 // ISA supports EVEX-256 encoded version
-#define X86FeatureProp_EVEX256RequiresAVX512F    0x00010000 // EVEX-256 encoded version requires AVX-512F
-#define X86FeatureProp_EVEX256RequiresAVX512VL   0x00020000 // EVEX-256 encoded version requires AVX-512VL
-#define X86FeatureProp_EVEX256RequiresAVX512BW   0x00040000 // EVEX-256 encoded version requires AVX-512BW
-#define X86FeatureProp_EVEX256RequiresAVX512DQ   0x00080000 // EVEX-256 encoded version requires AVX-512DQ
-#define X86FeatureProp_EVEX512Supported          0x00100000 // ISA supports EVEX-512 encoded version
-#define X86FeatureProp_EVEX512RequiresAVX512F    0x00200000 // EVEX-512 encoded version requires AVX-512F
-#define X86FeatureProp_EVEX512RequiresAVX512BW   0x00400000 // EVEX-512 encoded version requires AVX-512BW
-#define X86FeatureProp_EVEX512RequiresAVX512DQ   0x00800000 // EVEX-512 encoded version requires AVX-512DQ
-#define X86FeatureProp_VEX128RequiresFMA         0x01000000 // VEX-128 encoded version requires AVX
-#define X86FeatureProp_VEX256RequiresFMA         0x02000000 // VEX-128 encoded version requires AVX
+#define X86FeatureProp_EVEX128RequiresAVX512CD   0x00008000 // EVEX-128 encoded version requires AVX-512CD
+#define X86FeatureProp_EVEX256Supported          0x00010000 // ISA supports EVEX-256 encoded version
+#define X86FeatureProp_EVEX256RequiresAVX512F    0x00020000 // EVEX-256 encoded version requires AVX-512F
+#define X86FeatureProp_EVEX256RequiresAVX512VL   0x00040000 // EVEX-256 encoded version requires AVX-512VL
+#define X86FeatureProp_EVEX256RequiresAVX512BW   0x00080000 // EVEX-256 encoded version requires AVX-512BW
+#define X86FeatureProp_EVEX256RequiresAVX512DQ   0x00100000 // EVEX-256 encoded version requires AVX-512DQ
+#define X86FeatureProp_EVEX256RequiresAVX512CD   0x00200000 // EVEX-256 encoded version requires AVX-512CD
+#define X86FeatureProp_EVEX512Supported          0x00400000 // ISA supports EVEX-512 encoded version
+#define X86FeatureProp_EVEX512RequiresAVX512F    0x00800000 // EVEX-512 encoded version requires AVX-512F
+#define X86FeatureProp_EVEX512RequiresAVX512BW   0x01000000 // EVEX-512 encoded version requires AVX-512BW
+#define X86FeatureProp_EVEX512RequiresAVX512DQ   0x02000000 // EVEX-512 encoded version requires AVX-512DQ
+#define X86FeatureProp_EVEX512RequiresAVX512CD   0x04000000 // EVEX-512 encoded version requires AVX-512CD
+#define X86FeatureProp_VEX128RequiresFMA         0x08000000 // VEX-128 encoded version requires AVX
+#define X86FeatureProp_VEX256RequiresFMA         0x10000000 // VEX-128 encoded version requires AVX
 
 typedef enum
    {
@@ -493,6 +496,8 @@ class InstOpCode: public OMR::InstOpCode
                   supported = target->supportsFeature(OMR_FEATURE_X86_AVX512BW);
                if (supported && flags & X86FeatureProp_EVEX128RequiresAVX512DQ)
                   supported = target->supportsFeature(OMR_FEATURE_X86_AVX512DQ);
+               if (supported && flags & X86FeatureProp_EVEX128RequiresAVX512CD)
+                  supported = target->supportsFeature(OMR_FEATURE_X86_AVX512CD);
 
                if (supported)
                     return OMR::X86::EVEX_L128;
@@ -531,6 +536,8 @@ class InstOpCode: public OMR::InstOpCode
                   supported = target->supportsFeature(OMR_FEATURE_X86_AVX512BW);
                if (supported && flags & X86FeatureProp_EVEX256RequiresAVX512DQ)
                   supported = target->supportsFeature(OMR_FEATURE_X86_AVX512DQ);
+               if (supported && flags & X86FeatureProp_EVEX256RequiresAVX512CD)
+                  supported = target->supportsFeature(OMR_FEATURE_X86_AVX512CD);
 
                if (supported)
                   return OMR::X86::EVEX_L256;
@@ -559,6 +566,9 @@ class InstOpCode: public OMR::InstOpCode
 
             if (supported && flags & X86FeatureProp_EVEX512RequiresAVX512DQ)
                supported = target->supportsFeature(OMR_FEATURE_X86_AVX512DQ);
+
+            if (supported && flags & X86FeatureProp_EVEX512RequiresAVX512CD)
+               supported = target->supportsFeature(OMR_FEATURE_X86_AVX512CD);
 
             if (supported)
                return OMR::X86::EVEX_L512;

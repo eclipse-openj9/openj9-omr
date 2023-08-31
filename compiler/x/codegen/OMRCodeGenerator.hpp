@@ -165,6 +165,7 @@ struct TR_X86ProcessorInfo
    bool supportsAVX512F()                  {return testFeatureFlags8(TR_AVX512F) && enabledXSAVE();}
    bool supportsAVX512BW()                 {return testFeatureFlags8(TR_AVX512BW) && enabledXSAVE();}
    bool supportsAVX512DQ()                 {return testFeatureFlags8(TR_AVX512DQ) && enabledXSAVE();}
+   bool supportsAVX512CD()                 {return testFeatureFlags8(TR_AVX512CD) && enabledXSAVE();}
    bool supportsAVX512VL()                 {return testFeatureFlags8(TR_AVX512VL) && enabledXSAVE();}
    bool supportsBMI1()                     {return testFeatureFlags8(TR_BMI1) && enabledXSAVE();}
    bool supportsBMI2()                     {return testFeatureFlags8(TR_BMI2) && enabledXSAVE();}

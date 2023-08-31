@@ -409,7 +409,8 @@ class OMR_EXTENSIBLE TreeEvaluator: public OMR::TreeEvaluator
                                                TR::Register *lhsReg,
                                                TR::Register *rhsReg,
                                                TR::Register *maskReg,
-                                               TR::CodeGenerator *cg);
+                                               TR::CodeGenerator *cg,
+                                               bool maskTypeMismatch = false);
    static TR::Register *ternaryVectorMaskHelper(TR::InstOpCode opcode,
                                                 OMR::X86::Encoding encoding,
                                                 TR::Node *node,

@@ -4065,18 +4065,12 @@ TR::InstOpCode OMR::X86::TreeEvaluator::getNativeSIMDOpcode(TR::ILOpCodes opcode
             break;
          case TR::vand:
             binaryOp = BinaryArithmeticAnd;
-            // Masking opcodes require lanewise support for each element type, however, int8/int16
-            // bitwise instructions with masking are not supported without AVX-512. In non-masking
-            // operations, the element type does not matter.
-            if (!isMaskOp) elementType = TR::Int32;
             break;
          case TR::vor:
             binaryOp = BinaryArithmeticOr;
-            if (!isMaskOp) elementType = TR::Int32;
             break;
          case TR::vxor:
             binaryOp = BinaryArithmeticXor;
-            if (!isMaskOp) elementType = TR::Int32;
             break;
          case TR::vmmin:
          case TR::vmin:
@@ -4476,6 +4470,24 @@ TR::Register* OMR::X86::TreeEvaluator::vectorBinaryArithmeticEvaluator(TR::Node*
    TR::Register *tmpNaNReg = NULL;
 
    bool useRegMemForm = cg->comp()->target().cpu.supportsAVX() && !mask;
+   bool maskTypeMismatch = false;
+
+   if (et == TR::Int8 || et == TR::Int16)
+      {
+      switch (node->getOpCode().getVectorOperation())
+         {
+         case TR::vand:
+         case TR::vor:
+         case TR::vxor:
+            // There are no native opcodes meant specifically for these element types
+            // Therefore, if masking is required, we cannot use a single instruction
+            // to perform these masked bitwise operations because of the element type mismatch.
+            maskTypeMismatch = true;
+            break;
+         default:
+            break;
+         }
+      }
 
    if (useRegMemForm)
       {
@@ -4540,7 +4552,7 @@ TR::Register* OMR::X86::TreeEvaluator::vectorBinaryArithmeticEvaluator(TR::Node*
          TR::Register *rSrcReg = tmpNaNReg ? vectorFPNaNHelper(node, tmpNaNReg, lhsReg, rhsReg, NULL, cg) : rhsReg;
          if (maskReg)
             {
-            binaryVectorMaskHelper(nativeOpcode, simdEncoding, node, resultReg, lhsReg, rSrcReg, maskReg, cg);
+            binaryVectorMaskHelper(nativeOpcode, simdEncoding, node, resultReg, lhsReg, rSrcReg, maskReg, cg, maskTypeMismatch);
             }
          else
             {
@@ -4551,7 +4563,7 @@ TR::Register* OMR::X86::TreeEvaluator::vectorBinaryArithmeticEvaluator(TR::Node*
    else if (maskReg)
       {
       TR::Register *rSrcReg = tmpNaNReg ? vectorFPNaNHelper(node, tmpNaNReg, lhsReg, rhsReg, NULL, cg) : rhsReg;
-      binaryVectorMaskHelper(nativeOpcode, simdEncoding, node, resultReg, lhsReg, rSrcReg, maskReg, cg);
+      binaryVectorMaskHelper(nativeOpcode, simdEncoding, node, resultReg, lhsReg, rSrcReg, maskReg, cg, maskTypeMismatch);
       }
   else
       {
@@ -5373,7 +5385,8 @@ OMR::X86::TreeEvaluator::binaryVectorMaskHelper(TR::InstOpCode opcode,
                                                 TR::Register *lhsReg,
                                                 TR::Register *rhsReg,
                                                 TR::Register *maskReg,
-                                                TR::CodeGenerator *cg)
+                                                TR::CodeGenerator *cg,
+                                                bool maskTypeMismatch)
    {
    TR_ASSERT_FATAL(encoding != OMR::X86::Bad, "No suitable encoding method for opcode");
    bool vectorMask = maskReg->getKind() == TR_VRF;
@@ -5393,10 +5406,16 @@ OMR::X86::TreeEvaluator::binaryVectorMaskHelper(TR::InstOpCode opcode,
       cg->stopUsingRegister(tmpReg);
       return resultReg;
       }
-   else if (vectorMask)
+   else if (vectorMask && maskTypeMismatch)
       {
       generateRegRegRegInstruction(opcode.getMnemonic(), node, tmpReg, lhsReg, rhsReg, cg, encoding);
       vectorMergeMaskHelper(node, resultReg, tmpReg, maskReg, cg);
+      cg->stopUsingRegister(tmpReg);
+      return resultReg;
+      }
+   else if (vectorMask)
+      {
+      generateRegMaskRegRegInstruction(opcode.getMnemonic(), node, tmpReg, maskReg, lhsReg, rhsReg, cg, encoding);
       cg->stopUsingRegister(tmpReg);
       return resultReg;
       }

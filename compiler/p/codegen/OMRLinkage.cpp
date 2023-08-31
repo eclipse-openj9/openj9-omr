@@ -723,22 +723,8 @@ TR::Register *OMR::Power::Linkage::pushIntegerWordArg(TR::Node *child)
 
 TR::Register *OMR::Power::Linkage::pushAddressArg(TR::Node *child)
    {
-   TR::Register *pushRegister = NULL;
    TR_ASSERT(child->getDataType() == TR::Address, "assumption violated");
-   if (child->getRegister() == NULL && child->getOpCode().isLoadConst())
-      {
-      pushRegister = self()->cg()->allocateRegister();
-      if (child->isMethodPointerConstant())
-         loadAddressConstant(self()->cg(), self()->cg()->comp()->compileRelocatableCode(), child, child->getAddress(), pushRegister, NULL, false, TR_RamMethodSequence);
-      else
-         loadAddressConstant(self()->cg(), self()->cg()->comp()->compileRelocatableCode(), child, child->getAddress(), pushRegister);
-
-      child->setRegister(pushRegister);
-      }
-   else
-      {
-      pushRegister = self()->cg()->evaluate(child);
-      }
+   TR::Register *pushRegister = self()->cg()->evaluate(child);
    self()->cg()->decReferenceCount(child);
    return pushRegister;
    }

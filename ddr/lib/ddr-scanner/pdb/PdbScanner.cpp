@@ -193,11 +193,11 @@ PdbScanner::loadDataFromBinary(const wchar_t *filename, IDiaDataSource **dataSou
 {
 	DDR_RC rc = DDR_RC_OK;
 	bool isPDBFile = false;
-	/*  get location of the file extension */
+	/* get location of the file extension */
 	const wchar_t *fileExtension = wcsrchr(filename, L'.');
 
 	/* check if file extension is '.pdb' */
-	if ((NULL!= fileExtension) && (0 == wcscmp(fileExtension, L".pdb"))){
+	if ((NULL != fileExtension) && (0 == wcscmp(fileExtension, L".pdb"))) {
 		isPDBFile = true;
 	}
 
@@ -240,7 +240,7 @@ PdbScanner::loadDataFromBinary(const wchar_t *filename, IDiaDataSource **dataSou
 	}
 
 	if (DDR_RC_OK == rc) {
-		if(isPDBFile){
+		if (isPDBFile) {
 			hr = (*dataSource)->loadDataFromPdb(filename);
 		} else {
 			hr = (*dataSource)->loadDataForExe(filename, NULL, NULL);
@@ -320,7 +320,7 @@ PdbScanner::addChildrenSymbols(IDiaSymbol *symbol, enum SymTagEnum symTag, Names
 	IDiaSymbol **childSymbols = NULL;
 	ULONG celt = 0;
 	if ((DDR_RC_OK == rc) && (0 != count)) {
-		childSymbols = new IDiaSymbol*[count];
+		childSymbols = new IDiaSymbol *[count];
 		hr = classSymbols->Next(count, childSymbols, &celt);
 		if (FAILED(hr)) {
 			ERRMSG("Failed to get children symbols with HRESULT = %08lX", hr);
@@ -389,7 +389,7 @@ PdbScanner::addChildrenSymbols(IDiaSymbol *symbol, enum SymTagEnum symTag, Names
 	}
 
 	if (NULL != childSymbols) {
-		delete childSymbols;
+		delete[] childSymbols;
 	}
 	if (NULL != classSymbols) {
 		classSymbols->Release();
@@ -544,7 +544,7 @@ PdbScanner::createEnumUDT(IDiaSymbol *symbol, NamespaceUDT *outerNamespace)
 
 	string symbolName = "";
 	if (DDR_RC_OK == rc) {
-		 rc = getName(symbol, &symbolName);
+		rc = getName(symbol, &symbolName);
 	}
 
 	if (DDR_RC_OK == rc) {

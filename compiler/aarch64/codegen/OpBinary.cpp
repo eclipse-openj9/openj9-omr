@@ -622,8 +622,8 @@ const OMR::ARM64::InstOpCode::OpCodeBinaryEntry OMR::ARM64::InstOpCode::binaryEn
 		0x9B008000,	/* MSUB      	msubx	 */
 		0x9B208000,	/* SMSUBL    	smsubl	 */
 		0x9BA08000,	/* UMSUBL    	umsubl	 */
-		0x9B400000,	/* SMULH     	smulh	 */
-		0x9BC00000,	/* UMULH     	umulh	 */
+		0x9B407C00,	/* SMULH     	smulh	 */
+		0x9BC07C00,	/* UMULH     	umulh	 */
 		0X1F400000,	/* FMADD        fmaddd   */
 		0X1F000000,	/* FMADD        fmadds   */
 	/* Data-processing (2 source) */

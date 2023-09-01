@@ -1695,6 +1695,9 @@ TR_Debug::print(TR::FILE *pOutFile, TR::ARM64Trg1Src1ImmInstruction *instr)
                break;
             case TR::InstOpCode::addsimmw:
                mnemonic = "cmnimmw";
+               break;
+            default:
+               break;
             }
          trfprintf(pOutFile, "%s \t", mnemonic);
          print(pOutFile, instr->getSource1Register(), TR_WordReg);

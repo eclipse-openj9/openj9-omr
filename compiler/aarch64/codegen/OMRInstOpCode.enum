@@ -616,8 +616,8 @@
 		msubx,                                                  	/* 0x9B008000	MSUB      	 */
 		smsubl,                                                 	/* 0x9B208000	SMSUBL    	 */
 		umsubl,                                                 	/* 0x9BA08000	UMSUBL    	 */
-		smulh,                                                  	/* 0x9B400000	SMULH     	 */
-		umulh,                                                  	/* 0x9BC00000	UMULH     	 */
+		smulh,                                                  	/* 0x9B407C00	SMULH     	 */
+		umulh,                                                  	/* 0x9BC07C00	UMULH     	 */
 		fmaddd,                                                 	/* 0X1F000000   FMADD        */
 		fmadds,                                                 	/* 0X1F400000   FMADD        */
 	/* Data-processing (2 source) */

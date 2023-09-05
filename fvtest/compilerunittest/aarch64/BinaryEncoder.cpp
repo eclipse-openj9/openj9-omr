@@ -2697,3 +2697,21 @@ INSTANTIATE_TEST_CASE_P(VectorRBIT, ARM64Trg1Src1EncodingTest, ::testing::Values
     std::make_tuple(TR::InstOpCode::vrbit16b, TR::RealRegister::v31, TR::RealRegister::v0, "6e60581f"),
     std::make_tuple(TR::InstOpCode::vrbit16b, TR::RealRegister::v31, TR::RealRegister::v0, "6e60581f")
 ));
+
+INSTANTIATE_TEST_CASE_P(SMULH, ARM64Trg1Src2EncodingTest, ::testing::Values(
+    std::make_tuple(TR::InstOpCode::smulh, TR::RealRegister::x0, TR::RealRegister::x15, TR::RealRegister::x29, "9b5d7de0"),
+    std::make_tuple(TR::InstOpCode::smulh, TR::RealRegister::x0, TR::RealRegister::x29, TR::RealRegister::x15, "9b4f7fa0"),
+    std::make_tuple(TR::InstOpCode::smulh, TR::RealRegister::x15, TR::RealRegister::x0, TR::RealRegister::x29, "9b5d7c0f"),
+    std::make_tuple(TR::InstOpCode::smulh, TR::RealRegister::x15, TR::RealRegister::x29, TR::RealRegister::x0, "9b407faf"),
+    std::make_tuple(TR::InstOpCode::smulh, TR::RealRegister::x29, TR::RealRegister::x0, TR::RealRegister::x15, "9b4f7c1d"),
+    std::make_tuple(TR::InstOpCode::smulh, TR::RealRegister::x29, TR::RealRegister::x15, TR::RealRegister::x0, "9b407dfd")
+));
+
+INSTANTIATE_TEST_CASE_P(UMULH, ARM64Trg1Src2EncodingTest, ::testing::Values(
+    std::make_tuple(TR::InstOpCode::umulh, TR::RealRegister::x0, TR::RealRegister::x15, TR::RealRegister::x29, "9bdd7de0"),
+    std::make_tuple(TR::InstOpCode::umulh, TR::RealRegister::x0, TR::RealRegister::x29, TR::RealRegister::x15, "9bcf7fa0"),
+    std::make_tuple(TR::InstOpCode::umulh, TR::RealRegister::x15, TR::RealRegister::x0, TR::RealRegister::x29, "9bdd7c0f"),
+    std::make_tuple(TR::InstOpCode::umulh, TR::RealRegister::x15, TR::RealRegister::x29, TR::RealRegister::x0, "9bc07faf"),
+    std::make_tuple(TR::InstOpCode::umulh, TR::RealRegister::x29, TR::RealRegister::x0, TR::RealRegister::x15, "9bcf7c1d"),
+    std::make_tuple(TR::InstOpCode::umulh, TR::RealRegister::x29, TR::RealRegister::x15, TR::RealRegister::x0, "9bc07dfd")
+));

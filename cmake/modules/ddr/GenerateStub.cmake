@@ -47,10 +47,9 @@ endmacro()
 file(WRITE "${output_file}" "/* generated file, DO NOT EDIT */\nconst char ddr_source[] = \"${input_file}\";\n")
 
 execute_process(COMMAND grep -E -q "@ddr_(namespace|options):" ${input_file} RESULT_VARIABLE rc)
-if(NOT rc EQUAL 0)
-	# input doesn't have any DDR directives, so leave the file (mostly) empty
-	set(rc 0)
-else()
+
+# Leave the output mostly empty if the input doesn't have any DDR directives.
+if(rc EQUAL 0)
 	execute_process(COMMAND awk -f ${AWK_SCRIPT} ${input_file} OUTPUT_VARIABLE awk_result RESULT_VARIABLE rc)
 
 	if(NOT rc EQUAL 0)
@@ -67,5 +66,3 @@ else()
 		file(APPEND ${output_file} "${awk_result}")
 	endif()
 endif()
-
-return(${rc})

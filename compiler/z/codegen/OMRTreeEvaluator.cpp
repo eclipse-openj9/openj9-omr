@@ -11776,131 +11776,145 @@ OMR::Z::TreeEvaluator::arraycmpEvaluator(TR::Node * node, TR::CodeGenerator * cg
    TR::Register * firstBaseReg = NULL;
    TR::Register * secondBaseReg = NULL;
    bool lenMinusOne=false;
-   TR_ASSERT(!node->isArrayCmpLen() || !node->isArrayCmpSign(), "Invalid arraycmp node");
-   if (!node->isArrayCmpLen())
-      {
-      // use CLC
-      TR::Register * resultReg;
 
-      if (elemsExpr->getOpCode().isLoadConst())
+   // use CLC
+   TR::Register * resultReg;
+
+   if (elemsExpr->getOpCode().isLoadConst())
+      {
+      int64_t elems = static_cast<int64_t>(getIntegralValue(elemsExpr)); //get number of elements (in bytes)
+      bool    clobber = (comp->getOption(TR_DisableSSOpts) || elems>256 || elems==0 || node->isArrayCmpSign());
+      if (!node->isArrayCmpSign())
          {
-         int32_t elems = (int32_t) getIntegralValue(elemsExpr); //get number of elements (in bytes)
-         bool    clobber = (comp->getOption(TR_DisableSSOpts) || elems>256 || elems==0 || node->isArrayCmpSign());
-         if (!node->isArrayCmpSign())
-            {
-            resultReg = TR::TreeEvaluator::arraycmpHelper(
-                            node,
-                            cg,
-                            false, //isWideChar
-                            true,  //isEqualCmp
-                            0,     //cmpValue. It means it is equivalent to do "arraycmp(A,B) == 0"
-                            NULL,  //compareTarget
-                            NULL,  //ificmpNode
-                            true,  //needResultReg
-                            true); //return102
-            // node->setRegister(resultReg);
-            return resultReg;
-            }
-         else
-            {
-            MemCmpConstLenSignMacroOp op(node, firstBaseAddr, secondBaseAddr, cg, elems);
-            ClobberRegisterForLoops(clobber,op,firstBaseAddr,firstBaseReg);
-            ClobberRegisterForLoops(clobber,op,secondBaseAddr,secondBaseReg);
-            op.generate(firstBaseReg, secondBaseReg);
-            resultReg = op.resultReg();
-            }
+         resultReg = TR::TreeEvaluator::arraycmpHelper(
+                           node,
+                           cg,
+                           false, //isWideChar
+                           true,  //isEqualCmp
+                           0,     //cmpValue. It means it is equivalent to do "arraycmp(A,B) == 0"
+                           NULL,  //compareTarget
+                           NULL,  //ificmpNode
+                           true,  //needResultReg
+                           true); //return102
+         // node->setRegister(resultReg);
+         return resultReg;
          }
       else
          {
-         TR::Register * elemsReg;
-
-         if (!node->isArrayCmpSign())
-            {
-            resultReg = TR::TreeEvaluator::arraycmpHelper(
-                          node,
-                          cg,
-                          false, //isWideChar
-                          true,  //isEqualCmp
-                          0,     //cmpValue. It means it is equivalent to do "arraycmp(A,B) == 0"
-                          NULL,  //compareTarget
-                          NULL,  //ificmpNode
-                          true,  //needResultReg
-                          true); //return102
-
-            // node->setRegister(resultReg);
-            return resultReg;
-            }
-         else
-            {
-            elemsReg = cg->evaluateLengthMinusOneForMemoryOps(elemsExpr, true, lenMinusOne);
-            firstBaseReg = cg->gprClobberEvaluate(firstBaseAddr);
-            secondBaseReg = cg->gprClobberEvaluate(secondBaseAddr);
-
-            MemCmpVarLenSignMacroOp op(node, firstBaseAddr, secondBaseAddr, cg, elemsReg, elemsExpr);
-            op.generate(firstBaseReg, secondBaseReg);
-            resultReg = op.resultReg();
-            cg->stopUsingRegister(elemsReg);
-            }
+         MemCmpConstLenSignMacroOp op(node, firstBaseAddr, secondBaseAddr, cg, elems);
+         ClobberRegisterForLoops(clobber,op,firstBaseAddr,firstBaseReg);
+         ClobberRegisterForLoops(clobber,op,secondBaseAddr,secondBaseReg);
+         op.generate(firstBaseReg, secondBaseReg);
+         resultReg = op.resultReg();
          }
-
-      cg->decReferenceCount(elemsExpr);
-      if (firstBaseReg!=NULL) cg->decReferenceCount(firstBaseAddr);
-      if (secondBaseReg!=NULL) cg->decReferenceCount(secondBaseAddr);
-
-      if (firstBaseReg!=NULL) cg->stopUsingRegister(firstBaseReg);
-      if (secondBaseReg!=NULL) cg->stopUsingRegister(secondBaseReg);
-
-
-      TR_ASSERT( resultReg!=firstBaseReg && resultReg!=secondBaseReg, "arraycmpEvaluator -- result reg should be a new reg\n");
-
-      node->setRegister(resultReg);
-      return resultReg;
       }
    else
       {
-      // use CLCL instruction
-      firstBaseReg = cg->gprClobberEvaluate(firstBaseAddr);
-      secondBaseReg = cg->gprClobberEvaluate(secondBaseAddr);
+      TR::Register * elemsReg;
 
-      TR::Register * orgLen = cg->gprClobberEvaluate(elemsExpr);
-      TR::Register * firstLen = cg->allocateRegister();
-      TR::Register * secondLen = cg->allocateRegister();
-      TR::RegisterPair * firstPair = cg->allocateConsecutiveRegisterPair(firstLen, firstBaseReg);
-      TR::RegisterPair * secondPair = cg->allocateConsecutiveRegisterPair(secondLen, secondBaseReg);
-      TR::Register * resultReg = cg->allocateRegister();
-      TR::Instruction * cursor;
+      if (!node->isArrayCmpSign())
+         {
+         resultReg = TR::TreeEvaluator::arraycmpHelper(
+                        node,
+                        cg,
+                        false, //isWideChar
+                        true,  //isEqualCmp
+                        0,     //cmpValue. It means it is equivalent to do "arraycmp(A,B) == 0"
+                        NULL,  //compareTarget
+                        NULL,  //ificmpNode
+                        true,  //needResultReg
+                        true); //return102
 
-      TR::RegisterDependencyConditions * dependencies = cg->createDepsForRRMemoryInstructions(node, firstPair, secondPair);
+         // node->setRegister(resultReg);
+         return resultReg;
+         }
+      else
+         {
+         elemsReg = cg->evaluateLengthMinusOneForMemoryOps(elemsExpr, true, lenMinusOne);
+         firstBaseReg = cg->gprClobberEvaluate(firstBaseAddr);
+         secondBaseReg = cg->gprClobberEvaluate(secondBaseAddr);
 
-      generateRRInstruction(cg, TR::InstOpCode::getLoadRegOpCode(), node, firstLen, orgLen);
-      generateRRInstruction(cg, TR::InstOpCode::getLoadRegOpCode(), node, secondLen, orgLen);
-      cursor = generateRRInstruction(cg, TR::InstOpCode::CLCL, node, firstPair, secondPair);
-
-      generateRRInstruction(cg, TR::InstOpCode::getLoadRegOpCode(), node, resultReg, orgLen);
-      cursor = generateRRInstruction(cg, TR::InstOpCode::getSubstractRegOpCode(), node, resultReg, firstLen);
-
-
-      cg->stopUsingRegister(firstPair);
-      cg->stopUsingRegister(secondPair);
-      cg->stopUsingRegister(firstBaseReg);
-      cg->stopUsingRegister(secondBaseReg);
-      cg->stopUsingRegister(firstLen);
-      cg->stopUsingRegister(secondLen);
-      cg->stopUsingRegister(orgLen);
-
-
-      cg->decReferenceCount(elemsExpr);
-      cg->decReferenceCount(firstBaseAddr);
-      cg->decReferenceCount(secondBaseAddr);
-      cursor->setDependencyConditions(dependencies);
-
-
-      node->setRegister(resultReg);
-      return resultReg;
-
+         MemCmpVarLenSignMacroOp op(node, firstBaseAddr, secondBaseAddr, cg, elemsReg, elemsExpr);
+         op.generate(firstBaseReg, secondBaseReg);
+         resultReg = op.resultReg();
+         cg->stopUsingRegister(elemsReg);
+         }
       }
+
+   cg->decReferenceCount(elemsExpr);
+   if (firstBaseReg!=NULL) cg->decReferenceCount(firstBaseAddr);
+   if (secondBaseReg!=NULL) cg->decReferenceCount(secondBaseAddr);
+
+   if (firstBaseReg!=NULL) cg->stopUsingRegister(firstBaseReg);
+   if (secondBaseReg!=NULL) cg->stopUsingRegister(secondBaseReg);
+
+
+   TR_ASSERT( resultReg!=firstBaseReg && resultReg!=secondBaseReg, "arraycmpEvaluator -- result reg should be a new reg\n");
+
+   node->setRegister(resultReg);
+   return resultReg;
    }
 
+TR::Register *
+OMR::Z::TreeEvaluator::arraycmplenEvaluator(TR::Node * node, TR::CodeGenerator * cg)
+   {
+   TR::Compilation *comp = cg->comp();
+
+   if (TR::isJ9() && !comp->getOption(TR_DisableSIMDArrayCompare) && cg->getSupportsVectorRegisters())
+      {
+      // An empirical study has showed that CLC is faster for all array sizes if the number of bytes to copy is known to be constant
+      if (!node->getChild(2)->getOpCode().isLoadConst())
+         return TR::TreeEvaluator::arraycmpSIMDHelper(node, cg, NULL, NULL, true, !node->isArrayCmpSign()/*return102*/, true);
+      }
+
+   TR::Node * firstBaseAddr = node->getFirstChild();
+   TR::Node * secondBaseAddr = node->getSecondChild();
+   TR::Node * elemsExpr = node->getChild(2);
+
+   TR::Register * firstBaseReg = NULL;
+   TR::Register * secondBaseReg = NULL;
+   bool lenMinusOne=false;
+
+   // use CLCL instruction
+   firstBaseReg = cg->gprClobberEvaluate(firstBaseAddr);
+   secondBaseReg = cg->gprClobberEvaluate(secondBaseAddr);
+
+   TR::Register * orgLen = cg->gprClobberEvaluate(elemsExpr);
+   TR::Register * firstLen = cg->allocateRegister();
+   TR::Register * secondLen = cg->allocateRegister();
+   TR::RegisterPair * firstPair = cg->allocateConsecutiveRegisterPair(firstLen, firstBaseReg);
+   TR::RegisterPair * secondPair = cg->allocateConsecutiveRegisterPair(secondLen, secondBaseReg);
+   TR::Register * resultReg = cg->allocateRegister();
+   TR::Instruction * cursor;
+
+   TR::RegisterDependencyConditions * dependencies = cg->createDepsForRRMemoryInstructions(node, firstPair, secondPair);
+
+   generateRRInstruction(cg, TR::InstOpCode::getLoadRegOpCode(), node, firstLen, orgLen);
+   generateRRInstruction(cg, TR::InstOpCode::getLoadRegOpCode(), node, secondLen, orgLen);
+   cursor = generateRRInstruction(cg, TR::InstOpCode::CLCL, node, firstPair, secondPair);
+
+   generateRRInstruction(cg, TR::InstOpCode::getLoadRegOpCode(), node, resultReg, orgLen);
+   cursor = generateRRInstruction(cg, TR::InstOpCode::getSubstractRegOpCode(), node, resultReg, firstLen);
+
+
+   cg->stopUsingRegister(firstPair);
+   cg->stopUsingRegister(secondPair);
+   cg->stopUsingRegister(firstBaseReg);
+   cg->stopUsingRegister(secondBaseReg);
+   cg->stopUsingRegister(firstLen);
+   cg->stopUsingRegister(secondLen);
+   cg->stopUsingRegister(orgLen);
+
+
+   cg->decReferenceCount(elemsExpr);
+   cg->decReferenceCount(firstBaseAddr);
+   cg->decReferenceCount(secondBaseAddr);
+   cursor->setDependencyConditions(dependencies);
+
+
+   node->setRegister(resultReg);
+   return resultReg;
+   }
 
 #define TRTSIZE 256
 TR::Register *
@@ -15734,7 +15748,8 @@ OMR::Z::TreeEvaluator::arraycmpSIMDHelper(TR::Node *node,
       TR::LabelSymbol *compareTarget,
       TR::Node *ificmpNode,
       bool needResultReg,
-      bool return102)
+      bool return102,
+      bool isArrayCmpLen)
    {
    // Similar to arraycmpHelper, except it uses vector instructions and supports arraycmpsign and arraycmplen
    // Does not currently support aggregates or wide chars
@@ -15746,10 +15761,7 @@ OMR::Z::TreeEvaluator::arraycmpSIMDHelper(TR::Node *node,
    TR::Node * secondAddrNode = return102 ? node->getSecondChild() : node->getFirstChild();
    TR::Node * elemsExpr = node->getChild(2);
    bool isFoldedIf = compareTarget != NULL;
-   bool isArrayCmp = node->getOpCodeValue() == TR::arraycmp;
    TR::Compilation *comp = cg->comp();
-
-   TR_ASSERT( !(isArrayCmp && node->isArrayCmpLen() && node->isArrayCmpSign()), "Invalid arraycmp node");
 
    TR::InstOpCode::S390BranchCondition ifxcmpBrCond = TR::InstOpCode::COND_NOP;
    if (isFoldedIf)
@@ -15771,7 +15783,7 @@ OMR::Z::TreeEvaluator::arraycmpSIMDHelper(TR::Node *node,
 
    // VLL uses lastByteIndexReg as the highest 0-based index to load, which is length - 1
    generateRILInstruction(cg, TR::InstOpCode::getSubtractLogicalImmOpCode(), node, lastByteIndexReg, 1);
-   if(needResultReg && isArrayCmp && node->isArrayCmpLen())
+   if(needResultReg && isArrayCmpLen)
       generateRRInstruction(cg, TR::InstOpCode::getLoadRegOpCode(), node, resultReg, lastByteIndexReg);
 
    TR::LabelSymbol * cFlowRegionStart = generateLabelSymbol(cg);
@@ -15811,7 +15823,7 @@ OMR::Z::TreeEvaluator::arraycmpSIMDHelper(TR::Node *node,
       }
    else if(needResultReg)
       {
-      if(isArrayCmp && node->isArrayCmpLen())
+      if(isArrayCmpLen)
          generateRIInstruction(cg, TR::InstOpCode::getAddHalfWordImmOpCode(), node, resultReg, 1);//Return length of the arrays, which is resultReg += 1
       else
          generateRRInstruction(cg, TR::InstOpCode::getXORRegOpCode(), node, resultReg, resultReg);//Return zero to indicate equal
@@ -15826,7 +15838,7 @@ OMR::Z::TreeEvaluator::arraycmpSIMDHelper(TR::Node *node,
       }
    else if(needResultReg)
       {
-      if(isArrayCmp && node->isArrayCmpLen())
+      if(isArrayCmpLen)
          {
          // Return 0-based index of first non-matching element
          // resultReg - lastByteIndexReg = number of elements compared before the last loop

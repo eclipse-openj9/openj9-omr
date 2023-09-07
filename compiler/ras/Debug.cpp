@@ -1053,7 +1053,6 @@ TR_Debug::nodePrintAllFlags(TR::Node *node, TR_PrettyPrinterString &output)
    FLAG(chkSkipZeroInitialization, "skipZeroInit");
    FLAG(chkDontMoveUnderBranch, "dontMoveUnderBranch");
    FLAG(chkIsPrivatizedInlinerArg, "privatizedInlinerArg");
-   FLAG(chkArrayCmpLen, "arrayCmpLen");
    FLAG(chkArrayCmpSign, "arrayCmpSign");
    FLAG(chkXorBitOpMem, "SubOp=XOR");
    FLAG(chkOrBitOpMem, "SubOp=OR");
@@ -1612,6 +1611,8 @@ TR_Debug::getName(TR::SymbolReference * symRef)
             return "<reverse-store>";
          case TR::SymbolReferenceTable::arrayCmpSymbol:
             return "<arraycmp>";
+         case TR::SymbolReferenceTable::arrayCmpLenSymbol:
+            return "<arraycmplen>";
          case TR::SymbolReferenceTable::currentTimeMaxPrecisionSymbol:
             return "<currentTimeMaxPrecision>";
          case TR::SymbolReferenceTable::encodeASCIISymbol:

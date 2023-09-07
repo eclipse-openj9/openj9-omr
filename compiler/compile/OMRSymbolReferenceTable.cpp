@@ -664,6 +664,19 @@ OMR::SymbolReferenceTable::findOrCreateArrayCmpSymbol()
    }
 
 TR::SymbolReference *
+OMR::SymbolReferenceTable::findOrCreateArrayCmpLenSymbol()
+   {
+   if (!element(arrayCmpLenSymbol))
+      {
+      TR::MethodSymbol * sym = TR::MethodSymbol::create(trHeapMemory(),TR_Helper);
+      sym->setHelper();
+
+      element(arrayCmpLenSymbol) = new (trHeapMemory()) TR::SymbolReference(self(), arrayCmpLenSymbol, sym);
+      }
+   return element(arrayCmpLenSymbol);
+   }
+
+TR::SymbolReference *
 OMR::SymbolReferenceTable::findOrCreateCurrentTimeMaxPrecisionSymbol()
    {
    if (!element(currentTimeMaxPrecisionSymbol))

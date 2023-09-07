@@ -81,6 +81,8 @@ OMR::X86::I386::CodeGenerator::initialize()
       cg->setSupportsArrayTranslateAndTest();
    if (debug("supportsArrayCmp"))
       cg->setSupportsArrayCmp();
+   if (debug("supportsArrayCmpLen"))
+      cg->setSupportsArrayCmpLen();
 
    cg->setSupportsDoubleWordCAS();
    cg->setSupportsDoubleWordSet();

@@ -12464,7 +12464,7 @@ TR::Node *bu2iSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
       }
    else if (firstChild->getOpCodeValue() == TR::i2b &&
             (firstChild->getFirstChild()->getOpCodeValue() == TR::butest ||
-             firstChild->getFirstChild()->getOpCodeValue() == TR::arraycmp ||
+             (firstChild->getFirstChild()->getOpCodeValue() == TR::arraycmp && !firstChild->getFirstChild()->isArrayCmpSign()) ||
              firstChild->getFirstChild()->getOpCodeValue() == TR::icmpeq ||
              firstChild->getFirstChild()->getOpCodeValue() == TR::lcmpeq ||
              firstChild->getFirstChild()->getOpCodeValue() == TR::icmpne ||

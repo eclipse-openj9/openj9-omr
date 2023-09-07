@@ -380,6 +380,7 @@ OMR::X86::CodeGenerator::initializeX86(TR::Compilation *comp)
    if (!TR::Compiler->om.canGenerateArraylets())
       {
       self()->setSupportsArrayCmp();
+      self()->setSupportsArrayCmpLen();
       self()->setSupportsPrimitiveArrayCopy();
       if (!comp->getOption(TR_DisableArraySetOpts))
          {

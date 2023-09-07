@@ -1046,7 +1046,8 @@ class OMR_EXTENSIBLE TreeEvaluator: public OMR::TreeEvaluator
                                       TR::LabelSymbol *compareTarget = NULL,
                                       TR::Node *ificmpNode = NULL,
                                       bool needResultReg = true,
-                                      bool return102 = false);
+                                      bool return102 = false,
+                                      bool isArrayCmpLen = false);
 
    static TR::Register *arraytranslateEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *arraytranslateEncodeSIMDEvaluator(TR::Node *node, TR::CodeGenerator *cg, ArrayTranslateFlavor convType);
@@ -1055,6 +1056,7 @@ class OMR_EXTENSIBLE TreeEvaluator: public OMR::TreeEvaluator
    static TR::Register *long2StringEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *bitOpMemEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *arraycmpEvaluator(TR::Node *node, TR::CodeGenerator *cg);
+   static TR::Register *arraycmplenEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *BBStartEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *BBEndEvaluator(TR::Node *node, TR::CodeGenerator *cg);
 

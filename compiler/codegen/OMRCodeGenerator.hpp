@@ -1631,6 +1631,9 @@ public:
    bool getSupportsArrayCmp() {return _flags1.testAny(SupportsArrayCmp);}
    void setSupportsArrayCmp() {_flags1.set(SupportsArrayCmp);}
 
+   bool getSupportsArrayCmpLen() {return _flags1.testAny(SupportsArrayCmpLen);}
+   void setSupportsArrayCmpLen() {_flags1.set(SupportsArrayCmpLen);}
+
    bool getSupportsArrayCmpSign() {return _flags3.testAny(SupportsArrayCmpSign);}
    void setSupportsArrayCmpSign() {_flags3.set(SupportsArrayCmpSign);}
 
@@ -1832,7 +1835,7 @@ public:
       // AVAILABLE                                       = 0x02000000,
       UsesRegisterPairsForLongs                          = 0x04000000,
       SupportsArraySet                                   = 0x08000000,
-      // AVAILABLE                                       = 0x10000000,
+      SupportsArrayCmpLen                                = 0x10000000,
       SupportsArrayCmp                                   = 0x20000000,
       DisableLongGRA                                     = 0x40000000,
       DummyLastEnum1

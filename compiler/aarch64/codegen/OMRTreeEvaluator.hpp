@@ -833,6 +833,7 @@ public:
    static TR::Register *arraytranslateEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *arraytranslateAndTestEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *arraycmpEvaluator(TR::Node *node, TR::CodeGenerator *cg);
+   static TR::Register *arraycmplenEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *computeCCEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *butestEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *sutestEvaluator(TR::Node *node, TR::CodeGenerator *cg);

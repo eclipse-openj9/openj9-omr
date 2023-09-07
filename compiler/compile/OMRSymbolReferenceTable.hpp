@@ -88,6 +88,7 @@ class SymbolReferenceTable
       arraySetSymbol,
       arrayCopySymbol,
       arrayCmpSymbol,
+      arrayCmpLenSymbol,
       prefetchSymbol,
 
       killsAllMethodSymbol,                           // A dummy method whose alias set includes all
@@ -844,6 +845,7 @@ class SymbolReferenceTable
    TR::SymbolReference * findOrCreateArrayCopySymbol();
    TR::SymbolReference * findOrCreateArraySetSymbol();
    TR::SymbolReference * findOrCreateArrayCmpSymbol();
+   TR::SymbolReference * findOrCreateArrayCmpLenSymbol();
 
    TR::SymbolReference * findOrCreateClassSymbol(TR::ResolvedMethodSymbol * owningMethodSymbol, int32_t cpIndex, void * classObject, bool cpIndexOfStatic = false);
    TR::SymbolReference * findOrCreateArrayShadowSymbolRef(TR::DataType type, TR::Node * baseArrayAddress, int32_t size, TR_FrontEnd * fe);

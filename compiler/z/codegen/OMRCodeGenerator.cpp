@@ -502,9 +502,20 @@ OMR::Z::CodeGenerator::initialize()
       {
       cg->setSupportsArraySet();
       }
-   cg->setSupportsArrayCmp();
-   cg->setSupportsArrayCmpLen();
-   cg->setSupportsArrayCmpSign();
+   if (!TR::Compiler->om.canGenerateArraylets())
+      {
+      static const bool disableArrayCmp = feGetEnv("TR_DisableArrayCmp") != NULL;
+      if (!disableArrayCmp)
+         {
+         cg->setSupportsArrayCmp();
+         cg->setSupportsArrayCmpSign();
+         }
+      static const bool disableArrayCmpLen = feGetEnv("TR_DisableArrayCmpLen") != NULL;
+      if (!disableArrayCmpLen)
+         {
+         cg->setSupportsArrayCmpLen();
+         }
+      }
    if (!comp->compileRelocatableCode())
       {
       cg->setSupportsArrayTranslateTRxx();

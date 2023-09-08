@@ -3,7 +3,7 @@
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
- * distribution and is available at http://eclipse.org/legal/epl-2.0
+ * distribution and is available at https://www.eclipse.org/legal/epl-2.0/
  * or the Apache License, Version 2.0 which accompanies this distribution
  * and is available at https://www.apache.org/licenses/LICENSE-2.0.
  *
@@ -30,7 +30,7 @@ TR_HasRandomGenerator::TR_HasRandomGenerator(TR::Compilation *comp)
 
 uint32_t TR_RandomGenerator::getRandom()
    {
-   // Linear congruential parameters used by GCC; see http://en.wikipedia.org/wiki/Linear_congruential_generator
+   // Linear congruential parameters used by GCC; see https://en.wikipedia.org/wiki/Linear_congruential_generator
    // ...except we keep the sign bit (bit 31) while apparently they do not.
    //
    _bits = 1103515245 * _bits + 12345;

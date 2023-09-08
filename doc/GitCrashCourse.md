@@ -3,7 +3,7 @@ Copyright IBM Corp. and others 2020
 
 This program and the accompanying materials are made available under
 the terms of the Eclipse Public License 2.0 which accompanies this
-distribution and is available at http://eclipse.org/legal/epl-2.0
+distribution and is available at https://www.eclipse.org/legal/epl-2.0/
 or the Apache License, Version 2.0 which accompanies this distribution
 and is available at https://www.apache.org/licenses/LICENSE-2.0.
 
@@ -109,7 +109,7 @@ argument.
 
 Please note that the email associated with the author of the commits you make in OMR must
 be the email you used for signing the
-[ECA - Eclipse Foundation Contributor Agreement](http://www.eclipse.org/legal/ECA.php).
+[ECA - Eclipse Foundation Contributor Agreement](https://www.eclipse.org/legal/ECA.php).
 Therefore, you must either configure the global `user.email` or the OMR
 project-specific `user.email` to the email used for signing the ECA.
 For more information, see the [Legal Considerations section in the contributing

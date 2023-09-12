@@ -303,7 +303,6 @@ class OMR_EXTENSIBLE TreeEvaluator: public OMR::X86::TreeEvaluator
    static TR::Register *vreturnEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *vRegLoadEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *vRegStoreEvaluator(TR::Node *node, TR::CodeGenerator *cg);
-   static TR::Register *vbitselectEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *vsetelemEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *vsplatsEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *vstoreEvaluator(TR::Node *node, TR::CodeGenerator *cg);

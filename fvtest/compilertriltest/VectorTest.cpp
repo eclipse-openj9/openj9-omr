@@ -773,8 +773,6 @@ TEST_F(VectorTest, VInt8BitSelect) {
     SKIP_ON_S390(KnownBug) << "This test is currently disabled on Z platforms because not all Z platforms have vector support (issue #1843)";
     SKIP_ON_S390X(KnownBug) << "This test is currently disabled on Z platforms because not all Z platforms have vector support (issue #1843)";
     SKIP_ON_RISCV(MissingImplementation);
-    SKIP_ON_X86(MissingImplementation);
-    SKIP_ON_HAMMER(MissingImplementation);
 
     Tril::DefaultCompiler compiler(trees);
     ASSERT_EQ(0, compiler.compile()) << "Compilation failed unexpectedly\n" << "Input trees: " << inputTrees;

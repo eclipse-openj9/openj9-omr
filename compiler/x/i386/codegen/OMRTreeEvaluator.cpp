@@ -1638,12 +1638,6 @@ OMR::X86::I386::TreeEvaluator::vcalliEvaluator(TR::Node *node, TR::CodeGenerator
    }
 
 TR::Register*
-OMR::X86::I386::TreeEvaluator::vbitselectEvaluator(TR::Node *node, TR::CodeGenerator *cg)
-   {
-   return TR::TreeEvaluator::unImpOpEvaluator(node, cg);
-   }
-
-TR::Register*
 OMR::X86::I386::TreeEvaluator::vcastEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    return TR::TreeEvaluator::passThroughEvaluator(node, cg);

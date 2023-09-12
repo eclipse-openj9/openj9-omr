@@ -6213,6 +6213,59 @@ OMR::X86::TreeEvaluator::vmbyteswapEvaluator(TR::Node *node, TR::CodeGenerator *
    }
 
 TR::Register*
+OMR::X86::TreeEvaluator::vbitselectEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+   {
+   TR::DataType et = node->getDataType().getVectorElementType();
+   TR::VectorLength vl = node->getDataType().getVectorLength();
+
+   TR::Node *firstChild = node->getFirstChild();
+   TR::Node *secondChild = node->getSecondChild();
+   TR::Node *thirdChild = node->getThirdChild();
+
+   TR::Register *firstReg = cg->evaluate(firstChild);
+   TR::Register *secondReg = cg->evaluate(secondChild);
+   TR::Register *thirdReg = cg->evaluate(thirdChild);
+   TR::Register *resultReg = cg->allocateRegister(TR_VRF);
+
+   TR_ASSERT_FATAL(et.isIntegral(), "vbitselect is for integer operations");
+
+   TR::InstOpCode xorOpcode = TR::InstOpCode::PXORRegReg;
+   TR::InstOpCode andOpcode = TR::InstOpCode::PANDRegReg;
+
+   OMR::X86::Encoding xorEncoding = xorOpcode.getSIMDEncoding(&cg->comp()->target().cpu, vl);
+   OMR::X86::Encoding andEncoding = xorOpcode.getSIMDEncoding(&cg->comp()->target().cpu, vl);
+
+   TR_ASSERT_FATAL(xorEncoding != OMR::X86::Bad, "No encoding method for pxor opcode");
+   TR_ASSERT_FATAL(andEncoding != OMR::X86::Bad, "No encoding method for pand opcode");
+
+   // inputA[i] ^ ((inputA[i] ^ inputB[i]) & inputC[i])
+
+   if (xorEncoding != Legacy)
+      {
+      generateRegRegRegInstruction(xorOpcode.getMnemonic(), node, resultReg, firstReg, secondReg, cg, xorEncoding);
+      }
+   else
+      {
+      TR::InstOpCode movOpcode = TR::InstOpCode::MOVDQURegReg;
+      OMR::X86::Encoding movEncoding = xorOpcode.getSIMDEncoding(&cg->comp()->target().cpu, vl);
+
+      TR_ASSERT_FATAL(movEncoding != OMR::X86::Bad, "No encoding method for movdqu opcode");
+      generateRegRegInstruction(movOpcode.getMnemonic(), node, resultReg, firstReg, cg, movEncoding);
+      generateRegRegInstruction(xorOpcode.getMnemonic(), node, resultReg, secondReg, cg, xorEncoding);
+      }
+
+   generateRegRegInstruction(andOpcode.getMnemonic(), node, resultReg, thirdReg, cg, xorEncoding);
+   generateRegRegInstruction(xorOpcode.getMnemonic(), node, resultReg, firstReg, cg, xorEncoding);
+
+   node->setRegister(resultReg);
+   cg->decReferenceCount(firstChild);
+   cg->decReferenceCount(secondChild);
+   cg->decReferenceCount(thirdChild);
+
+   return resultReg;
+   }
+
+TR::Register*
 OMR::X86::TreeEvaluator::vcompressbitsEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    return TR::TreeEvaluator::unImpOpEvaluator(node, cg);

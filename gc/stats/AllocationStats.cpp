@@ -26,6 +26,10 @@
 void
 MM_AllocationStats::clear()
 {
+	/* calculate cumulative stats before any clear */
+	_allocationBytesCumulative += bytesAllocated();
+
+
 #if defined(OMR_GC_THREAD_LOCAL_HEAP)
 	_tlhRefreshCountFresh = 0;
 	_tlhRefreshCountReused = 0;

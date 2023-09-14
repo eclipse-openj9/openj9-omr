@@ -49,6 +49,7 @@ public:
 
 	uintptr_t _allocationCount;
 	uintptr_t _allocationBytes;
+	uintptr_t _allocationBytesCumulative;   /**< cumulative allocation up to last clear, excluding since last clear */
 	uintptr_t _ownableSynchronizerObjectCount;  /**< Number of Ownable Synchronizer Object allocations */
 	uintptr_t _continuationObjectCount;  /**< Number of Continuation Object allocations */
 	uintptr_t _discardedBytes;
@@ -84,6 +85,18 @@ public:
 #endif
 		totalBytesAllocated += _arrayletLeafAllocationBytes;
 		return totalBytesAllocated;
+	}
+
+	bool bytesAllocatedCumulative(uintptr_t *cumulativeValue) {
+		if (NULL != cumulativeValue) {
+			/* sum the values up to last clear and since last clear */
+			*cumulativeValue = _allocationBytesCumulative + bytesAllocated();
+
+			/* return false if overflowing */
+			return (_allocationBytesCumulative <= *cumulativeValue);
+		}
+
+		return false;
 	}
 
 	MM_AllocationStats() :

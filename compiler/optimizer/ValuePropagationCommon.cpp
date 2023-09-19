@@ -4136,6 +4136,15 @@ void OMR::ValuePropagation::transformArrayCloneCall(TR::TreeTop *callTree, OMR::
 
    callTree->insertBefore(TR::TreeTop::create(comp(), TR::Node::create(callNode, TR::treetop, 1, newArray)));
    callTree->insertBefore(TR::TreeTop::create(comp(), TR::Node::create(callNode, TR::treetop, 1, arraycopy)));
+
+   // Flush after the arraycopy so that the cloned array appears identical to the original before it's made
+   // visible to other threads, and because the obj allocation is allowed to use non-zeroed TLH, we need to
+   // make sure no thread sees stale memory contents from the array element section.
+   if (cg()->getEnforceStoreOrder())
+      {
+      TR::Node *allocationFence = TR::Node::createAllocationFence(newArray, newArray);
+      callTree->insertBefore(TR::TreeTop::create(comp(), allocationFence));
+      }
    }
 
 void OMR::ValuePropagation::transformConverterCall(TR::TreeTop *callTree)

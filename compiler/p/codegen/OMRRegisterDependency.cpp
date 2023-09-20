@@ -1088,6 +1088,8 @@ void OMR::Power::RegisterDependencyGroup::assignRegisters(TR::Instruction   *cur
             case TR_VRF:
                depsBlocked = haveSpareVRFs;
                break;
+            default:
+               break;
             }
          assignContendedRegisters(currentInstruction, &_dependencies[i], map, depsBlocked, cg);
          }

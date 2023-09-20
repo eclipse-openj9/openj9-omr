@@ -851,7 +851,7 @@ omrsysinfo_get_processor_feature_name(struct OMRPortLibrary *portLibrary, uint32
 
 
 /**
- * Generate the corresponding string literals for the provided OMRProcessorDesc. The buffer will be zero 
+ * Generate the corresponding string literals for the provided OMRProcessorDesc. The buffer will be zero
  * initialized and overwritten with the processor feature output string.
  *
  * @param[in] portLibrary The port library.
@@ -1307,8 +1307,18 @@ omrsysinfo_get_s390_zos_supports_vector_extension_facility(void)
 	return FALSE;
 }
 
+/* The following two functions for checking if z/OS supports the constrained and non-constrained
+ * transactional executional facilities rely on FLCCVT and CVTFLAG4, documented here:
+ *
+ * FLCCVT is an ADDRESS (of the CVT structure) off the PSA structure
+ * https://www.ibm.com/support/knowledgecenter/en/SSLTBW_2.3.0/com.ibm.zos.v2r3.iead300/PSA-map.htm
+ *
+ * CVTFLAG4 is a BITSTRING off the CVT structure containing the CVTTX (0x08), CVTTXC (0x04), and CVTRI (0x02) bits
+ * https://www.ibm.com/support/knowledgecenter/en/SSLTBW_2.3.0/com.ibm.zos.v2r3.iead100/CVT-map.htm
+ */
+
 /** @internal
- *  Check if z/OS supports the Transactional Execution Facility (TX). We use the CVTTX (0x08) and CVTTXC (0x04) bits in
+ *  Check if z/OS supports the Transactional Execution Facility (TX). We use the CVTTX (0x08) bit in
  *  the CVT structure for the OS check.
  *
  *  @return TRUE if TX is supported; FALSE otherwise.
@@ -1316,16 +1326,25 @@ omrsysinfo_get_s390_zos_supports_vector_extension_facility(void)
 static BOOLEAN
 omrsysinfo_get_s390_zos_supports_transactional_execution_facility(void)
 {
-	/* FLCCVT is an ADDRESS off the PSA structure
-	 * https://www.ibm.com/support/knowledgecenter/en/SSLTBW_2.3.0/com.ibm.zos.v2r3.iead300/PSA-map.htm */
-	uint8_t* CVT = (uint8_t*)(*(uint32_t*)0x10);
+	uint8_t* FLCCVT = (uint8_t*)(*(uint32_t*)0x10);
+	uint8_t CVTFLAG4 = *(FLCCVT + 0x17B);
 
-	/* CVTFLAG4 is a BITSTRING off the CVT structure containing the CVTTX (0x08), CVTTXC (0x04), and CVTRI (0x02) bits
-	 * https://www.ibm.com/support/knowledgecenter/en/SSLTBW_2.3.0/com.ibm.zos.v2r3.iead100/CVT-map.htm */
-	uint8_t CVTFLAG4 = *(CVT + 0x17B);
+	return OMR_ARE_ALL_BITS_SET(CVTFLAG4, 0x08);
+}
 
-	/* Note we check for both constrained and non-constrained transaction support */
-	return OMR_ARE_ALL_BITS_SET(CVTFLAG4, 0x0C);
+/** @internal
+ *  Check if z/OS supports the Constrained Transactional Execution Facility (TXC). We use the CVTTXC (0x04) bit in
+ *  the CVT structure for the OS check.
+ *
+ *  @return TRUE if TXC is supported; FALSE otherwise.
+ */
+static BOOLEAN
+omrsysinfo_get_s390_zos_supports_constrained_transactional_execution_facility(void)
+{
+	uint8_t* FLCCVT = (uint8_t*)(*(uint32_t*)0x10);
+	uint8_t CVTFLAG4 = *(FLCCVT + 0x17B);
+
+	return OMR_ARE_ALL_BITS_SET(CVTFLAG4, 0x04);
 }
 
 /** @internal
@@ -1564,14 +1583,23 @@ omrsysinfo_get_s390_description(struct OMRPortLibrary *portLibrary, OMRProcessor
 	/* zEC12 facility and processor detection */
 
 	/* TE/TX hardware support */
-	if (omrsysinfo_test_stfle(portLibrary, 50) && omrsysinfo_test_stfle(portLibrary, 73)) {
+	if (omrsysinfo_test_stfle(portLibrary, OMR_FEATURE_S390_TRANSACTIONAL_EXECUTION_FACILITY)) {
 #if defined(J9ZOS390)
 		if (omrsysinfo_get_s390_zos_supports_transactional_execution_facility())
 #elif defined(LINUX) /* LINUX S390 */
 		if (OMR_ARE_ALL_BITS_SET(auxvFeatures, OMR_HWCAP_S390_TE))
 #endif /* defined(J9ZOS390) */
 		{
-			omrsysinfo_set_feature(desc, OMR_FEATURE_S390_TE);
+			omrsysinfo_set_feature(desc, OMR_FEATURE_S390_TRANSACTIONAL_EXECUTION_FACILITY);
+
+			if (omrsysinfo_test_stfle(portLibrary, OMR_FEATURE_S390_CONSTRAINED_TRANSACTIONAL_EXECUTION_FACILITY)) {
+#if defined(J9ZOS390)
+				if (omrsysinfo_get_s390_zos_supports_constrained_transactional_execution_facility())
+#endif /* defined(J9ZOS390) */
+				{
+					omrsysinfo_set_feature(desc, OMR_FEATURE_S390_CONSTRAINED_TRANSACTIONAL_EXECUTION_FACILITY);
+				}
+			}
 		}
 	}
 
@@ -1760,8 +1788,10 @@ omrsysinfo_get_s390_processor_feature_name(uint32_t feature)
 		return "dfp";
 	case OMR_FEATURE_S390_HPAGE:
 		return "hpage";
-	case OMR_FEATURE_S390_TE:
-		return "te";
+	case OMR_FEATURE_S390_TRANSACTIONAL_EXECUTION_FACILITY:
+		return "tx";
+	case OMR_FEATURE_S390_CONSTRAINED_TRANSACTIONAL_EXECUTION_FACILITY:
+		return "txc";
 	case OMR_FEATURE_S390_MSA_EXTENSION3:
 		return "msa_e3";
 	case OMR_FEATURE_S390_MSA_EXTENSION4:
@@ -1928,7 +1958,7 @@ omrsysinfo_get_aarch64_processor_feature_name(uint32_t feature)
 	case OMR_FEATURE_ARM64_FLAGM2:
 		return "flagm2";
 	case OMR_FEATURE_ARM64_FRINTTS:
-		return "frint";	
+		return "frint";
 	case OMR_FEATURE_ARM64_SVE_I8MM:
 		return "svei8mm";
 	case OMR_FEATURE_ARM64_F32MM:

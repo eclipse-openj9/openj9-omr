@@ -980,6 +980,8 @@ OMR::ARM64::CodeGenerator::supportsNonHelper(TR::SymbolReferenceTable::CommonNon
          result = true;
          break;
          }
+      default:
+         break;
       }
 
    return result;

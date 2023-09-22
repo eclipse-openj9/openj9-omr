@@ -137,6 +137,7 @@ class TR_LoopUnroller
    struct IntrnPtr;
    IntrnPtr *findIntrnPtr(int32_t symRefNum);
    bool haveIdenticalOffsets(IntrnPtr *intrnPtr1, IntrnPtr *intrnPtr2);
+   bool isSymRefSameTypeArrayShadow(TR::Node *node);
    void examineArrayAccesses();
    void refineArrayAliasing();
 

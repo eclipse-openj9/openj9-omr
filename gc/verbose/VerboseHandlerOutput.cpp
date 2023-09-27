@@ -310,6 +310,9 @@ MM_VerboseHandlerOutput::outputInitializedStanza(MM_EnvironmentBase *env, MM_Ver
 #endif /* OMR_GC_CONCURRENT_SCAVENGER */
 
 	buffer->formatAndOutput(env, 1, "<attribute name=\"maxHeapSize\" value=\"0x%zx\" />", _extensions->memoryMax);
+	if (0 < _extensions->softMx) {
+		buffer->formatAndOutput(env, 1, "<attribute name=\"softMx\" value=\"0x%zx\" />", _extensions->softMx);
+	}
 	buffer->formatAndOutput(env, 1, "<attribute name=\"initialHeapSize\" value=\"0x%zx\" />", _extensions->initialMemorySize);
 
 #if defined(OMR_GC_COMPRESSED_POINTERS)

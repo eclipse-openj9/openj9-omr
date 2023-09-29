@@ -82,7 +82,7 @@ public:
    bool getSupportsHardwareSQRT();
 
    bool hasPopulationCountInstruction();
-   
+
    /** \brief
     *     Determines whether the High-Word facility is available on the current processor.
     */
@@ -95,12 +95,12 @@ public:
     *     Determines whether the High-Word facility is available (if \c true) or not (if \c false).
     */
    bool setSupportsHighWordFacility(bool value);
-   
+
    /** \brief
     *     Determines whether the Decimal Floating Point (DFP) facility is available on the current processor.
     */
    bool getSupportsDecimalFloatingPointFacility();
-   
+
    /** \brief
     *     Determines whether the Decimal Floating Point (DFP) facility is available on the current processor.
     *
@@ -108,12 +108,12 @@ public:
     *     Determines whether the Decimal Floating Point facility is available (if \c true) or not (if \c false).
     */
    bool setSupportsDecimalFloatingPointFacility(bool value);
-   
+
    /** \brief
     *     Determines whether the Floating Point Extension (FPE) facility is available on the current processor.
     */
    bool getSupportsFloatingPointExtensionFacility();
-   
+
    /** \brief
     *     Determines whether the Floating Point Extension (FPE) facility is available on the current processor.
     *
@@ -121,31 +121,44 @@ public:
     *     Determines whether the Floating Point Extension facility is available (if \c true) or not (if \c false).
     */
    bool setSupportsFloatingPointExtensionFacility(bool value);
-   
-   /** \brief
-    *     Determines whether the Transactional Memory (TM) facility is available on the current processor.
-    */
-   bool getSupportsTransactionalMemoryFacility();
 
    /** \brief
-    *     Determines whether the Transactional Memory (TM) facility is available on the current processor.
-    *     Alias of supportsFeature(OMR_FEATURE_S390_TE) as a platform agnostic query.
+    *     Determines whether the Transactional Execution (TX) facility is available on the current processor.
+    */
+   bool getSupportsTransactionalExecutionFacility();
+
+   /** \brief
+    *     Determines whether the Transactional Execution (TX) facility is available on the current processor.
+    *     Alias of supportsFeature(OMR_FEATURE_S390_TRANSACTIONAL_EXECUTION_FACILITY) as a platform agnostic query.
     */
    bool supportsTransactionalMemoryInstructions();
-   
+
    /** \brief
-    *     Determines whether the Transactional Memory (TM) facility is available on the current processor.
+    *     Determines whether the Transactional Execution (TX) facility is available on the current processor.
     *
     *  \param value
-    *     Determines whether the Transactional Memory facility is available (if \c true) or not (if \c false).
+    *     Determines whether the Transactional Execution facility is available (if \c true) or not (if \c false).
     */
-   bool setSupportsTransactionalMemoryFacility(bool value);
-   
+   bool setSupportsTransactionalExecutionFacility(bool value);
+
+   /** \brief
+    *     Determines whether the Constrained Transactional Execution (TXC) facility is available on the current processor.
+    */
+   bool getSupportsConstrainedTransactionalExecutionFacility();
+
+   /** \brief
+    *     Determines whether the Constrained Transactional Execution (TXC) facility is available on the current processor.
+    *
+    *  \param value
+    *     Determines whether the Constrained Transactional Execution facility is available (if \c true) or not (if \c false).
+    */
+   bool setSupportsConstrainedTransactionalExecutionFacility(bool value);
+
    /** \brief
     *     Determines whether the Runtime Instrumentation (RI) facility is available on the current processor.
     */
    bool getSupportsRuntimeInstrumentationFacility();
-   
+
    /** \brief
     *     Determines whether the Runtime Instrumentation (RI) facility is available on the current processor.
     *
@@ -153,12 +166,12 @@ public:
     *     Determines whether the Runtime Instrumentation facility is available (if \c true) or not (if \c false).
     */
    bool setSupportsRuntimeInstrumentationFacility(bool value);
-   
+
    /** \brief
     *     Determines whether the Vector facility is available on the current processor.
     */
    bool getSupportsVectorFacility();
-   
+
    /** \brief
     *     Determines whether the Vector facility is available on the current processor.
     *
@@ -166,12 +179,12 @@ public:
     *     Determines whether the Vector facility is available (if \c true) or not (if \c false).
     */
    bool setSupportsVectorFacility(bool value);
-   
+
    /** \brief
     *     Determines whether the Vector Packed Decimal facility is available on the current processor.
     */
    bool getSupportsVectorPackedDecimalFacility();
-   
+
    /** \brief
     *     Determines whether the Vector Packed Decimal facility is available on the current processor.
     *
@@ -179,7 +192,7 @@ public:
     *     Determines whether the Vector Packed Decimal facility is available (if \c true) or not (if \c false).
     */
    bool setSupportsVectorPackedDecimalFacility(bool value);
-   
+
    /** \brief
     *     Determines whether the Miscellaneous Instruction Extensions 2 (MIE2) facility is available on the current
     *     processor.
@@ -202,22 +215,22 @@ public:
     *     processor.
     */
    bool getSupportsMiscellaneousInstructionExtensions3Facility();
-   
+
    /** \brief
     *     Determines whether the Miscellaneous Instruction Extensions 3 (MIE3) facility is available on the current
     *     processor.
     *
     *  \param value
-    *     Determines whether the Miscellaneous Instruction Extensions 3 facility is available (if \c true) or not (if 
+    *     Determines whether the Miscellaneous Instruction Extensions 3 facility is available (if \c true) or not (if
     *     \c false).
     */
    bool setSupportsMiscellaneousInstructionExtensions3Facility(bool value);
-   
+
    /** \brief
     *     Determines whether the Vector Enhancement 2 facility is available on the current processor.
     */
    bool getSupportsVectorFacilityEnhancement2();
-   
+
    /** \brief
     *     Determines whether the Vector Enhancement 2 facility is available on the current processor.
     *
@@ -230,7 +243,7 @@ public:
     *     Determines whether the Vector Enhancement 1 facility is available on the current processor.
     */
    bool getSupportsVectorFacilityEnhancement1();
-   
+
    /** \brief
     *     Determines whether the Vector Enhancement 1 facility is available on the current processor.
     *
@@ -238,12 +251,12 @@ public:
     *     Determines whether the Vector Enhancement 1 facility is available (if \c true) or not (if \c false).
     */
    bool setSupportsVectorFacilityEnhancement1(bool value);
-   
+
    /** \brief
     *     Determines whether the Vector Packed Decimal facility is available on the current processor.
     */
    bool getSupportsVectorPackedDecimalEnhancementFacility();
-   
+
    /** \brief
     *     Determines whether the Vector Packed Decimal facility is available on the current processor.
     *
@@ -251,12 +264,12 @@ public:
     *     Determines whether the Vector Packed Decimal facility is available (if \c true) or not (if \c false).
     */
    bool setSupportsVectorPackedDecimalEnhancementFacility(bool value);
-   
+
    /** \brief
     *     Determines whether the Guarded Storage (GS) facility is available on the current processor.
     */
    bool getSupportsGuardedStorageFacility();
-   
+
    /** \brief
     *     Determines whether the Guarded Storage (GS) facility is available on the current processor.
     *
@@ -264,7 +277,7 @@ public:
     *     Determines whether the Guarded Storage facility is available (if \c true) or not (if \c false).
     */
    bool setSupportsGuardedStorageFacility(bool value);
-   
+
    /**
     * \brief Determines whether 32bit integer rotate is available
     *

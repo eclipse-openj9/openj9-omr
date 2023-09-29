@@ -53,7 +53,8 @@ OMR::Z::CPU::detect(OMRPortLibrary * const omrPortLib)
 
    if (processorDescription.processor < OMR_PROCESSOR_S390_ZEC12)
       {
-      omrsysinfo_processor_set_feature(&processorDescription, OMR_FEATURE_S390_TE, FALSE);
+      omrsysinfo_processor_set_feature(&processorDescription, OMR_FEATURE_S390_CONSTRAINED_TRANSACTIONAL_EXECUTION_FACILITY, FALSE);
+      omrsysinfo_processor_set_feature(&processorDescription, OMR_FEATURE_S390_TRANSACTIONAL_EXECUTION_FACILITY, FALSE);
       omrsysinfo_processor_set_feature(&processorDescription, OMR_FEATURE_S390_RI, FALSE);
       }
 
@@ -168,9 +169,11 @@ OMR::Z::CPU::supportsFeatureOldAPI(uint32_t feature)
       case OMR_FEATURE_S390_FPE:
          supported = self()->getSupportsFloatingPointExtensionFacility();
          break;
-      case OMR_FEATURE_S390_TE:
-         supported = self()->getSupportsTransactionalMemoryFacility();
+      case OMR_FEATURE_S390_CONSTRAINED_TRANSACTIONAL_EXECUTION_FACILITY:
+         supported = self()->getSupportsConstrainedTransactionalExecutionFacility();
          break;
+      case OMR_FEATURE_S390_TRANSACTIONAL_EXECUTION_FACILITY:
+         supported = self()->getSupportsTransactionalExecutionFacility();
       case OMR_FEATURE_S390_RI:
          supported = self()->getSupportsRuntimeInstrumentationFacility();
          break;
@@ -345,28 +348,49 @@ OMR::Z::CPU::setSupportsFloatingPointExtensionFacility(bool value)
    }
 
 bool
-OMR::Z::CPU::getSupportsTransactionalMemoryFacility()
+OMR::Z::CPU::getSupportsTransactionalExecutionFacility()
    {
-   return _flags.testAny(S390SupportsTM);
+   return _flags.testAny(OMR_FEATURE_S390_TRANSACTIONAL_EXECUTION_FACILITY);
    }
 
 bool
 OMR::Z::CPU::supportsTransactionalMemoryInstructions()
    {
-   return self()->supportsFeature(OMR_FEATURE_S390_TE);
+   return self()->supportsFeature(OMR_FEATURE_S390_TRANSACTIONAL_EXECUTION_FACILITY);
    }
 
 
 bool
-OMR::Z::CPU::setSupportsTransactionalMemoryFacility(bool value)
+OMR::Z::CPU::setSupportsTransactionalExecutionFacility(bool value)
    {
    if (value)
       {
-      _flags.set(S390SupportsTM);
+      _flags.set(OMR_FEATURE_S390_TRANSACTIONAL_EXECUTION_FACILITY);
       }
    else
       {
-      _flags.reset(S390SupportsTM);
+      _flags.reset(OMR_FEATURE_S390_TRANSACTIONAL_EXECUTION_FACILITY);
+      }
+
+   return value;
+   }
+
+bool
+OMR::Z::CPU::getSupportsConstrainedTransactionalExecutionFacility()
+   {
+   return _flags.testAny(OMR_FEATURE_S390_CONSTRAINED_TRANSACTIONAL_EXECUTION_FACILITY);
+   }
+
+bool
+OMR::Z::CPU::setSupportsConstrainedTransactionalExecutionFacility(bool value)
+   {
+   if (value)
+      {
+      _flags.set(OMR_FEATURE_S390_CONSTRAINED_TRANSACTIONAL_EXECUTION_FACILITY);
+      }
+   else
+      {
+      _flags.reset(OMR_FEATURE_S390_CONSTRAINED_TRANSACTIONAL_EXECUTION_FACILITY);
       }
 
    return value;

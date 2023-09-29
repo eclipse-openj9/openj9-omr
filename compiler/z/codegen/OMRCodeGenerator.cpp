@@ -532,7 +532,7 @@ OMR::Z::CodeGenerator::initialize()
 
    if (comp->target().cpu.isAtLeast(OMR_PROCESSOR_S390_ZEC12))
       {
-      if (comp->target().cpu.supportsFeature(OMR_FEATURE_S390_TE) && !comp->getOption(TR_DisableTM))
+      if (comp->target().cpu.supportsTransactionalMemoryInstructions() && !comp->getOption(TR_DisableTM))
          cg->setSupportsTM();
       }
 

@@ -1526,7 +1526,6 @@ typedef struct OMRProcessorDesc {
 #define OMR_FEATURE_S390_MSA        3 /* STFLE bit 17 */
 #define OMR_FEATURE_S390_DFP        6 /* STFLE bit 42 & 44 */
 #define OMR_FEATURE_S390_HPAGE      7
-#define OMR_FEATURE_S390_TE        10 /* STFLE bit 50 & 73 */
 #define OMR_FEATURE_S390_MSA_EXTENSION3                      11 /* STFLE bit 76 */
 #define OMR_FEATURE_S390_MSA_EXTENSION4                      12 /* STFLE bit 77 */
 
@@ -1571,6 +1570,11 @@ typedef struct OMRProcessorDesc {
 /* STFLE bit 49 - Miscellaneous-instruction-extension facility */
 #define OMR_FEATURE_S390_MISCELLANEOUS_INSTRUCTION_EXTENSION 49
 
+/* STFLE bit 50 - Constrained transactional-execution facility */
+#define OMR_FEATURE_S390_CONSTRAINED_TRANSACTIONAL_EXECUTION_FACILITY 50
+/* STFLE bit 73 - Transactional-execution facility */
+#define OMR_FEATURE_S390_TRANSACTIONAL_EXECUTION_FACILITY 73
+
 /* z13 facilities */
 
 /* STFLE bit 53 - Load/store-on-condition facility 2 */
@@ -1610,7 +1614,7 @@ typedef struct OMRProcessorDesc {
 
 /* z15 facilities */
 
-/* STFLE bit 61 - Miscellaneous-instruction-extensions facility 3 */ 
+/* STFLE bit 61 - Miscellaneous-instruction-extensions facility 3 */
 #define OMR_FEATURE_S390_MISCELLANEOUS_INSTRUCTION_EXTENSION_3 61
 
 /* STFLE bit 148 - Vector enhancements facility 2 */

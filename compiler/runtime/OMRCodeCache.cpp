@@ -26,6 +26,7 @@
 #include <stdint.h>
 #include <stdio.h>
 #include <string.h>
+#include "AtomicSupport.hpp"
 #include "env/FrontEnd.hpp"
 #include "control/Options.hpp"
 #include "control/Options_inlines.hpp"
@@ -309,9 +310,6 @@ OMR::CodeCache::initialize(TR::CodeCacheManager *manager,
    _sizeOfLargestFreeWarmBlock = 0;
    _lastAllocatedBlock = NULL; // MP
 
-   omrthread_jit_write_protect_disable();
-   *((TR::CodeCache **)(_segment->segmentBase())) = self(); // Write a pointer to this cache at the beginning of the segment
-   omrthread_jit_write_protect_enable();
    _warmCodeAlloc = _segment->segmentBase() + sizeof(this);
 
    _warmCodeAlloc = (uint8_t *)align((size_t)_warmCodeAlloc, config.codeCacheAlignment());
@@ -416,6 +414,13 @@ OMR::CodeCache::initialize(TR::CodeCacheManager *manager,
    // Usable space is between _warmCodeAlloc and _trampolineBase. Everything else is overhead
    size_t spaceLost = (_warmCodeAlloc - _segment->segmentBase()) + (_segment->segmentTop() - _trampolineBase);
    _manager->increaseCurrTotalUsedInBytes(spaceLost);
+
+   // Now that we have initialized the code cache, (including _warmCodeAlloc and _coldCodeAlloc)
+   // write a pointer to this cache at the beginning of the segment
+   VM_AtomicSupport::writeBarrier();
+   omrthread_jit_write_protect_disable();
+   *((TR::CodeCache **)(_segment->segmentBase())) = self();
+   omrthread_jit_write_protect_enable();
 
    return true;
    }

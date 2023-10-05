@@ -14029,11 +14029,13 @@ TR::Node *ifacmpeqSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier 
    // Perform a simplification for the case where an iselect is compared to a
    // constant. This is done before simplifyChildren because it may allow
    // further transformations to be done on the children.
-   simplifyISelectCompare(node, s);
+   bool opChangedToCmpNE = simplifyISelectCompare(node, s);
 
    if (removeIfToFollowingBlock(node, block, s) == NULL)
       return NULL;
    s->simplifyChildren(node, block);
+   if (opChangedToCmpNE)
+      return simplifyIfacmpneHelper(node, block, s);
 
    TR::Node * firstChild = node->getFirstChild(), * secondChild = node->getSecondChild();
 

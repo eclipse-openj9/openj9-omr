@@ -2068,12 +2068,15 @@ static bool processSubTreeLeavesForISelectCompare(TR::NodeChecklist &visited, TR
  *
  * \param s
  *    The simplifier object.
+ *
+ * \return
+ *    True if a transformation was performed. False otherwise.
  */
-static void simplifyISelectCompare(TR::Node *compare, TR::Simplifier *s)
+static bool simplifyISelectCompare(TR::Node *compare, TR::Simplifier *s)
    {
    static char *disableISelectCompareSimplification = feGetEnv("TR_disableISelectCompareSimplification");
    if (disableISelectCompareSimplification)
-      return;
+      return false;
 
    if (compare->getOpCode().isBooleanCompare()
        && compare->getSecondChild()->getOpCode().isLoadConst()
@@ -2095,9 +2098,11 @@ static void simplifyISelectCompare(TR::Node *compare, TR::Simplifier *s)
             compare->setAndIncChild(1, TR::Node::createConstZeroValue(compare->getSecondChild(), compare->getSecondChild()->getDataType()));
             constVal->decReferenceCount();
             TR::Node::recreate(compare, TR::ILOpCode(TR::ILOpCode::compareOpCode(compare->getFirstChild()->getDataType(), TR_cmpNE, isUnsignedCompare)).convertCmpToIfCmp());
+            return true;
             }
          }
       }
+   return false;
    }
 
 // We handle two kind of cases here:

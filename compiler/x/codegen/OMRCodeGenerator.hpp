@@ -224,6 +224,7 @@ private:
    flags32_t  _featureFlags;   // cache feature flags for re-use
    flags32_t  _featureFlags2;  // cache feature flags 2 for re-use
    flags32_t  _featureFlags8;  // cache feature flags 8 for re-use
+   flags32_t  _featureFlags10; // cache feature flags 10 for re-use
 
    uint32_t _processorDescription;
 
@@ -302,6 +303,11 @@ private:
    bool testFeatureFlags8(uint32_t feature)
       {
       return testFlag(_featureFlags8, feature, getFeatureFlags8Mask());
+      }
+
+   bool testFeatureFlags10(uint32_t feature)
+      {
+      return testFlag(_featureFlags10, feature, getFeatureFlags10Mask());
       }
    };
 

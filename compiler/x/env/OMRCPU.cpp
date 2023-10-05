@@ -141,6 +141,15 @@ OMR::X86::CPU::getX86ProcessorFeatureFlags8()
    return self()->_processorDescription.features[3];
    }
 
+uint32_t
+OMR::X86::CPU::getX86ProcessorFeatureFlags10()
+   {
+   if (TR::Compiler->omrPortLib == NULL)
+      return self()->queryX86TargetCPUID()->_featureFlags10;
+
+   return self()->_processorDescription.features[4];
+   }
+
 bool
 OMR::X86::CPU::getSupportsHardwareSQRT()
    {

@@ -323,6 +323,14 @@ MM_GCExtensionsBase::computeDefaultMaxHeap(MM_EnvironmentBase* env)
 	memoryMax = MM_Math::roundToFloor(heapAlignment, (uintptr_t)memoryToRequest);
 }
 
+void
+MM_GCExtensionsBase::reinitializeForRestore(MM_EnvironmentBase* env)
+{
+	OMRPORT_ACCESS_FROM_OMRPORT(env->getPortLibrary());
+	usablePhysicalMemory = omrsysinfo_get_addressable_physical_memory();
+	parSweepChunkSize = 0;
+}
+
 bool
 MM_GCExtensionsBase::isSATBBarrierActive()
 {

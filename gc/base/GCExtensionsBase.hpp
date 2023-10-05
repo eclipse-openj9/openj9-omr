@@ -894,7 +894,7 @@ protected:
 	virtual bool initialize(MM_EnvironmentBase* env);
 	virtual void tearDown(MM_EnvironmentBase* env);
 	virtual void computeDefaultMaxHeap(MM_EnvironmentBase* env);
-
+	virtual void reinitializeForRestore(MM_EnvironmentBase* env);
 public:
 	static MM_GCExtensionsBase* newInstance(MM_EnvironmentBase* env);
 	virtual void kill(MM_EnvironmentBase* env);

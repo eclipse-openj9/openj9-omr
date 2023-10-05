@@ -13042,6 +13042,100 @@ TR::Node* removeArithmeticsUnderIntegralCompare(TR::Node* node,
    return node;
    }
 
+static TR::Node *simplifyIficmpneHelper(TR::Node *node, TR::Block *block, TR::Simplifier *s)
+   {
+      TR::Node * firstChild = node->getFirstChild(), * secondChild = node->getSecondChild();
+
+   if (firstChild == secondChild)
+      {
+      s->conditionalToUnconditional(node, block, false);
+      return node;
+      }
+
+   makeConstantTheRightChild(node, firstChild, secondChild, s);
+
+   if (firstChild->getOpCode().isLoadConst() && conditionalBranchFold((firstChild->getInt()!=secondChild->getInt()), node, firstChild, secondChild, block, s))
+      return node;
+
+   if (conditionalZeroComparisonBranchFold (node, firstChild, secondChild, block, s))
+      return node;
+
+   simplifyIntBranchArithmetic(node, firstChild, secondChild, s);
+
+   //We will change a if ( a >> C != 0 ) to a if ( a >= 2^C )
+   if ( firstChild->getOpCode().isRightShift() && //First child is a right shift
+
+        firstChild->getSecondChild()->getOpCode().isLoadConst() &&
+        firstChild->getSecondChild()->getInt() <= 31 &&
+        firstChild->getSecondChild()->getInt() >= 0 && //Shift value is a positive constant of reasonable size
+
+        ( firstChild->getOpCodeValue() == TR::iushr ||
+          firstChild->getFirstChild()->isNonNegative()
+        ) && //Either a logical shift or a positive first child to guarantee zero-extend
+
+        secondChild->getOpCode().isLoadConst() &&
+        secondChild->getInt() == 0 //Second child is a const 0
+      )
+      {
+      //Change if type
+      TR::Node::recreate(node, TR::ifiucmpge);
+
+      TR::Node *newSecondChild = TR::Node::create(node, TR::iconst, 0, 1 << firstChild->getSecondChild()->getInt());
+      node->setAndIncChild(1, newSecondChild);
+
+      node->setAndIncChild(0, firstChild->getFirstChild());
+
+      firstChild->recursivelyDecReferenceCount();
+      secondChild->recursivelyDecReferenceCount();
+
+      return node;
+      }
+
+   bitwiseToLogical(node, block, s);
+
+   if (firstChild->getOpCode().isBooleanCompare() &&
+       (secondChild->getOpCode().isLoadConst()) &&
+       ((secondChild->getInt() == 0) || (secondChild->getInt() == 1)) &&
+       (firstChild->getOpCode().convertCmpToIfCmp() != TR::BadILOp) &&
+       (s->comp()->cg()->getSupportsJavaFloatSemantics() || !(firstChild->getNumChildren()>1 && firstChild->getFirstChild()->getOpCode().isFloatingPoint())) &&
+       performTransformation(s->comp(), "%sChanging if opcode %p because first child %p is a comparison opcode\n", s->optDetailString(), node, firstChild))
+      {
+      TR::Node::recreate(node, firstChild->getOpCode().convertCmpToIfCmp());
+      node->setAndIncChild(0, firstChild->getFirstChild());
+      node->setAndIncChild(1, firstChild->getSecondChild());
+      if (secondChild->getInt() == 1)
+         TR::Node::recreate(node, node->getOpCode().getOpCodeForReverseBranch());
+      firstChild->recursivelyDecReferenceCount();
+      secondChild->recursivelyDecReferenceCount();
+      return node;
+      }
+
+   if ((firstChild->getOpCodeValue() == TR::lcmp) &&
+         ((secondChild->getOpCode().isLoadConst()) &&
+            secondChild->getInt() == 0) &&
+         performTransformation(s->comp(), "%sChanging if opcode %p because first child %p is an lcmp\n", s->optDetailString(), node, firstChild))
+      {
+      TR::Node::recreate(node, TR::iflcmpne); //change to iflcmp since operands are longs
+      node->setAndIncChild(0, firstChild->getFirstChild());
+      node->setAndIncChild(1, firstChild->getSecondChild());
+      firstChild->recursivelyDecReferenceCount();
+      secondChild->recursivelyDecReferenceCount();
+      return node;
+      }
+
+   if (node->getOpCodeValue() == TR::ificmpne)
+      intCompareNarrower(node, s, TR::ifscmpne, TR::ifscmpne, TR::ifbcmpne);
+   else
+      unsignedIntCompareNarrower(node, s, TR::ifscmpne, TR::ifbcmpne);
+
+
+   addressCompareConversion(node, s);
+   removeArithmeticsUnderIntegralCompare(node, s);
+   partialRedundantCompareElimination(node, block, s);
+
+   return node;
+   }
+
 //---------------------------------------------------------------------
 // Integer if compare equal (signed and unsigned)
 //
@@ -13183,96 +13277,7 @@ TR::Node *ificmpneSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier 
    if (removeIfToFollowingBlock(node, block, s) == NULL)
       return NULL;
 
-   TR::Node * firstChild = node->getFirstChild(), * secondChild = node->getSecondChild();
-
-   if (firstChild == secondChild)
-      {
-      s->conditionalToUnconditional(node, block, false);
-      return node;
-      }
-
-   makeConstantTheRightChild(node, firstChild, secondChild, s);
-
-   if (firstChild->getOpCode().isLoadConst() && conditionalBranchFold((firstChild->getInt()!=secondChild->getInt()), node, firstChild, secondChild, block, s))
-      return node;
-
-   if (conditionalZeroComparisonBranchFold (node, firstChild, secondChild, block, s))
-      return node;
-
-   simplifyIntBranchArithmetic(node, firstChild, secondChild, s);
-
-   //We will change a if ( a >> C != 0 ) to a if ( a >= 2^C )
-   if ( firstChild->getOpCode().isRightShift() && //First child is a right shift
-
-        firstChild->getSecondChild()->getOpCode().isLoadConst() &&
-        firstChild->getSecondChild()->getInt() <= 31 &&
-        firstChild->getSecondChild()->getInt() >= 0 && //Shift value is a positive constant of reasonable size
-
-        ( firstChild->getOpCodeValue() == TR::iushr ||
-          firstChild->getFirstChild()->isNonNegative()
-        ) && //Either a logical shift or a positive first child to guarantee zero-extend
-
-        secondChild->getOpCode().isLoadConst() &&
-        secondChild->getInt() == 0 //Second child is a const 0
-      )
-      {
-      //Change if type
-      TR::Node::recreate(node, TR::ifiucmpge);
-
-      TR::Node *newSecondChild = TR::Node::create(node, TR::iconst, 0, 1 << firstChild->getSecondChild()->getInt());
-      node->setAndIncChild(1, newSecondChild);
-
-      node->setAndIncChild(0, firstChild->getFirstChild());
-
-      firstChild->recursivelyDecReferenceCount();
-      secondChild->recursivelyDecReferenceCount();
-
-      return node;
-      }
-
-   bitwiseToLogical(node, block, s);
-
-   if (firstChild->getOpCode().isBooleanCompare() &&
-       (secondChild->getOpCode().isLoadConst()) &&
-       ((secondChild->getInt() == 0) || (secondChild->getInt() == 1)) &&
-       (firstChild->getOpCode().convertCmpToIfCmp() != TR::BadILOp) &&
-       (s->comp()->cg()->getSupportsJavaFloatSemantics() || !(firstChild->getNumChildren()>1 && firstChild->getFirstChild()->getOpCode().isFloatingPoint())) &&
-       performTransformation(s->comp(), "%sChanging if opcode %p because first child %p is a comparison opcode\n", s->optDetailString(), node, firstChild))
-      {
-      TR::Node::recreate(node, firstChild->getOpCode().convertCmpToIfCmp());
-      node->setAndIncChild(0, firstChild->getFirstChild());
-      node->setAndIncChild(1, firstChild->getSecondChild());
-      if (secondChild->getInt() == 1)
-         TR::Node::recreate(node, node->getOpCode().getOpCodeForReverseBranch());
-      firstChild->recursivelyDecReferenceCount();
-      secondChild->recursivelyDecReferenceCount();
-      return node;
-      }
-
-   if ((firstChild->getOpCodeValue() == TR::lcmp) &&
-         ((secondChild->getOpCode().isLoadConst()) &&
-            secondChild->getInt() == 0) &&
-         performTransformation(s->comp(), "%sChanging if opcode %p because first child %p is an lcmp\n", s->optDetailString(), node, firstChild))
-      {
-      TR::Node::recreate(node, TR::iflcmpne); //change to iflcmp since operands are longs
-      node->setAndIncChild(0, firstChild->getFirstChild());
-      node->setAndIncChild(1, firstChild->getSecondChild());
-      firstChild->recursivelyDecReferenceCount();
-      secondChild->recursivelyDecReferenceCount();
-      return node;
-      }
-
-   if (node->getOpCodeValue() == TR::ificmpne)
-      intCompareNarrower(node, s, TR::ifscmpne, TR::ifscmpne, TR::ifbcmpne);
-   else
-      unsignedIntCompareNarrower(node, s, TR::ifscmpne, TR::ifbcmpne);
-
-
-   addressCompareConversion(node, s);
-   removeArithmeticsUnderIntegralCompare(node, s);
-   partialRedundantCompareElimination(node, block, s);
-
-   return node;
+   return simplifyIficmpneHelper(node, block, s);
    }
 
 //---------------------------------------------------------------------

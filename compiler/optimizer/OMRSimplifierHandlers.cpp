@@ -13994,6 +13994,32 @@ TR::Node *normalizeCmpSimplifier(TR::Node * node, TR::Block * block, TR::Simplif
    return node;
    }
 
+static TR::Node *simplifyIfacmpneHelper(TR::Node * node, TR::Block * block, TR::Simplifier * s)
+   {
+   TR::Node * firstChild = node->getFirstChild(), * secondChild = node->getSecondChild();
+
+   if (firstChild == secondChild)
+      {
+      s->conditionalToUnconditional(node, block, false);
+      return node;
+      }
+
+   makeConstantTheRightChild(node, firstChild, secondChild, s);
+   if (firstChild->getOpCodeValue() == TR::aconst && conditionalBranchFold((firstChild->getAddress()!=secondChild->getAddress()), node, firstChild, secondChild, block, s))
+      return node;
+
+   // weak symbols aren't necessarily defined, so we have to do the test
+   if (!(firstChild->getOpCode().hasSymbolReference() && firstChild->getSymbol()->isWeakSymbol()) &&
+       conditionalZeroComparisonBranchFold (node, firstChild, secondChild, block, s))
+      return node;
+
+   partialRedundantCompareElimination(node, block, s);
+
+   ifjlClassSimplifier(node, s);
+
+   return node;
+   }
+
 //---------------------------------------------------------------------
 // Address if compare equal
 //
@@ -14047,28 +14073,7 @@ TR::Node *ifacmpneSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier 
       return NULL;
    s->simplifyChildren(node, block);
 
-   TR::Node * firstChild = node->getFirstChild(), * secondChild = node->getSecondChild();
-
-   if (firstChild == secondChild)
-      {
-      s->conditionalToUnconditional(node, block, false);
-      return node;
-      }
-
-   makeConstantTheRightChild(node, firstChild, secondChild, s);
-   if (firstChild->getOpCodeValue() == TR::aconst && conditionalBranchFold((firstChild->getAddress()!=secondChild->getAddress()), node, firstChild, secondChild, block, s))
-      return node;
-
-   // weak symbols aren't necessarily defined, so we have to do the test
-   if (!(firstChild->getOpCode().hasSymbolReference() && firstChild->getSymbol()->isWeakSymbol()) &&
-       conditionalZeroComparisonBranchFold (node, firstChild, secondChild, block, s))
-      return node;
-
-   partialRedundantCompareElimination(node, block, s);
-
-   ifjlClassSimplifier(node, s);
-
-   return node;
+   return simplifyIfacmpneHelper(node, block, s);
    }
 
 //---------------------------------------------------------------------

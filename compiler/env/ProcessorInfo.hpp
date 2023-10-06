@@ -234,7 +234,9 @@ enum TR_X86_CPUID_ecx_eax07_ecx00
 
 inline uint32_t getFeatureFlags10Mask()
    {
-   return 0;
+   return  TR_AVX512_VBMI2
+         | TR_AVX512_BITALG
+         | TR_AVX512_VPOPCNTDQ;
    }
 
 

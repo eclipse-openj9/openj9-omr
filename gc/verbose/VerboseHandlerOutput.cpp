@@ -362,6 +362,7 @@ MM_VerboseHandlerOutput::outputInitializedStanza(MM_EnvironmentBase *env, MM_Ver
 	buffer->formatAndOutput(env, 1, "<system>");
 	buffer->formatAndOutput(env, 2, "<attribute name=\"physicalMemory\" value=\"%llu\" />", omrsysinfo_get_physical_memory());
 	buffer->formatAndOutput(env, 2, "<attribute name=\"numCPUs\" value=\"%zu\" />", omrsysinfo_get_number_CPUs_by_type(OMRPORT_CPU_ONLINE));
+	buffer->formatAndOutput(env, 2, "<attribute name=\"numCPUs active\" value=\"%zu\" />", omrsysinfo_get_number_CPUs_by_type(OMRPORT_CPU_TARGET));
 	buffer->formatAndOutput(env, 2, "<attribute name=\"architecture\" value=\"%s\" />", omrsysinfo_get_CPU_architecture());
 	buffer->formatAndOutput(env, 2, "<attribute name=\"os\" value=\"%s\" />", omrsysinfo_get_OS_type());
 	buffer->formatAndOutput(env, 2, "<attribute name=\"osVersion\" value=\"%s\" />", omrsysinfo_get_OS_version());

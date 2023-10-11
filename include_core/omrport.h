@@ -748,6 +748,11 @@ typedef struct J9MemoryInfo {
 	 * When not in a cgroup, this will be identical to 'buffered' field above.
 	 */
 	uint64_t hostBuffered;
+	/* The default setting for this kernel parameter of swappiness is 60. Value of 0 disables swap.
+	 * Lower swappiness values would keep more pages in memory instead of putting them in swap space.
+	 * Higher values will provide more I/O cache and lower values will wait longer to swap out idle application.
+	 */
+	uint64_t swappiness;
 } J9MemoryInfo;
 
 #define OMRPORT_MEMINFO_NOT_AVAILABLE ((uint64_t) -1)

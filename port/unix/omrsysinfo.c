@@ -398,6 +398,7 @@ struct {
 
 /* Cgroup v1 and v2 memory files */
 #define CGROUP_MEMORY_STAT_FILE "memory.stat"
+#define CGROUP_MEMORY_SWAPPINESS "memory.swappiness"
 
 /* Cgroup v1 memory files */
 #define CGROUP_MEMORY_LIMIT_IN_BYTES_FILE "memory.limit_in_bytes"
@@ -3287,6 +3288,8 @@ omrsysinfo_get_number_CPUs_by_type(struct OMRPortLibrary *portLibrary, uintptr_t
 #define BUFFERS_PREFIX      "Buffers:"
 #define BUFFERS_PREFIX_SZ   (sizeof(BUFFERS_PREFIX) - 1)
 
+#define PROC_SYS_VM_SWAPPINESS "/proc/sys/vm/swappiness"
+
 /**
  * Function collects memory usage statistics by reading /proc/meminfo on Linux platforms.
  *
@@ -3299,7 +3302,9 @@ static int32_t
 retrieveLinuxMemoryStatsFromProcFS(struct OMRPortLibrary *portLibrary, struct J9MemoryInfo *memInfo)
 {
 	int32_t rc = 0;
+	int32_t rcSwappiness = 0;
 	FILE *memStatFs = NULL;
+	FILE *swappinessFs = NULL;
 	char lineString[MAX_LINE_LENGTH] = {0};
 
 	/* Open the memstat file on Linux for reading; this is readonly. */
@@ -3410,6 +3415,24 @@ retrieveLinuxMemoryStatsFromProcFS(struct OMRPortLibrary *portLibrary, struct J9
 		} /* end if else-if */
 	} /* end while() */
 
+	swappinessFs = fopen(PROC_SYS_VM_SWAPPINESS, "r");
+	if (NULL == swappinessFs) {
+		Trc_PRT_retrieveLinuxMemoryStats_failedOpeningSwappinessFs(errno);
+		rc = OMRPORT_ERROR_SYSINFO_ERROR_SWAPPINESS_OPEN_FAILED;
+		goto _cleanup;
+	}
+
+	rcSwappiness = fscanf(swappinessFs, "%" SCNu64, &memInfo->swappiness);
+	if (1 != rcSwappiness) {
+		if (EOF == rcSwappiness) {
+			Trc_PRT_retrieveLinuxMemoryStats_failedReadingSwappiness(errno);
+		} else {
+			Trc_PRT_retrieveLinuxMemoryStats_unexpectedSwappinessFormat(1, rcSwappiness);
+		}
+		rc = OMRPORT_ERROR_SYSINFO_ERROR_READING_SWAPPINESS;
+		goto _cleanup;
+	}
+
 	/* Set hostXXX fields with memory stats from proc fs.
 	 * These may be used for calculating available physical memory on the host.
 	 */
@@ -3420,6 +3443,9 @@ retrieveLinuxMemoryStatsFromProcFS(struct OMRPortLibrary *portLibrary, struct J9
 _cleanup:
 	if (NULL != memStatFs) {
 		fclose(memStatFs);
+	}
+	if (NULL != swappinessFs) {
+		fclose(swappinessFs);
 	}
 
 	return rc;
@@ -3510,6 +3536,11 @@ retrieveLinuxCgroupMemoryStats(struct OMRPortLibrary *portLibrary, struct OMRCgr
 	} else if (OMR_ARE_ANY_BITS_SET(PPG_sysinfoControlFlags, OMRPORT_SYSINFO_CGROUP_V2_AVAILABLE)) {
 		/* Cgroup v2 swap limit and usage do not include the memory limit and usage. */
 		cgroupMemInfo->memoryAndSwapUsage += cgroupMemInfo->memoryUsage;
+	}
+
+	rc = readCgroupSubsystemFile(portLibrary, OMR_CGROUP_SUBSYSTEM_MEMORY, CGROUP_MEMORY_SWAPPINESS, numItemsToRead, "%" SCNu64, &cgroupMemInfo->swappiness);
+	if (0 != rc) {
+		goto _exit;
 	}
 
 	/* Read value of page cache memory from memory.stat file */
@@ -3637,6 +3668,7 @@ retrieveLinuxMemoryStats(struct OMRPortLibrary *portLibrary, struct J9MemoryInfo
 		}
 	}
 
+	memInfo->swappiness = cgroupMemInfo.swappiness;
 	memInfo->cached = cgroupMemInfo.cached;
 	/* Buffered value is not available when running in a cgroup.
 	 * See https://www.kernel.org/doc/Documentation/cgroup-v1/memory.txt
@@ -3801,6 +3833,7 @@ omrsysinfo_get_memory_info(struct OMRPortLibrary *portLibrary, struct J9MemoryIn
 	memInfo->availSwap = OMRPORT_MEMINFO_NOT_AVAILABLE;
 	memInfo->cached = OMRPORT_MEMINFO_NOT_AVAILABLE;
 	memInfo->buffered = OMRPORT_MEMINFO_NOT_AVAILABLE;
+	memInfo->swappiness = OMRPORT_MEMINFO_NOT_AVAILABLE;
 
 	memInfo->hostAvailPhysical = OMRPORT_MEMINFO_NOT_AVAILABLE;
 	memInfo->hostCached = OMRPORT_MEMINFO_NOT_AVAILABLE;

@@ -36,6 +36,7 @@ typedef struct OMRCgroupMemoryInfo {
 	uint64_t memoryUsage; /**< current memory usage in bytes (as in memory.usage_in_bytes file)*/
 	uint64_t memoryAndSwapLimit; /**< memory + swap limit in bytes (as in memory.memsw.limit_in_bytes file)*/
 	uint64_t memoryAndSwapUsage; /**< current memory + swap usage in bytes (as in memory.memsw.usage_in_bytes file) */
+	uint64_t swappiness; /**< indicates kernel aggressiveness (0-100) in swapping memory pages for cgroups, and is not supported on cgroups V2 */
 	uint64_t cached; /**< page cache memory (as in memory.stat file)*/
 } OMRCgroupMemoryInfo;
 

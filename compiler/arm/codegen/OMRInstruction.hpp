@@ -82,7 +82,7 @@ class OMR_EXTENSIBLE Instruction : public OMR::Instruction
                TR::RegisterDependencyConditions    *cond,
                TR::CodeGenerator                   *cg);
 
-   virtual char *description() { return "ARM"; }
+   virtual const char *description() { return "ARM"; }
 
    virtual Kind getKind() { return IsNotExtended; }
 

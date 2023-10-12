@@ -64,7 +64,7 @@ class OMR_EXTENSIBLE MonitorTable
    friend class TR::Monitor;
    friend class TR::MonitorTable;
 
-   TR::Monitor *create(char *name) { TR_UNIMPLEMENTED(); return 0; }
+   TR::Monitor *create(const char *name) { TR_UNIMPLEMENTED(); return 0; }
    };
 
 }

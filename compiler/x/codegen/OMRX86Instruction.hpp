@@ -123,7 +123,7 @@ class X86PaddingInstruction : public TR::Instruction
    virtual uint8_t *generateBinaryEncoding();
    virtual int32_t estimateBinaryLength(int32_t currentEstimate);
 
-   virtual char *description() { return "X86RegMem"; }
+   virtual const char *description() { return "X86RegMem"; }
 
    virtual Kind getKind() { return IsPadding; }
 
@@ -156,7 +156,7 @@ class X86PaddingSnippetInstruction : public TR::X86PaddingInstruction
       _unresolvedSnippet(NULL)
       {}
 
-   virtual char *description() { return "PaddingSnippetInstruction"; }
+   virtual const char *description() { return "PaddingSnippetInstruction"; }
 
    virtual TR::Snippet *getSnippetForGC();
 
@@ -230,7 +230,7 @@ class X86BoundaryAvoidanceInstruction : public TR::Instruction
    virtual uint8_t *generateBinaryEncoding();
    virtual OMR::X86::EnlargementResult  enlarge(int32_t requestedEnlargementSize, int32_t maxEnlargementSize, bool allowPartialEnlargement);
 
-   virtual char *description() { return "X86BoundaryAvoidance"; }
+   virtual const char *description() { return "X86BoundaryAvoidance"; }
 
    virtual Kind getKind() { return IsBoundaryAvoidance; }
 
@@ -288,7 +288,7 @@ class X86PatchableCodeAlignmentInstruction : public TR::X86BoundaryAvoidanceInst
 
    TR::Instruction *getPatchableCode(){ return getTargetCode(); }
 
-   virtual char *description() { return "PatchableCodeAlignment"; }
+   virtual const char *description() { return "PatchableCodeAlignment"; }
 
    virtual Kind getKind() { return IsPatchableCodeAlignment; }
    virtual int32_t betterPadLength(int32_t oldPadLength, const TR_AtomicRegion *unaccommodatedRegion, int32_t unaccommodatedRegionStart);
@@ -317,7 +317,7 @@ class X86LabelInstruction : public TR::Instruction
 
    void prohibitShortening() { _permitShortening = false; }
 
-   virtual char *description() { return "X86LabelInstruction"; }
+   virtual const char *description() { return "X86LabelInstruction"; }
    virtual bool isPatchBarrier(TR::CodeGenerator *cg) { return getOpCodeValue() == TR::InstOpCode::label && _symbol && _symbol->isTargeted(cg) != TR_no; }
 
    uint8_t    getReloType() {return _reloType; };
@@ -354,7 +354,7 @@ class X86AlignmentInstruction : public TR::Instruction
 
    public:
 
-   virtual char *description() { return "X86Alignment"; }
+   virtual const char *description() { return "X86Alignment"; }
 
    virtual Kind getKind() { return IsAlignment; }
 
@@ -444,7 +444,7 @@ class X86FenceInstruction : public TR::Instruction
                           TR::Node *n,
                           TR::CodeGenerator *cg);
 
-   virtual char *description() { return "X86Fence"; }
+   virtual const char *description() { return "X86Fence"; }
 
    virtual Kind getKind() { return IsFence; }
 
@@ -485,7 +485,7 @@ class X86VirtualGuardNOPInstruction : public TR::X86LabelInstruction
                                     TR::LabelSymbol *label = 0)
       : TR::X86LabelInstruction(precedingInstruction, op, label, cond, cg), _site(site), _nopSize(0), _register(TR::RealRegister::NoReg) { setNode(node); }
 
-   virtual char *description() { return "X86VirtualGuardNOP"; }
+   virtual const char *description() { return "X86VirtualGuardNOP"; }
 
    virtual Kind getKind() { return IsVirtualGuardNOP; }
 
@@ -590,7 +590,7 @@ class X86ImmInstruction : public TR::Instruction
                         TR::CodeGenerator *cg,
                         int32_t reloKind=TR_NoRelocation);
 
-   virtual char *description() { return "X86Imm"; }
+   virtual const char *description() { return "X86Imm"; }
 
    virtual Kind getKind() { return IsImm; }
 
@@ -639,7 +639,7 @@ class X86ImmSnippetInstruction : public TR::X86ImmInstruction
                                TR::UnresolvedDataSnippet *us,
                                TR::CodeGenerator *cg);
 
-   virtual char *description() { return "X86ImmSnippet"; }
+   virtual const char *description() { return "X86ImmSnippet"; }
 
    virtual Kind getKind() { return IsImmSnippet; }
 
@@ -688,7 +688,7 @@ class X86ImmSymInstruction : public TR::X86ImmInstruction
                            TR::RegisterDependencyConditions *cond,
                            TR::CodeGenerator *cg);
 
-   virtual char *description() { return "X86ImmSym"; }
+   virtual const char *description() { return "X86ImmSym"; }
 
    virtual Kind getKind() { return IsImmSym; }
 
@@ -821,7 +821,7 @@ class X86RegInstruction : public TR::Instruction
                         TR::CodeGenerator *cg,
                         OMR::X86::Encoding encoding = OMR::X86::Default);
 
-   virtual char *description() { return "X86Reg"; }
+   virtual const char *description() { return "X86Reg"; }
 
    virtual Kind getKind() { return IsReg; }
 
@@ -980,7 +980,7 @@ class X86RegRegInstruction : public TR::X86RegInstruction
                             TR::CodeGenerator                    *cg,
                             OMR::X86::Encoding encoding = OMR::X86::Default);
 
-   virtual char *description() { return "X86RegReg"; }
+   virtual const char *description() { return "X86RegReg"; }
 
    virtual Kind getKind() { return IsRegReg; }
 
@@ -1110,7 +1110,7 @@ class X86RegImmInstruction : public TR::X86RegInstruction
                            TR::CodeGenerator                    *cg,
                            int32_t                              reloKind=TR_NoRelocation);
 
-   virtual char *description() { return "X86RegImm"; }
+   virtual const char *description() { return "X86RegImm"; }
 
    virtual Kind getKind() { return IsRegImm; }
 
@@ -1153,7 +1153,7 @@ class X86RegImmSymInstruction : public TR::X86RegImmInstruction
                               TR::SymbolReference     *sr,
                               TR::CodeGenerator       *cg);
 
-   virtual char *description() { return "X86RegImmSym"; }
+   virtual const char *description() { return "X86RegImmSym"; }
 
    virtual Kind getKind() { return IsRegImmSym; }
 
@@ -1192,7 +1192,7 @@ class X86RegRegImmInstruction : public TR::X86RegRegInstruction
                               TR::CodeGenerator        *cg,
                               OMR::X86::Encoding       encoding);
 
-   virtual char *description() { return "X86RegRegImm"; }
+   virtual const char *description() { return "X86RegRegImm"; }
 
    virtual Kind getKind() { return IsRegRegImm; }
 
@@ -1302,7 +1302,7 @@ class X86RegRegRegInstruction : public TR::X86RegRegInstruction
                                TR::CodeGenerator                    *cg,
                                OMR::X86::Encoding encoding = OMR::X86::Default);
 
-   virtual char *description() { return "X86RegRegReg"; }
+   virtual const char *description() { return "X86RegRegReg"; }
 
    virtual Kind getKind() { return IsRegRegReg; }
 
@@ -1403,7 +1403,7 @@ class X86RegMaskRegInstruction : public TR::X86RegRegInstruction
       useRegister(mreg);
       }
 
-   virtual char *description() { return "X86RegMaskReg"; }
+   virtual const char *description() { return "X86RegMaskReg"; }
 
    virtual Kind getKind() { return IsRegMaskReg; }
 
@@ -1469,7 +1469,7 @@ class X86RegMaskRegRegInstruction : public TR::X86RegRegRegInstruction
       useRegister(mreg);
       }
 
-   virtual char *description() { return "X86RegMaskRegReg"; }
+   virtual const char *description() { return "X86RegMaskRegReg"; }
 
    virtual Kind getKind() { return IsRegMaskRegReg; }
 
@@ -1534,7 +1534,7 @@ class X86RegMaskRegRegImmInstruction : public TR::X86RegMaskRegRegInstruction
       {
       }
 
-   virtual char *description() { return "X86RegMaskRegRegImm"; }
+   virtual const char *description() { return "X86RegMaskRegRegImm"; }
    virtual Kind getKind() { return IsRegMaskRegRegImm; }
 
    int32_t getSourceImmediate()           {return _sourceImmediate;}
@@ -1698,7 +1698,7 @@ class X86MemInstruction : public TR::Instruction
                          TR::Register                         *sreg=NULL,
                          OMR::X86::Encoding encoding = OMR::X86::Default);
 
-   virtual char *description() { return "X86Mem"; }
+   virtual const char *description() { return "X86Mem"; }
 
    virtual Kind getKind() { return IsMem; }
 
@@ -1765,7 +1765,7 @@ class X86MemTableInstruction : public TR::X86MemInstruction
       _relocations = (TR::LabelRelocation**)cg->trMemory()->allocateHeapMemory(numEntries * sizeof(_relocations[0]));
       }
 
-   virtual char *description() { return "X86MemTable"; }
+   virtual const char *description() { return "X86MemTable"; }
 
    virtual Kind getKind() { return IsMemTable; }
 
@@ -1814,7 +1814,7 @@ class X86CallMemInstruction : public TR::X86MemInstruction
                              TR::MemoryReference               *mr,
                              TR::CodeGenerator                    *cg);
 
-   virtual char *description() { return "X86CallMem"; }
+   virtual const char *description() { return "X86CallMem"; }
 
    virtual Kind getKind() { return IsCallMem; }
 
@@ -1864,7 +1864,7 @@ class X86MemImmInstruction : public TR::X86MemInstruction
                            TR::CodeGenerator       *cg,
                            int32_t                reloKind = TR_NoRelocation);
 
-   virtual char *description() { return "X86MemImm"; }
+   virtual const char *description() { return "X86MemImm"; }
 
    virtual Kind getKind() { return IsMemImm; }
 
@@ -1902,7 +1902,7 @@ class X86MemImmSymInstruction : public TR::X86MemImmInstruction
                               TR::SymbolReference     *sr,
                               TR::CodeGenerator       *cg);
 
-   virtual char *description() { return "X86MemImmSym"; }
+   virtual const char *description() { return "X86MemImmSym"; }
 
    virtual Kind getKind() { return IsMemImmSym; }
 
@@ -1999,7 +1999,7 @@ class X86MemRegInstruction : public TR::X86MemInstruction
                             TR::CodeGenerator                    *cg,
                             OMR::X86::Encoding encoding = OMR::X86::Default);
 
-   virtual char *description() { return "X86MemReg"; }
+   virtual const char *description() { return "X86MemReg"; }
 
    virtual Kind getKind() { return IsMemReg; }
 
@@ -2062,7 +2062,7 @@ class X86MemMaskRegInstruction : public TR::X86MemRegInstruction
       useRegister(mreg);
       }
 
-   virtual char *description() { return "X86MemMaskReg"; }
+   virtual const char *description() { return "X86MemMaskReg"; }
 
    virtual Kind getKind() { return IsMemMaskReg; }
 
@@ -2102,7 +2102,7 @@ class X86MemRegImmInstruction : public TR::X86MemRegInstruction
                               int32_t                imm,
                               TR::CodeGenerator      *cg);
 
-   virtual char *description() { return "X86MemRegImm"; }
+   virtual const char *description() { return "X86MemRegImm"; }
 
    virtual Kind getKind() { return IsMemRegImm; }
 
@@ -2198,7 +2198,7 @@ class X86RegMemInstruction : public TR::X86RegInstruction
                             TR::CodeGenerator                    *cg,
                             OMR::X86::Encoding encoding = OMR::X86::Default);
 
-   virtual char *description() { return "X86RegMem"; }
+   virtual const char *description() { return "X86RegMem"; }
 
    virtual Kind getKind() { return IsRegMem; }
 
@@ -2273,7 +2273,7 @@ class X86RegMemImmInstruction : public TR::X86RegMemInstruction
                               TR::CodeGenerator        *cg,
                               OMR::X86::Encoding encoding);
 
-   virtual char *description() { return "X86RegMemImm"; }
+   virtual const char *description() { return "X86RegMemImm"; }
 
    virtual Kind getKind() { return IsRegMemImm; }
 
@@ -2311,7 +2311,7 @@ class X86RegRegMemInstruction : public TR::X86RegMemInstruction
                            TR::CodeGenerator                *cg,
                            OMR::X86::Encoding encoding = OMR::X86::Default);
 
-   virtual char *description() { return "X86RegRegMem"; }
+   virtual const char *description() { return "X86RegRegMem"; }
 
    virtual Kind getKind() { return IsRegRegMem; }
 
@@ -2411,7 +2411,7 @@ class X86RegMaskMemInstruction : public TR::X86RegMemInstruction
       useRegister(mreg);
       }
 
-   virtual char *description() { return "X86RegMaskMem"; }
+   virtual const char *description() { return "X86RegMaskMem"; }
 
    virtual Kind getKind() { return IsRegMaskMem; }
 
@@ -2544,7 +2544,7 @@ class AMD64RegImm64Instruction : public TR::X86RegInstruction
                                int32_t                              reloKind=TR_NoRelocation)
       : TR::X86RegInstruction(cond, treg, op, precedingInstruction, cg), _sourceImmediate(imm), _reloKind(reloKind) {}
 
-   virtual char *description() { return "AMD64RegImm64"; }
+   virtual const char *description() { return "AMD64RegImm64"; }
 
    virtual Kind getKind() { return IsRegImm64; }
 
@@ -2585,7 +2585,7 @@ class AMD64RegImm64SymInstruction : public TR::AMD64RegImm64Instruction
                                   TR::SymbolReference     *sr,
                                   TR::CodeGenerator       *cg);
 
-   virtual char *description() { return "AMD64RegImm64Sym"; }
+   virtual const char *description() { return "AMD64RegImm64Sym"; }
 
    virtual Kind getKind() { return IsRegImm64Sym; }
 
@@ -2665,7 +2665,7 @@ class AMD64Imm64Instruction : public TR::Instruction
          cond->createRegisterAssociationDirective(this, cg);
       }
 
-   virtual char *description() { return "AMD64Imm64"; }
+   virtual const char *description() { return "AMD64Imm64"; }
 
    virtual Kind getKind() { return IsImm64; }
 
@@ -2715,7 +2715,7 @@ class AMD64Imm64SymInstruction : public TR::AMD64Imm64Instruction
                               TR::CodeGenerator                    *cg)
       : TR::AMD64Imm64Instruction(cond, imm, op, precedingInstruction, cg), _symbolReference(sr) {}
 
-   virtual char *description() { return "AMD64Imm64Sym"; }
+   virtual const char *description() { return "AMD64Imm64Sym"; }
 
    virtual Kind getKind() { return IsImm64Sym; }
 
@@ -2766,7 +2766,7 @@ class X86FPRegRegInstruction : public TR::X86RegRegInstruction
                              TR::RegisterDependencyConditions  *cond,
                              TR::CodeGenerator *cg);
 
-   virtual char *description() { return "X86FPRegReg"; }
+   virtual const char *description() { return "X86FPRegReg"; }
 
    virtual Kind getKind() { return IsRegRegReg; }
 
@@ -2852,7 +2852,7 @@ class X86FPST0ST1RegRegInstruction : public TR::X86FPRegRegInstruction
                                     TR::Register      *sreg,
                                     TR::CodeGenerator *cg);
 
-   virtual char *description() { return "X86FPST0ST1RegReg"; }
+   virtual const char *description() { return "X86FPST0ST1RegReg"; }
 
    virtual Kind getKind() { return IsFPST0ST1RegReg; }
 
@@ -2877,7 +2877,7 @@ class X86FPST0STiRegRegInstruction : public TR::X86FPRegRegInstruction
                                     TR::Register      *sreg,
                                     TR::CodeGenerator *cg);
 
-   virtual char *description() { return "X86FPST0STiRegReg"; }
+   virtual const char *description() { return "X86FPST0STiRegReg"; }
 
    virtual Kind getKind() { return IsFPST0STiRegReg; }
 
@@ -2903,7 +2903,7 @@ class X86FPSTiST0RegRegInstruction : public TR::X86FPRegRegInstruction
                                     TR::Register      *sreg,
                                     TR::CodeGenerator *cg, bool forcePop = false);
 
-   virtual char *description() { return "X86FPSTiST0RegReg"; }
+   virtual const char *description() { return "X86FPSTiST0RegReg"; }
 
    virtual Kind getKind() { return IsFPSTiST0RegReg; }
 
@@ -2930,7 +2930,7 @@ class X86FPArithmeticRegRegInstruction : public TR::X86FPRegRegInstruction
                                         TR::Register      *sreg,
                                         TR::CodeGenerator *cg);
 
-   virtual char *description() { return "X86FPArithmeticRegReg"; }
+   virtual const char *description() { return "X86FPArithmeticRegReg"; }
 
    virtual Kind getKind() { return IsFPArithmeticRegReg; }
 
@@ -2988,7 +2988,7 @@ class X86FPRemainderRegRegInstruction : public TR::X86FPST0ST1RegRegInstruction
                                       TR::Register      *sreg,
                                       TR::CodeGenerator *cg);
 
-   virtual char *description() { return "X86FPRemainderRegReg"; }
+   virtual const char *description() { return "X86FPRemainderRegReg"; }
 
    virtual Kind getKind() { return IsFPRemainderRegReg; }
    virtual void assignRegisters(TR_RegisterKinds kindsToBeAssigned);
@@ -3012,7 +3012,7 @@ class X86FPMemRegInstruction : public TR::X86MemRegInstruction
                               TR::Register            *sreg,
                               TR::CodeGenerator       *cg);
 
-   virtual char *description() { return "X86FPMemReg"; }
+   virtual const char *description() { return "X86FPMemReg"; }
 
    virtual Kind getKind() { return IsFPMemReg; }
 
@@ -3042,7 +3042,7 @@ class X86FPRegMemInstruction : public TR::X86RegMemInstruction
                               TR::MemoryReference  *mr,
                               TR::CodeGenerator       *cg);
 
-   virtual char *description() { return "X86FPRegMem"; }
+   virtual const char *description() { return "X86FPRegMem"; }
 
    virtual Kind getKind() { return IsFPRegMem; }
 
@@ -3069,7 +3069,7 @@ class X86VFPSaveInstruction : public TR::Instruction
    X86VFPSaveInstruction(TR::Node *node, TR::CodeGenerator *cg) :
       TR::Instruction(node, TR::InstOpCode::AdjustFramePtr, cg) {}
 
-   virtual char *description() { return "X86VFPSave"; }
+   virtual const char *description() { return "X86VFPSave"; }
 
    virtual Kind getKind() { return IsVFPSave; }
 
@@ -3099,7 +3099,7 @@ class X86VFPRestoreInstruction : public TR::Instruction
       _saveInstruction(saveInstruction),
       TR::Instruction(node, TR::InstOpCode::AdjustFramePtr, cg) {}
 
-   virtual char *description() { return "X86VFPRestore"; }
+   virtual const char *description() { return "X86VFPRestore"; }
 
    virtual Kind getKind() { return IsVFPRestore; }
 
@@ -3146,7 +3146,7 @@ class X86VFPDedicateInstruction : public TR::X86RegMemInstruction
    X86VFPDedicateInstruction(TR::RealRegister *framePointerReg, TR::Node *node, TR::RegisterDependencyConditions  *cond, TR::CodeGenerator *cg):
       TR::X86RegMemInstruction(TR::InstOpCode::LEARegMem(), node, framePointerReg, memref(cg), cond, cg){}
 
-   virtual char *description() { return "X86VFPDedicate"; }
+   virtual const char *description() { return "X86VFPDedicate"; }
 
    virtual Kind getKind() { return IsVFPDedicate; }
 
@@ -3181,7 +3181,7 @@ class X86VFPReleaseInstruction : public TR::Instruction
       _dedicateInstruction(dedicateInstruction),
       TR::Instruction(node, TR::InstOpCode::AdjustFramePtr, cg){}
 
-   virtual char *description() { return "X86VFPRelease"; }
+   virtual const char *description() { return "X86VFPRelease"; }
 
    virtual Kind getKind() { return IsVFPRelease; }
 
@@ -3234,7 +3234,7 @@ class X86VFPCallCleanupInstruction : public TR::Instruction
       _stackPointerAdjustment(adjustment),
       TR::Instruction(node, TR::InstOpCode::AdjustFramePtr, cg) {}
 
-   virtual char *description() { return "X86VFPCallCleanup"; }
+   virtual const char *description() { return "X86VFPCallCleanup"; }
 
    virtual Kind getKind() { return IsVFPCallCleanup; }
 

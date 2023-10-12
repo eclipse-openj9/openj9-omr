@@ -91,7 +91,7 @@ class OMR_EXTENSIBLE Instruction : public OMR::Instruction
 
    public:
 
-   virtual char *description() { return "X86"; }
+   virtual const char *description() { return "X86"; }
    virtual Kind getKind() { return IsNotExtended; }
 
    OMR::X86::Encoding getEncodingMethod() { return _encodingMethod; }

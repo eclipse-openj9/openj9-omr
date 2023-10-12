@@ -1893,7 +1893,7 @@ void OMR::Compilation::setUsesPreexistence(bool v)
 
 // Dump the trees for the method and return the number of nodes in the trees.
 //
-void OMR::Compilation::dumpMethodTrees(char *title, TR::ResolvedMethodSymbol * methodSymbol)
+void OMR::Compilation::dumpMethodTrees(const char *title, TR::ResolvedMethodSymbol * methodSymbol)
    {
    if (self()->getOutFile() == NULL)
       return;
@@ -1911,7 +1911,7 @@ void OMR::Compilation::dumpMethodTrees(char *title, TR::ResolvedMethodSymbol * m
    trfflush(self()->getOutFile());
    }
 
-void OMR::Compilation::dumpMethodTrees(char *title1, const char *title2, TR::ResolvedMethodSymbol *methodSymbol)
+void OMR::Compilation::dumpMethodTrees(const char *title1, const char *title2, TR::ResolvedMethodSymbol *methodSymbol)
    {
    TR::StackMemoryRegion stackMemoryRegion(*self()->trMemory());
    char *title = (char*)self()->trMemory()->allocateStackMemory(20 + strlen(title1) + strlen(title2));

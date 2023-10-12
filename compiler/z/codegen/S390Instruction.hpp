@@ -190,7 +190,7 @@ class S390LabeledInstruction : public TR::Instruction
 
    TR::Snippet     *getCallSnippet()                    {return _snippet;}
 
-   virtual char *description() { return "S390Instruction"; }
+   virtual const char *description() { return "S390Instruction"; }
    virtual Kind getKind()=0;
    virtual uint8_t *generateBinaryEncoding()=0;
    virtual int32_t estimateBinaryLength(int32_t currentEstimate)=0;
@@ -287,7 +287,7 @@ class S390BranchInstruction : public TR::S390LabeledInstruction
         _branchCondition(branchCondition)
       {}
 
-   virtual char *description() { return "S390Branch"; }
+   virtual const char *description() { return "S390Branch"; }
    virtual Kind getKind() { return IsBranch; }
 
    virtual TR::Snippet *getSnippetForGC()
@@ -332,7 +332,7 @@ class S390VirtualGuardNOPInstruction : public TR::S390BranchInstruction
                                     TR::CodeGenerator                    *cg)
       : S390BranchInstruction(TR::InstOpCode::BRC, TR::InstOpCode::COND_VGNOP, node, label, cond, precedingInstruction, cg), _site(site) {}
 
-   virtual char *description() { return "S390VirtualGuardNOP"; }
+   virtual const char *description() { return "S390VirtualGuardNOP"; }
    virtual Kind getKind() { return IsVirtualGuardNOP; }
 
    void setSite(TR_VirtualGuardSite *site) { _site = site; }
@@ -387,7 +387,7 @@ class S390BranchOnCountInstruction : public TR::S390LabeledInstruction
       : S390LabeledInstruction(op, n, sym, precedingInstruction, cg)
       {useTargetRegister(targetReg);}
 
-   virtual char *description() { return "S390BranchOnCount"; }
+   virtual const char *description() { return "S390BranchOnCount"; }
    virtual Kind getKind() { return IsBranchOnCount; }
 
    virtual uint8_t *generateBinaryEncoding();
@@ -443,7 +443,7 @@ class S390BranchOnIndexInstruction : public TR::S390LabeledInstruction
       : S390LabeledInstruction(op, n, sym, precedingInstruction, cg)
       {useTargetRegister(targetReg); useSourceRegister(sourceReg);}
 
-   virtual char *description() { return "S390BranchOnIndex"; }
+   virtual const char *description() { return "S390BranchOnIndex"; }
    virtual Kind getKind() { return IsBranchOnIndex; }
 
    virtual uint8_t *generateBinaryEncoding();
@@ -535,7 +535,7 @@ class S390LabelInstruction : public TR::S390LabeledInstruction
       : S390LabeledInstruction(op, n, s, cond, precedingInstruction, cg), _alignment(0)
       {}
 
-   virtual char *description() { return "S390LabelInstruction"; }
+   virtual const char *description() { return "S390LabelInstruction"; }
    virtual Kind getKind() { return IsLabel; }
 
    virtual uint8_t *generateBinaryEncoding();
@@ -612,7 +612,7 @@ class S390PseudoInstruction : public TR::Instruction
         _callDescLabel(NULL),
         _shouldBeginNewLine(false){}
 
-   virtual char *description() { return "S390PseudoInstruction"; }
+   virtual const char *description() { return "S390PseudoInstruction"; }
    virtual Kind getKind() { return IsPseudo; }
 
    TR::Node * getFenceNode() { return _fenceNode; }
@@ -775,7 +775,7 @@ public:
       setRegionNumber(regionNum);
       }
 
-   virtual char *description() { return "S390AnnotInstruction"; }
+   virtual const char *description() { return "S390AnnotInstruction"; }
    virtual Kind getKind()      { return IsAnnot; }
    char *getAnnotation()       { return _annotation; }
    int32_t getFlags()          { return _flags; }
@@ -829,7 +829,7 @@ class S390ImmInstruction : public TR::Instruction
       : TR::Instruction(op, n, cond, precedingInstruction, cg), _sourceImmediate(imm)
       {}
 
-   virtual char *description() { return "S390ImmInstruction"; }
+   virtual const char *description() { return "S390ImmInstruction"; }
    virtual Kind getKind() { return IsImm; }
 
    uint32_t getSourceImmediate()            {return _sourceImmediate;}
@@ -886,7 +886,7 @@ class S390Imm2Instruction : public TR::Instruction
       : TR::Instruction(op, n, cond, precedingInstruction, cg), _sourceImmediate(imm)
       { setEstimatedBinaryLength(2); }
 
-   virtual char *description() { return "S390Imm2Instruction"; }
+   virtual const char *description() { return "S390Imm2Instruction"; }
    virtual Kind getKind() { return IsImm2Byte; }
 
    uint16_t getSourceImmediate()            {return _sourceImmediate;}
@@ -925,7 +925,7 @@ class S390ImmSnippetInstruction : public TR::S390ImmInstruction
       : S390ImmInstruction(op, n, imm, precedingInstruction, cg),
         _unresolvedSnippet(us), _snippet(s) {}
 
-   virtual char *description() { return "S390ImmSnippetInstruction"; }
+   virtual const char *description() { return "S390ImmSnippetInstruction"; }
    virtual Kind getKind() { return IsImmSnippet; }
 
    TR::UnresolvedDataSnippet *getUnresolvedSnippet() {return _unresolvedSnippet;}
@@ -983,7 +983,7 @@ class S390ImmSymInstruction : public TR::S390ImmInstruction
                             TR::CodeGenerator                    *cg)
      : S390ImmInstruction(op, node, imm, cond, precedingInstruction, cg), _symbolReference(sr)
      {}
-   virtual char *description() { return "S390ImmSymInstruction"; }
+   virtual const char *description() { return "S390ImmSymInstruction"; }
    virtual Kind getKind() { return IsImmSym; }
 
    TR::SymbolReference *getSymbolReference() {return _symbolReference;}
@@ -1256,7 +1256,7 @@ class S390RegInstruction : public TR::Instruction
                 (_targetPairFlag)?"cannot":"should");
       }
 
-   virtual char *description() { return "S390RegInstruction"; }
+   virtual const char *description() { return "S390RegInstruction"; }
    virtual Kind getKind() { return IsReg; }
    virtual bool isRegInstruction() { return true; }
 
@@ -1508,7 +1508,7 @@ class S390RRInstruction : public TR::S390RegInstruction
       {
       }
 
-   virtual char *description() { return "S390RRInstruction"; }
+   virtual const char *description() { return "S390RRInstruction"; }
    virtual Kind getKind() { return IsRR; }
 
    //   TR::Register  *getSourceRegister()                {return (_sourceRegSize!=0) ? (sourceRegBase())[0] : NULL;  }
@@ -1603,7 +1603,7 @@ class S390TranslateInstruction : public TR::Instruction
       useSourceRegister(termCharReg);
       }
 
-   virtual char *description() { return "S390TranslateInstruction"; }
+   virtual const char *description() { return "S390TranslateInstruction"; }
    virtual Kind getKind() { return IsRRE; }
 
    TR::Register *getTableRegister()                             {return getRegisterOperand(tr_tblidx); }
@@ -1811,7 +1811,7 @@ class S390RRFInstruction : public TR::S390RRInstruction
       {
       }
 
-   virtual char *description() { return "S390RRFInstruction"; }
+   virtual const char *description() { return "S390RRFInstruction"; }
    virtual Kind getKind()
       {
       if (_encodeAsRRD)
@@ -1908,7 +1908,7 @@ class S390RRRInstruction : public TR::S390RRInstruction
          useTargetRegister(sreg2);
       }
 
-   virtual char *description() { return "S390RRRInstruction"; }
+   virtual const char *description() { return "S390RRRInstruction"; }
    virtual Kind getKind()
       {
       return IsRRR;
@@ -1979,7 +1979,7 @@ class S390RIInstruction : public TR::S390RegInstruction
                             TR::CodeGenerator *cg)
            : S390RegInstruction(op, n, treg, precedingInstruction, cg), _sourceImmediate(imm), _isImm(true) {};
 
-   virtual char *description() { return "S390RIInstruction"; }
+   virtual const char *description() { return "S390RIInstruction"; }
    virtual Kind getKind() { return IsRI; }
 
    int32_t getSourceImmediate()            {return _sourceImmediate;}
@@ -2349,7 +2349,7 @@ class S390RILInstruction : public TR::Instruction
          useTargetRegister(treg);
       }
 
-   virtual char *description() { return "S390RILInstruction"; }
+   virtual const char *description() { return "S390RILInstruction"; }
    virtual Kind getKind() { return IsRIL; }
 
    bool isLiteralPoolAddress() {return _flagsRIL.testAny(isLiteralPoolAddressFlag); }
@@ -2725,7 +2725,7 @@ class S390RSInstruction : public TR::S390RegInstruction
            useSourceRegister(sreg);
         };
 
-   virtual char *description() { return "S390RSInstruction"; }
+   virtual const char *description() { return "S390RSInstruction"; }
    virtual Kind getKind()                   {return IsRS;}
    uint32_t getSourceImmediate()            {return _sourceImmediate;}
    uint32_t setSourceImmediate(uint32_t si) {return _sourceImmediate = si;}
@@ -2884,7 +2884,7 @@ class S390RSYInstruction : public TR::S390RSInstruction
       {
       }
 
-   virtual char *description() { return "S390RSYInstruction"; }
+   virtual const char *description() { return "S390RSYInstruction"; }
    virtual Kind getKind() { return IsRSY; }
 
    //virtual uint8_t *generateBinaryEncoding();
@@ -2934,7 +2934,7 @@ class S390RRSInstruction : public TR::S390RRInstruction
    setupThrowsImplicitNullPointerException(n,branchDestination);
    }
 
-   virtual char *description() { return "S390RRSInstruction"; }
+   virtual const char *description() { return "S390RRSInstruction"; }
    virtual Kind getKind() { return IsRRS; }
 
    /** Get branch condition information */
@@ -3013,7 +3013,7 @@ class S390RREInstruction : public TR::S390RRInstruction
       {
       }
 
-   virtual char *description() { return "S390RREInstruction"; }
+   virtual const char *description() { return "S390RREInstruction"; }
    virtual Kind getKind() { return IsRRE; }
 
    //virtual uint8_t *generateBinaryEncoding();
@@ -3054,7 +3054,7 @@ class S390IEInstruction : public TR::Instruction
    uint8_t getImmediateField1() { return _immediate1; }
    uint8_t getImmediateField2() { return _immediate2; }
 
-   virtual char *description() { return "S390IEInstruction"; }
+   virtual const char *description() { return "S390IEInstruction"; }
    virtual Kind getKind() { return IsIE; }
 
    virtual uint8_t *generateBinaryEncoding();
@@ -3331,7 +3331,7 @@ class S390RIEInstruction : public TR::S390RegInstruction
 
 
    /** Determine the form of this instruction */
-   virtual char *description() { return "S390RIEInstruction"; }
+   virtual const char *description() { return "S390RIEInstruction"; }
    virtual Kind getKind() { return IsRIE; }
    virtual RIEForm getRieForm() { return _instructionFormat; }
 
@@ -3446,7 +3446,7 @@ class S390SMIInstruction : public TR::Instruction
    uint8_t getMask()             {return _mask;}
    uint8_t setMask(uint8_t mask) {return _mask = mask;}
 
-   virtual char *description() { return "S390SMIInstruction"; }
+   virtual const char *description() { return "S390SMIInstruction"; }
    virtual Kind getKind() { return IsSMI; }
    virtual TR::LabelSymbol *getLabelSymbol()
       {
@@ -3510,7 +3510,7 @@ class S390MIIInstruction : public TR::Instruction
    uint8_t getMask()             {return _mask;}
    uint8_t setMask(uint8_t mask) {return _mask = mask;}
 
-   virtual char *description() { return "S390MIIInstruction"; }
+   virtual const char *description() { return "S390MIIInstruction"; }
    virtual Kind getKind() { return IsMII; }
    virtual TR::LabelSymbol *getLabelSymbol()
       {
@@ -3562,7 +3562,7 @@ class S390RISInstruction : public TR::S390RIInstruction
       setupThrowsImplicitNullPointerException(n,branchDestination);
       }
 
-   virtual char *description() { return "S390RISInstruction"; }
+   virtual const char *description() { return "S390RISInstruction"; }
    virtual Kind getKind() { return IsRIS; }
 
    /** Get branch condition information */
@@ -3712,7 +3712,7 @@ class S390MemInstruction : public TR::Instruction
          (mf->getUnresolvedSnippet())->setDataReferenceInstruction(this);
       }
 
-   virtual char *description() { return "S390MemInstruction"; }
+   virtual const char *description() { return "S390MemInstruction"; }
    virtual Kind getKind() { return IsMem; }
 
    virtual TR::MemoryReference *getMemoryReference() { return _memref; }
@@ -3751,7 +3751,7 @@ class S390SIInstruction : public TR::S390MemInstruction
       useSourceMemoryReference(mf);
       };
 
-   virtual char *description() { return "S390SIInstruction"; }
+   virtual const char *description() { return "S390SIInstruction"; }
    virtual Kind getKind()                   { return IsSI; }
 
    uint8_t getSourceImmediate() { return _sourceImmediate; }
@@ -3779,7 +3779,7 @@ class S390SIYInstruction : public TR::S390SIInstruction
                          TR::CodeGenerator *cg)
            : S390SIInstruction(op, n, mf, imm, precedingInstruction, cg) {};
 
-   virtual char *description() { return "S390SIYInstruction"; }
+   virtual const char *description() { return "S390SIYInstruction"; }
    virtual Kind getKind() { return IsSIY; }
 
    virtual uint8_t *generateBinaryEncoding();
@@ -3817,7 +3817,7 @@ class S390SILInstruction : public TR::S390MemInstruction
          useSourceMemoryReference(mf);
       }
 
-   virtual char *description() { return "S390SILInstruction"; }
+   virtual const char *description() { return "S390SILInstruction"; }
    virtual Kind getKind() { return IsSIL; }
 
    uint16_t getSourceImmediate() { return _sourceImmediate; }
@@ -3845,7 +3845,7 @@ class S390SInstruction : public TR::S390MemInstruction
                        TR::CodeGenerator *cg)
            : S390MemInstruction(op, n, mf, precedingInstruction, cg) {};
 
-   virtual char *description() { return "S390SInstruction"; }
+   virtual const char *description() { return "S390SInstruction"; }
    virtual Kind getKind() { return IsS; }
 
    virtual uint8_t *generateBinaryEncoding();
@@ -3886,7 +3886,7 @@ class S390RSLInstruction : public TR::S390MemInstruction
       {
       }
 
-   virtual char *description() { return "S390RSLInstruction"; }
+   virtual const char *description() { return "S390RSLInstruction"; }
    virtual Kind getKind() { return IsRSL; }
 
    uint16_t getLen()             {return _len;}
@@ -3943,7 +3943,7 @@ class S390RSLbInstruction : public TR::S390RegInstruction
          (mf->getUnresolvedSnippet())->setDataReferenceInstruction(this);
       }
 
-   virtual char *description() { return "S390RSLbInstruction"; }
+   virtual const char *description() { return "S390RSLbInstruction"; }
    virtual Kind getKind() { return IsRSLb; }
 
    uint16_t getLen()             {return _length;}
@@ -4025,7 +4025,7 @@ class S390MemMemInstruction : public TR::S390MemInstruction
       setupThrowsImplicitNullPointerException(n,mf2);
       }
 
-   virtual char *description() { return "S390MemMemInstruction"; }
+   virtual const char *description() { return "S390MemMemInstruction"; }
    virtual Kind getKind() { return IsMemMem; }
 
    virtual TR::MemoryReference *getMemoryReference2() { return (_targetMemSize!=0) ? (targetMemBase())[0] : NULL;}
@@ -4089,7 +4089,7 @@ class S390SS1Instruction : public TR::S390MemMemInstruction
       {
       }
 
-   virtual char *description() { return "S390SS1Instruction"; }
+   virtual const char *description() { return "S390SS1Instruction"; }
    virtual Kind getKind() { return IsSS1; }
 
    uint32_t getLen()             {return _len;}
@@ -4220,7 +4220,7 @@ class S390SS2Instruction : public TR::S390SS1Instruction
       {
       }
 
-   virtual char *description() { return "S390SS2Instruction"; }
+   virtual const char *description() { return "S390SS2Instruction"; }
    virtual Kind getKind() { return IsSS2; }
 
 
@@ -4296,7 +4296,7 @@ class S390SS4Instruction : public TR::S390SS1Instruction
          _operands[i+nr]=vp[i];
       }
 
-   virtual char *description() { return "S390SS4Instruction"; }
+   virtual const char *description() { return "S390SS4Instruction"; }
    virtual Kind getKind() { return IsSS4; }
 
    TR::Register * getLengthReg()    { return (_ss4_lenidx!=-1) ?  (sourceRegBase())[_ss4_lenidx] : NULL; }
@@ -4413,7 +4413,7 @@ class S390SSEInstruction : public TR::S390MemMemInstruction
       {
       }
 
-   virtual char *description() { return "S390SSEInstruction"; }
+   virtual const char *description() { return "S390SSEInstruction"; }
    virtual Kind getKind() { return IsSSE; }
    };
 
@@ -4474,7 +4474,7 @@ class S390RXInstruction : public TR::S390RegInstruction
          (mf->getUnresolvedSnippet())->setDataReferenceInstruction(this);
       }
 
-   virtual char *description() { return "S390RXInstruction"; }
+   virtual const char *description() { return "S390RXInstruction"; }
    virtual Kind getKind() { return IsRX; }
 
    virtual TR::MemoryReference *getMemoryReference() { return (_sourceMemSize!=0) ? (sourceMemBase())[0] : NULL;}
@@ -4521,7 +4521,7 @@ class S390RXEInstruction : public TR::S390RXInstruction
       mask3 = m3;
       }
    uint8_t getM3() {return mask3;}
-   virtual char *description() { return "S390RXEInstruction"; }
+   virtual const char *description() { return "S390RXEInstruction"; }
    virtual Kind getKind() { return IsRXE; }
 
    virtual uint8_t *generateBinaryEncoding();
@@ -4570,7 +4570,7 @@ class S390RXYInstruction : public TR::S390RXInstruction
       {
       }
 
-   virtual char *description() { return "S390RXYInstruction"; }
+   virtual const char *description() { return "S390RXYInstruction"; }
    virtual Kind getKind() { return IsRXY; }
 
    virtual uint8_t *generateBinaryEncoding();
@@ -4603,7 +4603,7 @@ class S390RXYbInstruction : public TR::S390MemInstruction
       }
 
 
-   virtual char *description() { return "S390RXYbInstruction"; }
+   virtual const char *description() { return "S390RXYbInstruction"; }
 
    virtual Kind getKind() { return IsRXYb; }
    virtual void setKind(Kind kind) { return; }
@@ -4678,7 +4678,7 @@ class S390SSFInstruction : public TR::S390RXInstruction
       setupThrowsImplicitNullPointerException(n,mf2);
       }
 
-   virtual char *description() { return "S390SSFInstruction"; }
+   virtual const char *description() { return "S390SSFInstruction"; }
    virtual Kind getKind() { return IsSSF; }
 
    virtual TR::MemoryReference *getMemoryReference2() { return (_sourceMemSize==2) ? (sourceMemBase())[1] : NULL; }
@@ -4744,7 +4744,7 @@ class S390RXFInstruction : public TR::S390RRInstruction
       setupThrowsImplicitNullPointerException(n,mf);
       }
 
-   virtual char *description() { return "S390RXFInstruction"; }
+   virtual const char *description() { return "S390RXFInstruction"; }
    virtual Kind getKind() { return IsRXF; }
 
    virtual TR::MemoryReference *getMemoryReference() {return (_sourceMemSize!=0) ? (sourceMemBase())[0] : NULL;}
@@ -4815,7 +4815,7 @@ class S390VInstruction : public S390RegInstruction
       TR::Instruction::setMaskField(instruction, mask, nibbleIndex);
       }
    virtual int32_t estimateBinaryLength(int32_t currentEstimate);
-   virtual char *description() { return "S390VInstruction"; }
+   virtual const char *description() { return "S390VInstruction"; }
    virtual Kind getKind() = 0;
    virtual uint8_t * generateBinaryEncoding() = 0;
    virtual char *setOpCodeBuffer(char *c);
@@ -4886,7 +4886,7 @@ class S390VRIInstruction : public S390VInstruction
    uint16_t getImmediateField16(){ return _constantImm16; }
    uint8_t  getImmediateField8(){ return _constantImm8; }
 
-   virtual char *description() { return "S390VRIInstruction"; }
+   virtual const char *description() { return "S390VRIInstruction"; }
    virtual Kind getKind() = 0;
 
    const char *getExtendedMnemonicName();
@@ -4929,7 +4929,7 @@ class S390VRIaInstruction : public S390VRIInstruction
 
    uint16_t getImmediateField2() { return getImmediateField16(); }
 
-   virtual char *description() { return "S390VRIaInstruction"; }
+   virtual const char *description() { return "S390VRIaInstruction"; }
    virtual Kind getKind() { return IsVRIa; }
    uint8_t * generateBinaryEncoding();
    };
@@ -4961,7 +4961,7 @@ class S390VRIbInstruction : public S390VRIInstruction
    uint8_t getImmediateField2() { return getImmediateField16() >> 8; }
    uint8_t getImmediateField3() { return getImmediateField16() & 0xff; }
 
-   virtual char *description() { return "S390VRIbInstruction"; }
+   virtual const char *description() { return "S390VRIbInstruction"; }
    virtual Kind getKind() { return IsVRIb; }
    uint8_t * generateBinaryEncoding();
    };
@@ -4993,7 +4993,7 @@ class S390VRIcInstruction : public S390VRIInstruction
 
    uint16_t getImmediateField2() { return getImmediateField16(); }
 
-   virtual char *description() { return "S390VRIcInstruction"; }
+   virtual const char *description() { return "S390VRIcInstruction"; }
    virtual Kind getKind() { return IsVRIc; }
    uint8_t * generateBinaryEncoding();
    };
@@ -5031,7 +5031,7 @@ class S390VRIdInstruction : public S390VRIInstruction
       }
 
    uint8_t getImmediateField4() { return getImmediateField16() & 0xff; }
-   virtual char *description() { return "S390VRIdInstruction"; }
+   virtual const char *description() { return "S390VRIdInstruction"; }
    virtual Kind getKind() { return IsVRId; }
    uint8_t * generateBinaryEncoding();
    };
@@ -5069,7 +5069,7 @@ class S390VRIeInstruction : public S390VRIInstruction
 
    uint16_t getImmediateField3() { return getImmediateField16() >> 4; }
 
-   virtual char *description() { return "S390VRIeInstruction"; }
+   virtual const char *description() { return "S390VRIeInstruction"; }
    virtual Kind getKind() { return IsVRIe; }
    uint8_t * generateBinaryEncoding();
    };
@@ -5108,7 +5108,7 @@ class S390VRIfInstruction : public S390VRIInstruction
 
    uint8_t getImmediateField4() { return getImmediateField16() & 0xff; }
 
-   char *description() { return "S390VRIfInstruction"; }
+   const char *description() { return "S390VRIfInstruction"; }
    Kind getKind() { return IsVRIf; }
    uint8_t * generateBinaryEncoding();
    };
@@ -5143,7 +5143,7 @@ class S390VRIgInstruction : public S390VRIInstruction
    uint16_t getImmediateField3() { return getImmediateField16() & 0xff; }
    uint8_t getImmediateField4() { return getImmediateField8(); }
 
-   char *description() { return "S390VRIgInstruction"; }
+   const char *description() { return "S390VRIgInstruction"; }
    Kind getKind() { return IsVRIg; }
    uint8_t * generateBinaryEncoding();
    };
@@ -5174,7 +5174,7 @@ class S390VRIhInstruction : public S390VRIInstruction
    uint16_t getImmediateField2() { return getImmediateField16(); }
    uint8_t getImmediateField3() { return getImmediateField8(); }
 
-   char *description() { return "S390VRIhInstruction"; }
+   const char *description() { return "S390VRIhInstruction"; }
    Kind getKind() { return IsVRIh; }
    uint8_t * generateBinaryEncoding();
    };
@@ -5209,7 +5209,7 @@ class S390VRIiInstruction : public S390VRIInstruction
 
    uint8_t getImmediateField3() { return getImmediateField8(); }
 
-   char *description() { return "S390VRIiInstruction"; }
+   const char *description() { return "S390VRIiInstruction"; }
    Kind getKind() { return IsVRIi; }
    uint8_t * generateBinaryEncoding();
    };
@@ -5235,7 +5235,7 @@ class S390VRRInstruction : public S390VInstruction
    bool          _printM5;
    bool          _printM6;
    public:
-   virtual char *description() { return "S390VRRInstruction"; }
+   virtual const char *description() { return "S390VRRInstruction"; }
    virtual Kind getKind() = 0;
    uint8_t getM3() {return mask3;}
    uint8_t getM4() {return mask4;}
@@ -5353,7 +5353,7 @@ class S390VRRaInstruction: public S390VRRInstruction
       {
       }
 
-   char *description() { return "S390VRRaInstruction"; }
+   const char *description() { return "S390VRRaInstruction"; }
    Kind getKind() { return IsVRRa; }
    uint8_t * generateBinaryEncoding();
    };
@@ -5385,7 +5385,7 @@ class S390VRRbInstruction: public S390VRRInstruction
          useSourceRegister(sourceReg3);
       }
 
-   char *description() { return "S390VRRbInstruction"; }
+   const char *description() { return "S390VRRbInstruction"; }
    Kind getKind() { return IsVRRb; }
    uint8_t * generateBinaryEncoding();
    };
@@ -5418,7 +5418,7 @@ class S390VRRcInstruction: public S390VRRInstruction
          useSourceRegister(sourceReg3);
       }
 
-   char *description() { return "S390VRRcInstruction"; }
+   const char *description() { return "S390VRRcInstruction"; }
    Kind getKind() { return IsVRRc; }
    uint8_t * generateBinaryEncoding();
    };
@@ -5456,7 +5456,7 @@ class S390VRRdInstruction: public S390VRRInstruction
          useSourceRegister(sourceReg4);
       }
 
-   char *description() { return "S390VRRdInstruction"; }
+   const char *description() { return "S390VRRdInstruction"; }
    Kind getKind() { return IsVRRd; }
    uint8_t * generateBinaryEncoding();
    };
@@ -5494,7 +5494,7 @@ class S390VRReInstruction: public S390VRRInstruction
          useSourceRegister(sourceReg4);
       }
 
-   char *description() { return "S390VRReInstruction"; }
+   const char *description() { return "S390VRReInstruction"; }
    Kind getKind() { return IsVRRe; }
    uint8_t * generateBinaryEncoding();
    };
@@ -5524,7 +5524,7 @@ class S390VRRfInstruction: public S390VRRInstruction
          useSourceRegister(sourceReg3);
       }
 
-   char *description() { return "S390VRRfInstruction"; }
+   const char *description() { return "S390VRRfInstruction"; }
    Kind getKind() { return IsVRRf; }
    uint8_t * generateBinaryEncoding();
    };
@@ -5549,7 +5549,7 @@ class S390VRRgInstruction: public S390VRRInstruction
       {
       }
 
-   char *description() { return "S390VRRgInstruction"; }
+   const char *description() { return "S390VRRgInstruction"; }
    Kind getKind() { return IsVRRg; }
    uint8_t * generateBinaryEncoding();
    };
@@ -5575,7 +5575,7 @@ class S390VRRhInstruction: public S390VRRInstruction
       {
       }
 
-   char *description() { return "S390VRRhInstruction"; }
+   const char *description() { return "S390VRRhInstruction"; }
    Kind getKind() { return IsVRRh; }
    uint8_t * generateBinaryEncoding();
    };
@@ -5605,7 +5605,7 @@ class S390VRRiInstruction: public S390VRRInstruction
       {
       }
 
-   char *description() { return "S390VRRiInstruction"; }
+   const char *description() { return "S390VRRiInstruction"; }
    Kind getKind() { return IsVRRi; }
    uint8_t * generateBinaryEncoding();
    };
@@ -5632,7 +5632,7 @@ class S390VRRkInstruction: public S390VRRInstruction
       {
       }
 
-   char *description() { return "S390VRRkInstruction"; }
+   const char *description() { return "S390VRRkInstruction"; }
    Kind getKind() { return IsVRRk; }
    uint8_t * generateBinaryEncoding();
    };
@@ -5715,7 +5715,7 @@ class S390VStorageInstruction: public S390VInstruction
 
    public:
    virtual TR::MemoryReference* getMemoryReference()  { return (_sourceMemSize!=0) ? (sourceMemBase())[0] : NULL; }
-   virtual char *description() { return "S390VStorageInstruction"; }
+   virtual const char *description() { return "S390VStorageInstruction"; }
    virtual Kind getKind() = 0;
    uint8_t getMaskField() { return _maskField; }
 
@@ -5793,7 +5793,7 @@ class S390VRSaInstruction : public S390VStorageInstruction
       }
 
    Kind getKind() { return IsVRSa; }
-   virtual char *description() { return "S390VRSaInstruction"; }
+   virtual const char *description() { return "S390VRSaInstruction"; }
    };
 
 /**
@@ -5834,7 +5834,7 @@ class S390VRSbInstruction : public S390VStorageInstruction
       }
 
    Kind getKind() { return IsVRSb; }
-   virtual char *description() { return "S390VRSbInstruction"; }
+   virtual const char *description() { return "S390VRSbInstruction"; }
    };
 
 /**
@@ -5875,7 +5875,7 @@ class S390VRScInstruction : public S390VStorageInstruction
       }
 
    Kind getKind() { return IsVRSc; }
-   virtual char *description() { return "S390VRScInstruction"; }
+   virtual const char *description() { return "S390VRScInstruction"; }
    };
 
 /**
@@ -5922,7 +5922,7 @@ class S390VRSdInstruction : public S390VStorageInstruction
 
    Kind getKind() { return IsVRSd; }
    uint8_t * generateBinaryEncoding();
-   char *description() { return "S390VRSdInstruction"; }
+   const char *description() { return "S390VRSdInstruction"; }
 
 private:
    void initVRSd(TR::Register* r3Reg, TR::Register* v1Reg, TR::MemoryReference* mr)
@@ -6066,7 +6066,7 @@ class S390VSIInstruction : public S390VStorageInstruction
 
    Kind getKind() { return IsVSI; }
    uint8_t getImmediateField3() { return _constantImm3; }
-   char *description() { return "S390VSIInstruction"; }
+   const char *description() { return "S390VSIInstruction"; }
    uint8_t * generateBinaryEncoding();
 private:
    uint8_t _constantImm3;
@@ -6123,7 +6123,7 @@ class S390NOPInstruction : public TR::Instruction
       setEstimatedBinaryLength(numbytes);
       }
 
-   virtual char *description() { return "S390NOPInstruction"; }
+   virtual const char *description() { return "S390NOPInstruction"; }
    virtual Kind getKind() { return IsNOP; }
 
    virtual int32_t estimateBinaryLength(int32_t currentEstimate);
@@ -6154,7 +6154,7 @@ public:
       setAlignment(alignment);
       }
 
-   virtual char *description() { return "S390AlignmentNopInstruction"; }
+   virtual const char *description() { return "S390AlignmentNopInstruction"; }
    virtual Kind getKind() { return IsAlignmentNop; }
 
    uint32_t getAlignment() { return _alignment; }
@@ -6189,7 +6189,7 @@ class S390IInstruction : public TR::Instruction
       {
       }
 
-   virtual char *description() { return "S390IInstruction"; }
+   virtual const char *description() { return "S390IInstruction"; }
    virtual Kind getKind() { return IsI; }
 
    uint32_t getImmediateField() { return _immediate; }
@@ -6263,7 +6263,7 @@ class S390EInstruction : public TR::Instruction
       setEstimatedBinaryLength(2);
       }
 
-   virtual char *description() { return "S390EInstruction"; }
+   virtual const char *description() { return "S390EInstruction"; }
    virtual Kind getKind() { return IsE; }
 
    virtual uint8_t *generateBinaryEncoding();
@@ -6292,7 +6292,7 @@ class S390OpCodeOnlyInstruction : public TR::Instruction
       {
       }
 
-   virtual char *description() { return "S390OpCodeOnlyInstruction"; }
+   virtual const char *description() { return "S390OpCodeOnlyInstruction"; }
    virtual Kind getKind() { return IsOpCodeOnly; }
 
    };

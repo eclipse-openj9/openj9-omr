@@ -702,6 +702,8 @@ OMR::Power::Peephole::tryToRemoveRedundantMoveRegister()
                   }
                break;
                }
+            default:
+               break;
             }
          }
 

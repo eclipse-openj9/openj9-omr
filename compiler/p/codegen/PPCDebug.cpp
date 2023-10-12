@@ -290,6 +290,8 @@ TR_Debug::print(TR::FILE *pOutFile, TR::PPCLabelInstruction * instr)
             case TR::Snippet::IsArrayCopyCall:
                callSym = ((TR::PPCHelperCallSnippet *)snippet)->getDestination();
                break;
+            default:
+               break;
             }
          if (callSym)
             trfprintf(pOutFile, "\t; Call \"%s\"", getName(callSym));

@@ -2436,6 +2436,8 @@ OMR::Power::CodeGenerator::supportsNonHelper(TR::SymbolReferenceTable::CommonNon
          result = self()->comp()->target().is64Bit();
          break;
          }
+      default:
+         break;
       }
 
    return result;

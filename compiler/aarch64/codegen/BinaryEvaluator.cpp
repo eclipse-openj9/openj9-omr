@@ -1185,8 +1185,7 @@ OMR::ARM64::TreeEvaluator::imulhEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    generateTrg1Src3Instruction(cg, TR::InstOpCode::smaddl, node, trgReg, src1Reg, src2Reg, zeroReg, cond);
    cg->stopUsingRegister(zeroReg);
    /* logical shift right by 32 bits */
-   uint32_t imm = 0x183F; // N=1, immr=32, imms=63
-   generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::ubfmx, node, trgReg, trgReg, imm);
+   generateLogicalShiftRightImmInstruction(cg, node, trgReg, trgReg, 32, true);
 
    if (tmpReg)
       {

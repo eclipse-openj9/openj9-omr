@@ -500,7 +500,7 @@ parseAttribute(char *line, Dwarf_Die *lastCreatedDie,
 	int ret = DW_DLV_OK;
 
 	/* Get the type and form of the attribute. */
-	Dwarf_Half type = DW_TAG_unknown;
+	Dwarf_Half type = DW_AT_unknown;
 	Dwarf_Half form = DW_FORM_unknown;
 	size_t span = strcspn(line, "\t (");
 

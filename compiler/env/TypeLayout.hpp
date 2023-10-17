@@ -42,6 +42,7 @@ class TypeLayoutEntry
                    bool isVolatile = false,
                    bool isPrivate = false,
                    bool isFinal = false,
+                   bool isFieldNullRestricted = false,
                    const char* typeSignature = NULL)
       : _datatype(datatype),
         _offset(offset),
@@ -49,6 +50,7 @@ class TypeLayoutEntry
         _isVolatile(isVolatile),
         _isPrivate(isPrivate),
         _isFinal(isFinal),
+        _isNullRestricted(isFieldNullRestricted),
         _typeSignature(typeSignature)
        {}
    TR::DataType _datatype;
@@ -57,6 +59,7 @@ class TypeLayoutEntry
    bool _isVolatile;
    bool _isPrivate;
    bool _isFinal;
+   bool _isNullRestricted;
    const char * _typeSignature;
    };
 

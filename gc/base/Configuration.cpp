@@ -483,13 +483,13 @@ MM_Configuration::initializeGCParameters(MM_EnvironmentBase* env)
 	 */
 
 	/* initialize packet lock splitting factor */
-	if (!_packetListSplitForced) {
+	if (!extensions->packetListSplitForced) {
 		extensions->packetListSplit = OMR_MAX(extensions->packetListSplit, splitAmount);
 	}
 
 #if defined(OMR_GC_MODRON_SCAVENGER)
 	/* initialize scan cache lock splitting factor */
-	if (!_cacheListSplitForced) {
+	if (!extensions->cacheListSplitForced) {
 		extensions->cacheListSplit = OMR_MAX(extensions->cacheListSplit, splitAmount);
 	}
 	if (extensions->scavengerEnabled) {
@@ -502,7 +502,7 @@ MM_Configuration::initializeGCParameters(MM_EnvironmentBase* env)
 #endif /* OMR_GC_MODRON_SCAVENGER */
 
 	/* initialize default split freelist split amount */
-	if (!_splitFreeListAmountForced) {
+	if (!extensions->splitFreeListAmountForced) {
 		OMRPORT_ACCESS_FROM_OMRPORT(env->getPortLibrary());
 		uintptr_t freeListSplitAmount = (omrsysinfo_get_number_CPUs_by_type(OMRPORT_CPU_ONLINE) - 1) / 8  +  1;
 #if defined(OMR_GC_MODRON_SCAVENGER)

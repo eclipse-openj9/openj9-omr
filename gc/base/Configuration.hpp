@@ -56,9 +56,6 @@ class MM_Configuration : public MM_BaseVirtual
 {
 /* Data members / types */
 public:
-	bool _packetListSplitForced;
-	bool _cacheListSplitForced;
-	bool _splitFreeListAmountForced;
 
 protected:
 	MM_ConfigurationDelegate _delegate;
@@ -183,9 +180,6 @@ public:
 
 	MM_Configuration(MM_EnvironmentBase* env, MM_GCPolicy gcPolicy, MM_AlignmentType alignmentType, uintptr_t defaultRegionSize, uintptr_t defaultArrayletLeafSize, MM_GCWriteBarrierType writeBarrierType, MM_GCAllocationType allocationType)
 		: MM_BaseVirtual()
-		, _packetListSplitForced(false)
-		, _cacheListSplitForced(false)
-		, _splitFreeListAmountForced(false)
 		, _delegate(gcPolicy)
 		, _alignmentType(alignmentType)
 		, _defaultRegionSize(defaultRegionSize)

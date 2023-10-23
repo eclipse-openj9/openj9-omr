@@ -4080,7 +4080,14 @@ void TR_LoopVersioner::versionNaturalLoop(TR_RegionStructure *whileLoop, List<TR
             _canPredictIters = false;
          }
 
-      if (!comp()->getOption(TR_DisableAsyncCheckVersioning) &&
+      // `_duplicateConditionalTree` is set only when `_conditionalTree` is set. `_conditionalTree`
+      // is set only when`_neitherLoopCold` is true. Therefore, if `_duplicateConditionalTree` exists,
+      // the loops are unbiased. When the loops are unbiased, do not version asynch check
+      // so that the conditional in both loops can be folded away.
+      bool asyncCheckVersioningOK = _duplicateConditionalTree ? false : true;
+
+      if (asyncCheckVersioningOK &&
+          !comp()->getOption(TR_DisableAsyncCheckVersioning) &&
           !refineAliases() && _canPredictIters && comp()->getProfilingMode() != JitProfiling &&
           performTransformation(comp(), "%s Creating test outside loop for deciding if async check is required\n", OPT_DETAILS_LOOP_VERSIONER))
          {
@@ -4375,7 +4382,8 @@ void TR_LoopVersioner::versionNaturalLoop(TR_RegionStructure *whileLoop, List<TR
       !awrtbariTrees->isEmpty()
       && !disableWrtbarVersion
       && !shouldOnlySpecializeLoops()
-      && !refineAliases();
+      && !refineAliases()
+      && !_curLoop->_foldConditionalInDuplicatedLoop;
 
    bool alreadyAskedPermission = false; // permission to transform
 
@@ -6403,6 +6411,8 @@ void TR_LoopVersioner::buildConditionalTree(
                      _duplicateConditionalTree,
                      reverseBranch,
                      /* original = */ false));
+
+               _curLoop->_foldConditionalInDuplicatedLoop = true;
                }
             }
          }
@@ -10319,6 +10329,7 @@ TR_LoopVersioner::CurLoop::CurLoop(
    , _privatizationOK(false)
    , _hcrGuardVersioningOK(false)
    , _osrGuardVersioningOK(false)
+   , _foldConditionalInDuplicatedLoop(false)
    {}
 
 /**

@@ -598,8 +598,12 @@ MM_VerboseHandlerOutput::handleExclusiveStart(J9HookInterface** hook, uintptr_t 
 	manager->setLastExclusiveAccessStartTime(currentTime);
 
 	OMR_VMThread* lastResponder = event->lastResponder;
-	char escapedLastResponderName[64];
-	getThreadName(escapedLastResponderName,sizeof(escapedLastResponderName),lastResponder);
+	char escapedLastResponderName[64] = "";
+
+	/* Last Responder thread can be passed NULL in the case of Safe Point Exclusive */
+	if (NULL != lastResponder) {
+		getThreadName(escapedLastResponderName, sizeof(escapedLastResponderName), lastResponder);
+	}
 
 	char tagTemplate[200];
 	getTagTemplate(tagTemplate, sizeof(tagTemplate), manager->getIdAndIncrement(), omrtime_current_time_millis());
@@ -608,8 +612,12 @@ MM_VerboseHandlerOutput::handleExclusiveStart(J9HookInterface** hook, uintptr_t 
 		writer->formatAndOutput(env, 0, "<warning details=\"clock error detected, following timing may be inaccurate\" />");
 	}	
 	writer->formatAndOutput(env, 0, "<exclusive-start %s intervalms=\"%llu.%03.3llu\">", tagTemplate, deltaTime / 1000, deltaTime % 1000);
-	writer->formatAndOutput(env, 1, "<response-info timems=\"%llu.%03.3llu\" idlems=\"%llu.%03.3llu\" threads=\"%zu\" lastid=\"%p\" lastname=\"%s\" />",
-			exclusiveAccessTime / 1000, exclusiveAccessTime % 1000, meanIdleTime / 1000, meanIdleTime % 1000, event->haltedThreads, (NULL == lastResponder ? NULL : lastResponder->_language_vmthread), escapedLastResponderName);
+
+	writer->formatAndOutput(
+		env, 1, "<response-info timems=\"%llu.%03.3llu\" idlems=\"%llu.%03.3llu\" threads=\"%zu\" lastid=\"%p\" lastname=\"%s\" />",
+		exclusiveAccessTime / 1000, exclusiveAccessTime % 1000, meanIdleTime / 1000, meanIdleTime % 1000, event->haltedThreads,
+		(NULL == lastResponder ? NULL : lastResponder->_language_vmthread), escapedLastResponderName);
+
 	writer->formatAndOutput(env, 0, "</exclusive-start>");
 	writer->flush(env);
 	exitAtomicReportingBlock();

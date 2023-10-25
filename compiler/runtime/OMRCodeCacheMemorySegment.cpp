@@ -21,6 +21,7 @@
 
 #include "runtime/CodeCacheMemorySegment.hpp"
 #include "runtime/CodeCacheManager.hpp"
+#include "thread_api.h"
 
 TR::CodeCacheMemorySegment*
 OMR::CodeCacheMemorySegment::self()
@@ -41,4 +42,38 @@ OMR::CodeCacheMemorySegment::free(TR::CodeCacheManager *manager)
    {
    manager->freeMemory(_base);
    new (static_cast<TR::CodeCacheMemorySegment *>(this)) TR::CodeCacheMemorySegment();
+   }
+
+void
+OMR::CodeCacheMemorySegment::setSegmentBase(uint8_t *newBase)
+   {
+   /*
+    * Assuming the code cache memory segment is allocated on the code cache memory,
+    * we need to modify the memory's permission before and after updating members.
+    */
+   omrthread_jit_write_protect_disable();
+   _base = newBase;
+   omrthread_jit_write_protect_enable();
+   }
+
+void OMR::CodeCacheMemorySegment::setSegmentAlloc(uint8_t *newAlloc)
+   {
+   /*
+    * Assuming the code cache memory segment is allocated on the code cache memory,
+    * we need to modify the memory's permission before and after updating members.
+    */
+   omrthread_jit_write_protect_disable();
+   _alloc = newAlloc;
+   omrthread_jit_write_protect_enable();
+   }
+
+void OMR::CodeCacheMemorySegment::setSegmentTop(uint8_t *newTop)
+   {
+   /*
+    * Assuming the code cache memory segment is allocated on the code cache memory,
+    * we need to modify the memory's permission before and after updating members.
+    */
+   omrthread_jit_write_protect_disable();
+   _top = newTop;
+   omrthread_jit_write_protect_enable();
    }

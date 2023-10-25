@@ -63,9 +63,9 @@ public:
 
    void adjustAlloc(int64_t adjust);
 
-   void setSegmentBase(uint8_t *newBase)   { _base = newBase; }
-   void setSegmentAlloc(uint8_t *newAlloc) { _alloc = newAlloc; }
-   void setSegmentTop(uint8_t *newTop)     { _top = newTop; }
+   void setSegmentBase(uint8_t *newBase);
+   void setSegmentAlloc(uint8_t *newAlloc);
+   void setSegmentTop(uint8_t *newTop);
 
    // memory is backed by something else
    void free(TR::CodeCacheManager *manager);

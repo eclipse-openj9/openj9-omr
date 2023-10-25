@@ -111,13 +111,10 @@ JitBuilder::CodeCacheManager::allocateCodeCacheSegment(size_t segmentSize,
       #undef NO_MAP_ANONYMOUS
    #endif
 #endif /* OMR_OS_WINDOWS */
-#if defined(OMR_ARCH_AARCH64) && defined(OSX)
-   TR::CodeCacheMemorySegment *memSegment = (TR::CodeCacheMemorySegment *) malloc(sizeof(TR::CodeCacheMemorySegment));
-   new (memSegment) TR::CodeCacheMemorySegment(memorySlab, reinterpret_cast<uint8_t *>(memorySlab) + codeCacheSizeToAllocate);
-#else  /* OMR_ARCH_AARCH64 && OSX */
+   omrthread_jit_write_protect_disable();
    TR::CodeCacheMemorySegment *memSegment = (TR::CodeCacheMemorySegment *) ((size_t)memorySlab + codeCacheSizeToAllocate - sizeof(TR::CodeCacheMemorySegment));
    new (memSegment) TR::CodeCacheMemorySegment(memorySlab, reinterpret_cast<uint8_t *>(memSegment));
-#endif
+   omrthread_jit_write_protect_enable();
    return memSegment;
    }
 
@@ -128,9 +125,6 @@ JitBuilder::CodeCacheManager::freeCodeCacheSegment(TR::CodeCacheMemorySegment * 
    VirtualFree(memSegment->_base, 0, MEM_RELEASE); // second arg must be zero when calling with MEM_RELEASE
 #elif defined(J9ZOS390)
    free(memSegment->_base);
-#elif defined(OMR_ARCH_AARCH64) && defined(OSX)
-   munmap(memSegment->_base, memSegment->_top - memSegment->_base);
-   free(memSegment);
 #else
    munmap(memSegment->_base, memSegment->_top - memSegment->_base + sizeof(TR::CodeCacheMemorySegment));
 #endif

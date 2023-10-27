@@ -507,7 +507,12 @@ class SymbolReferenceTable
        */
       defaultValueSymbol,
 
-      OMRlastPrintableCommonNonhelperSymbol = defaultValueSymbol,
+      /** \brief
+       * Dispatch directly to a dynamically-specified method.
+       */
+      jitDispatchJ9MethodSymbol,
+
+      OMRlastPrintableCommonNonhelperSymbol = jitDispatchJ9MethodSymbol,
 
       firstPerCodeCacheHelperSymbol,
       lastPerCodeCacheHelperSymbol = firstPerCodeCacheHelperSymbol + TR_numCCPreLoadedCode - 1,

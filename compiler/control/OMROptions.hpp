@@ -927,7 +927,7 @@ enum TR_CompilationOptions
    // Available                                       = 0x00000200 + 29,
    TR_DisableSupportForCpuSpentInCompilation          = 0x00000400 + 29,
    TR_DisableSwitchAwayFromProfilingForHotAndVeryhot  = 0x00000800 + 29,
-   // Available                                       = 0x00001000 + 29,
+   TR_UseLowerCountsForNonSCCMethodsDuringStartup     = 0x00001000 + 29,
    TR_UseHigherCountsForNonSCCMethods                 = 0x00002000 + 29,
    TR_UseHigherMethodCountsAfterStartup               = 0x00004000 + 29,
    TR_DisableNextGenHCR                               = 0x00008000 + 29,

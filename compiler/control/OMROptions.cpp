@@ -634,6 +634,7 @@ TR::OptionTable OMR::Options::_jitOptions[] = {
    {"dontUseHigherCountsForNonSCCMethods", "M\tDo not use the default high counts for methods belonging to classes not in SCC", RESET_OPTION_BIT(TR_UseHigherCountsForNonSCCMethods), "F", NOT_IN_SUBSET },
    {"dontUseHigherMethodCountsAfterStartup", "M\tDo not use the default high counts for methods after startup in AOT mode", RESET_OPTION_BIT(TR_UseHigherMethodCountsAfterStartup), "F", NOT_IN_SUBSET },
    {"dontUseIdleTime",                    "M\tDo not use cpu idle time to compile more aggressively", RESET_OPTION_BIT(TR_UseIdleTime), "F", NOT_IN_SUBSET },
+   {"dontUseLowerCountsForNonSCCMethodsDuringStartup", "M\tDo not use lower counts for methods belonging to classes not in SCC", RESET_OPTION_BIT(TR_UseLowerCountsForNonSCCMethodsDuringStartup), "F", NOT_IN_SUBSET },
    {"dontUsePersistentIprofiler",         "M\tdon't use iprofiler data stored int he shared cache, even if it is available", SET_OPTION_BIT(TR_DoNotUsePersistentIprofiler), "F"},
    {"dontUseRIOnlyForLargeQSZ",           "M\tUse RI regardless of the compilation queue size", RESET_OPTION_BIT(TR_UseRIOnlyForLargeQSZ), "F", NOT_IN_SUBSET },
    {"dontVaryInlinerAggressivenessWithTime", "M\tDo not vary inliner aggressiveness with abstract time", RESET_OPTION_BIT(TR_VaryInlinerAggressivenessWithTime), "F", NOT_IN_SUBSET },
@@ -1283,6 +1284,7 @@ TR::OptionTable OMR::Options::_jitOptions[] = {
    {"useHigherMethodCountsAfterStartup", "M\tuse the default high counts for methods after startup in AOT mode", SET_OPTION_BIT(TR_UseHigherMethodCountsAfterStartup), "F", NOT_IN_SUBSET },
    {"useIdleTime", "M\tuse cpu idle time to compile more aggressively", SET_OPTION_BIT(TR_UseIdleTime), "F", NOT_IN_SUBSET },
    {"useILValidator", "O\tuse the new ILValidator to check IL instead of the old TreeVerifier", SET_OPTION_BIT(TR_UseILValidator), "F"},
+   {"useLowerCountsForNonSCCMethodsDuringStartup", "M\tUse lower counts for methods belonging to classes not present in SCC", SET_OPTION_BIT(TR_UseLowerCountsForNonSCCMethodsDuringStartup), "F", NOT_IN_SUBSET },
    {"useLowerMethodCounts",          "M\tuse the original initial counts for methods", SET_OPTION_BIT(TR_UseLowerMethodCounts), "F"},
    {"useLowPriorityQueueDuringCLP",  "O\tplace cold compilations due to classLoadPhase "
                                      "in the low priority queue to be compiled later",
@@ -2699,6 +2701,7 @@ OMR::Options::jitPreProcess()
       self()->setOption(TR_EnableVirtualScratchMemory, true);
 
       self()->setOption(TR_UseHigherCountsForNonSCCMethods);
+      self()->setOption(TR_UseLowerCountsForNonSCCMethodsDuringStartup);
       self()->setOption(TR_UseHigherMethodCountsAfterStartup);
 
       // On Linux we use this option so that, if the application doesn't send a startup hint
@@ -4276,6 +4279,7 @@ OMR::Options::setCounts()
    if (_countsAreProvidedByUser)
       {
       TR::Options::getCmdLineOptions()->setOption(TR_ReduceCountsForMethodsCompiledDuringStartup, false);
+      TR::Options::getCmdLineOptions()->setOption(TR_UseLowerCountsForNonSCCMethodsDuringStartup, false);
       }
 
    // Set up default count string if none was specified
@@ -5320,6 +5324,8 @@ void OMR::Options::setAggressiveThroughput()
 #ifdef J9_PROJECT_SPECIFIC
    //TR::Options::_bigAppThreshold = 3000;
 #endif
+   // Lower counts has the potential of reducing long term throughput, so disable this option
+   self()->setOption(TR_UseLowerCountsForNonSCCMethodsDuringStartup, false);
    }
 
 

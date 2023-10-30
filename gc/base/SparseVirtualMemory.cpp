@@ -45,14 +45,15 @@
  ****************************************
  */
 
-MM_SparseVirtualMemory*
+MM_SparseVirtualMemory *
 MM_SparseVirtualMemory::newInstance(MM_EnvironmentBase* env, uint32_t memoryCategory, MM_Heap *in_heap)
 {
+	MM_GCExtensionsBase *extensions = env->getExtensions();
 	MM_SparseVirtualMemory* vmem = NULL;
 	vmem = (MM_SparseVirtualMemory*)env->getForge()->allocate(sizeof(MM_SparseVirtualMemory), OMR::GC::AllocationCategory::FIXED, OMR_GET_CALLSITE());
 
 	if (vmem) {
-		new (vmem) MM_SparseVirtualMemory(env, in_heap->getPageSize(), in_heap);
+		new (vmem) MM_SparseVirtualMemory(env, extensions->sparseHeapPageSize, extensions->sparseHeapPageFlags, in_heap);
 		if (!vmem->initialize(env, memoryCategory)) {
 			vmem->kill(env);
 			vmem = NULL;

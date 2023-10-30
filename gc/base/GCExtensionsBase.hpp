@@ -281,10 +281,13 @@ public:
 #endif /* OMR_GC_DOUBLE_MAP_ARRAYLETS */
 	bool isVirtualLargeObjectHeapRequested;
 	bool isVirtualLargeObjectHeapEnabled;
-	uintptr_t requestedPageSize;
-	uintptr_t requestedPageFlags;
-	uintptr_t gcmetadataPageSize;
-	uintptr_t gcmetadataPageFlags;
+
+	uintptr_t requestedPageSize;	/**< Memory page size for Object Heap */
+	uintptr_t requestedPageFlags;	/**< Memory page flags for Object Heap */
+	uintptr_t gcmetadataPageSize;	/**< Memory page size for GC Meta data */
+	uintptr_t gcmetadataPageFlags;	/**< Memory page flags for GC Meta data */
+	uintptr_t sparseHeapPageSize;	/**< Memory page size for Sparse Object Heap */
+	uintptr_t sparseHeapPageFlags;	/**< Memory page flags for Sparse Object Heap */
 
 #if defined(OMR_GC_MODRON_SCAVENGER)
 	MM_SublistPool rememberedSet;
@@ -1516,6 +1519,8 @@ public:
 		, requestedPageFlags(OMRPORT_VMEM_PAGE_FLAG_NOT_USED)
 		, gcmetadataPageSize(0)
 		, gcmetadataPageFlags(OMRPORT_VMEM_PAGE_FLAG_NOT_USED)
+		, sparseHeapPageSize(0)
+		, sparseHeapPageFlags(OMRPORT_VMEM_PAGE_FLAG_NOT_USED)
 #if defined(OMR_GC_MODRON_SCAVENGER)
 		, rememberedSet()
 		, oldHeapSizeOnLastGlobalGC(UDATA_MAX)

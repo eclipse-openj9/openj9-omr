@@ -140,19 +140,19 @@ struct LoopTemps : public TR_Link<LoopTemps>
  * Class TR_LoopVersioner
  * ======================
  *
- * The loop versioner optimization eliminates loop invariant null checks, 
- * bound checks, div checks, checkcasts and inline guards (where 
- * the "this" pointer does not change in the loop) from loops by 
- * placing equivalent tests outside the loop. Also eliminates bound 
- * checks where the range of values of the index inside the loop is 
- * discovered (must be compile-time constant) and checks are inserted 
- * outside the loop that ensure that no bound checks fail inside the loop. 
- * This analysis uses induction variable information found by value 
- * propagation. 
- * 
- * Another versioning test that is emitted ensures the loop will not 
- * run for a very long period of time (in which case the async check 
- * inside the loop can be removed). This special versioning test depends 
+ * The loop versioner optimization eliminates loop invariant null checks,
+ * bound checks, div checks, checkcasts and inline guards (where
+ * the "this" pointer does not change in the loop) from loops by
+ * placing equivalent tests outside the loop. Also eliminates bound
+ * checks where the range of values of the index inside the loop is
+ * discovered (must be compile-time constant) and checks are inserted
+ * outside the loop that ensure that no bound checks fail inside the loop.
+ * This analysis uses induction variable information found by value
+ * propagation.
+ *
+ * Another versioning test that is emitted ensures the loop will not
+ * run for a very long period of time (in which case the async check
+ * inside the loop can be removed). This special versioning test depends
  * on the number of trees (code) inside the loop.
  *
  *
@@ -744,6 +744,9 @@ class TR_LoopVersioner : public TR_LoopTransformer
 
       /// The result of the analysis to say whether OSR guards can be versioned.
       bool _osrGuardVersioningOK;
+
+      // Whether or not conditional is folded in the duplicated loop.
+      bool _foldConditionalInDuplicatedLoop;
       };
 
    class Hoist : public LoopImprovement
@@ -1144,10 +1147,10 @@ class TR_LoopVersioner : public TR_LoopTransformer
  * Class TR_LoopSpecializer
  * ========================
  *
- * The loop specializer optimization replaces loop-invariant expressions 
- * that are profiled and found to be constants, by the constant value 
- * after inserting a test outside the loop that compares the value to 
- * the constant. Note that this cannot be done in the the absence of 
+ * The loop specializer optimization replaces loop-invariant expressions
+ * that are profiled and found to be constants, by the constant value
+ * after inserting a test outside the loop that compares the value to
+ * the constant. Note that this cannot be done in the the absence of
  * value profiling infrastructure.
  */
 

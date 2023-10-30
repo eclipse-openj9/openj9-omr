@@ -84,8 +84,8 @@ protected:
 	bool initialize(MM_EnvironmentBase* env, uint32_t memoryCategory);
 	void tearDown(MM_EnvironmentBase *env);
 
-	MM_SparseVirtualMemory(MM_EnvironmentBase* env, uintptr_t pageSize, MM_Heap *in_heap)
-		: MM_VirtualMemory(env, env->getExtensions()->heapAlignment, pageSize, env->getExtensions()->requestedPageFlags, 0, OMRPORT_VMEM_MEMORY_MODE_READ | OMRPORT_VMEM_MEMORY_MODE_WRITE)
+	MM_SparseVirtualMemory(MM_EnvironmentBase* env, uintptr_t pageSize, uintptr_t pageFlags, MM_Heap *in_heap)
+		: MM_VirtualMemory(env, env->getExtensions()->heapAlignment, pageSize, pageFlags, 0, OMRPORT_VMEM_MEMORY_MODE_READ | OMRPORT_VMEM_MEMORY_MODE_WRITE)
 		, _heap(in_heap)
 		, _sparseDataPool(NULL)
 		, _largeObjectVirtualMemoryMutex(NULL)

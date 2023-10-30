@@ -135,6 +135,10 @@ MM_GCExtensionsBase::initialize(MM_EnvironmentBase* env)
 	gcmetadataPageSize = pageSizes[0];
 	gcmetadataPageFlags = OMRPORT_VMEM_PAGE_FLAG_NOT_USED;
 
+	sparseHeapPageSize = pageSizes[0];
+	sparseHeapPageFlags = OMRPORT_VMEM_PAGE_FLAG_NOT_USED;
+
+
 #define SIXTY_FOUR_KB	((uintptr_t)64 * 1024)
 #define ONE_MB			((uintptr_t)1 * 1024 * 1024)
 #define TWO_MB			((uintptr_t)2 * 1024 * 1024)
@@ -160,6 +164,10 @@ MM_GCExtensionsBase::initialize(MM_EnvironmentBase* env)
 		gcmetadataPageFlags = pageFlags[0];
 	}
 
+	if (!validateDefaultPageParameters(sparseHeapPageSize, sparseHeapPageFlags, pageSizes, pageFlags)) {
+		sparseHeapPageSize = pageSizes[0];
+		sparseHeapPageFlags = pageFlags[0];
+	}
 
 	if (!_forge.initialize(env->getPortLibrary())) {
 		goto failed;

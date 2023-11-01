@@ -589,7 +589,7 @@ MM_ParallelGlobalGC::shouldCompactThisCycle(MM_EnvironmentBase *env, MM_Allocate
 	 * a compact we always honour it in order to produce optimal heap dumps
 	 */
 	if (J9MMCONSTANT_EXPLICIT_GC_RASDUMP_COMPACT == gcCode.getCode()) {
-		compactReason = COMPACT_FORCED_GC;
+		compactReason = COMPACT_RASDUMP;
 		goto compactionReqd;
 	}	
 	

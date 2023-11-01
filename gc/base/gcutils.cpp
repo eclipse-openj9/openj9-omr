@@ -87,6 +87,8 @@ getCompactionReasonAsString(CompactReason reason)
 			return "page granularity fragmentation";	
 		case COMPACT_MICRO_FRAG:
 			return "micro fragmentation";	
+		case COMPACT_RASDUMP:
+			return "rasdump";
 		default:
 			return "unknown";
 	}

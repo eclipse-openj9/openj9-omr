@@ -42,7 +42,7 @@ OMR::Monitor::operator delete(void *p)
    }
 
 TR::Monitor *
-OMR::Monitor::create(char *name)
+OMR::Monitor::create(const char *name)
    {
    TR::Monitor * monitor = new TR::Monitor();
    monitor->init(name);
@@ -61,7 +61,7 @@ OMR::Monitor::self()
    }
 
 bool
-OMR::Monitor::init(char *name)
+OMR::Monitor::init(const char *name)
    {
    _name = name;
 #if defined(OMR_OS_WINDOWS)

@@ -37,10 +37,10 @@ class Delimiter
    Delimiter(
          TR::Compilation * comp,
          bool trace,
-         char * tag,
-         char * comment0 = NULL,
-         char * comment1 = NULL,
-         char * comment2 = NULL) :
+         const char * tag,
+         const char * comment0 = NULL,
+         const char * comment1 = NULL,
+         const char * comment2 = NULL) :
       _tag(tag),
       _comp(comp),
       _trace(trace)
@@ -81,7 +81,7 @@ class Delimiter
 
    // pin an address is good enough
    // char _buffer[tagsize];
-   char * _tag;
+   const char * _tag;
 
    TR::Compilation *_comp;
 

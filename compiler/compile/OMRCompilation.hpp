@@ -727,8 +727,8 @@ public:
    //
    int32_t getPrevSymRefTabSize() { return _prevSymRefTabSize; }
    void setPrevSymRefTabSize( int32_t prevSize ) { _prevSymRefTabSize = prevSize; }
-   void dumpMethodTrees(char *title, TR::ResolvedMethodSymbol * = 0);
-   void dumpMethodTrees(char *title1, const char *title2, TR::ResolvedMethodSymbol * = 0);
+   void dumpMethodTrees(const char *title, TR::ResolvedMethodSymbol * = 0);
+   void dumpMethodTrees(const char *title1, const char *title2, TR::ResolvedMethodSymbol * = 0);
    void dumpFlowGraph( TR::CFG * = 0);
 
    bool getAddressEnumerationOption(TR_CompilationOptions o) {return _options->getAddressEnumerationOption(o);}

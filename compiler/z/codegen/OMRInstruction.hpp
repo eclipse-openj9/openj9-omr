@@ -241,7 +241,7 @@ class OMR_EXTENSIBLE Instruction : public OMR::Instruction
    const char *getName(TR_Debug * debug);
    bool isWillBePatched() { return (_index & WillBePatched) != 0; }
    void setWillBePatched() { _index |= WillBePatched; }
-   virtual char *description() { return "S390"; }
+   virtual const char *description() { return "S390"; }
 
 
    private:

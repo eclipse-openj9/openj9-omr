@@ -65,7 +65,7 @@ class OMR_EXTENSIBLE Instruction : public OMR::Instruction
    Instruction(TR::CodeGenerator *cg, TR::InstOpCode::Mnemonic op, TR::Node *node = 0);
    Instruction(TR::CodeGenerator *cg, TR::Instruction *precedingInstruction, TR::InstOpCode::Mnemonic op, TR::Node *node = 0);
 
-   virtual char *description() { return "PPC"; }
+   virtual const char *description() { return "PPC"; }
    virtual Kind getKind() { return IsNotExtended; }
 
    virtual int32_t estimateBinaryLength(int32_t currentEstimate);

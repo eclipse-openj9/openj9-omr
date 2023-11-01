@@ -44,7 +44,7 @@ class Monitor
    ~Monitor();
 
    TR::Monitor *self();
-   static TR::Monitor *create(char *name);
+   static TR::Monitor *create(const char *name);
    static void destroy(TR::Monitor *monitor);
    void enter();
    int32_t try_enter() { TR_UNIMPLEMENTED(); return 0; }
@@ -56,7 +56,7 @@ class Monitor
    void notifyAll() { TR_UNIMPLEMENTED(); }
    int32_t num_waiting() { TR_UNIMPLEMENTED(); return 0; }
    char const *getName();
-   bool init(char *name);
+   bool init(const char *name);
 
 #if defined(J9ZOS390) || defined(AIXPPC)
    // xlc cannot handle private delete operator
@@ -68,7 +68,7 @@ class Monitor
    void *operator new(size_t size);
    void operator delete(void *p);
 
-   char const *_name;
+   const char *_name;
    MUTEX _monitor;
    };
 

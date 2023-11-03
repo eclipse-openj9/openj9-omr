@@ -268,6 +268,7 @@ public:
    bool skipCheckCasts()                     { return _properties.testAny(CanSkipCheckCasts); }
    bool skipDivChecks()                      { return _properties.testAny(CanSkipDivChecks); }
    bool skipArrayStoreChecks()               { return _properties.testAny(CanSkipArrayStoreChecks); }
+   bool skipNonNullableArrayNullStoreCheck() { return _properties.testAny(CanSkipNonNullableArrayNullStoreCheck); }
    bool skipChecksOnArrayCopies()            { return _properties.testAny(CanSkipChecksOnArrayCopies); }
    bool skipZeroInitializationOnNewarrays()  { return _properties.testAny(CanSkipZeroInitializationOnNewarrays); }
 
@@ -336,7 +337,7 @@ protected:
       CanSkipZeroInitializationOnNewarrays      = 1 << 5,
       CanSkipArrayStoreChecks                   = 1 << 6,
       HasSnapshots                              = 1 << 7,
-      // AVAILABLE                              = 1 << 8,
+      CanSkipNonNullableArrayNullStoreCheck     = 1 << 8,
       CanDirectNativeCall                       = 1 << 9,
       CanReplaceWithHWInstr                     = 1 << 10,
       IsSideEffectFree                          = 1 << 12,

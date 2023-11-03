@@ -194,13 +194,14 @@ OMR::ResolvedMethodSymbol::ResolvedMethodSymbol(TR_ResolvedMethod * method, TR::
 
    self()->setParameterList();
 
-   _properties.set(CanSkipNullChecks                   , self()->safeToSkipNullChecks());
-   _properties.set(CanSkipBoundChecks                  , self()->safeToSkipBoundChecks());
-   _properties.set(CanSkipCheckCasts                   , self()->safeToSkipCheckCasts());
-   _properties.set(CanSkipDivChecks                    , self()->safeToSkipDivChecks());
-   _properties.set(CanSkipArrayStoreChecks             , self()->safeToSkipArrayStoreChecks());
-   _properties.set(CanSkipChecksOnArrayCopies          , self()->safeToSkipChecksOnArrayCopies());
-   _properties.set(CanSkipZeroInitializationOnNewarrays, self()->safeToSkipZeroInitializationOnNewarrays());
+   _properties.set(CanSkipNullChecks                    , self()->safeToSkipNullChecks());
+   _properties.set(CanSkipBoundChecks                   , self()->safeToSkipBoundChecks());
+   _properties.set(CanSkipCheckCasts                    , self()->safeToSkipCheckCasts());
+   _properties.set(CanSkipDivChecks                     , self()->safeToSkipDivChecks());
+   _properties.set(CanSkipArrayStoreChecks              , self()->safeToSkipArrayStoreChecks());
+   _properties.set(CanSkipNonNullableArrayNullStoreCheck, self()->safeToSkipNonNullableArrayNullStoreCheck());
+   _properties.set(CanSkipChecksOnArrayCopies           , self()->safeToSkipChecksOnArrayCopies());
+   _properties.set(CanSkipZeroInitializationOnNewarrays , self()->safeToSkipZeroInitializationOnNewarrays());
    }
 
 

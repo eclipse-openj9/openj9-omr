@@ -179,12 +179,12 @@ OMR::ARM64::CodeGenerator::initialize()
    cg->setSupportsCompactedLocals();
    if (!TR::Compiler->om.canGenerateArraylets())
       {
-      static const bool disableArrayCmp = feGetEnv("TR_aarch64DisableArrayCmp") != NULL;
+      static const bool disableArrayCmp = feGetEnv("TR_DisableArrayCmp") != NULL;
       if (!disableArrayCmp)
          {
          cg->setSupportsArrayCmp();
          }
-      static const bool disableArrayCmpLen = feGetEnv("TR_aarch64DisableArrayCmpLen") != NULL;
+      static const bool disableArrayCmpLen = feGetEnv("TR_DisableArrayCmpLen") != NULL;
       if (!disableArrayCmpLen)
          {
          cg->setSupportsArrayCmpLen();

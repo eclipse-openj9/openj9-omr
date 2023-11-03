@@ -379,8 +379,16 @@ OMR::X86::CodeGenerator::initializeX86(TR::Compilation *comp)
 
    if (!TR::Compiler->om.canGenerateArraylets())
       {
-      self()->setSupportsArrayCmp();
-      self()->setSupportsArrayCmpLen();
+      static const bool disableArrayCmp = feGetEnv("TR_DisableArrayCmp") != NULL;
+      if (!disableArrayCmp)
+         {
+         self()->setSupportsArrayCmp();
+         }
+      static const bool disableArrayCmpLen = feGetEnv("TR_DisableArrayCmpLen") != NULL;
+      if (!disableArrayCmpLen)
+         {
+         self()->setSupportsArrayCmpLen();
+         }
       self()->setSupportsPrimitiveArrayCopy();
       if (!comp->getOption(TR_DisableArraySetOpts))
          {

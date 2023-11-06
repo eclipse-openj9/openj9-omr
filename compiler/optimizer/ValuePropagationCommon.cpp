@@ -1093,7 +1093,7 @@ void OMR::ValuePropagation::transformArrayCopyCall(TR::Node *node)
           !comp()->getOption(TR_DisableMultiLeafArrayCopy))
          {
          TR_ResolvedMethod *caller = node->getSymbolReference()->getOwningMethod(comp());
-         char *sig = "multiLeafArrayCopy";
+         const char *sig = "multiLeafArrayCopy";
          if (caller && strncmp(caller->nameChars(), sig, strlen(sig)) == 0)
             {
             if (trace())

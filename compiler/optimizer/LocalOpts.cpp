@@ -8970,7 +8970,7 @@ TR_BlockManipulator::breakFallThrough(TR::Block *faller, TR::Block *fallee, bool
 
 // used by trivialDeadTreeRemoval opt pass and during CodeGenPrep to remove nodes treetops that have no intervening def
 void
-TR_TrivialDeadTreeRemoval::preProcessTreetop(TR::TreeTop *treeTop, List<TR::TreeTop> &commonedTreeTopList, char *optDetails, TR::Compilation *comp)
+TR_TrivialDeadTreeRemoval::preProcessTreetop(TR::TreeTop *treeTop, List<TR::TreeTop> &commonedTreeTopList, const char *optDetails, TR::Compilation *comp)
    {
    TR::Node *ttNode = treeTop->getNode();
    if (ttNode->getOpCodeValue() == TR::treetop &&
@@ -9017,7 +9017,7 @@ TR_TrivialDeadTreeRemoval::preProcessTreetop(TR::TreeTop *treeTop, List<TR::Tree
    }
 
 void
-TR_TrivialDeadTreeRemoval::postProcessTreetop(TR::TreeTop *treeTop, List<TR::TreeTop> &commonedTreeTopList, char *optDetails, TR::Compilation *comp)
+TR_TrivialDeadTreeRemoval::postProcessTreetop(TR::TreeTop *treeTop, List<TR::TreeTop> &commonedTreeTopList, const char *optDetails, TR::Compilation *comp)
    {
    if (treeTop->isPossibleDef())
       {
@@ -9028,7 +9028,7 @@ TR_TrivialDeadTreeRemoval::postProcessTreetop(TR::TreeTop *treeTop, List<TR::Tre
    }
 
 void
-TR_TrivialDeadTreeRemoval::processCommonedChild(TR::Node *child, TR::TreeTop *treeTop, List<TR::TreeTop> &commonedTreeTopList, char *optDetails, TR::Compilation *comp)
+TR_TrivialDeadTreeRemoval::processCommonedChild(TR::Node *child, TR::TreeTop *treeTop, List<TR::TreeTop> &commonedTreeTopList, const char *optDetails, TR::Compilation *comp)
    {
    if (child->getReferenceCount() > 1)
       {

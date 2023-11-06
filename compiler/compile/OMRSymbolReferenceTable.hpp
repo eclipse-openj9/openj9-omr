@@ -720,7 +720,7 @@ class SymbolReferenceTable
 
    int32_t getNumInternalPointers() { return _numInternalPointers; }
 
-   TR::SymbolReference * methodSymRefFromName(TR::ResolvedMethodSymbol *owningMethodSymbol, char *className, char *methodName, char *signature, TR::MethodSymbol::Kinds kind, int32_t cpIndex=-1);
+   TR::SymbolReference *methodSymRefFromName(TR::ResolvedMethodSymbol *owningMethodSymbol, const char *className, const char *methodName, const char *signature, TR::MethodSymbol::Kinds kind, int32_t cpIndex=-1);
 
    TR::SymbolReference *createSymbolReference(TR::Symbol *sym, intptr_t o = 0);
 

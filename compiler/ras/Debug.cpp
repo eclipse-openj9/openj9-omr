@@ -1915,7 +1915,7 @@ TR_Debug::getStaticName(TR::SymbolReference * symRef)
       if (!sym->addressIsCPIndexOfStatic() && staticAddress)
          {
          int32_t len;
-         char * name = TR::Compiler->cls.classNameChars(comp(), symRef, len);
+         const char *name = TR::Compiler->cls.classNameChars(comp(), symRef, len);
          if (name)
             {
             char * s = (char *)_comp->trMemory()->allocateHeapMemory(len+1);
@@ -3624,7 +3624,7 @@ TR_Debug::dump(TR::FILE *pOutFile, TR_CHTable * chTable)
          TR_OpaqueClassBlock * clazz = chTable->_classes->element(i);
          int32_t len;
 
-         char *sig = TR::Compiler->cls.classNameChars(comp(), clazz, len);
+         const char *sig = TR::Compiler->cls.classNameChars(comp(), clazz, len);
 
          if (len>255) len = 255;
          strncpy(buf, sig, len);

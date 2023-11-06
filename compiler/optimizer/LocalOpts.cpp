@@ -8680,7 +8680,7 @@ TR_ColdBlockMarker::hasNotYetRun(TR::Node *node)
           node->getOpCodeValue() == TR::loadaddr)
          {
          int32_t len;
-         char *name = TR::Compiler->cls.classNameChars(comp(), node->getSymbolReference(), len);
+         const char *name = TR::Compiler->cls.classNameChars(comp(), node->getSymbolReference(), len);
          if (name)
             {
             TR::HeuristicRegion heuristicRegion(comp());

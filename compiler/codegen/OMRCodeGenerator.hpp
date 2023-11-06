@@ -1192,21 +1192,21 @@ public:
                                           uint8_t *target,
                                           uint8_t *target2,
                                           TR_ExternalRelocationTargetKind kind,
-                                          char *generatingFileName,
+                                          const char *generatingFileName,
                                           uintptr_t generatingLineNumber,
                                           TR::Node *node) {}
    void addProjectSpecializedPairRelocation(uint8_t *location1,
                                           uint8_t *location2,
                                           uint8_t *target,
                                           TR_ExternalRelocationTargetKind kind,
-                                          char *generatingFileName,
+                                          const char *generatingFileName,
                                           uintptr_t generatingLineNumber,
                                           TR::Node *node) {}
    void addProjectSpecializedRelocation(TR::Instruction *instr,
                                           uint8_t *target,
                                           uint8_t *target2,
                                           TR_ExternalRelocationTargetKind kind,
-                                          char *generatingFileName,
+                                          const char *generatingFileName,
                                           uintptr_t generatingLineNumber,
                                           TR::Node *node) {}
 

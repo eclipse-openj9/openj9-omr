@@ -322,12 +322,12 @@ TR_Debug::scanInlineFilters(FILE * inlineFile, int32_t & lineNumber, TR::Compila
  *     The unmodified parameter option if there is a problem with the file, aborting JIT initialization.
  *     Otherwise a pointer to the next comma or NULL.
  */
-char *
-TR_Debug::inlinefileOption(char *option, void *base, TR::OptionTable *entry, TR::Options * cmdLineOptions)
+const char *
+TR_Debug::inlinefileOption(const char *option, void *base, TR::OptionTable *entry, TR::Options *cmdLineOptions)
    {
-   char *endOpt = option;
-   char *name = option;
-   char *fail = option;
+   const char *endOpt = option;
+   const char *name = option;
+   const char *fail = option;
 
    // move to the end of this option
    for (; *endOpt && *endOpt != ','; endOpt++)
@@ -406,12 +406,12 @@ TR_Debug::inlinefileOption(char *option, void *base, TR::OptionTable *entry, TR:
  *     The unmodified parameter option if there is a problem with the file, aborting JIT initialization.
  *     Otherwise a pointer to the next comma or NULL.
  */
-char *
-TR_Debug::limitfileOption(char *option, void *base, TR::OptionTable *entry, TR::Options * cmdLineOptions, bool loadLimit, TR_PseudoRandomNumbersListElement **pseudoRandomListHeadPtr)
+const char *
+TR_Debug::limitfileOption(const char *option, void *base, TR::OptionTable *entry, TR::Options * cmdLineOptions, bool loadLimit, TR_PseudoRandomNumbersListElement **pseudoRandomListHeadPtr)
    {
-   char *endOpt = option;
-   char *name = option;
-   char *fail = option;
+   char *endOpt = (char *)option;
+   const char *name = option;
+   const char *fail = option;
 
    bool range = false;
    if (*endOpt == '(')
@@ -611,10 +611,10 @@ TR_Debug::limitfileOption(char *option, void *base, TR::OptionTable *entry, TR::
    return endOpt;
    }
 
-char *
-TR_Debug::limitOption(char *option, void *base, TR::OptionTable *entry, TR::Options * cmdLineOptions, TR::CompilationFilters *&filters)
+const char *
+TR_Debug::limitOption(const char *option, void *base, TR::OptionTable *entry, TR::Options * cmdLineOptions, TR::CompilationFilters *&filters)
    {
-   char *p = option;
+   char *p = (char *)option;
 
    filters = findOrCreateFilters(filters);
    TR_FilterBST *filter = addFilter(p, static_cast<int32_t>(entry->parm1), 0, 0, filters);
@@ -682,8 +682,8 @@ TR_Debug::limitOption(char *option, void *base, TR::OptionTable *entry, TR::Opti
    return p;
    }
 
-char *
-TR_Debug::limitOption(char *option, void *base, TR::OptionTable *entry, TR::Options * cmdLineOptions, bool loadLimit)
+const char *
+TR_Debug::limitOption(const char *option, void *base, TR::OptionTable *entry, TR::Options * cmdLineOptions, bool loadLimit)
    {
    if (loadLimit)
       {

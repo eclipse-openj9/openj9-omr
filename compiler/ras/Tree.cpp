@@ -1729,7 +1729,7 @@ TR_Debug::printNodeInfo(TR::Node * node, TR_PrettyPrinterString& output, bool pr
          {
          output.appends("   ; array type is ");
 
-         char *typeStr;
+         const char *typeStr;
          switch (node->getInt())
             {
             case 4:

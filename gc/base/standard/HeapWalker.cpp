@@ -189,7 +189,7 @@ MM_HeapWalker::allObjectSlotsDo(MM_EnvironmentBase *env, MM_HeapWalkerSlotFunc f
 		modifiedWalkFlags &= ~J9_MU_WALK_NEW_AND_REMEMBERED_ONLY;
 	}
 
-	allObjectsDo(env, heapWalkerObjectSlotsDo, (void *)&slotObjectDoUserData, modifiedWalkFlags, parallel, prepareHeapForWalk);
+	allObjectsDo(env, heapWalkerObjectSlotsDo, (void *)&slotObjectDoUserData, modifiedWalkFlags, parallel, prepareHeapForWalk, false);
 
 #if defined(OMR_GC_MODRON_SCAVENGER)
 	/* If J9_MU_WALK_NEW_AND_REMEMBERED_ONLY is specified, allObjectsDo will only walk
@@ -205,7 +205,7 @@ MM_HeapWalker::allObjectSlotsDo(MM_EnvironmentBase *env, MM_HeapWalkerSlotFunc f
  * Walk all objects in the heap in a single threaded linear fashion.
  */
 void
-MM_HeapWalker::allObjectsDo(MM_EnvironmentBase *env, MM_HeapWalkerObjectFunc function, void *userData, uintptr_t walkFlags, bool parallel, bool prepareHeapForWalk)
+MM_HeapWalker::allObjectsDo(MM_EnvironmentBase *env, MM_HeapWalkerObjectFunc function, void *userData, uintptr_t walkFlags, bool parallel, bool prepareHeapForWalk, bool includeDeadObjects)
 {
 	uintptr_t typeFlags = 0;
 
@@ -225,7 +225,7 @@ MM_HeapWalker::allObjectsDo(MM_EnvironmentBase *env, MM_HeapWalkerObjectFunc fun
 		if (typeFlags == (region->getTypeFlags() & typeFlags)) {
 			/* Optimization to avoid virtual dispatch for every slot in the system */
 			omrobjectptr_t object = NULL;
-			GC_ObjectHeapIteratorAddressOrderedList liveObjectIterator(extensions, region, false);
+			GC_ObjectHeapIteratorAddressOrderedList liveObjectIterator(extensions, region, includeDeadObjects);
 
 			while (NULL != (object = liveObjectIterator.nextObject())) {
 				function(omrVMThread, region, object, userData);

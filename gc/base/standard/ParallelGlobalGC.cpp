@@ -185,6 +185,38 @@ fixObject(OMR_VMThread *omrVMThread, MM_HeapRegionDescriptor *region, omrobjectp
 	}
 }
 
+struct HeapSizes {
+	uintptr_t freeBytes;
+	uintptr_t objectBytes;
+};
+
+static void
+clearFreeEntry(OMR_VMThread *omrVMThread, MM_HeapRegionDescriptor *region, omrobjectptr_t object, void *userData)
+{
+	MM_GCExtensionsBase *extensions = MM_GCExtensionsBase::getExtensions(omrVMThread->_vm);
+	MM_ParallelGlobalGC *collector = (MM_ParallelGlobalGC *)extensions->getGlobalCollector();
+	HeapSizes *counter = (HeapSizes *)userData;
+
+	if (extensions->objectModel.isDeadObject(object)) {
+		if (extensions->objectModel.isSingleSlotDeadObject(object)) {
+			counter->freeBytes += extensions->objectModel.getSizeInBytesSingleSlotDeadObject(object);
+		} else {
+			/* Clear both linked and unlinked free entries. */
+			memset(
+				  (void *)((uintptr_t)object + sizeof(MM_HeapLinkedFreeHeader)),
+				  0,
+				  extensions->objectModel.getSizeInBytesMultiSlotDeadObject(object) - sizeof(MM_HeapLinkedFreeHeader));
+
+			counter->freeBytes += extensions->objectModel.getSizeInBytesMultiSlotDeadObject(object);
+		}
+	} else {
+		/* An assertion is used to ensure that for every object which is not
+		 * a hole (not cleared), it must be a marked object.
+		 */
+		counter->objectBytes += extensions->objectModel.getConsumedSizeInBytesWithHeader(object);
+		Assert_MM_true(collector->getMarkingScheme()->isMarked(object));
+	}
+}
 #if defined(OMR_GC_MODRON_SCAVENGER)
 /**
  * Fix the heap if the remembered set for the scavenger is in an overflow state.
@@ -478,7 +510,7 @@ MM_ParallelGlobalGC::mainThreadGarbageCollect(MM_EnvironmentBase *env, MM_Alloca
 			_collectionStatistics._tenureFragmentation |= MACRO_FRAGMENTATION;
 		}
 
-		mainThreadCompact(env, allocDescription, rebuildMarkBits);
+		mainThreadCompact(env, allocDescription, rebuildMarkBits || env->_cycleState->_gcCode.shouldClearHeap());
 		_collectionStatistics._tenureFragmentation = NO_FRAGMENTATION;
 		if (_extensions->processLargeAllocateStats) {
 			processLargeAllocateStatsAfterCompact(env);
@@ -506,8 +538,11 @@ MM_ParallelGlobalGC::mainThreadGarbageCollect(MM_EnvironmentBase *env, MM_Alloca
 	compactedThisCycle = _compactThisCycle;
 #endif /* OMR_GC_MODRON_COMPACTION */
 
-	/* If the delegate has isAllowUserHeapWalk set, fix the heap so that it can be walked */
-	if (_delegate.isAllowUserHeapWalk() || env->_cycleState->_gcCode.isRASDumpGC()) {
+	/* If the delegate has isAllowUserHeapWalk set, or should prepare for a snapshot,
+	 * fix the heap so that it can be walked
+	 */
+	MM_GCCode gcCode = env->_cycleState->_gcCode;
+	if (_delegate.isAllowUserHeapWalk() || gcCode.isRASDumpGC() || gcCode.shouldClearHeap()) {
 		if (!_fixHeapForWalkCompleted) {
 #if defined(OMR_GC_MODRON_COMPACTION)
 			if (compactedThisCycle) {
@@ -523,7 +558,6 @@ MM_ParallelGlobalGC::mainThreadGarbageCollect(MM_EnvironmentBase *env, MM_Alloca
 			_fixHeapForWalkCompleted = true;
 		}
 	}
-
 	_delegate.mainThreadGarbageCollectFinished(env, compactedThisCycle);
 
 #if defined(OMR_GC_MODRON_COMPACTION)
@@ -1092,6 +1126,10 @@ MM_ParallelGlobalGC::internalPostCollect(MM_EnvironmentBase *env, MM_MemorySubSp
 	MM_GlobalCollector::internalPostCollect(env, subSpace);
 
 	tenureMemoryPoolPostCollect(env);
+	/* The clear pass should execute before reporting the cycle end, where heap walks and fixups are reported */
+	if (env->_cycleState->_gcCode.shouldClearHeap()) {
+		clearHeap(env, clearFreeEntry);
+	}
 
 	reportGCCycleFinalIncrementEnding(env);
 	reportGlobalGCIncrementEnd(env);
@@ -1118,7 +1156,6 @@ MM_ParallelGlobalGC::internalPostCollect(MM_EnvironmentBase *env, MM_MemorySubSp
 #if defined(OMR_GC_LARGE_OBJECT_AREA)
 	_extensions->lastGlobalGCFreeBytesLOA = _extensions->heap->getApproximateActiveFreeLOAMemorySize(MEMORY_TYPE_OLD); 
 #endif /* defined (OMR_GC_LARGE_OBJECT_AREA) */
-
 
 #if defined(OMR_ENV_DATA64) && defined(OMR_GC_FULL_POINTERS)
 	if (!env->compressObjectReferences()) {
@@ -1282,7 +1319,7 @@ MM_ParallelGlobalGC::fixHeapForWalk(MM_EnvironmentBase *env, UDATA walkFlags, ui
 	OMRPORT_ACCESS_FROM_ENVIRONMENT(env);
 	U_64 startTime = omrtime_hires_clock();
 
-	_heapWalker->allObjectsDo(env, walkFunction, &fixedObjectCount, walkFlags, true, false);
+	_heapWalker->allObjectsDo(env, walkFunction, &fixedObjectCount, walkFlags, true, false, false);
 
 	_extensions->globalGCStats.fixHeapForWalkTime = omrtime_hires_delta(startTime, omrtime_hires_clock(), OMRPORT_TIME_DELTA_IN_MICROSECONDS);
 	_extensions->globalGCStats.fixHeapForWalkReason = walkReason;
@@ -1290,6 +1327,37 @@ MM_ParallelGlobalGC::fixHeapForWalk(MM_EnvironmentBase *env, UDATA walkFlags, ui
 	Trc_MM_FixHeapForWalk_Exit(env->getLanguageVMThread(), fixedObjectCount);
 
 	return fixedObjectCount;
+}
+
+/**
+ * Clearing all dead multi-slot objects, whether linked or unlinked.
+ * Currently only called at snapshot time.
+ * @param[in] env The environment for the calling thread
+ * @param[in] walkFunction the callback function to operate on each object
+ */
+void
+MM_ParallelGlobalGC::clearHeap(MM_EnvironmentBase *env, MM_HeapWalkerObjectFunc walkFunction)
+{
+	HeapSizes counter = {0, 0};
+	OMRPORT_ACCESS_FROM_ENVIRONMENT(env);
+	U_64 startTime = omrtime_hires_clock();
+
+	/* This is the second heap walk which clears all holes. */
+	_heapWalker->allObjectsDo(env, walkFunction, &counter, MEMORY_TYPE_RAM, false, false, true);
+	/* Report clearing as one pass with the cumulative time of the two heap walks
+	 * including fixHeapForWalk, and clearHeap runs.
+	 */
+	MM_GlobalGCStats stats = _extensions->globalGCStats;
+	stats.fixHeapForWalkTime += omrtime_hires_delta(startTime, omrtime_hires_clock(), OMRPORT_TIME_DELTA_IN_MICROSECONDS);
+	Assert_MM_true(FIXUP_NONE != stats.fixHeapForWalkReason);
+	stats.fixHeapForWalkReason = FIXUP_AND_CLEAR_HEAP;
+
+	Trc_MM_clearheap(env->getLanguageVMThread(), counter.freeBytes, counter.objectBytes);
+	/* Assertion to ensure that all items of the heap are visited, so that
+	 * the sum of sizes of all marked objects and holes is equal to the
+	 * heap size.
+	 */
+	Assert_MM_true(counter.freeBytes + counter.objectBytes == _extensions->heap->getMemorySize());
 }
 
 /* (non-doxygen)
@@ -1899,14 +1967,14 @@ void
 MM_ParallelGlobalGC::poisonHeap(MM_EnvironmentBase *env)
 {
 	/* This will poison only the heap slots */
-	_heapWalker->allObjectsDo(env, poisonReferenceSlots, NULL, 0, true, false);
+	_heapWalker->allObjectsDo(env, poisonReferenceSlots, NULL, 0, true, false, false);
 }
 
 void
 MM_ParallelGlobalGC::healHeap(MM_EnvironmentBase *env)
 {
 	/* This will heal only the heap slots */
-	_heapWalker->allObjectsDo(env, healReferenceSlots, NULL, 0, false, false);
+	_heapWalker->allObjectsDo(env, healReferenceSlots, NULL, 0, false, false, false);
 	/* Don't have the mark map at the start of gc so we'll have to iterate over
 	 * in a sequential manner
 	 */

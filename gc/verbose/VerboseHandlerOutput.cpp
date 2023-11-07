@@ -279,6 +279,8 @@ MM_VerboseHandlerOutput::getHeapFixupReasonString(uintptr_t reason)
 			return "class unloading";
 		case FIXUP_DEBUG_TOOLING:
 			return "debug tooling";
+		case FIXUP_AND_CLEAR_HEAP:
+			return "fixup and clear heap";
 		default:
 			return "unknown";
 	}

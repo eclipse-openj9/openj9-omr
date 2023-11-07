@@ -464,7 +464,8 @@ typedef enum {
 typedef enum {
 	FIXUP_NONE = 0,
 	FIXUP_CLASS_UNLOADING,
-	FIXUP_DEBUG_TOOLING
+	FIXUP_DEBUG_TOOLING,
+	FIXUP_AND_CLEAR_HEAP
 } FixUpReason;
 
 typedef enum {

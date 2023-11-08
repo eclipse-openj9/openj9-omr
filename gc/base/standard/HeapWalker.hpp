@@ -51,7 +51,7 @@ protected:
 
 public:
 	virtual void allObjectSlotsDo(MM_EnvironmentBase *env, MM_HeapWalkerSlotFunc function, void *userData, uintptr_t walkFlags, bool parallel, bool prepareHeapForWalk);
-	virtual void allObjectsDo(MM_EnvironmentBase *env, MM_HeapWalkerObjectFunc function, void *userData, uintptr_t walkFlags, bool parallel, bool prepareHeapForWalk, bool includeDeadObjects);
+	virtual void allObjectsDo(MM_EnvironmentBase *env, MM_HeapWalkerObjectFunc function, void *userData, uintptr_t walkFlags, bool parallel, bool prepareHeapForWalk);
 
 	static MM_HeapWalker *newInstance(MM_EnvironmentBase *env); 	
 	virtual void kill(MM_EnvironmentBase *env);

@@ -147,7 +147,7 @@ MM_ParallelHeapWalker::allObjectsDoParallel(MM_EnvironmentBase *env, MM_HeapWalk
  * otherwise walk all objects in the heap in a single threaded linear fashion.
  */
 void
-MM_ParallelHeapWalker::allObjectsDo(MM_EnvironmentBase *env, MM_HeapWalkerObjectFunc function, void *userData, uintptr_t walkFlags, bool parallel, bool prepareHeapForWalk, bool includeDeadObjects)
+MM_ParallelHeapWalker::allObjectsDo(MM_EnvironmentBase *env, MM_HeapWalkerObjectFunc function, void *userData, uintptr_t walkFlags, bool parallel, bool prepareHeapForWalk)
 {
 	if (parallel) {
 		GC_OMRVMInterface::flushCachesForWalk(env->getOmrVM());
@@ -158,7 +158,7 @@ MM_ParallelHeapWalker::allObjectsDo(MM_EnvironmentBase *env, MM_HeapWalkerObject
 		MM_ParallelObjectDoTask objectDoTask(env, this, function, userData, walkFlags, parallel);
 		env->getExtensions()->dispatcher->run(env, &objectDoTask);
 	} else {
-		MM_HeapWalker::allObjectsDo(env, function, userData, walkFlags, parallel, prepareHeapForWalk, includeDeadObjects);
+		MM_HeapWalker::allObjectsDo(env, function, userData, walkFlags, parallel, prepareHeapForWalk);
 	}
 }
 

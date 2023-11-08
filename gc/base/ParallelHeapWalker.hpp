@@ -59,7 +59,7 @@ public:
 	 * If parallel is set to true, task is dispatched to GC threads and walks the heap segments in parallel,
 	 * otherwise walk all objects in the heap in a single threaded linear fashion.
 	 */
-	virtual void allObjectsDo(MM_EnvironmentBase *env, MM_HeapWalkerObjectFunc function, void *userData, uintptr_t walkFlags, bool parallel, bool prepareHeapForWalk, bool includeDeadObjects);
+	virtual void allObjectsDo(MM_EnvironmentBase *env, MM_HeapWalkerObjectFunc function, void *userData, uintptr_t walkFlags, bool parallel, bool prepareHeapForWalk);
 
 	MM_MarkMap *getMarkMap() {
 		return _markMap;

@@ -85,12 +85,6 @@ public:
 	 * @return true if OOM can be thrown at the end of this GC
 	 */
 	bool isOutOfMemoryGC() const;
-
-	/**
-	 * Determine if the GC should clear bits for objects marked as deleted.
-	 * @return true if we should clear the heap (currently only at snapshot)
-	 */
-	bool shouldClearHeap() const;
 };
 
 #endif /* GCCODE_HPP_ */

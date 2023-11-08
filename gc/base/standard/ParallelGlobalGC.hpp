@@ -284,7 +284,6 @@ public:
 	 *  @param reason fix heap reason
 	 */
 	uintptr_t fixHeapForWalk(MM_EnvironmentBase *env, UDATA walkFlags, uintptr_t walkReason, MM_HeapWalkerObjectFunc walkFunction);
-	void clearHeap(MM_EnvironmentBase *env, MM_HeapWalkerObjectFunc walkFunction);
 	MM_HeapWalker *getHeapWalker() { return _heapWalker; }
 	virtual void prepareHeapForWalk(MM_EnvironmentBase *env);
 

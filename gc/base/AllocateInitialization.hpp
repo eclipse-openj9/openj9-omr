@@ -77,7 +77,6 @@ private:
 
 protected:
 	const uintptr_t _allocationCategory;		/**< language-defined object category used in GC_ObjectModel::initializeAllocation() */
-	const uintptr_t _requestedSizeInBytes;		/**< minimum number of bytes to allocate for object header+instance data */
 	bool _isAllocatable;						/**< this is set if the allocation should not proceed */
 
 	MM_AllocateDescription _allocateDescription;/**< mutable allocation descriptor holds actual allocation terms */
@@ -139,7 +138,6 @@ public:
 	MMINLINE bool isAllocatable() { return _isAllocatable; }
 
 	MMINLINE uintptr_t getAllocationCategory() { return _allocationCategory; }
-	MMINLINE uintptr_t getRequestedSizeInBytes() { return _requestedSizeInBytes; }
 	MMINLINE MM_AllocateDescription *getAllocateDescription() { return &_allocateDescription; }
 
 	MMINLINE bool
@@ -270,9 +268,8 @@ public:
 			uintptr_t objectAllocationFlags = 0
 	) : MM_Base()
 		, _allocationCategory(allocationCategory)
-		, _requestedSizeInBytes(requiredSizeInBytes)
 		, _isAllocatable(true)
-		, _allocateDescription(_requestedSizeInBytes, objectAllocationFlags,
+		, _allocateDescription(requiredSizeInBytes, objectAllocationFlags,
 				0 == (OMR_GC_ALLOCATE_OBJECT_NO_GC & objectAllocationFlags),
 				0 == (OMR_GC_ALLOCATE_OBJECT_NO_GC & objectAllocationFlags))
 	{

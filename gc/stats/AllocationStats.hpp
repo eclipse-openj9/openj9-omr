@@ -101,6 +101,7 @@ public:
 		_arrayletLeafAllocationBytes(0),
 		_allocationCount(0),
 		_allocationBytes(0),
+		_allocationBytesCumulative(0),
 		_ownableSynchronizerObjectCount(0),
 		_continuationObjectCount(0),
 		_discardedBytes(0),

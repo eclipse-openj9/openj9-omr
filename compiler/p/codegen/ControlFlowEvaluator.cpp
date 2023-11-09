@@ -4089,7 +4089,7 @@ static void lookupScheme4(TR::Node *node, TR::CodeGenerator *cg)
    bool        two_reg = isInt64 && cg->comp()->target().is32Bit();
    int32_t *dataTable = NULL;
    int64_t *dataTable64 = NULL;
-   intptr_t  address = NULL;
+   intptr_t  address = 0;
    if (isInt64)
       {
       dataTableSize *= 2;

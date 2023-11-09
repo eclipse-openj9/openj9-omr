@@ -4952,8 +4952,8 @@ void TR_Debug::setupDebugger(void *addr)
          char * Argv[20];
 
          yield();
-         sprintf(cfname, "_%ld_", getpid());
-         sprintf(pp,"%ld", ppid);
+         sprintf(cfname, "_%" OMR_PRId64 "_", (int64_t)getpid());
+         sprintf(pp, "%" OMR_PRId64, (int64_t)ppid);
          Argv[1] = "-a";
          Argv[2] = pp;
          Argv[3] = NULL;

@@ -55,7 +55,7 @@
 
 #define ERROR_RETVAL -1
 #define SUCCESS 0
-#define CheckRet(x) { if ((x) == ERROR_RETVAL) return ERROR_RETVAL; }
+#define CheckRet(x) { if ((x) < 0) return ERROR_RETVAL; }
 
 typedef struct InstanceData {
 	char *buffer;
@@ -67,9 +67,8 @@ typedef struct InstanceData {
  * description - Print a charater to InstanceData buffer
  * parameters  - this   Structure holding the receiving buffer
  *               c      Character to add to buffer
- * returns     - int return code, 0 for success
  *************************************************************************/
-static int
+static void
 pchar(InstanceData *this, int c)
 {
 #if 0
@@ -101,11 +100,10 @@ pchar(InstanceData *this, int c)
 	}
 #endif /* 0 */
 
-	if (this->buffer >= this->end) {
-		return ERROR_RETVAL;
+	if (this->buffer < this->end) {
+		*this->buffer = c;
 	}
-	*this->buffer++ = c;
-	return SUCCESS;
+	*this->buffer++;
 }
 
 /**************************************************************************
@@ -115,14 +113,14 @@ pchar(InstanceData *this, int c)
  *               str            String to add to buffer
  *               left_justify   Left justify string flag
  *               min_width      Minimum width of string added to buffer
- *               precision
+ *               precision      Maximum chars to take from the argument
  * returns     - int return code, 0 for success
  *************************************************************************/
 static int
-fstring(InstanceData *this, char *str, int left_justify, int min_width,
+fstring(InstanceData *this, const char *str, int left_justify, int min_width,
 		int precision)
 {
-	int pad_length;
+	int pad_length = 0;
 	int width = 0;
 	const char *p = str;
 
@@ -130,7 +128,7 @@ fstring(InstanceData *this, char *str, int left_justify, int min_width,
 		return ERROR_RETVAL;
 	}
 
-	for (width = 0; width < precision; width++) {
+	for (width = 0; (width < precision) || (precision < 0); width++) {
 		if ('\0' == str[width]) {
 			break;
 		}
@@ -138,25 +136,23 @@ fstring(InstanceData *this, char *str, int left_justify, int min_width,
 
 	if (width < min_width) {
 		pad_length = min_width - width;
-	} else {
-		pad_length = 0;
 	}
 
 	if (left_justify) {
 		while (pad_length > 0) {
-			CheckRet(pchar(this, ' '));
+			pchar(this, ' ');
 			pad_length -= 1;
 		}
 	}
 
 	while (width-- > 0) {
-		CheckRet(pchar(this, *p));
+		pchar(this, *p);
 		p += 1;
 	}
 
 	if (!left_justify) {
 		while (pad_length > 0) {
-			CheckRet(pchar(this, ' '));
+			pchar(this, ' ');
 			pad_length -= 1;
 		}
 	}
@@ -176,9 +172,9 @@ typedef enum {
  *               value          The value to format
  *               format_type    Character flag specifying format type
  *               left_justify   Left justify number flag
- *               min_width      Minimum number of charaters value will
+ *               min_width      Minimum number of characters value will
  *                              occupy
- *               precision
+ *               precision      Fix the width with leading zeros
  *               zero_pad       Pad number with zeros, flag
  * returns     - int return code, 0 for success
  *************************************************************************/
@@ -187,11 +183,12 @@ fnumber(InstanceData *this, long value, int format_type, int left_justify,
 		int min_width, int precision, bool_t zero_pad)
 {
 	int sign_value = 0;
-	unsigned long uvalue;
+	unsigned long uvalue = 0;
 	char convert[MAX_DIGITS + 1];
 	int place = 0;
 	int pad_length = 0;
-	static char digits[] = "0123456789abcdef";
+	int zero_pad_length = 0;
+	static const char digits[] = "0123456789abcdef";
 	int base = 0;
 	bool_t caps = FALSE;
 	bool_t add_sign = FALSE;
@@ -242,42 +239,49 @@ fnumber(InstanceData *this, long value, int format_type, int left_justify,
 	} while (uvalue);
 	convert[place] = 0;
 
-	pad_length = min_width - place;
-	if (pad_length < 0) {
-		pad_length = 0;
-	}
-	if (left_justify) {
-		if (zero_pad && pad_length > 0) {
-			if (sign_value) {
-				CheckRet(pchar(this, sign_value));
-				--pad_length;
-				sign_value = 0;
-			}
-			while (pad_length > 0) {
-				CheckRet(pchar(this, '0'));
-				--pad_length;
-			}
-		} else {
-			while (pad_length > 0) {
-				CheckRet(pchar(this, ' '));
-				--pad_length;
-			}
+	if (precision > 0) {
+		zero_pad_length = precision - place;
+	} else if (zero_pad && left_justify) {
+		zero_pad_length = min_width - place;
+		if (sign_value) {
+			zero_pad_length--;
 		}
 	}
+
+	if (zero_pad_length < 0) {
+		zero_pad_length = 0;
+	}
+
+	pad_length = min_width - (place + zero_pad_length);
 	if (sign_value) {
-		CheckRet(pchar(this, sign_value));
+		pad_length--;
 	}
 
-	while (place > 0 && --precision >= 0) {
-		CheckRet(pchar(this, convert[--place]));
-	}
-
-	if (!left_justify) {
+	if (left_justify) {
 		while (pad_length > 0) {
-			CheckRet(pchar(this, ' '));
+			pchar(this, ' ');
 			--pad_length;
 		}
 	}
+
+	if (sign_value) {
+		pchar(this, sign_value);
+	}
+
+	while (zero_pad_length > 0) {
+		pchar(this, '0');
+		zero_pad_length--;
+	}
+
+	while (place > 0) {
+		pchar(this, convert[--place]);
+	}
+
+	while (pad_length > 0) {
+		pchar(this, ' ');
+		--pad_length;
+	}
+
 	return SUCCESS;
 }
 
@@ -289,9 +293,9 @@ fnumber(InstanceData *this, long value, int format_type, int left_justify,
  *               value         Number to convert
  *               format_type   Character flag defining format
  *               left_justify  Left justify number flag
- *               min_width     Minimum number of charaters value will
+ *               min_width     Minimum number of characters value will
  *                             occupy
- *               precision
+ *               precision     Fix the width with leading zeros
  *               zero_pad      Pad number with zeros, flag
  * returns     - int return code,  0 for success
  *=======================================================================
@@ -301,11 +305,12 @@ flongnumber(InstanceData *this, signed long long value, int format_type, int lef
 			int min_width, int precision, bool_t zero_pad)
 {
 	int sign_value = 0;
-	unsigned long long uvalue;
+	unsigned long long uvalue = 0;
 	char convert[MAX_DIGITS + 1];
 	int place = 0;
 	int pad_length = 0;
-	static char digits[] = "0123456789abcdef";
+	int zero_pad_length = 0;
+	static const char digits[] = "0123456789abcdef";
 	int base = 0;
 	bool_t caps = FALSE;
 	bool_t add_sign = FALSE;
@@ -356,42 +361,49 @@ flongnumber(InstanceData *this, signed long long value, int format_type, int lef
 	} while (uvalue);
 	convert[place] = 0;
 
-	pad_length = min_width - place;
-	if (pad_length < 0) {
-		pad_length = 0;
-	}
-	if (left_justify) {
-		if (zero_pad && pad_length > 0) {
-			if (sign_value) {
-				CheckRet(pchar(this, sign_value));
-				--pad_length;
-				sign_value = 0;
-			}
-			while (pad_length > 0) {
-				CheckRet(pchar(this, '0'));
-				--pad_length;
-			}
-		} else {
-			while (pad_length > 0) {
-				CheckRet(pchar(this, ' '));
-				--pad_length;
-			}
+	if (precision > 0) {
+		zero_pad_length = precision - place;
+	} else if (zero_pad && left_justify) {
+		zero_pad_length = min_width - place;
+		if (sign_value) {
+			zero_pad_length--;
 		}
 	}
+
+	if (zero_pad_length < 0) {
+		zero_pad_length = 0;
+	}
+
+	pad_length = min_width - (place + zero_pad_length);
 	if (sign_value) {
-		CheckRet(pchar(this, sign_value));
+		pad_length--;
 	}
 
-	while (place > 0 && --precision >= 0) {
-		CheckRet(pchar(this, convert[--place]));
-	}
-
-	if (!left_justify) {
+	if (left_justify) {
 		while (pad_length > 0) {
-			CheckRet(pchar(this, ' '));
+			pchar(this, ' ');
 			--pad_length;
 		}
 	}
+
+	if (sign_value) {
+		pchar(this, sign_value);
+	}
+
+	while (zero_pad_length > 0) {
+		pchar(this, '0');
+		zero_pad_length--;
+	}
+
+	while (place > 0) {
+		pchar(this, convert[--place]);
+	}
+
+	while (pad_length > 0) {
+		pchar(this, ' ');
+		--pad_length;
+	}
+
 	return SUCCESS;
 }
 
@@ -409,27 +421,25 @@ flongnumber(InstanceData *this, signed long long value, int format_type, int lef
 int
 atoe_vsnprintf(char *str, size_t count, const char *fmt, va_list args)
 {
-	char *strvalue;
-	const char *pattern;                                       /*ibm@8665*/
-	long value;
+	char *strvalue = NULL;
+	const char *pattern = NULL;                             /*ibm@8665*/
+	long value = 0;
 	InstanceData this;
-	bool_t left_justify, zero_pad;
-	bool_t long_flag, long_long_flag;                         /*ibm@9094*/
-	bool_t fPrecision;
-	int min_width, precision, ch;
-	static char NULLCHARSTRING[] = "[null]";                /*ibm@029013*/
+	bool_t left_justify = FALSE;
+	bool_t zero_pad = FALSE;
+	bool_t long_flag = FALSE;
+	bool_t long_long_flag = FALSE;                          /*ibm@9094*/
+	bool_t fPrecision = FALSE;
+	int min_width = 0;
+	int precision = 0;
+	int ch = 0;
+	static const char NULLCHARSTRING[] = "[null]";          /*ibm@029013*/
 	/*ibm@029013*/
 	if (fmt == NULL) {                                      /*ibm@029013*/
 		fmt = NULLCHARSTRING;                               /*ibm@029013*/
 	}                                                       /*ibm@029013*/
-	if (str == NULL) {
-		return ERROR_RETVAL;
-	}
-	str[0] = '\0';
-
 	this.buffer = str;
-	this.end = str + count - 1;
-	*this.end = '\0';          /* ensure null-termination in case of failure */
+	this.end = this.buffer + count;
 
 	while ((ch = *fmt++) != 0) {
 		if (ch == '%') {
@@ -440,7 +450,7 @@ atoe_vsnprintf(char *str, size_t count, const char *fmt, va_list args)
 			pattern = fmt - 1;                                 /*ibm@8665*/
 			left_justify = TRUE;
 			min_width = 0;
-			precision = this.end - this.buffer;
+			precision = -1; /* -1 means unspecified */
 
 next_char:
 			ch = *fmt++;
@@ -450,7 +460,7 @@ next_char:
 			case '-':
 				left_justify = FALSE;
 				goto next_char;
-			case '+':                                                                                       /*ibm@8665*/
+			case '+':                                            /*ibm@8665*/
 				left_justify = TRUE;                             /*ibm@8665*/
 				goto next_char;                                  /*ibm@8665*/
 			case '0':            /* set zero padding if min_width not set */
@@ -467,7 +477,7 @@ next_char:
 			case '7':
 			case '8':
 			case '9':
-				if (fPrecision == TRUE) {
+				if (fPrecision) {
 					precision = precision * 10 + (ch - '0');
 				} else {
 					min_width = min_width * 10 + (ch - '0');
@@ -479,7 +489,7 @@ next_char:
 				goto next_char;
 			case '*': {
 				int temp_precision = va_arg(args, int);
-				if (fPrecision == TRUE) {
+				if (fPrecision) {
 					precision = temp_precision;
 				} else {
 					min_width = temp_precision;
@@ -501,12 +511,12 @@ next_char:
 				break;
 			case 'c':
 				ch = va_arg(args, int);
-				CheckRet(pchar(&this, ch));
+				pchar(&this, ch);
 				break;
 			case '%':
-				CheckRet(pchar(&this, '%'));
+				pchar(&this, '%');
 #if 0 /* J9 CMVC defect 74726 */
-				CheckRet(pchar(&this, '%'));    /*ibm@5203 */
+				pchar(&this, '%');    /*ibm@5203 */
 #endif
 				break;
 			case 'd':
@@ -540,27 +550,28 @@ next_char:
 			case 'f':
 			case 'F':
 			case 'g':
-			case 'G':
-				{
+			case 'G': {
 					/* ibm@8665
 					 * Add floating point support for dbl2str & flt2str
 					 */
-					char *b;
-					int len;
-
-					b = a2e((char *)pattern, fmt - pattern);
+					char *tempPattern = a2e((char *)pattern, fmt - pattern);
+					size_t freeCap = (this.end > this.buffer) ? (this.end - this.buffer) : 0;
 
 					/* Extract a double from args, this works for both doubles
 					 * and floats,
 					 * NB if we use float for a single precision floating
 					 * point number the result is wrong.
 					 */
-					len = sprintf(this.buffer, b, va_arg(args, double));
-					free(b);
-					b = e2a_string(this.buffer);
-					strcpy(this.buffer, b);
-					free(b);
-					this.buffer += len;
+					double argument = va_arg(args, double);
+					int requiredSpace = snprintf(this.buffer, freeCap, tempPattern, argument);
+					free(tempPattern);
+					CheckRet(requiredSpace);
+					if ((freeCap > 0) && (requiredSpace > 0)) {
+						char *tempAsciiValue = e2a_string(this.buffer);
+						strcpy(this.buffer, tempAsciiValue);
+						free(tempAsciiValue);
+					}
+					this.buffer += requiredSpace;
 				}
 				break;
 			default:
@@ -581,11 +592,17 @@ next_char:
 				return ERROR_RETVAL;
 			}
 		} else {
-			CheckRet(pchar(&this, ch));
+			pchar(&this, ch);
 		}
 	}
-	*this.buffer = '\0';
-	return strlen(str);
+	if (count > 0) {
+		if (this.buffer < this.end) {
+			*this.buffer = '\0';
+		} else {
+			this.end[-1] = '\0';
+		}
+	}
+	return this.buffer - str;
 }
 
 /* END OF FILE */

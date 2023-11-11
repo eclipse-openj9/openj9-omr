@@ -13773,7 +13773,7 @@ OMR::Z::TreeEvaluator::iRegStoreEvaluator(TR::Node * node, TR::CodeGenerator * c
 
    if (!useLGHI)
       {
-      globalReg = cg->evaluate(value);
+      globalReg = needsLGFR && noLGFgenerated ? cg->gprClobberEvaluate(value) : cg->evaluate(value);
       }
    else
       {

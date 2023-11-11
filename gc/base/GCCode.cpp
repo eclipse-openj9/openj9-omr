@@ -262,3 +262,13 @@ MM_GCCode::isRASDumpGC() const
 {
 	return J9MMCONSTANT_EXPLICIT_GC_RASDUMP_COMPACT == _gcCode;
 }
+
+/**
+ * Determine if the GC should clear bits for objects marked as deleted.
+ * @return true if we should clear the heap (currently only at snapshot)
+ */
+bool
+MM_GCCode::shouldClearHeap() const
+{
+	return J9MMCONSTANT_EXPLICIT_GC_PREPARE_FOR_CHECKPOINT == _gcCode;
+}

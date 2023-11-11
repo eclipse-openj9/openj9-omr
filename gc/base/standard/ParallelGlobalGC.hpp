@@ -285,6 +285,7 @@ public:
 	 */
 	uintptr_t fixHeapForWalk(MM_EnvironmentBase *env, UDATA walkFlags, uintptr_t walkReason, MM_HeapWalkerObjectFunc walkFunction);
 	MM_HeapWalker *getHeapWalker() { return _heapWalker; }
+	void clearHeap(MM_EnvironmentBase *env, MM_HeapWalkerObjectFunc walkFunction);
 	virtual void prepareHeapForWalk(MM_EnvironmentBase *env);
 
 	virtual bool heapAddRange(MM_EnvironmentBase *env, MM_MemorySubSpace *subspace, uintptr_t size, void *lowAddress, void *highAddress);

@@ -2068,12 +2068,15 @@ static bool processSubTreeLeavesForISelectCompare(TR::NodeChecklist &visited, TR
  *
  * \param s
  *    The simplifier object.
+ *
+ * \return
+ *    True if a transformation was performed. False otherwise.
  */
-static void simplifyISelectCompare(TR::Node *compare, TR::Simplifier *s)
+static bool simplifyISelectCompare(TR::Node *compare, TR::Simplifier *s)
    {
    static char *disableISelectCompareSimplification = feGetEnv("TR_disableISelectCompareSimplification");
    if (disableISelectCompareSimplification)
-      return;
+      return false;
 
    if (compare->getOpCode().isBooleanCompare()
        && compare->getSecondChild()->getOpCode().isLoadConst()
@@ -2095,9 +2098,11 @@ static void simplifyISelectCompare(TR::Node *compare, TR::Simplifier *s)
             compare->setAndIncChild(1, TR::Node::createConstZeroValue(compare->getSecondChild(), compare->getSecondChild()->getDataType()));
             constVal->decReferenceCount();
             TR::Node::recreate(compare, TR::ILOpCode(TR::ILOpCode::compareOpCode(compare->getFirstChild()->getDataType(), TR_cmpNE, isUnsignedCompare)).convertCmpToIfCmp());
+            return true;
             }
          }
       }
+   return false;
    }
 
 // We handle two kind of cases here:
@@ -13037,6 +13042,100 @@ TR::Node* removeArithmeticsUnderIntegralCompare(TR::Node* node,
    return node;
    }
 
+static TR::Node *simplifyIficmpneHelper(TR::Node *node, TR::Block *block, TR::Simplifier *s)
+   {
+      TR::Node * firstChild = node->getFirstChild(), * secondChild = node->getSecondChild();
+
+   if (firstChild == secondChild)
+      {
+      s->conditionalToUnconditional(node, block, false);
+      return node;
+      }
+
+   makeConstantTheRightChild(node, firstChild, secondChild, s);
+
+   if (firstChild->getOpCode().isLoadConst() && conditionalBranchFold((firstChild->getInt()!=secondChild->getInt()), node, firstChild, secondChild, block, s))
+      return node;
+
+   if (conditionalZeroComparisonBranchFold (node, firstChild, secondChild, block, s))
+      return node;
+
+   simplifyIntBranchArithmetic(node, firstChild, secondChild, s);
+
+   //We will change a if ( a >> C != 0 ) to a if ( a >= 2^C )
+   if ( firstChild->getOpCode().isRightShift() && //First child is a right shift
+
+        firstChild->getSecondChild()->getOpCode().isLoadConst() &&
+        firstChild->getSecondChild()->getInt() <= 31 &&
+        firstChild->getSecondChild()->getInt() >= 0 && //Shift value is a positive constant of reasonable size
+
+        ( firstChild->getOpCodeValue() == TR::iushr ||
+          firstChild->getFirstChild()->isNonNegative()
+        ) && //Either a logical shift or a positive first child to guarantee zero-extend
+
+        secondChild->getOpCode().isLoadConst() &&
+        secondChild->getInt() == 0 //Second child is a const 0
+      )
+      {
+      //Change if type
+      TR::Node::recreate(node, TR::ifiucmpge);
+
+      TR::Node *newSecondChild = TR::Node::create(node, TR::iconst, 0, 1 << firstChild->getSecondChild()->getInt());
+      node->setAndIncChild(1, newSecondChild);
+
+      node->setAndIncChild(0, firstChild->getFirstChild());
+
+      firstChild->recursivelyDecReferenceCount();
+      secondChild->recursivelyDecReferenceCount();
+
+      return node;
+      }
+
+   bitwiseToLogical(node, block, s);
+
+   if (firstChild->getOpCode().isBooleanCompare() &&
+       (secondChild->getOpCode().isLoadConst()) &&
+       ((secondChild->getInt() == 0) || (secondChild->getInt() == 1)) &&
+       (firstChild->getOpCode().convertCmpToIfCmp() != TR::BadILOp) &&
+       (s->comp()->cg()->getSupportsJavaFloatSemantics() || !(firstChild->getNumChildren()>1 && firstChild->getFirstChild()->getOpCode().isFloatingPoint())) &&
+       performTransformation(s->comp(), "%sChanging if opcode %p because first child %p is a comparison opcode\n", s->optDetailString(), node, firstChild))
+      {
+      TR::Node::recreate(node, firstChild->getOpCode().convertCmpToIfCmp());
+      node->setAndIncChild(0, firstChild->getFirstChild());
+      node->setAndIncChild(1, firstChild->getSecondChild());
+      if (secondChild->getInt() == 1)
+         TR::Node::recreate(node, node->getOpCode().getOpCodeForReverseBranch());
+      firstChild->recursivelyDecReferenceCount();
+      secondChild->recursivelyDecReferenceCount();
+      return node;
+      }
+
+   if ((firstChild->getOpCodeValue() == TR::lcmp) &&
+         ((secondChild->getOpCode().isLoadConst()) &&
+            secondChild->getInt() == 0) &&
+         performTransformation(s->comp(), "%sChanging if opcode %p because first child %p is an lcmp\n", s->optDetailString(), node, firstChild))
+      {
+      TR::Node::recreate(node, TR::iflcmpne); //change to iflcmp since operands are longs
+      node->setAndIncChild(0, firstChild->getFirstChild());
+      node->setAndIncChild(1, firstChild->getSecondChild());
+      firstChild->recursivelyDecReferenceCount();
+      secondChild->recursivelyDecReferenceCount();
+      return node;
+      }
+
+   if (node->getOpCodeValue() == TR::ificmpne)
+      intCompareNarrower(node, s, TR::ifscmpne, TR::ifscmpne, TR::ifbcmpne);
+   else
+      unsignedIntCompareNarrower(node, s, TR::ifscmpne, TR::ifbcmpne);
+
+
+   addressCompareConversion(node, s);
+   removeArithmeticsUnderIntegralCompare(node, s);
+   partialRedundantCompareElimination(node, block, s);
+
+   return node;
+   }
+
 //---------------------------------------------------------------------
 // Integer if compare equal (signed and unsigned)
 //
@@ -13046,9 +13145,12 @@ TR::Node *ificmpeqSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier 
    // Perform a simplification for the case where an iselect is compared to a
    // constant. This is done before simplifyChildren because it may allow
    // further transformations to be done on the children.
-   simplifyISelectCompare(node, s);
+   bool opChangedToCmpNE = simplifyISelectCompare(node, s);
 
    s->simplifyChildren(node, block);
+   if (opChangedToCmpNE)
+      return simplifyIficmpneHelper(node, block, s);
+
    if (removeIfToFollowingBlock(node, block, s) == NULL)
       return NULL;
 
@@ -13178,96 +13280,7 @@ TR::Node *ificmpneSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier 
    if (removeIfToFollowingBlock(node, block, s) == NULL)
       return NULL;
 
-   TR::Node * firstChild = node->getFirstChild(), * secondChild = node->getSecondChild();
-
-   if (firstChild == secondChild)
-      {
-      s->conditionalToUnconditional(node, block, false);
-      return node;
-      }
-
-   makeConstantTheRightChild(node, firstChild, secondChild, s);
-
-   if (firstChild->getOpCode().isLoadConst() && conditionalBranchFold((firstChild->getInt()!=secondChild->getInt()), node, firstChild, secondChild, block, s))
-      return node;
-
-   if (conditionalZeroComparisonBranchFold (node, firstChild, secondChild, block, s))
-      return node;
-
-   simplifyIntBranchArithmetic(node, firstChild, secondChild, s);
-
-   //We will change a if ( a >> C != 0 ) to a if ( a >= 2^C )
-   if ( firstChild->getOpCode().isRightShift() && //First child is a right shift
-
-        firstChild->getSecondChild()->getOpCode().isLoadConst() &&
-        firstChild->getSecondChild()->getInt() <= 31 &&
-        firstChild->getSecondChild()->getInt() >= 0 && //Shift value is a positive constant of reasonable size
-
-        ( firstChild->getOpCodeValue() == TR::iushr ||
-          firstChild->getFirstChild()->isNonNegative()
-        ) && //Either a logical shift or a positive first child to guarantee zero-extend
-
-        secondChild->getOpCode().isLoadConst() &&
-        secondChild->getInt() == 0 //Second child is a const 0
-      )
-      {
-      //Change if type
-      TR::Node::recreate(node, TR::ifiucmpge);
-
-      TR::Node *newSecondChild = TR::Node::create(node, TR::iconst, 0, 1 << firstChild->getSecondChild()->getInt());
-      node->setAndIncChild(1, newSecondChild);
-
-      node->setAndIncChild(0, firstChild->getFirstChild());
-
-      firstChild->recursivelyDecReferenceCount();
-      secondChild->recursivelyDecReferenceCount();
-
-      return node;
-      }
-
-   bitwiseToLogical(node, block, s);
-
-   if (firstChild->getOpCode().isBooleanCompare() &&
-       (secondChild->getOpCode().isLoadConst()) &&
-       ((secondChild->getInt() == 0) || (secondChild->getInt() == 1)) &&
-       (firstChild->getOpCode().convertCmpToIfCmp() != TR::BadILOp) &&
-       (s->comp()->cg()->getSupportsJavaFloatSemantics() || !(firstChild->getNumChildren()>1 && firstChild->getFirstChild()->getOpCode().isFloatingPoint())) &&
-       performTransformation(s->comp(), "%sChanging if opcode %p because first child %p is a comparison opcode\n", s->optDetailString(), node, firstChild))
-      {
-      TR::Node::recreate(node, firstChild->getOpCode().convertCmpToIfCmp());
-      node->setAndIncChild(0, firstChild->getFirstChild());
-      node->setAndIncChild(1, firstChild->getSecondChild());
-      if (secondChild->getInt() == 1)
-         TR::Node::recreate(node, node->getOpCode().getOpCodeForReverseBranch());
-      firstChild->recursivelyDecReferenceCount();
-      secondChild->recursivelyDecReferenceCount();
-      return node;
-      }
-
-   if ((firstChild->getOpCodeValue() == TR::lcmp) &&
-         ((secondChild->getOpCode().isLoadConst()) &&
-            secondChild->getInt() == 0) &&
-         performTransformation(s->comp(), "%sChanging if opcode %p because first child %p is an lcmp\n", s->optDetailString(), node, firstChild))
-      {
-      TR::Node::recreate(node, TR::iflcmpne); //change to iflcmp since operands are longs
-      node->setAndIncChild(0, firstChild->getFirstChild());
-      node->setAndIncChild(1, firstChild->getSecondChild());
-      firstChild->recursivelyDecReferenceCount();
-      secondChild->recursivelyDecReferenceCount();
-      return node;
-      }
-
-   if (node->getOpCodeValue() == TR::ificmpne)
-      intCompareNarrower(node, s, TR::ifscmpne, TR::ifscmpne, TR::ifbcmpne);
-   else
-      unsignedIntCompareNarrower(node, s, TR::ifscmpne, TR::ifbcmpne);
-
-
-   addressCompareConversion(node, s);
-   removeArithmeticsUnderIntegralCompare(node, s);
-   partialRedundantCompareElimination(node, block, s);
-
-   return node;
+   return simplifyIficmpneHelper(node, block, s);
    }
 
 //---------------------------------------------------------------------
@@ -13279,9 +13292,12 @@ TR::Node *ificmpltSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier 
    // Perform a simplification for the case where an iselect is compared to a
    // constant. This is done before simplifyChildren because it may allow
    // further transformations to be done on the children.
-   simplifyISelectCompare(node, s);
+   bool opChangedToCmpNE = simplifyISelectCompare(node, s);
 
    s->simplifyChildren(node, block);
+   if (opChangedToCmpNE)
+      return simplifyIficmpneHelper(node, block, s);
+
    if (removeIfToFollowingBlock(node, block, s) == NULL)
       return NULL;
 
@@ -13328,9 +13344,12 @@ TR::Node *ificmpleSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier 
    // Perform a simplification for the case where an iselect is compared to a
    // constant. This is done before simplifyChildren because it may allow
    // further transformations to be done on the children.
-   simplifyISelectCompare(node, s);
+   bool opChangedToCmpNE = simplifyISelectCompare(node, s);
 
    s->simplifyChildren(node, block);
+   if (opChangedToCmpNE)
+      return simplifyIficmpneHelper(node, block, s);
+
    if (removeIfToFollowingBlock(node, block, s) == NULL)
       return NULL;
 
@@ -13377,9 +13396,12 @@ TR::Node *ificmpgtSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier 
    // Perform a simplification for the case where an iselect is compared to a
    // constant. This is done before simplifyChildren because it may allow
    // further transformations to be done on the children.
-   simplifyISelectCompare(node, s);
+   bool opChangedToCmpNE = simplifyISelectCompare(node, s);
 
    s->simplifyChildren(node, block);
+   if (opChangedToCmpNE)
+      return simplifyIficmpneHelper(node, block, s);
+
    if (removeIfToFollowingBlock(node, block, s) == NULL)
       return NULL;
 
@@ -13426,9 +13448,12 @@ TR::Node *ificmpgeSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier 
    // Perform a simplification for the case where an iselect is compared to a
    // constant. This is done before simplifyChildren because it may allow
    // further transformations to be done on the children.
-   simplifyISelectCompare(node, s);
+   bool opChangedToCmpNE = simplifyISelectCompare(node, s);
 
    s->simplifyChildren(node, block);
+   if (opChangedToCmpNE)
+      return simplifyIficmpneHelper(node, block, s);
+
    if (removeIfToFollowingBlock(node, block, s) == NULL)
       return NULL;
 
@@ -13469,6 +13494,37 @@ TR::Node *ificmpgeSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier 
    return node;
    }
 
+TR::Node *simplifyIflcmpneHelper(TR::Node * node, TR::Block * block, TR::Simplifier * s)
+   {
+   TR::Node * firstChild = node->getFirstChild(), * secondChild = node->getSecondChild();
+
+   if (firstChild == secondChild)
+      {
+      s->conditionalToUnconditional(node, block, false);
+      return node;
+      }
+
+   makeConstantTheRightChild(node, firstChild, secondChild, s);
+
+   if (firstChild->getOpCode().isLoadConst() && conditionalBranchFold((firstChild->getLongInt()!=secondChild->getLongInt()), node, firstChild, secondChild, block, s))
+      return node;
+
+   if (conditionalZeroComparisonBranchFold (node, firstChild, secondChild, block, s))
+      return node;
+
+   simplifyLongBranchArithmetic(node, firstChild, secondChild, s);
+
+   if (node->getOpCodeValue() == TR::iflcmpne)
+      {
+      longCompareNarrower(node, s, TR::ificmpne, TR::ifscmpne, TR::ifscmpne, TR::ifbcmpne);
+      }
+   addressCompareConversion(node, s);
+   removeArithmeticsUnderIntegralCompare(node, s);
+
+   partialRedundantCompareElimination(node, block, s);
+   return node;
+   }
+
 //---------------------------------------------------------------------
 // Long integer if compare equal (signed and unsigned)
 //
@@ -13478,9 +13534,12 @@ TR::Node *iflcmpeqSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier 
    // Perform a simplification for the case where an iselect is compared to a
    // constant. This is done before simplifyChildren because it may allow
    // further transformations to be done on the children.
-   simplifyISelectCompare(node, s);
+   bool opChangedToCmpNE = simplifyISelectCompare(node, s);
 
    s->simplifyChildren(node, block);
+   if (opChangedToCmpNE)
+      return simplifyIflcmpneHelper(node, block, s);
+
    if (removeIfToFollowingBlock(node, block, s) == NULL)
       return NULL;
 
@@ -13528,33 +13587,7 @@ TR::Node *iflcmpneSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier 
    if (removeIfToFollowingBlock(node, block, s) == NULL)
       return NULL;
 
-   TR::Node * firstChild = node->getFirstChild(), * secondChild = node->getSecondChild();
-
-   if (firstChild == secondChild)
-      {
-      s->conditionalToUnconditional(node, block, false);
-      return node;
-      }
-
-   makeConstantTheRightChild(node, firstChild, secondChild, s);
-
-   if (firstChild->getOpCode().isLoadConst() && conditionalBranchFold((firstChild->getLongInt()!=secondChild->getLongInt()), node, firstChild, secondChild, block, s))
-      return node;
-
-   if (conditionalZeroComparisonBranchFold (node, firstChild, secondChild, block, s))
-      return node;
-
-   simplifyLongBranchArithmetic(node, firstChild, secondChild, s);
-
-   if (node->getOpCodeValue() == TR::iflcmpne)
-      {
-      longCompareNarrower(node, s, TR::ificmpne, TR::ifscmpne, TR::ifscmpne, TR::ifbcmpne);
-      }
-   addressCompareConversion(node, s);
-   removeArithmeticsUnderIntegralCompare(node, s);
-
-   partialRedundantCompareElimination(node, block, s);
-   return node;
+   return simplifyIflcmpneHelper(node, block, s);
    }
 
 //---------------------------------------------------------------------
@@ -13566,9 +13599,12 @@ TR::Node *iflcmpltSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier 
    // Perform a simplification for the case where an iselect is compared to a
    // constant. This is done before simplifyChildren because it may allow
    // further transformations to be done on the children.
-   simplifyISelectCompare(node, s);
+   bool opChangedToCmpNE = simplifyISelectCompare(node, s);
 
    s->simplifyChildren(node, block);
+   if (opChangedToCmpNE)
+      return simplifyIflcmpneHelper(node, block, s);
+
    if (removeIfToFollowingBlock(node, block, s) == NULL)
       return NULL;
 
@@ -13608,9 +13644,12 @@ TR::Node *iflcmpleSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier 
    // Perform a simplification for the case where an iselect is compared to a
    // constant. This is done before simplifyChildren because it may allow
    // further transformations to be done on the children.
-   simplifyISelectCompare(node, s);
+   bool opChangedToCmpNE = simplifyISelectCompare(node, s);
 
    s->simplifyChildren(node, block);
+   if (opChangedToCmpNE)
+      return simplifyIflcmpneHelper(node, block, s);
+
    if (removeIfToFollowingBlock(node, block, s) == NULL)
       return NULL;
 
@@ -13650,9 +13689,12 @@ TR::Node *iflcmpgtSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier 
    // Perform a simplification for the case where an iselect is compared to a
    // constant. This is done before simplifyChildren because it may allow
    // further transformations to be done on the children.
-   simplifyISelectCompare(node, s);
+   bool opChangedToCmpNE = simplifyISelectCompare(node, s);
 
    s->simplifyChildren(node, block);
+   if (opChangedToCmpNE)
+      return simplifyIflcmpneHelper(node, block, s);
+
    if (removeIfToFollowingBlock(node, block, s) == NULL)
       return NULL;
 
@@ -13692,9 +13734,12 @@ TR::Node *iflcmpgeSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier 
    // Perform a simplification for the case where an iselect is compared to a
    // constant. This is done before simplifyChildren because it may allow
    // further transformations to be done on the children.
-   simplifyISelectCompare(node, s);
+   bool opChangedToCmpNE = simplifyISelectCompare(node, s);
 
    s->simplifyChildren(node, block);
+   if (opChangedToCmpNE)
+      return simplifyIflcmpneHelper(node, block, s);
+
    if (removeIfToFollowingBlock(node, block, s) == NULL)
       return NULL;
 
@@ -13949,6 +13994,32 @@ TR::Node *normalizeCmpSimplifier(TR::Node * node, TR::Block * block, TR::Simplif
    return node;
    }
 
+static TR::Node *simplifyIfacmpneHelper(TR::Node * node, TR::Block * block, TR::Simplifier * s)
+   {
+   TR::Node * firstChild = node->getFirstChild(), * secondChild = node->getSecondChild();
+
+   if (firstChild == secondChild)
+      {
+      s->conditionalToUnconditional(node, block, false);
+      return node;
+      }
+
+   makeConstantTheRightChild(node, firstChild, secondChild, s);
+   if (firstChild->getOpCodeValue() == TR::aconst && conditionalBranchFold((firstChild->getAddress()!=secondChild->getAddress()), node, firstChild, secondChild, block, s))
+      return node;
+
+   // weak symbols aren't necessarily defined, so we have to do the test
+   if (!(firstChild->getOpCode().hasSymbolReference() && firstChild->getSymbol()->isWeakSymbol()) &&
+       conditionalZeroComparisonBranchFold (node, firstChild, secondChild, block, s))
+      return node;
+
+   partialRedundantCompareElimination(node, block, s);
+
+   ifjlClassSimplifier(node, s);
+
+   return node;
+   }
+
 //---------------------------------------------------------------------
 // Address if compare equal
 //
@@ -13958,11 +14029,13 @@ TR::Node *ifacmpeqSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier 
    // Perform a simplification for the case where an iselect is compared to a
    // constant. This is done before simplifyChildren because it may allow
    // further transformations to be done on the children.
-   simplifyISelectCompare(node, s);
+   bool opChangedToCmpNE = simplifyISelectCompare(node, s);
 
    if (removeIfToFollowingBlock(node, block, s) == NULL)
       return NULL;
    s->simplifyChildren(node, block);
+   if (opChangedToCmpNE)
+      return simplifyIfacmpneHelper(node, block, s);
 
    TR::Node * firstChild = node->getFirstChild(), * secondChild = node->getSecondChild();
 
@@ -14002,28 +14075,7 @@ TR::Node *ifacmpneSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier 
       return NULL;
    s->simplifyChildren(node, block);
 
-   TR::Node * firstChild = node->getFirstChild(), * secondChild = node->getSecondChild();
-
-   if (firstChild == secondChild)
-      {
-      s->conditionalToUnconditional(node, block, false);
-      return node;
-      }
-
-   makeConstantTheRightChild(node, firstChild, secondChild, s);
-   if (firstChild->getOpCodeValue() == TR::aconst && conditionalBranchFold((firstChild->getAddress()!=secondChild->getAddress()), node, firstChild, secondChild, block, s))
-      return node;
-
-   // weak symbols aren't necessarily defined, so we have to do the test
-   if (!(firstChild->getOpCode().hasSymbolReference() && firstChild->getSymbol()->isWeakSymbol()) &&
-       conditionalZeroComparisonBranchFold (node, firstChild, secondChild, block, s))
-      return node;
-
-   partialRedundantCompareElimination(node, block, s);
-
-   ifjlClassSimplifier(node, s);
-
-   return node;
+   return simplifyIfacmpneHelper(node, block, s);
    }
 
 //---------------------------------------------------------------------

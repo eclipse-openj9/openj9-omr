@@ -221,10 +221,12 @@ OMR::Optimization::anchorChildren(TR::Node *node, TR::TreeTop* anchorTree, uint3
 
    if (!hasCommonedAncestor)
       {
-      if (self()->trace())
-         traceMsg(self()->comp(),"set hasCommonedAncestor = true as %s %p has refCount %d > 1\n",
-            node->getOpCode().getName(),node,node->getReferenceCount());
       hasCommonedAncestor = (node->getReferenceCount() > 1);
+      if (self()->trace())
+         traceMsg(self()->comp(),"set hasCommonedAncestor = %s as %s %p has refCount %d %s 1\n",
+            hasCommonedAncestor ? "true" : "false",
+            node->getOpCode().getName(),node,node->getReferenceCount(),
+            hasCommonedAncestor ? ">" : "<=");
       }
 
    for (int j = node->getNumChildren()-1; j >= 0; --j)

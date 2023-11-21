@@ -481,10 +481,10 @@ public:
    virtual void            clearFilters(TR::CompilationFilters *);
    void                    clearFilters(bool loadLimit);
    virtual bool            scanInlineFilters(FILE *, int32_t &, TR::CompilationFilters *);
-   virtual TR_FilterBST *  addFilter(char * &, int32_t, int32_t, int32_t, TR::CompilationFilters *);
-   virtual TR_FilterBST *  addFilter(char * &, int32_t, int32_t, int32_t, bool loadLimit);
+   virtual TR_FilterBST *  addFilter(const char *&, int32_t, int32_t, int32_t, TR::CompilationFilters *);
+   virtual TR_FilterBST *  addFilter(const char *&, int32_t, int32_t, int32_t, bool loadLimit);
    virtual TR_FilterBST *  addExcludedMethodFilter(bool loadLimit);
-   virtual int32_t         scanFilterName(char *, TR_FilterBST *);
+   virtual int32_t         scanFilterName(const char *, TR_FilterBST *);
    virtual void            printFilters(TR::CompilationFilters *);
    virtual void            printFilters();
    virtual void            print(TR_FilterBST * filter);

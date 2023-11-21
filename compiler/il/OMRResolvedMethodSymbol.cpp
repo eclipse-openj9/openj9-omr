@@ -268,7 +268,7 @@ bcIndexForFakeInduce(TR::Compilation* comp, int16_t* callSiteInsertionPoint,
       if (!p) break;
       strncpy(signatureRegex, p, temp - p);
       signatureRegex[temp-p] = '\0';
-      char* tempRegex = signatureRegex;
+      const char *tempRegex = (const char *)signatureRegex;
       TR::SimpleRegex* regex = TR::SimpleRegex::create(tempRegex);
       if (regex)
          {

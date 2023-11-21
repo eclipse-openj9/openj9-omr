@@ -51,7 +51,7 @@ enum TR_X86ProcessorVendors
    TR_UnknownVendor                 = 0x04
    };
 
-enum TR_X86ProcessorFeatures
+enum TR_X86_CPUID_edx_eax01
    {
    TR_BuiltInFPU                    = 0x00000001,
    TR_VirtualModeExtension          = 0x00000002,
@@ -98,7 +98,7 @@ inline uint32_t getFeatureFlagsMask()
          | TR_SSE2;
    }
 
-enum TR_X86ProcessorFeatures2
+enum TR_X86_CPUID_ecx_eax01
    {
    TR_SSE3                          = 0x00000001,
    TR_CLMUL                         = 0x00000002,
@@ -147,7 +147,7 @@ inline uint32_t getFeatureFlags2Mask()
          | TR_FMA;
    }
 
-enum TR_X86ProcessorFeatures8
+enum TR_X86_CPUID_ebx_eax07_ecx00
    {
    TR_FSGSBASE                = 0x00000001,
    TR_IA32_TSC_ADJUST         = 0x00000002,

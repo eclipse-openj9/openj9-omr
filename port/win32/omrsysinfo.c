@@ -1271,7 +1271,7 @@ omrsysinfo_get_CPU_load(struct OMRPortLibrary *portLibrary, double *cpuLoad)
 	if (oldestCPUTime->timestamp == 0) {
 		*oldestCPUTime = currentCPUTime;
 		*latestCPUTime = currentCPUTime;
-		return OMRPORT_ERROR_OPFAILED;
+		return OMRPORT_ERROR_INSUFFICIENT_DATA;
 	}
 
 	/* Calculate using the most recent value in the history */

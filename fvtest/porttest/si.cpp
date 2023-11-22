@@ -1690,18 +1690,16 @@ TEST(PortSysinfoTest, sysinfo_test_get_CPU_load)
 {
 	OMRPORT_ACCESS_FROM_OMRPORT(portTestEnv->getPortLibrary());
 
-	/* As per the API specification the first two calls to this API will return a negative portable error code. However
-	 * for the purposes of this test we will not be testing this. This is because the test infrastructure is setup such
-	 * that we cannot guarantee that no other test has called omrsysinfo_get_CPU_utlization or omrsysinfo_get_CPU_load
-	 * up to this point. If some other test did call these APIs then the internal buffers would have been populated and
-	 * as such the omrsysinfo_get_CPU_load could return a zero return code on the very first invocation within this
-	 * test.
+	/* As per the API specification if only one data point has been recorded this API will return a negative portable
+	 * error code. However for the purposes of this test we will not be testing this. This is because the test infrastructure
+	 * is setup such that we cannot guarantee that no other test has called omrsysinfo_get_CPU_load up to this point. If
+	 * some other test calls this API then the internal buffers would have been populated and as such the omrsysinfo_get_CPU_load
+	 * could return a zero return code on the very first invocation within this test.
 	 *
-	 * To avoid inter-test dependencies we do not assert on the return value of the first two calls here, and only test
+	 * To avoid inter-test dependencies we do not assert on the return value of the first call here, and only test
 	 * that the API returns valid numbers within the range outlined in the API specification.
 	 */
 	double cpuLoad;
-	omrsysinfo_get_CPU_load(&cpuLoad);
 	omrsysinfo_get_CPU_load(&cpuLoad);
 	
 	/* Sleep for 100ms before re-sampling processor usage stats. This allows other processes and the operating system to

@@ -38,6 +38,9 @@
 
 # Compiler
 /compiler/ @0xdaryl @mstoodle
+/compiler/control/ @dsouzai
+/compiler/env/ @dsouzai
+/compiler/runtime/ @dsouzai
 /compiler/optimizer/ @vijaysun-omr
 /compiler/il/ @vijaysun-omr @Leonardo2718
 /compiler/arm/ @0xdaryl @knn-k

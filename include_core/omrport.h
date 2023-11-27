@@ -1766,6 +1766,42 @@ typedef struct OMRProcessorDesc {
 #define OMR_FEATURE_X86_AVX512BW            96 + 30 /* AVX512 Byte and Word */
 #define OMR_FEATURE_X86_AVX512VL            96 + 31 /* AVX512 Vector Length */
 
+/*
+ * Structured Feature Information Returned in the ECX Register by CPUID instruction when EAX = 7, ECX = 0
+ */
+#define OMR_FEATURE_X86_PREFETCHWT1         128 + 0
+#define OMR_FEATURE_X86_AVX512_VBMI         128 + 1
+#define OMR_FEATURE_X86_UMIP                128 + 2
+#define OMR_FEATURE_X86_PKU                 128 + 3
+#define OMR_FEATURE_X86_OSPKE               128 + 4
+#define OMR_FEATURE_X86_WAITPKG             128 + 5
+#define OMR_FEATURE_X86_AVX512_VBMI2        128 + 6
+#define OMR_FEATURE_X86_CET_SS              128 + 7
+#define OMR_FEATURE_X86_GFNI                128 + 8
+#define OMR_FEATURE_X86_VAES                128 + 9
+#define OMR_FEATURE_X86_VPCLMULQDQ          128 + 10
+#define OMR_FEATURE_X86_AVX512_VNNI         128 + 11
+#define OMR_FEATURE_X86_AVX512_BITALG       128 + 12
+#define OMR_FEATURE_X86_TME_EN              128 + 13
+#define OMR_FEATURE_X86_AVX512_VPOPCNTDQ    128 + 14
+#define OMR_FEATURE_X86_4_15                128 + 15 /* Reserved */
+#define OMR_FEATURE_X86_LA57                128 + 16
+#define OMR_FEATURE_X86_MAWAU_0             128 + 17
+#define OMR_FEATURE_X86_MAWAU_1             128 + 18
+#define OMR_FEATURE_X86_MAWAU_2             128 + 19
+#define OMR_FEATURE_X86_MAWAU_3             128 + 20
+#define OMR_FEATURE_X86_MAWAU_4             128 + 21
+#define OMR_FEATURE_X86_RDPID               128 + 22
+#define OMR_FEATURE_X86_KL                  128 + 23
+#define OMR_FEATURE_X86_BUS_LOCK_DETECT     128 + 24
+#define OMR_FEATURE_X86_CLDEMOTE            128 + 25
+#define OMR_FEATURE_X86_4_26                128 + 26 /* Reserved */
+#define OMR_FEATURE_X86_MOVDIRI             128 + 27
+#define OMR_FEATURE_X86_MOVDIR64B           128 + 28
+#define OMR_FEATURE_X86_ENQCMD              128 + 29
+#define OMR_FEATURE_X86_SGX_LC              128 + 30
+#define OMR_FEATURE_X86_PKS                 128 + 31
+
 /*  AArch64 Linux features
  *  See https://www.kernel.org/doc/html/latest/arm64/elf_hwcaps.html.
  */

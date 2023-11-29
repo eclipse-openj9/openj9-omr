@@ -341,10 +341,18 @@ xmaxxminHelper(TR::Node* node, TR::CodeGenerator* cg, TR::InstOpCode::Mnemonic c
    generateRREInstruction(cg, compareRROp, node, lhsReg, rhsReg);
    generateS390BranchInstruction(cg, TR::InstOpCode::BRC, branchCond, node, cFlowRegionEnd);
 
+   //Check for NaN operands for float and double
+   if (node->getOpCode().isFloatingPoint())
+      {
+      // If first operand is NaN, then we are done, otherwise fallthrough to move second operand as result
+      generateRREInstruction(cg, node->getOpCode().isDouble() ? TR::InstOpCode::LTDBR : TR::InstOpCode::LTEBR, node, lhsReg, lhsReg);
+      generateS390BranchInstruction(cg, TR::InstOpCode::BRC, TR::InstOpCode::COND_CC3, node, cFlowRegionEnd);
+      }
+
+   //Move resulting operand to lhsReg as fallthrough for alternate Condition Code
    generateRREInstruction(cg, moveRROp, node, lhsReg, rhsReg);
 
    TR::RegisterDependencyConditions* deps = new (cg->trHeapMemory()) TR::RegisterDependencyConditions(0, 2, cg);
-
    deps->addPostConditionIfNotAlreadyInserted(lhsReg, TR::RealRegister::AssignAny);
    deps->addPostConditionIfNotAlreadyInserted(rhsReg, TR::RealRegister::AssignAny);
 
@@ -352,7 +360,6 @@ xmaxxminHelper(TR::Node* node, TR::CodeGenerator* cg, TR::InstOpCode::Mnemonic c
    cFlowRegionEnd->setEndInternalControlFlow();
 
    node->setRegister(lhsReg);
-
    cg->decReferenceCount(lhsNode);
    cg->decReferenceCount(rhsNode);
 
@@ -466,13 +473,15 @@ OMR::Z::TreeEvaluator::lmaxEvaluator(TR::Node* node, TR::CodeGenerator* cg)
 TR::Register*
 OMR::Z::TreeEvaluator::fmaxEvaluator(TR::Node* node, TR::CodeGenerator* cg)
    {
-   return xmaxxminHelper(node, cg, TR::InstOpCode::CEBR, TR::InstOpCode::COND_BHR, TR::InstOpCode::LER);
+   //Passing COND_MASK10 to check CC if operand 1 is already greater than, or equal to operand 2
+   return xmaxxminHelper(node, cg, TR::InstOpCode::CEBR, TR::InstOpCode::COND_MASK10, TR::InstOpCode::LER);
    }
 
 TR::Register*
 OMR::Z::TreeEvaluator::dmaxEvaluator(TR::Node* node, TR::CodeGenerator* cg)
    {
-   return xmaxxminHelper(node, cg, TR::InstOpCode::CDBR, TR::InstOpCode::COND_BHR, TR::InstOpCode::LDR);
+   //Passing COND_MASK10 to check CC if operand 1 is already greater than, or equal to operand 2
+   return xmaxxminHelper(node, cg, TR::InstOpCode::CDBR, TR::InstOpCode::COND_MASK10, TR::InstOpCode::LDR);
    }
 
 TR::Register *
@@ -490,13 +499,15 @@ OMR::Z::TreeEvaluator::lminEvaluator(TR::Node *node, TR::CodeGenerator *cg)
 TR::Register*
 OMR::Z::TreeEvaluator::fminEvaluator(TR::Node* node, TR::CodeGenerator* cg)
    {
-   return xmaxxminHelper(node, cg, TR::InstOpCode::CEBR, TR::InstOpCode::COND_BLR, TR::InstOpCode::LER);
+   //Passing COND_MASK12 to check CC if operand 1 is already less than, or equal to operand 2
+   return xmaxxminHelper(node, cg, TR::InstOpCode::CEBR, TR::InstOpCode::COND_MASK12, TR::InstOpCode::LER);
    }
 
 TR::Register*
 OMR::Z::TreeEvaluator::dminEvaluator(TR::Node* node, TR::CodeGenerator* cg)
    {
-   return xmaxxminHelper(node, cg, TR::InstOpCode::CDBR, TR::InstOpCode::COND_BLR, TR::InstOpCode::LDR);
+   //Passing COND_MASK12 to check CC if operand 1 is already less than, or equal to operand 2
+   return xmaxxminHelper(node, cg, TR::InstOpCode::CDBR, TR::InstOpCode::COND_MASK12, TR::InstOpCode::LDR);
    }
 
 /**

@@ -77,8 +77,6 @@ public:
 
    bool getSupportsArch(Architecture arch);
 
-   bool setSupportsArch(Architecture arch);
-
    bool getSupportsHardwareSQRT();
 
    bool hasPopulationCountInstruction();

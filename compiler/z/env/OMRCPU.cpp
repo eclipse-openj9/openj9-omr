@@ -267,12 +267,6 @@ OMR::Z::CPU::getSupportsArch(Architecture arch)
    }
 
 bool
-OMR::Z::CPU::setSupportsArch(Architecture arch)
-   {
-   return _supportedArch = _supportedArch >= arch ? _supportedArch : arch;
-   }
-
-bool
 OMR::Z::CPU::getSupportsHardwareSQRT()
    {
    return true;

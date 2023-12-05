@@ -447,8 +447,7 @@ MM_Configuration::initializeGCThreadCount(MM_EnvironmentBase* env)
 {
 	MM_GCExtensionsBase* extensions = env->getExtensions();
 
-	/* to be checked against gcThreadCountSpecified, once downstream projects properly set it */
-	if (!extensions->gcThreadCountForced) {
+	if (!extensions->gcThreadCountSpecified) {
 		extensions->gcThreadCount = defaultGCThreadCount(env);
 	}
 }

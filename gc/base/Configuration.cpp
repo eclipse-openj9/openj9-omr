@@ -447,13 +447,14 @@ MM_Configuration::initializeGCThreadCount(MM_EnvironmentBase* env)
 {
 	MM_GCExtensionsBase* extensions = env->getExtensions();
 
+	/* to be checked against gcThreadCountSpecified, once downstream projects properly set it */
 	if (!extensions->gcThreadCountForced) {
-		extensions->gcThreadCount = supportedGCThreadCount(env);
+		extensions->gcThreadCount = defaultGCThreadCount(env);
 	}
 }
 
 uintptr_t
-MM_Configuration::supportedGCThreadCount(MM_EnvironmentBase* env)
+MM_Configuration::defaultGCThreadCount(MM_EnvironmentBase* env)
 {
 	OMRPORT_ACCESS_FROM_OMRPORT(env->getPortLibrary());
 	uintptr_t threadCount = omrsysinfo_get_number_CPUs_by_type(OMRPORT_CPU_TARGET);

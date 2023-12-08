@@ -5729,7 +5729,7 @@ TR_CallSite::calleeClass()
       TR::StackMemoryRegion stackMemoryRegion(*_comp->trMemory());
 
       int32_t len = _interfaceMethod->classNameLength();
-      char * s = TR::Compiler->cls.classNameToSignature(_interfaceMethod->classNameChars(), len, _comp, stackAlloc);
+      char *s = TR::Compiler->cls.classNameToSignature(_interfaceMethod->classNameChars(), len, _comp, stackAlloc);
       TR_OpaqueClassBlock *result = _comp->fe()->getClassFromSignature(s, len, _callerResolvedMethod, true);
 
       return result;

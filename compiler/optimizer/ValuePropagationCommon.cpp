@@ -3908,7 +3908,7 @@ void OMR::ValuePropagation::transformObjectCloneCall(TR::TreeTop *callTree, OMR:
 
    TR::DebugCounter::prependDebugCounter(comp(), TR::DebugCounter::debugCounterName(comp(), "inlineClone.location/object/(%s)", comp()->signature()), callTree);
    int32_t classNameLength;
-   char *className = TR::Compiler->cls.classNameChars(comp(), j9class, classNameLength);
+   const char *className = TR::Compiler->cls.classNameChars(comp(), j9class, classNameLength);
    TR::DebugCounter::prependDebugCounter(comp(), TR::DebugCounter::debugCounterName(comp(), "inlineClone.type/(%s)/(%s)/%s", className, comp()->signature(), comp()->getHotnessName(comp()->getMethodHotness())), callTree);
 
     // Preserve children for callNode
@@ -4031,7 +4031,7 @@ void OMR::ValuePropagation::transformArrayCloneCall(TR::TreeTop *callTree, OMR::
 
    TR::DebugCounter::prependDebugCounter(comp(), TR::DebugCounter::debugCounterName(comp(), "inlineClone.location/array/(%s)", comp()->signature()), callTree);
    int32_t classNameLength;
-   char *className = TR::Compiler->cls.classNameChars(comp(), j9arrayClass, classNameLength);
+   const char *className = TR::Compiler->cls.classNameChars(comp(), j9arrayClass, classNameLength);
    TR::DebugCounter::prependDebugCounter(comp(), TR::DebugCounter::debugCounterName(comp(), "inlineClone.type/(%s)/(%s)/%s", className, comp()->signature(), comp()->getHotnessName(comp()->getMethodHotness())), callTree);
    TR::Node *lenNode = TR::Node::create(callNode, TR::arraylength, 1, objNode);
     // Preserve children for callNode

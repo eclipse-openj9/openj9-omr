@@ -111,8 +111,6 @@
 #include "runtime/RuntimeAssumptions.hpp"
 #endif
 
-extern void createGuardSiteForRemovedGuard(TR::Compilation *comp, TR::Node* ifNode);
-
 // basic blocks peephole optimization.
 // Return "true" if any basic block peephole optimization was done
 
@@ -3086,9 +3084,6 @@ int32_t TR_SimplifyAnds::process(TR::TreeTop *startTree, TR::TreeTop *endTree)
             TR::TreeTop *previousTree = block->getLastRealTreeTop()->getPrevTreeTop();
             TR::CFGEdge* currentSucc = block->getSuccessors().front();
             TR::CFGNode *succBlock = currentSucc->getTo();
-#ifdef J9_PROJECT_SPECIFIC
-            createGuardSiteForRemovedGuard(comp(), lastRealNode);
-#endif
             if (newOrOpcode != TR::BadILOp)
                {
                // Modify first ificmpeq

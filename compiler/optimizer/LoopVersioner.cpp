@@ -4593,7 +4593,7 @@ void TR_LoopVersioner::versionNaturalLoop(TR_RegionStructure *whileLoop, List<TR
          comparisonTrees.add(guard);
 
          bool reverseBranch = false, origLoop = true;
-         FoldConditional fold(this, NULL, guard, reverseBranch, origLoop);
+         FoldConditional fold(this, NULL, tt->getNode(), reverseBranch, origLoop);
          fold.improveLoop();
          }
       }

@@ -137,32 +137,163 @@
                   node);                                                           \
       }
 
-/**
- * Binary identity or zero operation
- *
- * If the second child is a constant that represents an identity operation,
- * replace this node with the first child.
- *
- * If the second child is a constant that represents a zero operation,
- * replace this node with the second child.
- */
-#define BINARY_IDENTITY_OR_ZERO_OP(ConstType,Type,NullValue,ZeroValue)\
-   if(secondChild->getOpCode().isLoadConst())\
-      {\
-      ConstType value = secondChild->get##Type();\
-      if(value == NullValue)\
-         return s->replaceNodeWithChild(node, firstChild, s->_curTree, block);\
-      if(value == ZeroValue)\
-         {\
-         if(performTransformation(s->comp(), "%sFound op with iconst in node [" POINTER_PRINTF_FORMAT "]\n", s->optDetailString(),node))\
-            {\
-            s->anchorChildren(node, s->_curTree);\
-            s->prepareToReplaceNode(node, secondChild->getOpCodeValue());\
-            node->set##Type(value);\
-            return node;\
-            }\
-         }\
+struct BinaryOpSimplifierHelpers
+   {
+   static int8_t getNodeByteValue(TR::Node * node)
+      {
+      return node->getByte();
       }
+
+   static int16_t getNodeShortValue(TR::Node * node)
+      {
+      return node->getShortInt();
+      }
+
+   static int32_t getNodeIntValue(TR::Node * node)
+      {
+      return node->getInt();
+      }
+
+   static int64_t getNodeLongValue(TR::Node * node)
+      {
+      return node->getLongInt();
+      }
+
+   static uint32_t getNodeFloatBits(TR::Node * node)
+      {
+      return node->getFloatBits();
+      }
+
+   static uint64_t getNodeDoubleBits(TR::Node * node)
+      {
+      return node->getDoubleBits();
+      }
+
+   static void setNodeByteValue(TR::Node * node, int8_t value)
+      {
+      node->setByte(value);
+      }
+
+   static void setNodeShortValue(TR::Node * node, int16_t value)
+      {
+      node->setShortInt(value);
+      }
+
+   static void setNodeIntValue(TR::Node * node, int32_t value)
+      {
+      node->setInt(value);
+      }
+
+   static void setNodeLongValue(TR::Node * node, int64_t value)
+      {
+      node->setLongInt(value);
+      }
+
+   static void setNodeFloatBits(TR::Node * node, uint32_t bits)
+      {
+      node->setFloatBits(bits);
+      }
+
+   static void setNodeDoubleBits(TR::Node * node, uint64_t bits)
+      {
+      node->setDoubleBits(bits);
+      }
+   };
+
+template <typename T>
+struct BinaryOpSimplifier
+   {
+   typedef T (* Getter)(TR::Node *);
+   typedef void (* Setter)(TR::Node *, T);
+   TR::Simplifier * s;
+   Getter getNodeValue;
+   Setter setNodeValue;
+
+   BinaryOpSimplifier(TR::Simplifier * simplifier, Getter getter, Setter setter): s(simplifier), getNodeValue(getter), setNodeValue(setter) {}
+
+   /**
+    * Binary identity operation
+    *
+    * If the second child is a constant that represents an identity operand
+    * for the operation, replace this node with the first child.
+    */
+   inline TR::Node * tryToSimplifyIdentityOp(TR::Node * node, T identityValue)
+      {
+      auto secondChild = node->getSecondChild();
+      if (!secondChild || !secondChild->getOpCode().isLoadConst())
+         return NULL;
+
+      if (getNodeValue(secondChild) != identityValue)
+         return NULL;
+
+      return s->replaceNode(node, node->getFirstChild(), s->_curTree);
+      }
+
+   /**
+    * Binary identity or zero operation
+    *
+    * If the second child is a constant that represents an identity operand
+    * for the operation, replace this node with the first child.
+    * Binary zero operation
+    *
+    * If the second child is a constant that represents a zero operation,
+    * replace this node with the second child.
+    */
+   inline TR::Node * tryToSimplifyIdentityOrZeroOp(TR::Block * block, TR::Node * node, T identityValue, T zeroValue)
+      {
+      auto secondChild = node->getSecondChild();
+      if (!secondChild || !secondChild->getOpCode().isLoadConst())
+         return NULL;
+
+      auto value = getNodeValue(secondChild);
+      if (value == identityValue)
+         return s->replaceNodeWithChild(node, node->getFirstChild(), s->_curTree, block);
+
+      if (value != zeroValue)
+         return NULL;
+
+      if (performTransformation(s->comp(), "%sFound op with %s in node [" POINTER_PRINTF_FORMAT "]\n", s->optDetailString(), node->getOpCode().getName(), node))
+         {
+         s->anchorChildren(node, s->_curTree);
+         s->prepareToReplaceNode(node, secondChild->getOpCodeValue());
+
+         setNodeValue(node, value);
+         return node;
+         }
+
+      return NULL;
+      }
+   };
+
+BinaryOpSimplifier<int8_t> getByteBinaryOpSimplifier(TR::Simplifier * s)
+   {
+   return BinaryOpSimplifier<int8_t>(s, BinaryOpSimplifierHelpers::getNodeByteValue, BinaryOpSimplifierHelpers::setNodeByteValue);
+   }
+
+BinaryOpSimplifier<int16_t> getShortBinaryOpSimplifier(TR::Simplifier * s)
+   {
+   return BinaryOpSimplifier<int16_t>(s, BinaryOpSimplifierHelpers::getNodeShortValue, BinaryOpSimplifierHelpers::setNodeShortValue);
+   }
+
+BinaryOpSimplifier<int32_t> getIntBinaryOpSimplifier(TR::Simplifier * s)
+   {
+   return BinaryOpSimplifier<int32_t>(s, BinaryOpSimplifierHelpers::getNodeIntValue, BinaryOpSimplifierHelpers::setNodeIntValue);
+   }
+
+BinaryOpSimplifier<int64_t> getLongBinaryOpSimplifier(TR::Simplifier * s)
+   {
+   return BinaryOpSimplifier<int64_t>(s, BinaryOpSimplifierHelpers::getNodeLongValue, BinaryOpSimplifierHelpers::setNodeLongValue);
+   }
+
+BinaryOpSimplifier<uint32_t> getFloatBitsBinaryOpSimplifier(TR::Simplifier * s)
+   {
+   return BinaryOpSimplifier<uint32_t>(s, BinaryOpSimplifierHelpers::getNodeFloatBits, BinaryOpSimplifierHelpers::setNodeFloatBits);
+   }
+
+BinaryOpSimplifier<uint64_t> getDoubleBitsBinaryOpSimplifier(TR::Simplifier * s)
+   {
+   return BinaryOpSimplifier<uint64_t>(s, BinaryOpSimplifierHelpers::getNodeDoubleBits, BinaryOpSimplifierHelpers::setNodeDoubleBits);
+   }
 
 static TR::ILOpCodes addOps[TR::NumAllTypes] = { TR::BadILOp,
                                                TR::badd,    TR::sadd,    TR::iadd,    TR::ladd,
@@ -6021,7 +6152,11 @@ TR::Node *iaddSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
       return node;
       }
 
-   BINARY_IDENTITY_OP(Int, 0)
+   auto binOpSimplifier = getIntBinaryOpSimplifier(s);
+   auto identity = binOpSimplifier.tryToSimplifyIdentityOp(node, 0);
+   if (identity)
+      return identity;
+
    TR::ILOpCodes firstChildOp  = firstChild->getOpCodeValue();
    TR::ILOpCodes secondChildOp = secondChild->getOpCodeValue();
    TR::ILOpCodes nodeOp        = node->getOpCodeValue();
@@ -6452,7 +6587,11 @@ TR::Node *laddSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
       return node;
       }
 
-   BINARY_IDENTITY_OP(LongInt, 0L)
+   auto binOpSimplifier = getLongBinaryOpSimplifier(s);
+   auto identity = binOpSimplifier.tryToSimplifyIdentityOp(node, 0L);
+   if (identity)
+      return identity;
+
    TR::ILOpCodes firstChildOp  = firstChild->getOpCodeValue();
    TR::ILOpCodes secondChildOp = secondChild->getOpCodeValue();
    // normalize adds of positive constants to be isubs.  Have to do it this way because
@@ -6704,20 +6843,12 @@ TR::Node *faddSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
 
    orderChildren(node, firstChild, secondChild, s);
 
-   // In IEEE FP Arithmetic, f + 0.0 is f
-   // Pretend to be an int before doing the comparison
-   // The simplification was removed because when f=-0.0
-   // the result of f+(+0.0) is +0.0 (and not f)
-   // If we would have ranges about f we might use the simplification in some cases
-   //   BINARY_IDENTITY_OP(Int, FLOAT_POS_ZERO)
-
    // In IEEE FP Arithmetic, f + -0.0 is f
    // Pretend to be an int before doing the comparison
-   //
-   BINARY_IDENTITY_OP(FloatBits, FLOAT_NEG_ZERO)
-
-   firstChild = node->getFirstChild();
-   secondChild = node->getSecondChild();
+   auto binOpSimplifier = getFloatBitsBinaryOpSimplifier(s);
+   auto identity = binOpSimplifier.tryToSimplifyIdentityOp(node, FLOAT_NEG_ZERO);
+   if (identity)
+      return identity;
 
    return node;
    }
@@ -6742,13 +6873,10 @@ TR::Node *daddSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
 
    // In IEEE FP Arithmetic, d + 0.0 is d
    // Pretend to be an int before doing the comparison
-   //
-   // According to the java spec -0.0 + 0.0 == 0.0
-   // BINARY_IDENTITY_OP(LongInt, DOUBLE_POS_ZERO)
-   // In IEEE FP Arithmetic, d + -0.0 is d
-   // Pretend to be an int before doing the comparison
-   //
-   BINARY_IDENTITY_OP(LongInt, DOUBLE_NEG_ZERO)
+   auto binOpSimplifier = getDoubleBitsBinaryOpSimplifier(s);
+   auto identity = binOpSimplifier.tryToSimplifyIdentityOp(node, DOUBLE_NEG_ZERO);
+   if (identity)
+      return identity;
 
    return node;
    }
@@ -6799,8 +6927,14 @@ TR::Node *isubSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
       return node;
       }
 
-   if (!node->nodeRequiresConditionCodes()) // don't do identity op on cc nodes on zemulator
-      BINARY_IDENTITY_OP(Int, 0)
+   // don't do identity op on cc nodes on zemulator
+   if (!node->nodeRequiresConditionCodes())
+      {
+      auto binOpSimplifier = getIntBinaryOpSimplifier(s);
+      auto identity = binOpSimplifier.tryToSimplifyIdentityOp(node, 0);
+      if (identity)
+         return identity;
+      }
 
    TR::ILOpCodes secondChildOp = secondChild->getOpCodeValue();
    TR::ILOpCodes firstChildOp  = firstChild->getOpCodeValue();
@@ -7252,7 +7386,12 @@ TR::Node *lsubSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
       }
 
    if (!node->nodeRequiresConditionCodes())
-      BINARY_IDENTITY_OP(LongInt, 0L)
+      {
+      auto binOpSimplifier = getLongBinaryOpSimplifier(s);
+      auto identity = binOpSimplifier.tryToSimplifyIdentityOp(node, 0L);
+      if (identity)
+         return identity;
+      }
 
    TR::ILOpCodes firstChildOp  = firstChild->getOpCodeValue();
    TR::ILOpCodes secondChildOp = secondChild->getOpCodeValue();
@@ -7823,18 +7962,10 @@ TR::Node *fsubSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
 
    // In IEEE FP Arithmetic, f - 0.0 is f
    // Pretend to be an int before doing the comparison
-   //
-   BINARY_IDENTITY_OP(FloatBits, FLOAT_POS_ZERO)
-
-   // In IEEE FP Arithmetic, f - -0.0 is f
-   // Pretend to be an int before doing the comparison
-   // The simplification was removed because when f=-0.0
-   // the result of f-(-0.0) is +0.0 (and not f)
-   // If we would have ranges about f we might use the simplification in some cases
-   // BINARY_IDENTITY_OP(Int, FLOAT_NEG_ZERO)
-
-   firstChild  = node->getFirstChild();
-   secondChild = node->getSecondChild();
+   auto binOpSimplifier = getFloatBitsBinaryOpSimplifier(s);
+   auto identity = binOpSimplifier.tryToSimplifyIdentityOp(node, FLOAT_POS_ZERO);
+   if (identity)
+      return identity;
 
    return node;
    }
@@ -7857,13 +7988,10 @@ TR::Node *dsubSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
 
    // In IEEE FP Arithmetic, d - 0.0 is d
    // Pretend to be an int before doing the comparison
-   //
-   // According to the java spec -0.0 - (-0.0) == 0.0
-   // BINARY_IDENTITY_OP(LongInt, DOUBLE_NEG_ZERO)
-   // In IEEE FP Arithmetic, d - -0.0 is d
-   // Pretend to be an int before doing the comparison
-   //
-   BINARY_IDENTITY_OP(LongInt, DOUBLE_POS_ZERO)
+   auto binOpSimplifier = getDoubleBitsBinaryOpSimplifier(s);
+   auto identity = binOpSimplifier.tryToSimplifyIdentityOp(node, DOUBLE_POS_ZERO);
+   if (identity)
+      return identity;
 
    return node;
    }
@@ -7902,7 +8030,11 @@ TR::Node *imulSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
       }
 
    orderChildren(node, firstChild, secondChild, s);
-   BINARY_IDENTITY_OR_ZERO_OP(int32_t, Int, 1, 0)
+
+   auto binOpSimplifier = getIntBinaryOpSimplifier(s);
+   auto result = binOpSimplifier.tryToSimplifyIdentityOrZeroOp(block, node, 1, 0);
+   if (result)
+      return result;
 
    TR::ILOpCodes firstChildOp  = firstChild->getOpCodeValue();
    TR::ILOpCodes secondChildOp = secondChild->getOpCodeValue();
@@ -8267,7 +8399,11 @@ TR::Node *lmulSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
 
    orderChildren(node, firstChild, secondChild, s);
    orderChildrenByHighWordZero(node, firstChild, secondChild, s);
-   BINARY_IDENTITY_OR_ZERO_OP(int64_t, LongInt, 1L, 0L)
+
+   auto binOpSimplifier = getLongBinaryOpSimplifier(s);
+   auto result = binOpSimplifier.tryToSimplifyIdentityOrZeroOp(block, node, 1L, 0L);
+   if (result)
+      return result;
 
    // TODO - strength reduction
    TR::ILOpCodes firstChildOp  = firstChild->getOpCodeValue();
@@ -8483,8 +8619,10 @@ TR::Node *fmulSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
       {
       // In IEEE FP Arithmetic, f * 1.0 is f
       // Pretend to be an int before doing the comparison
-      //
-      BINARY_IDENTITY_OP(FloatBits, FLOAT_ONE)
+      auto binOpSimplifier = getFloatBitsBinaryOpSimplifier(s);
+      auto identity = binOpSimplifier.tryToSimplifyIdentityOp(node, FLOAT_ONE);
+      if (identity)
+         return identity;
       }
 
    firstChild  = node->getFirstChild();
@@ -8531,8 +8669,10 @@ TR::Node *dmulSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
       {
       // In IEEE FP Arithmetic, d * 1.0 is d
       // Pretend to be an int before doing the comparison
-      //
-      BINARY_IDENTITY_OP(LongInt, DOUBLE_ONE)
+      auto binOpSimplifier = getDoubleBitsBinaryOpSimplifier(s);
+      auto identity = binOpSimplifier.tryToSimplifyIdentityOp(node, DOUBLE_ONE);
+      if (identity)
+         return identity;
       }
    return node;
    }
@@ -8550,7 +8690,11 @@ TR::Node *bmulSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
       }
 
    orderChildren(node, firstChild, secondChild, s);
-   BINARY_IDENTITY_OR_ZERO_OP(int8_t, Byte, 1, 0)
+
+   auto binOpSimplifier = getByteBinaryOpSimplifier(s);
+   auto result = binOpSimplifier.tryToSimplifyIdentityOrZeroOp(block, node, 1, 0);
+   if (result)
+      return result;
 
    // TODO - strength reduction
 
@@ -8570,7 +8714,11 @@ TR::Node *smulSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
       }
 
    orderChildren(node, firstChild, secondChild, s);
-   BINARY_IDENTITY_OR_ZERO_OP(int16_t, ShortInt, 1, 0)
+
+   auto binOpSimplifier = getShortBinaryOpSimplifier(s);
+   auto result = binOpSimplifier.tryToSimplifyIdentityOrZeroOp(block, node, 1, 0);
+   if (result)
+      return result;
 
    // TODO - strength reduction
 
@@ -9200,8 +9348,10 @@ TR::Node *fdivSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
 
    // In IEEE FP Arithmetic, f / 1.0 is f
    // Pretend to be an int before doing the comparison
-   //
-   BINARY_IDENTITY_OP(FloatBits, FLOAT_ONE)
+   auto binOpSimplifier = getFloatBitsBinaryOpSimplifier(s);
+   auto identity = binOpSimplifier.tryToSimplifyIdentityOp(node, FLOAT_ONE);
+   if (identity)
+      return identity;
 
    firstChild  = node->getFirstChild();
    secondChild = node->getSecondChild();
@@ -9258,7 +9408,11 @@ TR::Node *ddivSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
    // In IEEE FP Arithmetic, d / 1.0 is d
    // Pretend to be an int before doing the comparison
    //
-   BINARY_IDENTITY_OP(LongInt, DOUBLE_ONE)
+   auto binOpSimplifier = getDoubleBitsBinaryOpSimplifier(s);
+   auto identity = binOpSimplifier.tryToSimplifyIdentityOp(node, DOUBLE_ONE);
+   if (identity)
+      return identity;
+
    return node;
    }
 
@@ -9285,7 +9439,10 @@ TR::Node *bdivSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
          }
 
       // Handle the possibility of a division by constant value one
-      BINARY_IDENTITY_OP(Byte, 1)
+      auto binOpSimplifier = getByteBinaryOpSimplifier(s);
+      auto identity = binOpSimplifier.tryToSimplifyIdentityOp(node, 1);
+      if (identity)
+         return identity;
       }
 
    return node;
@@ -9317,7 +9474,10 @@ TR::Node *sdivSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
          }
 
       // Handle the possibility of a division by constant value one
-      BINARY_IDENTITY_OP(ShortInt, 1)
+      auto binOpSimplifier = getShortBinaryOpSimplifier(s);
+      auto identity = binOpSimplifier.tryToSimplifyIdentityOp(node, 1);
+      if (identity)
+         return identity;
       }
 
    return node;
@@ -10093,7 +10253,11 @@ TR::Node *ishlSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
       }
 
    normalizeConstantShiftAmount(node, INT_SHIFT_MASK, secondChild, s);
-   BINARY_IDENTITY_OP(Int, 0)
+
+   auto binOpSimplifier = getIntBinaryOpSimplifier(s);
+   auto identity = binOpSimplifier.tryToSimplifyIdentityOp(node, 0);
+   if (identity)
+      return identity;
 
    if (secondChild->getOpCode().isLoadConst() &&
        performTransformation(s->comp(), "%sChanged ishl by const into imul by const in node [%s]\n", s->optDetailString(), node->getName(s->getDebug())))
@@ -10131,7 +10295,11 @@ TR::Node *lshlSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
       }
 
    normalizeConstantShiftAmount(node, LONG_SHIFT_MASK, secondChild, s);
-   BINARY_IDENTITY_OP(Int, 0)
+
+   auto binOpSimplifier = getIntBinaryOpSimplifier(s);
+   auto identity = binOpSimplifier.tryToSimplifyIdentityOp(node, 0);
+   if (identity)
+      return identity;
 
    if (secondChild->getOpCode().isLoadConst())
       {
@@ -10172,7 +10340,11 @@ TR::Node *bshlSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
       return node;
       }
 
-   BINARY_IDENTITY_OP(Int, 0)
+   auto binOpSimplifier = getIntBinaryOpSimplifier(s);
+   auto identity = binOpSimplifier.tryToSimplifyIdentityOp(node, 0);
+   if (identity)
+      return identity;
+
    return node;
    }
 
@@ -10187,7 +10359,12 @@ TR::Node *sshlSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
       foldShortIntConstant(node, firstChild->getShortInt()<<(secondChild->getInt() & INT_SHIFT_MASK), s, false /* !anchorChildren */);
       return node;
       }
-   BINARY_IDENTITY_OP(Int, 0)
+
+   auto binOpSimplifier = getIntBinaryOpSimplifier(s);
+   auto identity = binOpSimplifier.tryToSimplifyIdentityOp(node, 0);
+   if (identity)
+      return identity;
+
    return node;
    }
 
@@ -10208,7 +10385,11 @@ TR::Node *ishrSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
       }
 
    normalizeConstantShiftAmount(node, INT_SHIFT_MASK, secondChild, s);
-   BINARY_IDENTITY_OP(Int, 0)
+
+   auto binOpSimplifier = getIntBinaryOpSimplifier(s);
+   auto identity = binOpSimplifier.tryToSimplifyIdentityOp(node, 0);
+   if (identity)
+      return identity;
 
    normalizeShiftAmount(node, 31, s);
 
@@ -10228,7 +10409,11 @@ TR::Node *lshrSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
       }
 
    normalizeConstantShiftAmount(node, LONG_SHIFT_MASK, secondChild, s);
-   BINARY_IDENTITY_OP(Int, 0)
+
+   auto binOpSimplifier = getIntBinaryOpSimplifier(s);
+   auto identity = binOpSimplifier.tryToSimplifyIdentityOp(node, 0);
+   if (identity)
+      return identity;
 
    normalizeShiftAmount(node, 63, s);
 
@@ -10247,7 +10432,11 @@ TR::Node *bshrSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
       return node;
       }
 
-   BINARY_IDENTITY_OP(Int, 0)
+   auto binOpSimplifier = getIntBinaryOpSimplifier(s);
+   auto identity = binOpSimplifier.tryToSimplifyIdentityOp(node, 0);
+   if (identity)
+      return identity;
+
    return node;
    }
 
@@ -10262,7 +10451,11 @@ TR::Node *sshrSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
       foldShortIntConstant(node, firstChild->getShortInt()>>(secondChild->getInt() & INT_SHIFT_MASK), s, false /* !anchorChildren */);
       return node;
       }
-   BINARY_IDENTITY_OP(Int, 0)
+
+   auto binOpSimplifier = getIntBinaryOpSimplifier(s);
+   auto identity = binOpSimplifier.tryToSimplifyIdentityOp(node, 0);
+   if (identity)
+      return identity;
 
    return node;
    }
@@ -10284,8 +10477,11 @@ TR::Node *iushrSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s
       }
 
    normalizeConstantShiftAmount(node, INT_SHIFT_MASK, secondChild, s);
-   BINARY_IDENTITY_OP(Int, 0)
 
+   auto binOpSimplifier = getIntBinaryOpSimplifier(s);
+   auto identity = binOpSimplifier.tryToSimplifyIdentityOp(node, 0);
+   if (identity)
+      return identity;
 
    // look for bogus code sequence used in compress to zero extend a short
    // using two shifts.  Also catches pairs of shifts that can be performed
@@ -10412,7 +10608,11 @@ TR::Node *lushrSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s
       }
 
    normalizeConstantShiftAmount(node, LONG_SHIFT_MASK, secondChild, s);
-   BINARY_IDENTITY_OP(Int, 0)
+
+   auto binOpSimplifier = getIntBinaryOpSimplifier(s);
+   auto identity = binOpSimplifier.tryToSimplifyIdentityOp(node, 0);
+   if (identity)
+      return identity;
 
    // look for bogus code sequence used in compress to zero extend a short
    // using two shifts.  Also catches pairs of shifts that can be performed
@@ -10508,7 +10708,11 @@ TR::Node *bushrSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s
       return node;
       }
 
-   BINARY_IDENTITY_OP(Int, 0)
+   auto binOpSimplifier = getIntBinaryOpSimplifier(s);
+   auto identity = binOpSimplifier.tryToSimplifyIdentityOp(node, 0);
+   if (identity)
+      return identity;
+
    return node;
    }
 
@@ -10523,7 +10727,11 @@ TR::Node *sushrSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s
       foldShortIntConstant(node, firstChild->getUnsignedShortInt()>>(secondChild->getInt() & INT_SHIFT_MASK), s, false /* !anchorChildren */);
       return node;
       }
-   BINARY_IDENTITY_OP(Int, 0)
+
+   auto binOpSimplifier = getIntBinaryOpSimplifier(s);
+   auto identity = binOpSimplifier.tryToSimplifyIdentityOp(node, 0);
+   if (identity)
+      return identity;
 
    return node;
    }
@@ -10598,7 +10806,11 @@ TR::Node *iandSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
       }
 
    orderChildren(node, firstChild, secondChild, s);
-   BINARY_IDENTITY_OR_ZERO_OP(int32_t, Int, -1, 0)
+
+   auto binOpSimplifier = getIntBinaryOpSimplifier(s);
+   auto result = binOpSimplifier.tryToSimplifyIdentityOrZeroOp(block, node, -1, 0);
+   if (result)
+      return result;
 
    if (TR::Node* foldedNode = tryFoldAndWidened(s, node))
       {
@@ -10746,7 +10958,11 @@ TR::Node *landSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
 
    orderChildren(node, firstChild, secondChild, s);
    orderChildrenByHighWordZero(node, firstChild, secondChild, s);
-   BINARY_IDENTITY_OR_ZERO_OP(int64_t, LongInt, -1L, 0L)
+
+   auto binOpSimplifier = getLongBinaryOpSimplifier(s);
+   auto result = binOpSimplifier.tryToSimplifyIdentityOrZeroOp(block, node, -1L, 0L);
+   if (result)
+      return result;
 
    if (TR::Node* foldedNode = tryFoldAndWidened(s, node))
       {
@@ -10943,7 +11159,12 @@ TR::Node *bandSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
       }
 
    orderChildren(node, firstChild, secondChild, s);
-   BINARY_IDENTITY_OR_ZERO_OP(int8_t, Byte, -1, 0)
+
+   auto binOpSimplifier = getByteBinaryOpSimplifier(s);
+   auto result = binOpSimplifier.tryToSimplifyIdentityOrZeroOp(block, node, -1, 0);
+   if (result)
+      return result;
+
    return node;
    }
 
@@ -10959,7 +11180,11 @@ TR::Node *sandSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
       return node;
       }
    orderChildren(node, firstChild, secondChild, s);
-   BINARY_IDENTITY_OR_ZERO_OP(int16_t, ShortInt, -1, 0)
+
+   auto binOpSimplifier = getShortBinaryOpSimplifier(s);
+   auto result = binOpSimplifier.tryToSimplifyIdentityOrZeroOp(block, node, -1, 0);
+   if (result)
+      return result;
 
    if (TR::Node* foldedNode = tryFoldAndWidened(s, node))
       {
@@ -11123,7 +11348,10 @@ TR::Node *iorSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
       return node;
       }
 
-   BINARY_IDENTITY_OR_ZERO_OP(int32_t, Int, 0, -1)
+   auto binOpSimplifier = getIntBinaryOpSimplifier(s);
+   auto result = binOpSimplifier.tryToSimplifyIdentityOrZeroOp(block, node, 0, -1);
+   if (result)
+      return result;
 
    TR::ILOpCodes firstChildOp  = firstChild->getOpCodeValue();
    TR::ILOpCodes secondChildOp = secondChild->getOpCodeValue();
@@ -11264,7 +11492,10 @@ TR::Node *lorSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
       return node;
       }
 
-   BINARY_IDENTITY_OR_ZERO_OP(int64_t, LongInt, 0L, -1L)
+   auto binOpSimplifier = getLongBinaryOpSimplifier(s);
+   auto result = binOpSimplifier.tryToSimplifyIdentityOrZeroOp(block, node, 0L, -1L);
+   if (result)
+      return result;
 
    TR::ILOpCodes firstChildOp  = firstChild->getOpCodeValue();
    TR::ILOpCodes secondChildOp = secondChild->getOpCodeValue();
@@ -11455,7 +11686,12 @@ TR::Node *borSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
       node->setVisitCount(0);
       s->_alteredBlock = true;
       }
-   BINARY_IDENTITY_OR_ZERO_OP(int8_t, Byte, 0, -1)
+
+   auto binOpSimplifier = getByteBinaryOpSimplifier(s);
+   auto result = binOpSimplifier.tryToSimplifyIdentityOrZeroOp(block, node, 0, -1);
+   if (result)
+      return result;
+
    return node;
    }
 
@@ -11484,7 +11720,10 @@ TR::Node *sorSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
       return node;
       }
 
-   BINARY_IDENTITY_OR_ZERO_OP(int16_t, ShortInt, 0, -1)
+   auto binOpSimplifier = getShortBinaryOpSimplifier(s);
+   auto result = binOpSimplifier.tryToSimplifyIdentityOrZeroOp(block, node, 0, -1);
+   if (result)
+      return result;
 
    return node;
    }
@@ -11523,7 +11762,11 @@ TR::Node *ixorSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
       return node;
 
    orderChildren(node, firstChild, secondChild, s);
-   BINARY_IDENTITY_OP(Int, 0)
+
+   auto binOpSimplifier = getIntBinaryOpSimplifier(s);
+   auto identity = binOpSimplifier.tryToSimplifyIdentityOp(node, 0);
+   if (identity)
+      return identity;
 
    TR::ILOpCodes firstChildOp  = firstChild->getOpCodeValue();
    TR::ILOpCodes secondChildOp = secondChild->getOpCodeValue();
@@ -11606,7 +11849,11 @@ TR::Node *lxorSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
       return node;
    orderChildren(node, firstChild, secondChild, s);
    orderChildrenByHighWordZero(node, firstChild, secondChild, s);
-   BINARY_IDENTITY_OP(LongInt, 0L)
+
+   auto binOpSimplifier = getLongBinaryOpSimplifier(s);
+   auto identity = binOpSimplifier.tryToSimplifyIdentityOp(node, 0L);
+   if (identity)
+      return identity;
 
    TR::ILOpCodes firstChildOp  = firstChild->getOpCodeValue();
    TR::ILOpCodes secondChildOp = secondChild->getOpCodeValue();
@@ -11719,7 +11966,12 @@ TR::Node *bxorSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
       }
 
    orderChildren(node, firstChild, secondChild, s);
-   BINARY_IDENTITY_OP(Byte, 0)
+
+   auto binOpSimplifier = getByteBinaryOpSimplifier(s);
+   auto identity = binOpSimplifier.tryToSimplifyIdentityOp(node, 0);
+   if (identity)
+      return identity;
+
    return node;
    }
 
@@ -11736,7 +11988,11 @@ TR::Node *sxorSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
       }
 
    orderChildren(node, firstChild, secondChild, s);
-   BINARY_IDENTITY_OP(ShortInt, 0)
+
+   auto binOpSimplifier = getShortBinaryOpSimplifier(s);
+   auto identity = binOpSimplifier.tryToSimplifyIdentityOp(node, 0);
+   if (identity)
+      return identity;
 
    return node;
    }

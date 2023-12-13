@@ -4258,11 +4258,11 @@ void TR_InlinerBase::applyPolicyToTargets(TR_CallStack *callStack, TR_CallSite *
 
 static bool traceIfMatchesPattern(TR::Compilation* comp)
    {
-   static char* cRegex = feGetEnv ("TR_printIfRegex");
+   static const char *cRegex = feGetEnv ("TR_printIfRegex");
 
    if (cRegex && comp->getOptions() && comp->getOptions()->getDebug())
       {
-      static TR::SimpleRegex * regex = TR::SimpleRegex::create(cRegex);
+      static TR::SimpleRegex *regex = TR::SimpleRegex::create(cRegex);
       if (TR::SimpleRegex::match(regex, comp->signature(), false))
          {
          return true;

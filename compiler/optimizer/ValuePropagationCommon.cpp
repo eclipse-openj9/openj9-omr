@@ -2562,9 +2562,9 @@ void OMR::ValuePropagation::generateArrayTranslateNode(TR::TreeTop *callTree,TR:
          comp()->getSymRefTab()->methodSymRefFromName(
             comp()->getMethodSymbol(),
             "com/ibm/jit/JITHelpers",
-            const_cast<char*> (TR::sun_nio_cs_UTF_16_Encoder_encodeUTF16Big == rm ?
+            TR::sun_nio_cs_UTF_16_Encoder_encodeUTF16Big == rm ?
                "transformedEncodeUTF16Big" :
-               "transformedEncodeUTF16Little"),
+               "transformedEncodeUTF16Little",
             "(JJI)I",
             TR::MethodSymbol::Static
             );
@@ -3962,15 +3962,15 @@ void OMR::ValuePropagation::transformObjectCloneCall(TR::TreeTop *callTree, OMR:
          comp()->getSymRefTab()->methodSymRefFromName(
             comp()->getMethodSymbol(),
             "com/ibm/jit/JITHelpers",
-            const_cast<char*>("jitHelpers"),
-            const_cast<char*>("()Lcom/ibm/jit/JITHelpers;"),
+            "jitHelpers",
+            "()Lcom/ibm/jit/JITHelpers;",
             TR::MethodSymbol::Static);
    TR::SymbolReference* objCopySymRef =
          comp()->getSymRefTab()->methodSymRefFromName(
             comp()->getMethodSymbol(),
             "com/ibm/jit/JITHelpers",
-            const_cast<char*>(comp()->target().is64Bit() ? "unsafeObjectShallowCopy64" : "unsafeObjectShallowCopy32"),
-            const_cast<char*>(comp()->target().is64Bit() ? "(Ljava/lang/Object;Ljava/lang/Object;J)V" : "(Ljava/lang/Object;Ljava/lang/Object;I)V"),
+            comp()->target().is64Bit() ? "unsafeObjectShallowCopy64" : "unsafeObjectShallowCopy32",
+            comp()->target().is64Bit() ? "(Ljava/lang/Object;Ljava/lang/Object;J)V" : "(Ljava/lang/Object;Ljava/lang/Object;I)V",
             TR::MethodSymbol::Static);
    TR::Node *getHelpers = TR::Node::createWithSymRef(callNode, TR::acall, 0, helperAccessor);
    callTree->insertBefore(TR::TreeTop::create(comp(), TR::Node::create(callNode, TR::treetop, 1, getHelpers)));

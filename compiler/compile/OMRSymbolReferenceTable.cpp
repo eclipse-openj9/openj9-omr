@@ -712,11 +712,12 @@ OMR::SymbolReferenceTable::createKnownStaticDataSymbolRef(void *dataAddress, TR:
 TR::SymbolReference *
 OMR::SymbolReferenceTable::createKnownStaticReferenceSymbolRef(void *dataAddress, TR::KnownObjectTable::Index knownObjectIndex)
    {
-   char *name = "<known-static-reference>";
+   const char *name = "<known-static-reference>";
    if (knownObjectIndex != TR::KnownObjectTable::UNKNOWN)
       {
-      name = (char*)trMemory()->allocateMemory(25, heapAlloc);
-      sprintf(name, "<known-obj%d>", knownObjectIndex);
+      char *nameBuffer = (char *)trMemory()->allocateMemory(25, heapAlloc);
+      sprintf(nameBuffer, "<known-obj%d>", knownObjectIndex);
+      name = nameBuffer;
       }
    TR::StaticSymbol * sym = TR::StaticSymbol::createNamed(trHeapMemory(), TR::Address, dataAddress,name);
    return TR::SymbolReference::create(self(), sym, knownObjectIndex);
@@ -950,7 +951,7 @@ OMR::SymbolReferenceTable::findOrCreateMonitorEntrySymbolRef(TR::ResolvedMethodS
  */
 
 TR::SymbolReference *
-OMR::SymbolReferenceTable::methodSymRefFromName(TR::ResolvedMethodSymbol * owningMethodSymbol, char *className, char *methodName, char *methodSignature, TR::MethodSymbol::Kinds kind, int32_t cpIndex)
+OMR::SymbolReferenceTable::methodSymRefFromName(TR::ResolvedMethodSymbol * owningMethodSymbol, const char *className, const char *methodName, const char *methodSignature, TR::MethodSymbol::Kinds kind, int32_t cpIndex)
    {
    // Check _methodsBySignature to see if we've already created a symref for this one
    //

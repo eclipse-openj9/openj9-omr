@@ -707,11 +707,11 @@ OMR_InlinerPolicy::inlineRecognizedMethod(TR::RecognizedMethod method)
 
 // only dumbinliner uses this and includes checking for variable initialization
 bool
-TR_DumbInliner::tryToInline(char *message, TR_CallTarget *calltarget)
+TR_DumbInliner::tryToInline(const char *message, TR_CallTarget *calltarget)
    {
    TR_ResolvedMethod *method = calltarget->_calleeSymbol->getResolvedMethod();
 
-   if (getPolicy()->tryToInline(calltarget,NULL,true))
+   if (getPolicy()->tryToInline(calltarget, NULL, true))
       {
       if (comp()->trace(OMR::inlining))
          traceMsg(comp(), "tryToInline pattern matched; %s for %s\n", message, method->signature(comp()->trMemory()));
@@ -6152,7 +6152,7 @@ const char * TR_InlinerTracer::getGuardTypeString(TR_VirtualGuardSelection *guar
       return "???Test";
    }
 
-TR_InlinerDelimiter::TR_InlinerDelimiter(TR_InlinerTracer *tracer, char * tag)
+TR_InlinerDelimiter::TR_InlinerDelimiter(TR_InlinerTracer *tracer, const char *tag)
    :_tracer(tracer),_tag(tag)
    {
    debugTrace(tracer,"<%s>",_tag);

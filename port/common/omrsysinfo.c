@@ -651,10 +651,10 @@ omrsysinfo_get_CPU_utilization(struct OMRPortLibrary *portLibrary, struct J9Sysi
  * @param[out] cpuLoad the cumulative CPU utilization of all CPUs on the system
  *
  * @return
- * 	- 0 on success
- *		- \arg OMRPORT_ERROR_OPFAILED on the first two invocations of this API
- *		- \arg OMRPORT_ERROR_OPFAILED if less than 10ns have passed since the second call to this API
- *		- negative portable error code on other failures
+ *  \arg 0 on success
+ *  \arg OMRPORT_ERROR_INSUFFICIENT_DATA if only one data point has been recorded
+ *  \arg OMRPORT_ERROR_OPFAILED if less than 10 ms have passed since the last call to this API
+ *  \arg negative portable error code on other failures
  */
 intptr_t
 omrsysinfo_get_CPU_load(struct OMRPortLibrary *portLibrary, double *cpuLoad)

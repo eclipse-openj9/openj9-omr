@@ -45,7 +45,7 @@ compiler_library(env
 	# (for compiler test, but not jitbuilder).
 	# TODO: figure out why and move if required
 	${CMAKE_CURRENT_LIST_DIR}/FEBase.cpp
-	${CMAKE_CURRENT_LIST_DIR}/JitConfig.cpp
+	${CMAKE_CURRENT_LIST_DIR}/OMRJitConfig.cpp
 	${CMAKE_CURRENT_LIST_DIR}/OMRIO.cpp
 	${CMAKE_CURRENT_LIST_DIR}/OMRKnownObjectTable.cpp
 	${CMAKE_CURRENT_LIST_DIR}/Globals.cpp

@@ -25,11 +25,11 @@
 #include "compiler/env/FrontEnd.hpp"
 
 #include "compile/CompilationTypes.hpp"
-#include "env/JitConfig.hpp"
 #include "env/jittypes.h"
 #include "runtime/CodeCache.hpp"
 #include "runtime/CodeCacheManager.hpp"
 #include "env/CompilerEnv.hpp"
+#include "env/JitConfig.hpp"
 
 class TR_ResolvedMethod;
 
@@ -61,17 +61,11 @@ class FECommon : public ::TR_FrontEnd
    virtual uintptr_t getOffsetOfIndexableSizeField() { return -1; }
    };
 
-template <class T> struct FETraits {};
-
 template <class Derived>
 class FEBase : public FECommon
    {
-   public:
-   // Define our types in terms of the Traits
-   typedef typename TR::FETraits<Derived>::JitConfig        JitConfig;
-
    private:
-   JitConfig            _config;
+   TR::JitConfig        _config;
    TR::CodeCacheManager _codeCacheManager;
 
    // this is deprecated in favour of TR::Allocator
@@ -89,7 +83,7 @@ class FEBase : public FECommon
 
    static Derived &singleton() { return *(Derived::instance()); }
 
-   JitConfig *jitConfig() { return &_config; }
+   TR::JitConfig *jitConfig() { return &_config; }
    TR::CodeCacheManager &codeCacheManager() { return _codeCacheManager; }
 
    virtual uint8_t * allocateRelocationData(TR::Compilation* comp, uint32_t size);

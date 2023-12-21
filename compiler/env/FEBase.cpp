@@ -108,7 +108,7 @@ char *feGetEnv(const char *s)
 TR::OptionTable OMR::Options::_feOptions[] =
    {
    {"code=",              "C<nnn>\tsize of a single code cache, in KB",
-    TR::Options::set32BitNumericInJitConfig, offsetof(OMR::FrontEnd::JitConfig, options.codeCacheKB), 0, " %d (KB)"},
+    TR::Options::set32BitNumericInJitConfig, offsetof(TR::JitConfig, options.codeCacheKB), 0, " %d (KB)"},
    {"exclude=",   "D{regexp}\tdo not compile methods matching regexp", TR::Options::limitOption, 1, 0, "P%s"},
    {"limit=",     "D{regexp}\tonly compile methods matching regexp", TR::Options::limitOption, 0, 0, "P%s"},
    {"limitfile=", "D<filename>\tfilter methods as defined in filename.  "

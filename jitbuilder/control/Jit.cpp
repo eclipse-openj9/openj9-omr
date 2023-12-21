@@ -28,13 +28,13 @@
 #include "env/CompilerEnv.hpp"
 #include "env/FrontEnd.hpp"
 #include "env/IO.hpp"
+#include "env/JitConfig.hpp"
 #include "env/RawAllocator.hpp"
 #include "ilgen/IlGeneratorMethodDetails_inlines.hpp"
 #include "ilgen/MethodBuilder.hpp"
 #include "ilgen/TypeDictionary.hpp"
 #include "runtime/CodeCache.hpp"
 #include "runtime/Runtime.hpp"
-#include "runtime/JBJitConfig.hpp"
 #include "control/CompilationController.hpp"
 
 #if defined(AIXPPC)
@@ -59,7 +59,7 @@ initHelper(void *helper, TR_RuntimeHelper id)
    }
 
 static void
-initializeAllHelpers(JitBuilder::JitConfig *jitConfig, TR_RuntimeHelper *helperIDs, void **helperAddresses, int32_t numHelpers)
+initializeAllHelpers(TR::JitConfig *jitConfig, TR_RuntimeHelper *helperIDs, void **helperAddresses, int32_t numHelpers)
    {
    initializeJitRuntimeHelperTable(false);
 
@@ -103,7 +103,7 @@ initializeCodeCache(TR::CodeCacheManager & codeCacheManager)
    codeCacheConfig._largeCodePageFlags = 0;
    codeCacheConfig._maxNumberOfCodeCaches = 96;
    codeCacheConfig._canChangeNumCodeCaches = true;
-   codeCacheConfig._emitExecutableELF = TR::Options::getCmdLineOptions()->getOption(TR_PerfTool) 
+   codeCacheConfig._emitExecutableELF = TR::Options::getCmdLineOptions()->getOption(TR_PerfTool)
                                     ||  TR::Options::getCmdLineOptions()->getOption(TR_EmitExecutableELFFile);
    codeCacheConfig._emitRelocatableELF = TR::Options::getCmdLineOptions()->getOption(TR_EmitRelocatableELFFile);
 

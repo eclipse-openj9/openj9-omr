@@ -21,7 +21,7 @@
 
 #include "env/JitConfig.hpp"
 #include <string.h>
-#include "env/ConcreteFE.hpp"
+#include "env/FrontEnd.hpp"
 
 TR::JitConfig *
 OMR::JitConfig::self()
@@ -38,5 +38,5 @@ OMR::JitConfig::JitConfig()
 TR::JitConfig *
 OMR::JitConfig::instance()
    {
-   return OMR::FrontEnd::singleton().jitConfig();
+   return TR::FrontEnd::singleton().jitConfig();
    }

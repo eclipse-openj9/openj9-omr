@@ -44,7 +44,7 @@ compiler_library(env
 	# The following are listed under JIT_PRODUCT_SOURCE_FILES
 	# (for compiler test, but not jitbuilder).
 	# TODO: figure out why and move if required
-	${CMAKE_CURRENT_LIST_DIR}/FEBase.cpp
+	${CMAKE_CURRENT_LIST_DIR}/OMRFrontEnd.cpp
 	${CMAKE_CURRENT_LIST_DIR}/OMRJitConfig.cpp
 	${CMAKE_CURRENT_LIST_DIR}/OMRIO.cpp
 	${CMAKE_CURRENT_LIST_DIR}/OMRKnownObjectTable.cpp

@@ -41,7 +41,6 @@
 #include "control/Options_inlines.hpp"
 #include "env/CPU.hpp"
 #include "env/CompilerEnv.hpp"
-#include "env/ConcreteFE.hpp"
 #include "env/IO.hpp"
 #include "env/JitConfig.hpp"
 #include "env/PersistentInfo.hpp"
@@ -133,7 +132,7 @@ generatePerfToolEntry(uint8_t *startPC, uint8_t *endPC, const char *sig, const c
 #include "p/codegen/PPCTableOfConstants.hpp"
 #endif
 
-int32_t commonJitInit(OMR::FrontEnd &fe, char *cmdLineOptions)
+int32_t commonJitInit(TR::FrontEnd &fe, char *cmdLineOptions)
    {
    auto jitConfig = fe.jitConfig();
 
@@ -180,7 +179,7 @@ int32_t commonJitInit(OMR::FrontEnd &fe, char *cmdLineOptions)
 
 int32_t init_options(TR::JitConfig *jitConfig, char *cmdLineOptions)
    {
-   OMR::FrontEnd *fe = OMR::FrontEnd::instance();
+   TR::FrontEnd *fe = TR::FrontEnd::instance();
 
    if (cmdLineOptions)
       {
@@ -212,7 +211,7 @@ int32_t init_options(TR::JitConfig *jitConfig, char *cmdLineOptions)
    return 0;
    }
 
-static bool methodCanBeCompiled(OMR::FrontEnd *fe, TR_ResolvedMethod &method, TR_FilterBST *&filter, TR_Memory *trMemory)
+static bool methodCanBeCompiled(TR::FrontEnd *fe, TR_ResolvedMethod &method, TR_FilterBST *&filter, TR_Memory *trMemory)
    {
    if (!method.isCompilable(trMemory))
       return false;
@@ -274,7 +273,7 @@ compileMethodFromDetails(
       int32_t &rc)
    {
    uint64_t translationStartTime = TR::Compiler->vm.getUSecClock();
-   OMR::FrontEnd &fe = OMR::FrontEnd::singleton();
+   TR::FrontEnd &fe = TR::FrontEnd::singleton();
    auto jitConfig = fe.jitConfig();
    TR::RawAllocator rawAllocator;
    TR::SystemSegmentProvider defaultSegmentProvider(1 << 16, rawAllocator);

@@ -136,7 +136,7 @@ initializeJitBuilder(TR_RuntimeHelper *helperIDs, void **helperAddresses, int32_
    TR::Compiler->initialize();
 
    // --------------------------------------------------------------------------
-   static JitBuilder::FrontEnd fe;
+   static TR::FrontEnd fe;
    auto jitConfig = fe.jitConfig();
 
    initializeAllHelpers(jitConfig, helperIDs, helperAddresses, numHelpers);
@@ -214,7 +214,7 @@ internal_compileMethodBuilder(TR::MethodBuilder *m, void **entry)
 void
 internal_shutdownJit()
    {
-   auto fe = JitBuilder::FrontEnd::instance();
+   auto fe = TR::FrontEnd::instance();
 
    TR::CodeCacheManager &codeCacheManager = fe->codeCacheManager();
    codeCacheManager.destroy();

@@ -33,9 +33,6 @@
 #include "runtime/Runtime.hpp"
 #include "env/CompilerEnv.hpp"
 
-#if defined(JITTEST)
-#include "env/ConcreteFE.hpp"
-#endif
 
 namespace TR { class CodeGenerator; }
 
@@ -76,7 +73,7 @@ extern void registerTrampoline(uint8_t *start, uint32_t size, const char *name);
 void
 ppcCreateHelperTrampolines(uint8_t *trampPtr, int32_t numHelpers)
    {
-   TR::CodeCacheManager &manager = OMR::FrontEnd::singleton().codeCacheManager();
+   TR::CodeCacheManager &manager = TR::FrontEnd::singleton().codeCacheManager();
    TR::CodeCacheConfig &config = manager.codeCacheConfig();
    char name[256];
 

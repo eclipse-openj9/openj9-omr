@@ -128,7 +128,7 @@ FooBarTest::invokeTests()
 
 // This test will get assertion on S390-64, because of
 // "compiler/codegen/FrontEnd.cpp" TR_FrontEnd::methodTrampolineLookup is unimplemented and
-// "test/env/FrontEnd.cpp"  TestCompiler::FrontEnd::methodTrampolineLookup is "methodTrampolineLookup not implemented yet".
+// "test/env/FrontEnd.cpp"  TR::FrontEnd::methodTrampolineLookup is "methodTrampolineLookup not implemented yet".
 // This test also failed intermittent (segfault) on PPCLE, temporarily disabled this test on PPCLE, under track of Work Item
 // Please remove this #ifdef after those functions are implemented.
 #if defined(TR_TARGET_X86) || defined(TR_TARGET_S390) && !defined(TR_TARGET_64BIT) && !defined(J9ZOS390)

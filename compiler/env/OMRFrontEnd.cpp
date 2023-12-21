@@ -20,36 +20,130 @@
  *******************************************************************************/
 
 #include <stddef.h>
-#include "codegen/CodeGenerator.hpp"
-#include "compile/CompilationTypes.hpp"
+#include "compile/Compilation.hpp"
+#include "compile/Method.hpp"
 #include "compile/ResolvedMethod.hpp"
 #include "control/CompileMethod.hpp"
 #include "control/Options.hpp"
 #include "control/OptionsUtil.hpp"
 #include "control/Options_inlines.hpp"
 #include "env/CompilerEnv.hpp"
-#include "env/ConcreteFE.hpp"
-#include "env/FEBase.hpp"
-#include "env/IO.hpp"
+#include "env/FrontEnd.hpp"
 #include "env/JitConfig.hpp"
 #include "env/VerboseLog.hpp"
 #include "env/jittypes.h"
-#include "compile/CompilationException.hpp"
-#include "il/ILOps.hpp"
-#include "il/ILOps.hpp"
-#include "il/Node.hpp"
-#include "il/Node_inlines.hpp"
+#include "infra/Assert.hpp"
+#include "runtime/CodeCacheManager.hpp"
 
-TR::FECommon::FECommon()
-   : TR_FrontEnd()
-   {}
+#if defined(OMR_OS_WINDOWS)
+#include <windows.h>
+#else
+#include <sys/mman.h>
+#endif /* OMR_OS_WINDOWS */
 
+
+TR::FrontEnd *OMR::FrontEnd::_instance = NULL;
+
+OMR::FrontEnd::FrontEnd() :
+   ::TR_FrontEnd(),
+      _config(),
+      _codeCacheManager(TR::Compiler->rawAllocator),
+      _persistentMemory(jitConfig(), TR::Compiler->persistentAllocator())
+   {
+   TR_ASSERT_FATAL(!_instance, "FrontEnd must be initialized only once");
+   _instance = static_cast<TR::FrontEnd *>(this);
+   ::trPersistentMemory = &_persistentMemory;
+   }
+
+TR::FrontEnd &
+OMR::FrontEnd::singleton()
+   {
+   return *_instance;
+   }
+
+TR::FrontEnd *
+OMR::FrontEnd::instance()
+   {
+   TR_ASSERT_FATAL(_instance, "FrontEnd not initialized");
+   return _instance;
+   }
 
 TR_Debug *
-TR::FECommon::createDebug( TR::Compilation *comp)
+OMR::FrontEnd::createDebug(TR::Compilation *comp)
    {
    return createDebugObject(comp);
    }
+
+void
+OMR::FrontEnd::reserveTrampolineIfNecessary(TR::Compilation *comp, TR::SymbolReference *symRef, bool inBinaryEncoding)
+   {
+   // Do we handle trampoline reservations? return here for now.
+   return;
+   }
+
+TR_ResolvedMethod *
+OMR::FrontEnd::createResolvedMethod(
+      TR_Memory *trMemory,
+      TR_OpaqueMethodBlock *aMethod,
+      TR_ResolvedMethod *owningMethod,
+      TR_OpaqueClassBlock *classForNewInstance)
+   {
+   return new (trMemory->trHeapMemory()) TR::ResolvedMethod(aMethod);
+   }
+
+// This code does not really belong here (along with allocateRelocationData, really)
+// We should be relying on the port library to allocate memory, but this connection
+// has not yet been made, so as a quick workaround for platforms like OS X <= 10.9,
+// where MAP_ANONYMOUS is not defined, is to map MAP_ANON to MAP_ANONYMOUS ourselves
+#if defined(__APPLE__)
+   #if !defined(MAP_ANONYMOUS)
+      #define NO_MAP_ANONYMOUS
+      #if defined(MAP_ANON)
+         #define MAP_ANONYMOUS MAP_ANON
+      #else
+         #error unexpectedly, no MAP_ANONYMOUS or MAP_ANON definition
+      #endif
+   #endif
+#endif /* defined(__APPLE__) */
+
+uint8_t *
+OMR::FrontEnd::allocateRelocationData(TR::Compilation *comp, uint32_t size)
+   {
+   /* FIXME: using an mmap without much thought into whether that is the best
+      way to allocate this */
+   if (size == 0) return 0;
+   TR_ASSERT(size >= 2048, "allocateRelocationData should be used for whole-sale memory allocation only");
+
+#if defined(OMR_OS_WINDOWS)
+   return reinterpret_cast<uint8_t *>(
+         VirtualAlloc(NULL,
+            size,
+            MEM_COMMIT,
+            PAGE_READWRITE));
+// TODO: Why is there no OMR_OS_ZOS? Or any other OS for that matter?
+#elif defined(J9ZOS390)
+   // TODO: This is an absolute hack to get z/OS JITBuilder building and even remotely close to working. We really
+   // ought to be using the port library to allocate such memory. This was the quickest "workaround" I could think
+   // of to just get us off the ground.
+   return reinterpret_cast<uint8_t *>(
+         __malloc31(size));
+#else
+   return reinterpret_cast<uint8_t *>(
+         mmap(0,
+              size,
+              PROT_READ | PROT_WRITE,
+              MAP_PRIVATE | MAP_ANONYMOUS,
+              -1,
+              0));
+#endif /* OMR_OS_WINDOWS */
+   }
+
+// keep the impact of this fix localized
+#if defined(NO_MAP_ANONYMOUS)
+  #undef MAP_ANONYMOUS
+  #undef NO_MAP_ANONYMOUS
+#endif
+
 
 extern "C" {
 
@@ -91,10 +185,6 @@ char *feGetEnv(const char *s)
    }
 
 
-// Options stuff
-#include "control/Options.hpp"
-#include "control/Options_inlines.hpp"
-
 #if defined(LINUX)
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Winvalid-offsetof"
@@ -134,7 +224,7 @@ TR::OptionTable OMR::Options::_feOptions[] =
 #include "control/Recompilation.hpp"
 
 
-// S390 specific fucntion - FIXME: make this only be a problem when HOST is s390.  Also, use a better
+// S390 specific function - FIXME: make this only be a problem when HOST is s390.  Also, use a better
 // name for this
 void setDllSlip(const char *CodeStart, const char *CodeEnd, const char *dllName, TR::Compilation *comp) { TR_UNIMPLEMENTED(); }
 

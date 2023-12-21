@@ -19,55 +19,20 @@
  * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0 OR GPL-2.0-only WITH Classpath-exception-2.0 OR GPL-2.0-only WITH OpenJDK-assembly-exception-1.0
  *******************************************************************************/
 
-#ifndef TESTFE_INCL
-#define TESTFE_INCL
+#ifndef TR_FRONTEND_INCL
+#define TR_FRONTEND_INCL
 
-#include <vector>
-#include "compiler/env/FrontEnd.hpp"
-#include "env/FEBase.hpp"
-#include "env/jittypes.h"
-
-namespace TR { class GCStackAtlas; }
-namespace OMR { struct MethodMetaDataPOD; }
-class TR_ResolvedMethod;
-
-namespace TestCompiler
-{
-
-class FrontEnd : public TR::FEBase<FrontEnd>
-   {
-   private:
-   static FrontEnd   *_instance; /* singleton */
-
-   public:
-   FrontEnd();
-   static FrontEnd *instance()  { TR_ASSERT(_instance, "bad singleton"); return _instance; }
-
-   virtual void reserveTrampolineIfNecessary(TR::Compilation *comp, TR::SymbolReference *symRef, bool inBinaryEncoding);
-
-#if defined(TR_TARGET_S390)
-   virtual void generateBinaryEncodingPrologue(TR_BinaryEncodingData *beData, TR::CodeGenerator *cg);
-#endif
-
-   virtual intptr_t methodTrampolineLookup(TR::Compilation *comp, TR::SymbolReference *symRef,  void *currentCodeCache);
-
-  TR_ResolvedMethod * createResolvedMethod(TR_Memory * trMemory, TR_OpaqueMethodBlock * aMethod,
-                                            TR_ResolvedMethod * owningMethod, TR_OpaqueClassBlock *classForNewInstance);
-
-
-
-   };
-
-} // namespace TestCompiler
+#include "env/OMRFrontEnd.hpp"
 
 namespace TR
 {
-class FrontEnd : public TestCompiler::FrontEnd
+class OMR_EXTENSIBLE FrontEnd : public OMR::FrontEndConnector
    {
    public:
-   FrontEnd();
-   };
 
-} // namespace TR
+   FrontEnd() : OMR::FrontEndConnector() {}
+
+   };
+}
 
 #endif

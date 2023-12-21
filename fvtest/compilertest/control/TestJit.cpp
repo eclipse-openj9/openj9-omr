@@ -165,7 +165,7 @@ initializeTestJit(TR_RuntimeHelper *helperIDs, void **helperAddresses, int32_t n
    TR::Compiler->initialize();
 
    // --------------------------------------------------------------------------
-   static TestCompiler::FrontEnd fe;
+   static TR::FrontEnd fe;
    auto jitConfig = fe.jitConfig();
 
    initializeAllHelpers(jitConfig, helperIDs, helperAddresses, numHelpers);
@@ -196,7 +196,7 @@ extern "C"
 void
 shutdownJit()
    {
-   auto fe = TestCompiler::FrontEnd::instance();
+   auto fe = TR::FrontEnd::instance();
 
    TR::CodeCacheManager &codeCacheManager = fe->codeCacheManager();
    codeCacheManager.destroy();

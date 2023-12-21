@@ -29,6 +29,8 @@ JIT_PRODUCT_BACKEND_SOURCES+=\
     $(JIT_OMR_DIRTY_DIR)/control/OMRRecompilation.cpp  \
     $(JIT_OMR_DIRTY_DIR)/env/ExceptionTable.cpp \
     $(JIT_OMR_DIRTY_DIR)/env/FrontEnd.cpp \
+    $(JIT_OMR_DIRTY_DIR)/env/OMRFrontEnd.cpp \
+    $(JIT_OMR_DIRTY_DIR)/env/OMRJitConfig.cpp \
     $(JIT_OMR_DIRTY_DIR)/infra/Assert.cpp \
     $(JIT_OMR_DIRTY_DIR)/infra/BitVector.cpp \
     $(JIT_OMR_DIRTY_DIR)/infra/Checklist.cpp \
@@ -242,8 +244,6 @@ JIT_PRODUCT_SOURCE_FILES+=\
     $(JIT_PRODUCT_DIR)/tests/TestDriver.cpp \
     $(JIT_PRODUCT_DIR)/tests/X86OpCodesTest.cpp \
     $(JIT_PRODUCT_DIR)/tests/main.cpp \
-    $(JIT_OMR_DIRTY_DIR)/env/FEBase.cpp \
-    $(JIT_OMR_DIRTY_DIR)/env/JitConfig.cpp \
     $(JIT_OMR_DIRTY_DIR)/control/CompilationController.cpp \
     $(JIT_OMR_DIRTY_DIR)/control/OMRCompilationStrategy.cpp \
     $(JIT_OMR_DIRTY_DIR)/optimizer/FEInliner.cpp \
@@ -280,7 +280,6 @@ JIT_PRODUCT_SOURCE_FILES+=\
     $(JIT_OMR_DIRTY_DIR)/runtime/OMRRSSReport.cpp \
     $(JIT_PRODUCT_DIR)/compile/ResolvedMethod.cpp \
     $(JIT_PRODUCT_DIR)/control/TestJit.cpp \
-    $(JIT_PRODUCT_DIR)/env/FrontEnd.cpp \
     $(JIT_PRODUCT_DIR)/ilgen/IlInjector.cpp \
     $(JIT_PRODUCT_DIR)/ilgen/TestIlGeneratorMethodDetails.cpp \
     $(JIT_PRODUCT_DIR)/runtime/TestCodeCacheManager.cpp

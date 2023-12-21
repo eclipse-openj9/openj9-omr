@@ -21,7 +21,7 @@
  *******************************************************************************/
 
 #include "codegen/CodeGenerator.hpp"
-#include "env/ConcreteFE.hpp"
+#include "env/FrontEnd.hpp"
 #include "z/codegen/S390GenerateInstructions.hpp"
 #include "z/codegen/SystemLinkage.hpp"
 #include "codegen/S390Snippets.hpp"
@@ -48,44 +48,3 @@ TR_Debug::print(TR::FILE *pOutFile, TR::S390RestoreGPR7Snippet *snippet)
    {
    TR_UNIMPLEMENTED();
    }
-
-void
-JitBuilder::FrontEnd::generateBinaryEncodingPrologue(
-      TR_BinaryEncodingData *beData,
-      TR::CodeGenerator *cg)
-   {
-   TR::Compilation* comp = cg->comp();
-   TR_S390BinaryEncodingData *data = (TR_S390BinaryEncodingData *)beData;
-
-   data->cursorInstruction = cg->getFirstInstruction();
-   data->estimate = 0;
-   data->preProcInstruction = data->cursorInstruction;
-   data->jitTojitStart = data->cursorInstruction;
-   data->cursorInstruction = NULL;
-
-   TR::Instruction * preLoadArgs, * endLoadArgs;
-   preLoadArgs = data->preProcInstruction;
-   endLoadArgs = preLoadArgs;
-
-   TR::Instruction * oldFirstInstruction = data->cursorInstruction;
-
-   data->cursorInstruction = cg->getFirstInstruction();
-
-   static char *disableAlignJITEP = feGetEnv("TR_DisableAlignJITEP");
-
-   // Padding for JIT Entry Point
-   if (!disableAlignJITEP)
-      {
-      data->estimate += 256;
-      }
-
-   while (data->cursorInstruction && data->cursorInstruction->getOpCodeValue() != TR::InstOpCode::proc)
-      {
-      data->estimate = data->cursorInstruction->estimateBinaryLength(data->estimate);
-      data->cursorInstruction = data->cursorInstruction->getNext();
-      }
-
-   cg->getLinkage()->createPrologue(data->cursorInstruction);
-   }
-
-

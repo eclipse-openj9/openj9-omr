@@ -1524,7 +1524,6 @@ public:
 
    bool constantAddressesCanChangeSize(TR::Node *node);
    bool profiledPointersRequireRelocation();
-   bool needGuardSitesEvenWhenGuardRemoved();
 
    // will a BCD left shift always leave the sign code unchanged and thus allow it to be propagated through and upwards
    bool propagateSignThroughBCDLeftShift(TR::DataType type) { return false; }

@@ -9308,9 +9308,6 @@ bool TR_LoopVersioner::guardOkForExpr(TR::Node *node, bool onlySearching)
       case TR_MethodEnterExitGuard:
       case TR_InnerGuard:
       case TR_ArrayStoreCheckGuard:
-      case TR_RemovedProfiledGuard:
-      case TR_RemovedNonoverriddenGuard:
-      case TR_RemovedInterfaceGuard:
          return false;
 
       default:

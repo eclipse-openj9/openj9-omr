@@ -2459,6 +2459,8 @@ typedef struct OMRPortLibrary {
 	int32_t (*sysinfo_cgroup_subsystem_iterator_next)(struct OMRPortLibrary *portLibrary, struct OMRCgroupMetricIteratorState *state, struct OMRCgroupMetricElement *metricElement);
 	/** see @ref omrsysinfo.c::omrsysinfo_cgroup_subsystem_iterator_destroy "omrsysinfo_cgroup_subsystem_iterator_destroy"*/
 	void (*sysinfo_cgroup_subsystem_iterator_destroy)(struct OMRPortLibrary *portLibrary, struct OMRCgroupMetricIteratorState *state);
+	/** see @ref omrsysinfo.c::omrsysinfo_get_process_start_time "omrsysinfo_get_process_start_time"*/
+	int32_t (*sysinfo_get_process_start_time)(struct OMRPortLibrary *portLibrary, uintptr_t pid, uint64_t *processStartTimeInNanoseconds);
 	/** see @ref omrport.c::omrport_init_library "omrport_init_library"*/
 	int32_t (*port_init_library)(struct OMRPortLibrary *portLibrary, uintptr_t size) ;
 	/** see @ref omrport.c::omrport_startup_library "omrport_startup_library"*/
@@ -3102,6 +3104,7 @@ extern J9_CFUNC int32_t omrport_getVersion(struct OMRPortLibrary *portLibrary);
 #define omrsysinfo_cgroup_subsystem_iterator_metricKey(param1, param2) privateOmrPortLibrary->sysinfo_cgroup_subsystem_iterator_metricKey(privateOmrPortLibrary, param1, param2)
 #define omrsysinfo_cgroup_subsystem_iterator_next(param1, param2) privateOmrPortLibrary->sysinfo_cgroup_subsystem_iterator_next(privateOmrPortLibrary, param1, param2)
 #define omrsysinfo_cgroup_subsystem_iterator_destroy(param1) privateOmrPortLibrary->sysinfo_cgroup_subsystem_iterator_destroy(privateOmrPortLibrary, param1)
+#define omrsysinfo_get_process_start_time(param1, param2) privateOmrPortLibrary->sysinfo_get_process_start_time(privateOmrPortLibrary, param1, param2)
 #define omrintrospect_startup() privateOmrPortLibrary->introspect_startup(privateOmrPortLibrary)
 #define omrintrospect_shutdown() privateOmrPortLibrary->introspect_shutdown(privateOmrPortLibrary)
 #define omrintrospect_set_suspend_signal_offset(param1) privateOmrPortLibrary->introspect_set_suspend_signal_offset(privateOmrPortLibrary, param1)

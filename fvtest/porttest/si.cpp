@@ -52,6 +52,12 @@
 #endif /* defined(J9ZOS390) */
 #include <sys/resource.h> /* For RLIM_INFINITY */
 #endif /* !defined(OMR_OS_WINDOWS) */
+#if defined(OMR_OS_WINDOWS)
+#include <windows.h>
+#else /* defined(OMR_OS_WINDOWS) */
+#include <sys/wait.h>
+#include <unistd.h>
+#endif /* defined(OMR_OS_WINDOWS) */
 
 #if defined(J9ZOS390) && !defined(OMR_EBCDIC)
 #include "atoe.h"
@@ -3119,3 +3125,75 @@ TEST(PortSysinfoTest, GetProcessorDescription)
 		ASSERT_TRUE(feature == TRUE || feature == FALSE);
 	}
 }
+
+/* The method omrsysinfo_get_process_start_time is not implemented on z/TPF. */
+#if !defined(OMRZTPF)
+/**
+ * Test: GetProcessorStartTimeOfNonExistingProcessTest.
+ * Description: Verify that getting the process start time for a non-existing process (UINTPTR_MAX) results in 0 nanoseconds.
+ * Passing Condition: The expected process start time is 0 nanoseconds, and the actual process start time matches this value.
+ */
+TEST(PortSysinfoTest, GetProcessorStartTimeOfNonExistingProcessTest)
+{
+	OMRPORT_ACCESS_FROM_OMRPORT(portTestEnv->getPortLibrary());
+	/*
+	 * If a pid of UINTPTR_MAX exists in the future then the test will need to be modified.
+	 * UINTPTR_MAX represents the maximum unsigned integer value, which can be a 32-bit or a 64-bit depending on the system.
+	 * On unix systems, a pid is represented by pid_t, which can be a 32-bit or a 64-bit signed integer.
+	 * On windows systems, a pid is represented by DWORD, which is a 32-bit unsigned integer, and
+	 * the maximum value of DWORD is not a valid pid as it is reserved for use by the ASFW_ANY parameter.
+	 */
+	uintptr_t pid = UINTPTR_MAX;
+	uint64_t expectedProcessStartTimeInNanoseconds = 0;
+	uint64_t actualProcessStartTimeInNanoseconds = 0;
+	int32_t rc = omrsysinfo_get_process_start_time(pid, &actualProcessStartTimeInNanoseconds);
+	ASSERT_LT(rc, 0);
+	ASSERT_EQ(expectedProcessStartTimeInNanoseconds, actualProcessStartTimeInNanoseconds);
+}
+
+/**
+ * Test: GetProcessorStartTimeOfExistingProcessTest.
+ * Description: Verify that getting the process start time for an existing process results in a valid timestamp.
+ * Passing Condition: The process start time is greater than the test start time and less than the current time at the end of the test.
+ */
+TEST(PortSysinfoTest, GetProcessorStartTimeOfExistingProcessTest)
+{
+	OMRPORT_ACCESS_FROM_OMRPORT(portTestEnv->getPortLibrary());
+	uintptr_t pid = UINTPTR_MAX;
+	uintptr_t success = 0;
+	uint64_t testStartTimeInNanoseconds = omrtime_current_time_nanos(&success);
+	uint64_t processStartTimeInNanoseconds = 0;
+	int32_t rc = 0;
+#if defined(LINUX) || defined(OSX) || defined(AIXPPC) || defined(J9ZOS390)
+	int status = 0;
+	sleep(3);
+	pid = fork();
+	ASSERT_NE(pid, -1);
+	/* The if block will only be invoked by the child process. */
+	if (0 == pid) {
+		sleep(10);
+		/* A call to exit allows the child process to stop and avoids a timeout on x86-64 macOS. */
+		exit(0);
+	}
+	rc = omrsysinfo_get_process_start_time(pid, &processStartTimeInNanoseconds);
+	waitpid(pid, &status, 0);
+#elif defined(OMR_OS_WINDOWS) /* defined(LINUX) || defined(OSX) || defined(AIXPPC) || defined(J9ZOS390) */
+	STARTUPINFO si;
+	PROCESS_INFORMATION pi;
+	BOOL ret = FALSE;
+	ZeroMemory(&si, sizeof(si));
+	si.cb = sizeof(si);
+	ZeroMemory(&pi, sizeof(pi));
+	ret = CreateProcess(NULL, "cmd.exe /c timeout /t 10", NULL, NULL, FALSE, 0, NULL, NULL, &si, &pi);
+	ASSERT_EQ(ret, TRUE);
+	pid = (uintptr_t)GetProcessId(pi.hProcess);
+	rc = omrsysinfo_get_process_start_time(pid, &processStartTimeInNanoseconds);
+	WaitForSingleObject(pi.hProcess, INFINITE);
+	CloseHandle(pi.hProcess);
+	CloseHandle(pi.hThread);
+#endif /* defined(LINUX) || defined(OSX) || defined(AIXPPC) || defined(J9ZOS390) */
+	ASSERT_EQ(rc, 0);
+	ASSERT_GT(processStartTimeInNanoseconds, testStartTimeInNanoseconds);
+	ASSERT_LT(processStartTimeInNanoseconds, omrtime_current_time_nanos(&success));
+}
+#endif /* !defined(OMRZTPF) */

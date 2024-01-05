@@ -2526,7 +2526,16 @@ genLoadAddressConstant(TR::CodeGenerator * cg, TR::Node * node, uintptr_t value,
       // the address constant may need patched, must use a recognizable instruction sequence
       // for TR_UnloadedClassPicSite::compensate and TR_RedefinedClassPicSite::compensate to
       // be able to patch the address correctly
-      cursor = generateRILInstruction(cg, comp->target().is64Bit() ? TR::InstOpCode::LLILF : TR::InstOpCode::IILF, node, targetRegister, static_cast<uint32_t>(value), cursor);
+      bool usedLARL = false;
+      if (cg->canUseRelativeLongInstructions(static_cast<int64_t>(value)))
+         {
+         cursor = generateRILInstruction(cg, TR::InstOpCode::LARL, node, targetRegister, reinterpret_cast<void*>(value));
+         usedLARL = true;
+         }
+      else
+         {
+         cursor = generateRILInstruction(cg, comp->target().is64Bit() ? TR::InstOpCode::LLILF : TR::InstOpCode::IILF, node, targetRegister, static_cast<uint32_t>(value), cursor);
+         }
 
       bool isCompressedClassPointer = false;
 
@@ -2546,8 +2555,8 @@ genLoadAddressConstant(TR::CodeGenerator * cg, TR::Node * node, uintptr_t value,
          }
 
       TR_ASSERT(!isCompressedClassPointer || ((value & CONSTANT64(0xFFFFFFFF00000000)) == 0), "Compressed class pointers are assumed to fit in 32 bits");
-      // IIHF is only needed when addresses do not fit into 32 bits
-      if (comp->target().is64Bit() && !isCompressedClassPointer)
+      // IIHF is only needed when addresses do not fit into 32 bits and LARL could not be used
+      if (!usedLARL && comp->target().is64Bit() && !isCompressedClassPointer)
          {
          toS390RILInstruction(cursor)->setisFirstOfAddressPair();
          uint32_t high32 = static_cast<uint32_t>(value >> 32);

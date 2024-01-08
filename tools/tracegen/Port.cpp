@@ -680,7 +680,7 @@ Port::omrfile_stat(const char *path, unsigned int flags, struct J9FileStat *buf)
 	buf->ownerUid = statbuf.st_uid;
 	buf->ownerGid = statbuf.st_gid;
 
-#if (defined(LINUX) && !defined(J9ZTPF)) || defined(OSX)
+#if (defined(LINUX) && !defined(OMRZTPF)) || defined(OSX)
 	if (statfs(path, &statfsbuf)) {
 		return RC_FAILED;
 	}

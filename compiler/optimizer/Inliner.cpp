@@ -18,7 +18,7 @@
  *
  * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0 OR GPL-2.0-only WITH Classpath-exception-2.0 OR GPL-2.0-only WITH OpenJDK-assembly-exception-1.0
  *******************************************************************************/
-#ifdef J9ZTPF
+#ifdef OMRZTPF
 #define __TPF_DO_NOT_MAP_ATOE_REMOVE
 #endif
 

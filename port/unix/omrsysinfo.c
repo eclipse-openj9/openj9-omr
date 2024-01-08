@@ -83,10 +83,10 @@
 #include "omrsimap.h"
 #endif /* defined(J9ZOS390) */
 
-#if defined(LINUXPPC) || (defined(S390) && defined(LINUX) && !defined(J9ZTPF)) || (defined(AARCH64) && defined(LINUX))
+#if defined(LINUXPPC) || (defined(S390) && defined(LINUX) && !defined(OMRZTPF)) || (defined(AARCH64) && defined(LINUX))
 #include "auxv.h"
 #include <strings.h>
-#endif /* defined(LINUXPPC) || (defined(S390) && defined(LINUX) && !defined(J9ZTPF)) || (defined(AARCH64) && defined(LINUX)) */
+#endif /* defined(LINUXPPC) || (defined(S390) && defined(LINUX) && !defined(OMRZTPF)) || (defined(AARCH64) && defined(LINUX)) */
 
 #if (defined(S390))
 #include "omrportpriv.h"
@@ -258,11 +258,11 @@ static intptr_t omrsysinfo_get_aix_ppc_description(struct OMRPortLibrary *portLi
 #endif  /* !defined(__power_tm) */
 #endif /* !defined(J9OS_I5_V7R2) && !defined(J9OS_I5_V6R1) */
 
-#if (defined(S390) || defined(J9ZOS390) || defined(J9ZTPF))
+#if (defined(S390) || defined(J9ZOS390) || defined(OMRZTPF))
 static BOOLEAN omrsysinfo_test_stfle(struct OMRPortLibrary *portLibrary, uint64_t stfleBit);
 static intptr_t omrsysinfo_get_s390_description(struct OMRPortLibrary *portLibrary, OMRProcessorDesc *desc);
 const char * omrsysinfo_get_s390_processor_feature_name(uint32_t feature);
-#endif /* defined(S390) || defined(J9ZOS390) || defined(J9ZTPF) */
+#endif /* defined(S390) || defined(J9ZOS390) || defined(OMRZTPF) */
 
 #if defined(RISCV)
 static intptr_t omrsysinfo_get_riscv_description(struct OMRPortLibrary *portLibrary, OMRProcessorDesc *desc);
@@ -839,9 +839,9 @@ omrsysinfo_get_processor_feature_name(struct OMRPortLibrary *portLibrary, uint32
 	Trc_PRT_sysinfo_get_processor_feature_name_Entered(feature);
 #if defined(J9X86) || defined(J9HAMMER)
 	rc = omrsysinfo_get_x86_processor_feature_name(feature);
-#elif defined(S390) || defined(J9ZOS390) || defined(J9ZTPF) /* defined(J9X86) || defined(J9HAMMER) */
+#elif defined(S390) || defined(J9ZOS390) || defined(OMRZTPF) /* defined(J9X86) || defined(J9HAMMER) */
 	rc = omrsysinfo_get_s390_processor_feature_name(feature);
-#elif defined(AIXPPC) || defined(LINUXPPC) /* defined(S390) || defined(J9ZOS390) || defined(J9ZTPF) */
+#elif defined(AIXPPC) || defined(LINUXPPC) /* defined(S390) || defined(J9ZOS390) || defined(OMRZTPF) */
 	rc = omrsysinfo_get_ppc_processor_feature_name(feature);
 #elif defined(AARCH64) /* defined(AIXPPC) || defined(LINUXPPC) */
 	rc = omrsysinfo_get_aarch64_processor_feature_name(feature);
@@ -1408,7 +1408,7 @@ omrsysinfo_get_s390_description(struct OMRPortLibrary *portLibrary, OMRProcessor
 	if (OMR_ARE_NO_BITS_SET(*(int*) 200, S390_STFLE_BIT)) {
 		return -1;
 	}
-#elif defined(J9ZTPF)  /* defined(J9ZOS390) */
+#elif defined(OMRZTPF)  /* defined(J9ZOS390) */
 	/*
 	 * z/TPF requires OS support for some of the Hardware Capabilities.
 	 * Setting the auxvFeatures capabilities flag directly to mimic the query_auxv call in Linux.
@@ -1417,7 +1417,7 @@ omrsysinfo_get_s390_description(struct OMRPortLibrary *portLibrary, OMRProcessor
 			OMR_HWCAP_S390_STFLE|OMR_HWCAP_S390_MSA|OMR_HWCAP_S390_DFP|
 			OMR_HWCAP_S390_LDISP|OMR_HWCAP_S390_EIMM|OMR_HWCAP_S390_ETF3EH;
 
-#elif defined(LINUX) /* defined(J9ZTPF) */
+#elif defined(LINUX) /* defined(OMRZTPF) */
 	/* Some s390 features require OS support on Linux, querying auxv for AT_HWCAP bit-mask of processor capabilities. */
 	unsigned long auxvFeatures = query_auxv(AT_HWCAP);
 #endif /* defined(LINUX) */
@@ -1610,9 +1610,9 @@ omrsysinfo_get_s390_description(struct OMRPortLibrary *portLibrary, OMRProcessor
 		if (omrsysinfo_get_s390_zos_supports_runtime_instrumentation_facility())
 #endif /* defined(J9ZOS390) */
 		{
-#if !defined(J9ZTPF)
+#if !defined(OMRZTPF)
 			omrsysinfo_set_feature(desc, OMR_FEATURE_S390_RI);
-#endif /* !defined(J9ZTPF) */
+#endif /* !defined(OMRZTPF) */
 		}
 	}
 
@@ -1723,9 +1723,9 @@ omrsysinfo_get_s390_description(struct OMRPortLibrary *portLibrary, OMRProcessor
 	if (omrsysinfo_test_stfle(portLibrary, OMR_FEATURE_S390_VECTOR_FACILITY_ENHANCEMENT_2)) {
 #if defined(J9ZOS390)
 		if (omrsysinfo_get_s390_zos_supports_vector_extension_facility())
-#elif defined(LINUX) && !defined(J9ZTPF) /* defined(J9ZOS390) */
+#elif defined(LINUX) && !defined(OMRZTPF) /* defined(J9ZOS390) */
 		if (OMR_ARE_ALL_BITS_SET(auxvFeatures, OMR_HWCAP_S390_VXRS))
-#endif /* defined(LINUX) && !defined(J9ZTPF) */
+#endif /* defined(LINUX) && !defined(OMRZTPF) */
 		{
 			omrsysinfo_set_feature(desc, OMR_FEATURE_S390_VECTOR_FACILITY_ENHANCEMENT_2);
 
@@ -1736,9 +1736,9 @@ omrsysinfo_get_s390_description(struct OMRPortLibrary *portLibrary, OMRProcessor
 	if (omrsysinfo_test_stfle(portLibrary, OMR_FEATURE_S390_VECTOR_PACKED_DECIMAL_ENHANCEMENT_FACILITY)) {
 #if defined(J9ZOS390)
 		if (omrsysinfo_get_s390_zos_supports_vector_extension_facility())
-#elif defined(LINUX) && !defined(J9ZTPF) /* defined(J9ZOS390) */
+#elif defined(LINUX) && !defined(OMRZTPF) /* defined(J9ZOS390) */
 		if (OMR_ARE_ALL_BITS_SET(auxvFeatures, OMR_HWCAP_S390_VXRS))
-#endif /* defined(LINUX) && !defined(J9ZTPF) */
+#endif /* defined(LINUX) && !defined(OMRZTPF) */
 		{
 			omrsysinfo_set_feature(desc, OMR_FEATURE_S390_VECTOR_PACKED_DECIMAL_ENHANCEMENT_FACILITY);
 
@@ -1751,9 +1751,9 @@ omrsysinfo_get_s390_description(struct OMRPortLibrary *portLibrary, OMRProcessor
 	if (omrsysinfo_test_stfle(portLibrary, OMR_FEATURE_S390_VECTOR_PACKED_DECIMAL_ENHANCEMENT_FACILITY_2)) {
 #if defined(J9ZOS390)
 		if (omrsysinfo_get_s390_zos_supports_vector_extension_facility())
-#elif defined(LINUX) && !defined(J9ZTPF) /* defined(J9ZOS390) */
+#elif defined(LINUX) && !defined(OMRZTPF) /* defined(J9ZOS390) */
 		if (OMR_ARE_ALL_BITS_SET(auxvFeatures, OMR_HWCAP_S390_VXRS))
-#endif /* defined(LINUX) && !defined(J9ZTPF) */
+#endif /* defined(LINUX) && !defined(OMRZTPF) */
 		{
 			omrsysinfo_set_feature(desc, OMR_FEATURE_S390_VECTOR_PACKED_DECIMAL_ENHANCEMENT_FACILITY_2);
 

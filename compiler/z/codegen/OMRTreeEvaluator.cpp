@@ -11885,17 +11885,28 @@ OMR::Z::TreeEvaluator::arraycmplenEvaluator(TR::Node * node, TR::CodeGenerator *
    TR::RegisterPair * firstPair = cg->allocateConsecutiveRegisterPair(firstLen, firstBaseReg);
    TR::RegisterPair * secondPair = cg->allocateConsecutiveRegisterPair(secondLen, secondBaseReg);
    TR::Register * resultReg = cg->allocateRegister();
-   TR::Instruction * cursor;
+   TR::LabelSymbol * cFlowRegionStart = generateLabelSymbol(cg);
+   TR::LabelSymbol * cFlowRegionEnd = generateLabelSymbol(cg);
 
-   TR::RegisterDependencyConditions * dependencies = cg->createDepsForRRMemoryInstructions(node, firstPair, secondPair);
+   TR::RegisterDependencyConditions * dependencies = cg->createDepsForRRMemoryInstructions(node, firstPair, secondPair, 2);
+   dependencies->addPostCondition(orgLen, TR::RealRegister::AssignAny);
+   dependencies->addPostCondition(resultReg, TR::RealRegister::AssignAny);
+
+   generateRRInstruction(cg, TR::InstOpCode::getLoadRegOpCode(), node, resultReg, orgLen);
+
+   generateS390LabelInstruction(cg, TR::InstOpCode::label, node, cFlowRegionStart);
+   cFlowRegionStart->setStartInternalControlFlow();
+
+   generateS390CompareAndBranchInstruction(cg, TR::InstOpCode::getCmpLogicalRegOpCode(), node, firstBaseReg, secondBaseReg, TR::InstOpCode::COND_BE, cFlowRegionEnd);
 
    generateRRInstruction(cg, TR::InstOpCode::getLoadRegOpCode(), node, firstLen, orgLen);
    generateRRInstruction(cg, TR::InstOpCode::getLoadRegOpCode(), node, secondLen, orgLen);
-   cursor = generateRRInstruction(cg, TR::InstOpCode::CLCL, node, firstPair, secondPair);
+   generateRRInstruction(cg, TR::InstOpCode::CLCL, node, firstPair, secondPair);
 
-   generateRRInstruction(cg, TR::InstOpCode::getLoadRegOpCode(), node, resultReg, orgLen);
-   cursor = generateRRInstruction(cg, TR::InstOpCode::getSubstractRegOpCode(), node, resultReg, firstLen);
+   generateRRInstruction(cg, TR::InstOpCode::getSubstractRegOpCode(), node, resultReg, firstLen);
 
+   generateS390LabelInstruction(cg, TR::InstOpCode::label, node, cFlowRegionEnd, dependencies);
+   cFlowRegionEnd->setEndInternalControlFlow();
 
    cg->stopUsingRegister(firstPair);
    cg->stopUsingRegister(secondPair);
@@ -11905,12 +11916,9 @@ OMR::Z::TreeEvaluator::arraycmplenEvaluator(TR::Node * node, TR::CodeGenerator *
    cg->stopUsingRegister(secondLen);
    cg->stopUsingRegister(orgLen);
 
-
    cg->decReferenceCount(elemsExpr);
    cg->decReferenceCount(firstBaseAddr);
    cg->decReferenceCount(secondBaseAddr);
-   cursor->setDependencyConditions(dependencies);
-
 
    node->setRegister(resultReg);
    return resultReg;

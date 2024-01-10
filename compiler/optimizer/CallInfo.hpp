@@ -33,12 +33,16 @@
 #include "compile/Compilation.hpp"
 #include "env/TRMemory.hpp"
 #include "env/jittypes.h"
+#include "il/AnyConst.hpp"
 #include "il/MethodSymbol.hpp"
 #include "il/Node.hpp"
 #include "infra/Assert.hpp"
 #include "infra/deque.hpp"
 #include "infra/Link.hpp"
 #include "infra/List.hpp"
+#include "infra/map.hpp"
+#include "infra/TRlist.hpp"
+#include "optimizer/DeferredOSRAssumption.hpp"
 #include "optimizer/InlinerFailureReason.hpp"
 
 namespace TR { class CompilationFilters;}
@@ -58,6 +62,8 @@ namespace TR { class SymbolReference; }
 namespace TR { class TreeTop; }
 class TR_CallSite;
 struct TR_VirtualGuardSelection;
+
+namespace TR { struct RequiredConst; }
 
 class TR_CallStack : public TR_Link<TR_CallStack>
    {
@@ -127,13 +133,43 @@ class TR_CallStack : public TR_Link<TR_CallStack>
 
    };
 
+namespace TR {
+
+/**
+ * \brief A constant value that was observed during call target selection.
+ *
+ * When IL is generated for a call target, it's necessary in general to repeat
+ * any constant folding that occurred while selecting targets recursively
+ * within it so that the IL is guaranteed to match what the inliner saw.
+ *
+ * This repeated folding is important whenever a value might be allowed to be
+ * folded despite the possibility of a later change. It also allows constants
+ * to be speculative by specifying the assumptions that are necessary in order
+ * for the folding to be correct, and by informing the IL generator of the
+ * locations where such assumptions have been made (though the locations are
+ * tracked externally to this class).
+ */
+struct RequiredConst
+   {
+   TR::AnyConst _value; ///< The value.
+
+   /// The assumptions required to guarantee the value is constant, if any.
+   TR::list<TR::DeferredOSRAssumption*, TR::Region&> _assumptions;
+
+   RequiredConst(const TR::AnyConst &value, TR::Region &region)
+      : _value(value), _assumptions(region) {}
+   };
+
+} // namespace TR
+
 struct TR_CallTarget : public TR_Link<TR_CallTarget>
    {
    TR_ALLOC(TR_Memory::Inliner);
 
    friend class TR_InlinerTracer;
 
-   TR_CallTarget(TR_CallSite *callsite,
+   TR_CallTarget(TR::Region &memRegion,
+                 TR_CallSite *callsite,
                  TR::ResolvedMethodSymbol *calleeSymbol,
                  TR_ResolvedMethod *calleeMethod,
                  TR_VirtualGuardSelection *guard,
@@ -189,6 +225,12 @@ struct TR_CallTarget : public TR_Link<TR_CallTarget>
 
    TR_PrexArgInfo              *_prexArgInfo;   // used by computePrexInfo to calculate prex on generatedIL and transform IL
    TR_PrexArgInfo              *_ecsPrexArgInfo; // used by ECS and findInlineTargets to assist in choosing correct inline targets
+
+   /**
+    * \brief Constant values that were observed during call target selection
+    * within this particular call target, keyed on bytecode index.
+    */
+   TR::map<int32_t, TR::RequiredConst> _requiredConsts;
 
    void addDeadCallee(TR_CallSite *cs)
       {

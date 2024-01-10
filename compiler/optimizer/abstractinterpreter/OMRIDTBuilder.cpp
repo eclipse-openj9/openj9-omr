@@ -74,6 +74,7 @@ TR::IDT* OMR::IDTBuilder::buildIDT()
                                                 comp());
 
    TR_CallTarget *rootCallTarget = new (region()) TR_CallTarget(
+                                    region(),
                                     rootCallSite,
                                     _rootSymbol,
                                     rootMethod,

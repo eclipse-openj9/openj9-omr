@@ -4772,7 +4772,16 @@ bool TR_InlinerBase::inlineCallTarget2(TR_CallStack * callStack, TR_CallTarget *
       calleeSymbol->setUnsynchronised();
       }
 
+   TR_ASSERT_FATAL(
+      comp()->currentILGenCallTarget() == NULL,
+      "unexpected recursive call to inlineCallTarget2 during ilgen: "
+      "existing target %p vs. new %p",
+      comp()->currentILGenCallTarget(),
+      calltarget);
+
+   comp()->setCurrentILGenCallTarget(calltarget);
    genILSucceeded = tryToGenerateILForMethod(calleeSymbol, callerSymbol, calltarget);
+   comp()->setCurrentILGenCallTarget(NULL);
 
    if (wasSynchronized)
       calleeSymbol->setSynchronised();
@@ -5572,7 +5581,8 @@ void TR_CallSite::removeAllTargets(TR_InlinerTracer *tracer, TR_InlinerFailureRe
    removeTargets(tracer, 0, reason);
    }
 
-TR_CallTarget::TR_CallTarget(TR_CallSite *callsite,
+TR_CallTarget::TR_CallTarget(TR::Region &memRegion,
+                             TR_CallSite *callsite,
                              TR::ResolvedMethodSymbol *calleeSymbol,
                              TR_ResolvedMethod *calleeMethod,
                              TR_VirtualGuardSelection *guard,
@@ -5586,7 +5596,8 @@ TR_CallTarget::TR_CallTarget(TR_CallSite *callsite,
    _receiverClass(receiverClass),
    _frequencyAdjustment(freqAdj),
    _prexArgInfo(NULL),
-   _ecsPrexArgInfo(ecsPrexArgInfo)
+   _ecsPrexArgInfo(ecsPrexArgInfo),
+   _requiredConsts(memRegion)
    {
    _weight=0;
    _callGraphAdjustedWeight=0;
@@ -5704,7 +5715,28 @@ TR_CallSite::addTarget(TR_Memory* mem, TR_InlinerBase *inliner, TR_VirtualGuardS
       myPrexArgInfo = new (comp()->trHeapMemory()) TR_PrexArgInfo(_ecsPrexArgInfo, comp()->trMemory());
       }
 
-   TR_CallTarget *result = new (mem,allocKind) TR_CallTarget(this,_initialCalleeSymbol,implementer,guard,receiverClass,myPrexArgInfo,ratio);
+   TR::Region *memRegion = NULL;
+   switch (allocKind)
+      {
+      case heapAlloc:
+         memRegion = &mem->heapMemoryRegion();
+         break;
+      case stackAlloc:
+         memRegion = &mem->currentStackRegion();
+         break;
+      default:
+         TR_ASSERT_FATAL(false, "unexpected alloc kind %d for call target", (int)allocKind);
+      }
+
+   TR_CallTarget *result = new (*memRegion) TR_CallTarget(
+      *memRegion,
+      this,
+      _initialCalleeSymbol,
+      implementer,
+      guard,
+      receiverClass,
+      myPrexArgInfo,
+      ratio);
 
    addTarget(result);
 

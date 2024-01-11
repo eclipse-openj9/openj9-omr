@@ -1178,3 +1178,16 @@ omrsysinfo_cgroup_subsystem_iterator_destroy(struct OMRPortLibrary *portLibrary,
 {
 	return;
 }
+
+/**
+ * Get the process start time in ns precision epoch time.
+ * @param[in] portLibrary The port library
+ * @param[in] pid The process ID
+ * @param[in/out] processStartTimeInNanoseconds The pointer to uint64_t that stores the process start time in ns precision epoch time
+ * @return 0 on success, error code on failure
+ */
+int32_t
+omrsysinfo_get_process_start_time(struct OMRPortLibrary *portLibrary, uintptr_t pid, uint64_t *processStartTimeInNanoseconds)
+{
+	return OMRPORT_ERROR_NOT_SUPPORTED_ON_THIS_PLATFORM;
+}

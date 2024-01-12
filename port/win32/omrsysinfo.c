@@ -1999,7 +1999,7 @@ omrsysinfo_get_process_start_time(struct OMRPortLibrary *portLibrary, uintptr_t 
 {
 	int32_t rc = 0;
 	uint64_t computedProcessStartTimeInNanoseconds = 0;
-	Trc_PRT_sysinfo_get_process_start_time_enter((unsigned long long)pid);
+	Trc_PRT_sysinfo_get_process_start_time_enter(pid);
 	if (0 != omrsysinfo_process_exists(portLibrary, pid)) {
 		double seconds = 0;
 		FILETIME createTime, exitTime, kernelTime, userTime;
@@ -2022,6 +2022,6 @@ cleanup:
 	}
 done:
 	*processStartTimeInNanoseconds = computedProcessStartTimeInNanoseconds;
-	Trc_PRT_sysinfo_get_process_start_time_exit((unsigned long long)pid, (unsigned long long)computedProcessStartTimeInNanoseconds, rc);
+	Trc_PRT_sysinfo_get_process_start_time_exit(pid, computedProcessStartTimeInNanoseconds, rc);
 	return rc;
 }

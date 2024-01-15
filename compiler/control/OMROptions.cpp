@@ -827,6 +827,8 @@ TR::OptionTable OMR::Options::_jitOptions[] = {
    {"GCRresetCount=",       "R<nnn>\tthe value to which the counter is reset to after being tripped by guarded counting recompilations (positive value)",
     TR::Options::setCount, offsetof(OMR::Options,_GCRResetCount), 0, "F%d"},
    {"generateCompleteInlineRanges", "O\tgenerate meta data ranges for each change in inliner depth", SET_OPTION_BIT(TR_GenerateCompleteInlineRanges), "F"},
+   {"graFreqThresholdAtWarm=", "O<nnn>\tgra threshold for block frequency for opt level less of equal to warm",
+        TR::Options::set32BitNumeric, offsetof(OMR::Options, _graFreqThresholdAtWarm), 500, "F%d"},
    {"help",               " \tdisplay this help information", TR::Options::helpOption, 0, 0, "F", NOT_IN_SUBSET},
    {"help=",              " {regex}\tdisplay help for options whose names match {regex}", TR::Options::helpOption, 1, 0, "F", NOT_IN_SUBSET},
    {"highCodeCacheOccupancyBCount=", "R<nnn>\tthe initial invocation count used during high code cache occupancy for methods with loops",
@@ -2676,6 +2678,7 @@ OMR::Options::jitPreProcess()
    _alwaysWorthInliningThreshold = 15;
    _maxLimitedGRACandidates = TR_MAX_LIMITED_GRA_CANDIDATES;
    _maxLimitedGRARegs = TR_MAX_LIMITED_GRA_REGS;
+   _graFreqThresholdAtWarm = 500;
    _counterBucketGranularity = 2;
    _minCounterFidelity = INT_MIN;
    _lastIpaOptTransformationIndex = INT_MAX;

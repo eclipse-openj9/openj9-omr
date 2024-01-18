@@ -2356,6 +2356,8 @@ void OMR::ValuePropagation::generateArrayTranslateNode(TR::TreeTop *callTree,TR:
 
    bool isISO88591Encoder = (rm == TR::sun_nio_cs_ISO_8859_1_Encoder_encodeISOArray
                              || rm == TR::java_lang_StringCoding_implEncodeISOArray);
+   static char *disableImplEncodeAsciiArray = feGetEnv("TR_disableImplEncodeAsciiArray");
+   bool isAsciiEncoder = (rm == TR::java_lang_StringCoding_implEncodeAsciiArray) && !disableImplEncodeAsciiArray;
    bool isISO88591Decoder = (rm == TR::sun_nio_cs_ISO_8859_1_Decoder_decodeISO8859_1);
    bool isSBCSEncoder = (rm == TR::sun_nio_cs_ext_SBCS_Encoder_encodeSBCS)? true:false;
    bool isSBCSDecoder = (rm == TR::sun_nio_cs_ext_SBCS_Decoder_decodeSBCS)? true:false;
@@ -2371,7 +2373,7 @@ void OMR::ValuePropagation::generateArrayTranslateNode(TR::TreeTop *callTree,TR:
    TR::Node *srcOff = srcOffNode->createLongIfNeeded();
    TR::Node *lenNode = NULL;
    TR::Node *len = NULL;
-   if (!isISO88591Encoder)
+   if (!(isISO88591Encoder || isAsciiEncoder))
       {
       lenNode = lenRef? TR::Node::createLoad(callNode, lenRef):callNode->getChild(childId++)->duplicateTree();
       len = lenNode->createLongIfNeeded();
@@ -2381,7 +2383,7 @@ void OMR::ValuePropagation::generateArrayTranslateNode(TR::TreeTop *callTree,TR:
    TR::Node* dstOffNode =  dstOffRef ? TR::Node::createLoad(callNode, dstOffRef): callNode->getChild(childId++)->duplicateTree();
    TR::Node *dstOff = dstOffNode->createLongIfNeeded();
 
-   if (isISO88591Encoder)
+   if (isISO88591Encoder || isAsciiEncoder)
       {
       lenNode = lenRef? TR::Node::createLoad(callNode, lenRef):callNode->getChild(childId++)->duplicateTree();
       len = lenNode->createLongIfNeeded();
@@ -2423,7 +2425,7 @@ void OMR::ValuePropagation::generateArrayTranslateNode(TR::TreeTop *callTree,TR:
    else
       strideNode = TR::Node::create(callNode, TR::iconst, 0, 2);
 
-   if ( isISO88591Encoder || isSBCSEncoder || isEncodeUtf16 ||
+   if ( isISO88591Encoder || isAsciiEncoder || isSBCSEncoder || isEncodeUtf16 ||
        (rm == TR::sun_nio_cs_US_ASCII_Encoder_encodeASCII)         ||
        (rm == TR::sun_nio_cs_UTF_8_Encoder_encodeUTF_8))
        encode = true;
@@ -2611,12 +2613,15 @@ TR::TreeTop* OMR::ValuePropagation::createConverterCallNodeAfterStores(
    TR::MethodSymbol *symbol = root->getSymbol()->castToMethodSymbol();
    TR::RecognizedMethod rm = symbol->getRecognizedMethod();
    TR_ResolvedMethod *m = symbol->getResolvedMethodSymbol()->getResolvedMethod();
+   static char *disableImplEncodeAsciiArray = feGetEnv("TR_disableImplEncodeAsciiArray");
 
 #ifdef J9_PROJECT_SPECIFIC
    bool isISO88591Encoder = (rm == TR::sun_nio_cs_ISO_8859_1_Encoder_encodeISOArray
                              || rm == TR::java_lang_StringCoding_implEncodeISOArray);
+   bool isAsciiEncoder = (rm == TR::java_lang_StringCoding_implEncodeAsciiArray) && !disableImplEncodeAsciiArray;
 #else
    bool isISO88591Encoder = false;
+   bool isAsciiEncoder = false;
 #endif
    int32_t childId = origTree->getNode()->getFirstChild()->getFirstArgumentIndex();
    bool hasReciever = symbol->isStatic() ? false : true;
@@ -2663,25 +2668,25 @@ TR::TreeTop* OMR::ValuePropagation::createConverterCallNodeAfterStores(
    if (lenRef)
       len = TR::Node::createLoad(root, lenRef);
    else
-      len = isISO88591Encoder?  root->getChild(childId+4)->duplicateTree() : root->getChild(childId+2)->duplicateTree();
+      len = (isISO88591Encoder || isAsciiEncoder) ?  root->getChild(childId + 4)->duplicateTree() : root->getChild(childId + 2)->duplicateTree();
 
-   isISO88591Encoder? root->setAndIncChild(childId+4, len): root->setAndIncChild(childId+2, len);
+   (isISO88591Encoder || isAsciiEncoder) ? root->setAndIncChild(childId + 4, len): root->setAndIncChild(childId + 2, len);
 
 
    if (dstRef)
       dst = TR::Node::createLoad(root, dstRef);
    else
-      dst = isISO88591Encoder ? root->getChild(childId+2)->duplicateTree(): root->getChild(childId+3)->duplicateTree();
+      dst = (isISO88591Encoder || isAsciiEncoder) ? root->getChild(childId+2)->duplicateTree(): root->getChild(childId+3)->duplicateTree();
 
-   isISO88591Encoder?root->setAndIncChild(childId+2, dst): root->setAndIncChild(childId+3, dst);
+   (isISO88591Encoder || isAsciiEncoder) ? root->setAndIncChild(childId + 2, dst): root->setAndIncChild(childId + 3, dst);
 
 
    if (dstOffRef)
       dstOff = TR::Node::createLoad(root, dstOffRef);
    else
-      dstOff = isISO88591Encoder ? root->getChild(childId+3)->duplicateTree(): root->getChild(childId+4)->duplicateTree();
+      dstOff = (isISO88591Encoder || isAsciiEncoder) ? root->getChild(childId + 3)->duplicateTree(): root->getChild(childId + 4)->duplicateTree();
 
-   isISO88591Encoder?root->setAndIncChild(childId+3, dstOff): root->setAndIncChild(childId+4, dstOff);
+   (isISO88591Encoder || isAsciiEncoder) ? root->setAndIncChild(childId + 3, dstOff): root->setAndIncChild(childId + 4, dstOff);
 
    if (tableRef)
       {
@@ -2919,11 +2924,14 @@ TR::TreeTop *createStoresForConverterCallChildren(TR::Compilation *comp, TR::Tre
    TR::MethodSymbol *symbol = node->getSymbol()->castToMethodSymbol();
    TR::RecognizedMethod rm = symbol->getRecognizedMethod();
    TR_ResolvedMethod *m = symbol->getResolvedMethodSymbol()->getResolvedMethod();
+   static char *disableImplEncodeAsciiArray = feGetEnv("TR_disableImplEncodeAsciiArray");
 #ifdef J9_PROJECT_SPECIFIC
    bool isISO88591Encoder = (rm == TR::sun_nio_cs_ISO_8859_1_Encoder_encodeISOArray
                              || rm == TR::java_lang_StringCoding_implEncodeISOArray);
+   bool isAsciiEncoder = (rm == TR::java_lang_StringCoding_implEncodeAsciiArray) && !disableImplEncodeAsciiArray;
 #else
    bool isISO88591Encoder = false;
+   bool isAsciiEncoder = false;
 #endif
 
    int32_t childId = node->getFirstArgumentIndex();
@@ -2938,11 +2946,11 @@ TR::TreeTop *createStoresForConverterCallChildren(TR::Compilation *comp, TR::Tre
    TR::Node *src = node->getChild(childId++);
    TR::Node *srcOff = node->getChild(childId++);
    TR::Node *len = NULL;
-   if (!isISO88591Encoder)
+   if (!(isISO88591Encoder || isAsciiEncoder))
       len = node->getChild(childId++);
    TR::Node *dst = node->getChild(childId++);
    TR::Node *dstOff = node->getChild(childId++);
-   if (isISO88591Encoder)
+   if (isISO88591Encoder || isAsciiEncoder)
       len = node->getChild(childId++);
 
    TR::TreeTop *storeTree = NULL;
@@ -4194,10 +4202,12 @@ void OMR::ValuePropagation::transformConverterCall(TR::TreeTop *callTree)
    TR::Node * dstOff = NULL;
    TR::Node * tableNode = NULL;
    bool hasTable = false;
+   static char *disableImplEncodeAsciiArray = feGetEnv("TR_disableImplEncodeAsciiArray");
 
    TR_ResolvedMethod *m = symbol->getResolvedMethodSymbol()->getResolvedMethod();
    bool isISO88591Encoder = (rm == TR::sun_nio_cs_ISO_8859_1_Encoder_encodeISOArray
                              || rm == TR::java_lang_StringCoding_implEncodeISOArray);
+   bool isAsciiEncoder = (rm == TR::java_lang_StringCoding_implEncodeAsciiArray) && !disableImplEncodeAsciiArray;
    int32_t childId = callNode->getFirstArgumentIndex();
    bool hasReciever = symbol->isStatic() ? false : true;
    if (hasReciever)
@@ -4209,13 +4219,13 @@ void OMR::ValuePropagation::transformConverterCall(TR::TreeTop *callTree)
    srcOff = callNode->getChild(childId++);//->createLongIfNeeded();
 
 
-   if (!isISO88591Encoder)
+   if (!(isISO88591Encoder || isAsciiEncoder))
       len = callNode->getChild(childId++);//->createLongIfNeeded();
 
    dstObjNode = callNode->getChild(childId++);
    dstOff = callNode->getChild(childId++);
 
-   if (isISO88591Encoder)
+   if (isISO88591Encoder || isAsciiEncoder)
       len = callNode->getChild(childId++);//->createLongIfNeeded();
 
    if ( (rm == TR::sun_nio_cs_ext_SBCS_Encoder_encodeSBCS) ||
@@ -4330,22 +4340,26 @@ void OMR::ValuePropagation::transformConverterCall(TR::TreeTop *callTree)
 
       int32_t threshold;
 
+      // All converter methods except for sun_nio_cs_ext_SBCS_Encoder_encodeSBCS have default case threshold=0. The names of
+      // all the methods still remain inside the switch for easier searchability in the codebase for these converters and the prior
+      // analysis performed on them.
       switch (rm)
          {
-         case TR::sun_nio_cs_ISO_8859_1_Encoder_encodeISOArray:  threshold = 0; break;
-         case TR::java_lang_StringCoding_implEncodeISOArray:  threshold = 0; break;
-         case TR::sun_nio_cs_ISO_8859_1_Decoder_decodeISO8859_1: threshold = 0; break;
-
-         case TR::sun_nio_cs_US_ASCII_Encoder_encodeASCII: threshold = 0; break;
-         case TR::sun_nio_cs_US_ASCII_Decoder_decodeASCII: threshold = 0; break;
-
-         case TR::sun_nio_cs_ext_SBCS_Encoder_encodeSBCS: threshold = 11; break;
-         case TR::sun_nio_cs_ext_SBCS_Decoder_decodeSBCS: threshold = 0; break;
-
-         case TR::sun_nio_cs_UTF_8_Decoder_decodeUTF_8: threshold = 0; break;
-         case TR::sun_nio_cs_UTF_8_Encoder_encodeUTF_8: threshold = 0; break;
-
-         default: threshold = 0; break;
+         case TR::sun_nio_cs_ext_SBCS_Encoder_encodeSBCS:
+            threshold = 11;
+            break;
+         case TR::sun_nio_cs_ISO_8859_1_Encoder_encodeISOArray:
+         case TR::java_lang_StringCoding_implEncodeISOArray:
+         case TR::sun_nio_cs_ISO_8859_1_Decoder_decodeISO8859_1:
+         case TR::sun_nio_cs_US_ASCII_Encoder_encodeASCII:
+         case TR::sun_nio_cs_US_ASCII_Decoder_decodeASCII:
+         case TR::java_lang_StringCoding_implEncodeAsciiArray:
+         case TR::sun_nio_cs_ext_SBCS_Decoder_decodeSBCS:
+         case TR::sun_nio_cs_UTF_8_Decoder_decodeUTF_8:
+         case TR::sun_nio_cs_UTF_8_Encoder_encodeUTF_8:
+         default:
+            threshold = 0;
+            break;
          }
 
       static const char* overrideThreshold = feGetEnv("TR_ArrayTranslateOverrideThreshold");

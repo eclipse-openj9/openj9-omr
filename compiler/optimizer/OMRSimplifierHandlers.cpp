@@ -7629,7 +7629,19 @@ TR::Node *lsubSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
       TR::Node * i2lNode = firstChild;
       firstChild = i2lNode->getFirstChild();
       firstChildOp = firstChild->getOpCodeValue();
-      if (firstChildOp == TR::iadd || firstChildOp == TR::isub)
+
+      /*
+       *  lsub         // node
+       *    i2l        // i2lNode
+       *      iadd     // firstChild
+       *        iload  // llChild
+       *        iconst // lrChild, iValue, lValue
+       *    lconst     // secondChild
+       *
+       *  If firstChild can overflow or underflow, the isub node should not be simplified.
+       */
+      if ((firstChildOp == TR::iadd || firstChildOp == TR::isub) &&
+           firstChild->cannotOverflow())
          {
          if (secondChildOp == TR::lconst)
             {

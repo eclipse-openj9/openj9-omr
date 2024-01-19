@@ -6906,7 +6906,7 @@ void TR_LoopVersioner::buildBoundCheckComparisonsTree(
             traceMsg(comp(), "Index invariant in each iter -> Creating %p (%s)\n", nextComparisonNode, nextComparisonNode->getOpCode().getName());
 
          if (comp()->requiresSpineChecks())
-             findAndReplaceContigArrayLen(NULL, nextComparisonNode ,comp()->incVisitCount());
+             findAndReplaceContigArrayLen(NULL, nextComparisonNode, comp()->incVisitCount());
 
          LoopEntryPrep *prep =
             createLoopEntryPrep(LoopEntryPrep::TEST, nextComparisonNode);
@@ -6920,7 +6920,7 @@ void TR_LoopVersioner::buildBoundCheckComparisonsTree(
             traceMsg(comp(), "Index invariant in each iter -> Creating %p (%s)\n", nextComparisonNode, nextComparisonNode->getOpCode().getName());
 
          if (comp()->requiresSpineChecks())
-            findAndReplaceContigArrayLen(NULL, nextComparisonNode ,comp()->incVisitCount());
+            findAndReplaceContigArrayLen(NULL, nextComparisonNode, comp()->incVisitCount());
 
          prep = createChainedLoopEntryPrep(
             LoopEntryPrep::TEST,
@@ -7325,7 +7325,7 @@ void TR_LoopVersioner::buildBoundCheckComparisonsTree(
             }
 
          if (comp()->requiresSpineChecks())
-            findAndReplaceContigArrayLen(NULL, nextComparisonNode ,comp()->incVisitCount());
+            findAndReplaceContigArrayLen(NULL, nextComparisonNode, comp()->incVisitCount());
 
          prep = createLoopEntryPrep(LoopEntryPrep::TEST, nextComparisonNode);
          dumpOptDetails(
@@ -7524,6 +7524,49 @@ void TR_LoopVersioner::buildBoundCheckComparisonsTree(
                maxValue = TR::Node::create(TR::isub, 2, maxValue, adjustMaxValue);
                }
 
+            if (trace())
+               {
+               traceMsg(comp(), "%s: reverseBranch %d stayInLoopOp %s incrNode n%dn numIterations n%dn maxValue n%dn loopLimit n%dn loopDrivingInductionVariable n%dn\n", __FUNCTION__,
+                  reverseBranch, stayInLoopOp.getName(), incrNode->getGlobalIndex(), numIterations->getGlobalIndex(),
+                  maxValue->getGlobalIndex(), loopLimit->getGlobalIndex(), _storeTrees[loopDrivingInductionVariable]->getNode()->getFirstChild()->getGlobalIndex());
+               }
+            /*
+             * Loop test op code: <= or <
+             *   - (limit + step) should be greater than or equal to the limit, otherwise outside of the representable range
+             *
+             * Loop test op code: >= or >
+             *   - (limit - step) should be less than or equal to the limit, otherwise outside of the representable range
+             */
+            if (!_storeTrees[loopDrivingInductionVariable]->getNode()->getFirstChild()->cannotOverflow())
+               {
+               TR::Node *overflowComparisonNode = NULL;
+
+               // stayInLoopOp already considers whether or not the branch is reversed
+               if ((stayInLoopOp.getOpCodeValue() == TR::ificmple) || (stayInLoopOp.getOpCodeValue() == TR::ificmplt)) // <=, <
+                  {
+                  TR::Node *overLimit = TR::Node::create(TR::iadd, 2, loopLimit, incrNode);
+                  overflowComparisonNode = TR::Node::createif(TR::ificmplt, overLimit, loopLimit, _exitGotoTarget);
+                  }
+               else // >=, >
+                  {
+                  TR::Node *overLimit = TR::Node::create(TR::isub, 2, loopLimit, incrNode);
+                  overflowComparisonNode = TR::Node::createif(TR::ificmpgt, overLimit, loopLimit, _exitGotoTarget);
+                  }
+
+               if (comp()->requiresSpineChecks())
+                  findAndReplaceContigArrayLen(NULL, overflowComparisonNode, comp()->incVisitCount());
+
+               prep = createChainedLoopEntryPrep(
+                  LoopEntryPrep::TEST,
+                  overflowComparisonNode,
+                  prep);
+
+               dumpOptDetails(
+                  comp(),
+                  "Prep %p has been created for testing if exceed bounds\n",
+                  prep);
+               }
+
             loopLimit = maxValue;
             dumpOptDetails(comp(), "loopLimit has been adjusted to %p\n", loopLimit);
             }
@@ -7604,7 +7647,7 @@ void TR_LoopVersioner::buildBoundCheckComparisonsTree(
             }
 
          if (comp()->requiresSpineChecks())
-           findAndReplaceContigArrayLen(NULL, nextComparisonNode ,comp()->incVisitCount());
+           findAndReplaceContigArrayLen(NULL, nextComparisonNode, comp()->incVisitCount());
 
          prep = createChainedLoopEntryPrep(
             LoopEntryPrep::TEST,
@@ -7679,7 +7722,7 @@ void TR_LoopVersioner::buildBoundCheckComparisonsTree(
                   traceMsg(comp(), "Induction variable added in each iter -> Creating %p (%s)\n", nextComparisonNode, nextComparisonNode->getOpCode().getName());
 
                if (comp()->requiresSpineChecks())
-                  findAndReplaceContigArrayLen(NULL, nextComparisonNode ,comp()->incVisitCount());
+                  findAndReplaceContigArrayLen(NULL, nextComparisonNode, comp()->incVisitCount());
 
                prep = createChainedLoopEntryPrep(
                   LoopEntryPrep::TEST,
@@ -7711,7 +7754,7 @@ void TR_LoopVersioner::buildBoundCheckComparisonsTree(
                nextComparisonNode = TR::Node::createif(TR::ificmplt, duplicateMulNode, TR::Node::create(boundCheckNode, TR::iconst, 0, 0), _exitGotoTarget);
                nextComparisonNode->setIsVersionableIfWithMaxExpr(comp());
                if (comp()->requiresSpineChecks())
-                  findAndReplaceContigArrayLen(NULL, nextComparisonNode ,comp()->incVisitCount());
+                  findAndReplaceContigArrayLen(NULL, nextComparisonNode, comp()->incVisitCount());
 
                prep = createChainedLoopEntryPrep(
                   LoopEntryPrep::TEST,
@@ -7725,7 +7768,7 @@ void TR_LoopVersioner::buildBoundCheckComparisonsTree(
                nextComparisonNode = TR::Node::createif(TR::ifiucmpgt, duplicateMulHNode, TR::Node::create(boundCheckNode, TR::iconst, 0, 0), _exitGotoTarget);
                nextComparisonNode->setIsVersionableIfWithMaxExpr(comp());
                if (comp()->requiresSpineChecks())
-                  findAndReplaceContigArrayLen(NULL, nextComparisonNode ,comp()->incVisitCount());
+                  findAndReplaceContigArrayLen(NULL, nextComparisonNode, comp()->incVisitCount());
 
                prep = createChainedLoopEntryPrep(
                   LoopEntryPrep::TEST,
@@ -7738,7 +7781,7 @@ void TR_LoopVersioner::buildBoundCheckComparisonsTree(
                //Adding multiplicative factor greater than zero check for multiplicative BNDCHKS a.i+b; a>0
                nextComparisonNode = TR::Node::createif(TR::ificmple, strideNode->duplicateTree(), TR::Node::create(boundCheckNode, TR::iconst, 0, 0), _exitGotoTarget);
                if (comp()->requiresSpineChecks())
-                  findAndReplaceContigArrayLen(NULL, nextComparisonNode ,comp()->incVisitCount());
+                  findAndReplaceContigArrayLen(NULL, nextComparisonNode, comp()->incVisitCount());
 
                prep = createChainedLoopEntryPrep(
                   LoopEntryPrep::TEST,

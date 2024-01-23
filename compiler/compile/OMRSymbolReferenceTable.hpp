@@ -148,6 +148,7 @@ class SymbolReferenceTable
       osrScratchBufferSymbol,    //osrScratchBuffer slot on  j9vmthread
       osrFrameIndexSymbol,       // osrFrameIndex slot on j9vmthread
       osrReturnAddressSymbol,       // osrFrameIndex slot on j9vmthread
+      contiguousArrayDataAddrFieldSymbol, // dataAddr field symbol used to track data portion of the array
 
       /** \brief
        *
@@ -803,6 +804,10 @@ class SymbolReferenceTable
    TR::SymbolReference * findOrCreateTemporaryWithKnowObjectIndex(TR::ResolvedMethodSymbol * owningMethodSymbol, TR::KnownObjectTable::Index knownObjectIndex);
    TR::SymbolReference * findOrCreateThisRangeExtensionSymRef(TR::ResolvedMethodSymbol *owningMethodSymbol = 0);
    TR::SymbolReference * findOrCreateContiguousArraySizeSymbolRef();
+#if defined(J9VM_GC_ENABLE_SPARSE_HEAP_ALLOCATION)
+   TR::SymbolReference * findOrCreateContiguousArrayDataAddrFieldShadowSymRef();
+#endif // defined(J9VM_GC_ENABLE_SPARSE_HEAP_ALLOCATION)
+   TR::SymbolReference * findContiguousArrayDataAddrFieldShadowSymRef();
    TR::SymbolReference * findOrCreateNewArrayNoZeroInitSymbolRef(TR::ResolvedMethodSymbol * owningMethodSymbol);
    TR::SymbolReference * findOrCreateNewObjectSymbolRef(TR::ResolvedMethodSymbol * owningMethodSymbol);
    TR::SymbolReference * findOrCreateNewObjectNoZeroInitSymbolRef(TR::ResolvedMethodSymbol * owningMethodSymbol);

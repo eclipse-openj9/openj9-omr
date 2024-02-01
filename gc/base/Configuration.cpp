@@ -450,6 +450,9 @@ MM_Configuration::initializeGCThreadCount(MM_EnvironmentBase* env)
 	if (!extensions->gcThreadCountSpecified) {
 		extensions->gcThreadCount = defaultGCThreadCount(env);
 	}
+#if defined(J9VM_OPT_CRIU_SUPPORT)
+	_delegate.checkPointGCThreadCountVerifyAndAdjust(env);
+#endif /* defined(J9VM_OPT_CRIU_SUPPORT) */
 }
 
 uintptr_t

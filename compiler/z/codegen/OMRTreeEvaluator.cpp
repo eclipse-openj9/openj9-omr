@@ -10780,6 +10780,7 @@ OMR::Z::TreeEvaluator::arraycmpHelper(TR::Node *node,
       bool lenMinusOne = false;
       bool needs64BitOpCode = false;
 
+      TR::LabelSymbol *cFlowRegionStart = generateLabelSymbol(cg);
       TR::LabelSymbol *cFlowRegionEnd = generateLabelSymbol(cg);
 
       TR::Register *loopCountReg = NULL;
@@ -10833,17 +10834,30 @@ OMR::Z::TreeEvaluator::arraycmpHelper(TR::Node *node,
                                                                                                                      maxLenIn256 ? 5 : (isWideChar ? (isFoldedIf ? 10 : 11) : 5 + 4),
                                                                                                                      cg);
 
+      if (!isFoldedIf && needResultReg)
+         {
+         branchDeps->addPostCondition(retValReg, TR::RealRegister::AssignAny);
+         generateRRInstruction(cg, TR::InstOpCode::getXORRegOpCode(), node, retValReg, retValReg);
+         }
+
+      generateS390LabelInstruction(cg, TR::InstOpCode::label, node, cFlowRegionStart);
+      cFlowRegionStart->setStartInternalControlFlow();
+
+      generateS390CompareAndBranchInstruction(
+         cg,
+         TR::InstOpCode::getCmpLogicalRegOpCode(),
+         node,
+         source1Reg,
+         source2Reg,
+         TR::InstOpCode::COND_BE,
+         isIfxcmpBrCondContainEqual ? compareTarget : cFlowRegionEnd,
+         false /* needsCC */);
+
       //We could do better job in future for the known length (>=4k)
       //Currently there are some unnecessary test/load instructions generated.
 
       if (maxLenIn256)
          {
-         if (!isFoldedIf && needResultReg)
-            {
-            branchDeps->addPostCondition(retValReg, TR::RealRegister::AssignAny);
-            generateRRInstruction(cg, TR::InstOpCode::getXORRegOpCode(), node, retValReg, retValReg);
-            }
-
          if (!lenMinusOne)
             {
             generateRIInstruction(cg, (needs64BitOpCode) ? TR::InstOpCode::AGHI : TR::InstOpCode::AHI, node, lengthReg, -1);
@@ -10858,15 +10872,12 @@ OMR::Z::TreeEvaluator::arraycmpHelper(TR::Node *node,
             if (isFoldedIf)
                {
                if (isIfxcmpBrCondContainEqual)
-                  setStartInternalControlFlow(cg, node, generateS390BranchInstruction(cg, TR::InstOpCode::BRC, TR::InstOpCode::COND_BL, node, compareTarget),
-                                              isStartInternalControlFlowSet);
+                  generateS390BranchInstruction(cg, TR::InstOpCode::BRC, TR::InstOpCode::COND_BL, node, compareTarget);
                else
-                  setStartInternalControlFlow(cg, node, generateS390BranchInstruction(cg, TR::InstOpCode::BRC, TR::InstOpCode::COND_BL, node, cFlowRegionEnd),
-                                              isStartInternalControlFlowSet);
+                  generateS390BranchInstruction(cg, TR::InstOpCode::BRC, TR::InstOpCode::COND_BL, node, cFlowRegionEnd);
                }
             else
-               setStartInternalControlFlow(cg, node, generateS390BranchInstruction(cg, TR::InstOpCode::BRC, TR::InstOpCode::COND_BL, node, cFlowRegionEnd),
-                                            isStartInternalControlFlowSet);
+               generateS390BranchInstruction(cg, TR::InstOpCode::BRC, TR::InstOpCode::COND_BL, node, cFlowRegionEnd);
             }
 
          TR::MemoryReference *source1MemRef = generateS390MemoryReference(source1Reg, 0, cg);
@@ -10895,12 +10906,6 @@ OMR::Z::TreeEvaluator::arraycmpHelper(TR::Node *node,
 
             //compareDeps = new (cg->trHeapMemory()) TR::RegisterDependencyConditions(0, isFoldedIf ? 6 : 7, cg);
 
-            if(!isFoldedIf && needResultReg)
-               {
-               branchDeps->addPostCondition(retValReg, TR::RealRegister::AssignAny);
-               generateRRInstruction(cg, TR::InstOpCode::getXORRegOpCode(), node, retValReg, retValReg);
-               }
-
             //cFlowRegionEnd = generateLabelSymbol(cg);
 
             generateRRInstruction(cg, cg->comp()->target().is64Bit() ? TR::InstOpCode::LTGR : TR::InstOpCode::LTR, node, lengthReg, lengthReg);
@@ -10909,15 +10914,12 @@ OMR::Z::TreeEvaluator::arraycmpHelper(TR::Node *node,
             if (isFoldedIf)
                {
                if (isIfxcmpBrCondContainEqual)
-                  setStartInternalControlFlow(cg, node, generateS390BranchInstruction(cg, TR::InstOpCode::BRC, TR::InstOpCode::COND_BZ, node, compareTarget),
-                                               isStartInternalControlFlowSet);
+                  generateS390BranchInstruction(cg, TR::InstOpCode::BRC, TR::InstOpCode::COND_BZ, node, compareTarget);
                else
-                  setStartInternalControlFlow(cg, node, generateS390BranchInstruction(cg, TR::InstOpCode::BRC, TR::InstOpCode::COND_MASK8, node, cFlowRegionEnd),
-                                               isStartInternalControlFlowSet);
+                  generateS390BranchInstruction(cg, TR::InstOpCode::BRC, TR::InstOpCode::COND_MASK8, node, cFlowRegionEnd);
                }
             else
-               setStartInternalControlFlow(cg, node, generateS390BranchInstruction(cg, TR::InstOpCode::BRC, TR::InstOpCode::COND_MASK8, node, cFlowRegionEnd),
-                                               isStartInternalControlFlowSet);
+               generateS390BranchInstruction(cg, TR::InstOpCode::BRC, TR::InstOpCode::COND_MASK8, node, cFlowRegionEnd);
 
             if(isWideChar)
                {
@@ -10943,12 +10945,6 @@ OMR::Z::TreeEvaluator::arraycmpHelper(TR::Node *node,
             //This part uses CLC loop to do the compare
             //CLC loop is considered superior to CLCLE -- task 33860
 
-            if (!isFoldedIf && needResultReg)
-               {
-               branchDeps->addPostCondition(retValReg, TR::RealRegister::AssignAny);
-               generateRRInstruction(cg, TR::InstOpCode::getXORRegOpCode(), node, retValReg, retValReg);
-               }
-
             loopCountReg = cg->allocateRegister();
 
             if (!lenMinusOne)
@@ -10966,15 +10962,12 @@ OMR::Z::TreeEvaluator::arraycmpHelper(TR::Node *node,
                   {
                   if (isIfxcmpBrCondContainEqual)
                     // generateS390BranchInstruction(cg, TR::InstOpCode::BRC, TR::InstOpCode::COND_BL, node, compareTarget);
-                     setStartInternalControlFlow(cg, node, generateS390BranchInstruction(cg, TR::InstOpCode::BRC, TR::InstOpCode::COND_BL, node, compareTarget),
-                                                 isStartInternalControlFlowSet);
+                     generateS390BranchInstruction(cg, TR::InstOpCode::BRC, TR::InstOpCode::COND_BL, node, compareTarget);
                   else
-                     setStartInternalControlFlow(cg, node, generateS390BranchInstruction(cg, TR::InstOpCode::BRC, TR::InstOpCode::COND_BL, node, cFlowRegionEnd),
-                                                 isStartInternalControlFlowSet);
+                     generateS390BranchInstruction(cg, TR::InstOpCode::BRC, TR::InstOpCode::COND_BL, node, cFlowRegionEnd);
                   }
                else
-                  setStartInternalControlFlow(cg, node, generateS390BranchInstruction(cg, TR::InstOpCode::BRC, TR::InstOpCode::COND_BL, node, cFlowRegionEnd),
-                                              isStartInternalControlFlowSet);
+                  generateS390BranchInstruction(cg, TR::InstOpCode::BRC, TR::InstOpCode::COND_BL, node, cFlowRegionEnd);
                }
 
             branchDeps->addPostConditionIfNotAlreadyInserted(source1Reg, TR::RealRegister::AssignAny);
@@ -10994,8 +10987,7 @@ OMR::Z::TreeEvaluator::arraycmpHelper(TR::Node *node,
               generateRSInstruction(cg, TR::InstOpCode::SRA, node, loopCountReg, 8);
               }
 
-            setStartInternalControlFlow(cg, node, generateS390BranchInstruction(cg, TR::InstOpCode::BRC, TR::InstOpCode::COND_BE, node, bottomOfLoop),
-                                        isStartInternalControlFlowSet);
+            generateS390BranchInstruction(cg, TR::InstOpCode::BRC, TR::InstOpCode::COND_BE, node, bottomOfLoop);
 
             TR::MemoryReference *source1MemRef = generateS390MemoryReference(source1Reg, 0, cg);
             TR::MemoryReference *source2MemRef = generateS390MemoryReference(source2Reg, 0, cg);
@@ -11020,15 +11012,12 @@ OMR::Z::TreeEvaluator::arraycmpHelper(TR::Node *node,
             if (isFoldedIf)
                {
                if (ifxcmpBrCond == TR::InstOpCode::COND_MASK8)
-                  setStartInternalControlFlow(cg, node, generateS390BranchInstruction(cg, TR::InstOpCode::BRC, TR::InstOpCode::COND_MASK6, node, cFlowRegionEnd),
-                                              isStartInternalControlFlowSet);
+                  generateS390BranchInstruction(cg, TR::InstOpCode::BRC, TR::InstOpCode::COND_MASK6, node, cFlowRegionEnd);
                else
-                  setStartInternalControlFlow(cg, node, generateS390BranchInstruction(cg, TR::InstOpCode::BRC, TR::InstOpCode::COND_MASK6, node, outOfCompare),
-                                              isStartInternalControlFlowSet);
+                  generateS390BranchInstruction(cg, TR::InstOpCode::BRC, TR::InstOpCode::COND_MASK6, node, outOfCompare);
                }
             else
-               setStartInternalControlFlow(cg, node, generateS390BranchInstruction(cg, TR::InstOpCode::BRC, TR::InstOpCode::COND_MASK6, node, outOfCompare),
-                                           isStartInternalControlFlowSet);
+               generateS390BranchInstruction(cg, TR::InstOpCode::BRC, TR::InstOpCode::COND_MASK6, node, outOfCompare);
 
             generateRXInstruction(cg, TR::InstOpCode::LA, node, source1Reg, generateS390MemoryReference(source1Reg, 256, cg));
             generateRXInstruction(cg, TR::InstOpCode::LA, node, source2Reg, generateS390MemoryReference(source2Reg, 256, cg));

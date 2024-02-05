@@ -344,6 +344,7 @@ xmlns:vgc="http://www.ibm.com/j9/verbosegc">
 			<element ref="vgc:largest-consumer" maxOccurs="1" minOccurs="0" />
 		</sequence>
 		<attribute name="totalBytes" type="integer" use="required" />
+		<attribute name="discardedBytes" type="integer" use="required" />
 	</complexType>
 
 	<complexType name="allocated-bytes">

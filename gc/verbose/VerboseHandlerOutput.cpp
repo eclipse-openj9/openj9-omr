@@ -887,7 +887,7 @@ MM_VerboseHandlerOutput::printAllocationStats(MM_EnvironmentBase* env)
 	OMRPORT_ACCESS_FROM_OMRPORT(env->getPortLibrary());
 
 	enterAtomicReportingBlock();
-	writer->formatAndOutput(env, 0, "<allocation-stats totalBytes=\"%zu\" >", systemStats->bytesAllocated());
+	writer->formatAndOutput(env, 0, "<allocation-stats totalBytes=\"%zu\" discardedBytes=\"%zu\" >", systemStats->bytesAllocated(), systemStats->_tlhDiscardedBytes);
 
 	if (_extensions->isVLHGC()) {
 #if defined(OMR_GC_VLHGC)

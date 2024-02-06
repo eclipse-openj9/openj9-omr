@@ -2549,7 +2549,8 @@ genLoadAddressConstant(TR::CodeGenerator * cg, TR::Node * node, uintptr_t value,
          isCompressedClassPointer = comp->useCompressedPointers();
          }
 
-      if (comp->getOption(TR_EnableHCR))
+      if (comp->getOption(TR_EnableHCR) && node->getOpCode().hasSymbolReference() &&
+          node->getSymbol()->isStatic() && node->getSymbol()->isClassObject())
          {
          comp->getStaticHCRPICSites()->push_front(cursor);
          }

@@ -50,7 +50,7 @@ OMR::RV::CPU::getProcessorName()
    const char* returnString = "";
    switch(_processorDescription.processor)
       {
-      case OMR_PROCESOR_RISCV64_UNKNOWN:
+      case OMR_PROCESSOR_RISCV64_UNKNOWN:
          returnString = "Unknown RV64G processor";
          break;
       default:

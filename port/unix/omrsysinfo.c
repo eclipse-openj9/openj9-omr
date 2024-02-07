@@ -1885,9 +1885,9 @@ static intptr_t
 omrsysinfo_get_riscv_description(struct OMRPortLibrary *portLibrary, OMRProcessorDesc *desc)
 {
 #if defined(RISCV32)
-	desc->processor = OMR_PROCESOR_RISCV32_UNKNOWN;
+	desc->processor = OMR_PROCESSOR_RISCV32_UNKNOWN;
 #elif defined(RISCV64)
-	desc->processor = OMR_PROCESOR_RISCV64_UNKNOWN;
+	desc->processor = OMR_PROCESSOR_RISCV64_UNKNOWN;
 #elif
 	desc->processor = OMR_PROCESSOR_UNDEFINED;
 #endif

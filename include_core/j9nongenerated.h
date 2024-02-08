@@ -199,6 +199,10 @@ typedef struct J9MemorySegment {
 #define MEMORY_TYPE_DEFAULT                 0x2000000
 #define MEMORY_TYPE_FROM_JXE                0x4000000
 #define MEMORY_TYPE_SHARED_META             0x8000000
+/* On Linux, memory marked as MEMORY_TYPE_DISCLAIMABLE_TO_FILE can be disclaimed
+ * to a backing file with madvise().
+ */
+#define MEMORY_TYPE_DISCLAIMABLE_TO_FILE    0x10000000
 #define J9MEMORYSEGMENT_LEFTCHILD(base) AVL_SRP_GETNODE((base)->parentAVLTreeNode.leftChild)
 #define J9MEMORYSEGMENT_RIGHTCHILD(base) AVL_SRP_GETNODE((base)->parentAVLTreeNode.rightChild)
 

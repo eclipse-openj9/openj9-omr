@@ -31,6 +31,7 @@
 #define _GNU_SOURCE
 #endif
 
+#include "omrformatconsts.h"
 #include "omrport.h"
 #include "omrportpriv.h"
 #include "omrportpg.h"
@@ -654,7 +655,7 @@ omrvmem_commit_memory(struct OMRPortLibrary *portLibrary, void *address, uintptr
 				rc = address;
 			} else {
 				Trc_PRT_vmem_omrvmem_commit_memory_mprotect_failure(errno);
-				portLibrary->error_set_last_error(portLibrary,  errno, OMRPORT_ERROR_VMEM_OPFAILED);
+				portLibrary->error_set_last_error(portLibrary, errno, OMRPORT_ERROR_VMEM_OPFAILED);
 			}
 		} else if (PPG_vmem_pageSize[1] == identifier->pageSize) {
 			rc = address;
@@ -753,7 +754,7 @@ omrvmem_free_memory(struct OMRPortLibrary *portLibrary, void *address, uintptr_t
 		ret = (int32_t)shmdt(address);
 	}
 
-	if((mode & OMRPORT_VMEM_MEMORY_MODE_SHARE_FILE_OPEN) && (OMRPORT_INVALID_FD != fd)) {
+	if ((OMRPORT_INVALID_FD != fd) && OMR_ARE_ANY_BITS_SET(mode, OMRPORT_VMEM_MEMORY_MODE_SHARE_FILE_OPEN)) {
 		close(fd);
 	}
 
@@ -1122,7 +1123,7 @@ reserve_memory_with_mmap(struct OMRPortLibrary *portLibrary, void *address, uint
 	/* This function is cloned in J9SourceUnixJ9VMem (omrvmem_reserve_memory).
 	 * Any changes made here may need to be reflected in that version.
 	 */
-	int fd = -1;
+	int fd = OMRPORT_INVALID_FD;
 	int flags = 0;
 	void *result = NULL;
 	int protectionFlags = PROT_NONE;
@@ -1132,56 +1133,107 @@ reserve_memory_with_mmap(struct OMRPortLibrary *portLibrary, void *address, uint
 
 	Trc_PRT_vmem_reserve_entry(address, byteAmount);
 
-	if (0 != (mode & OMRPORT_VMEM_MEMORY_MODE_SHARE_FILE_OPEN)) {
+	if (OMR_ARE_ANY_BITS_SET(mode, OMRPORT_VMEM_MEMORY_MODE_SHARE_TMP_FILE_OPEN)
+		&& OMR_ARE_NO_BITS_SET(mode, OMRPORT_VMEM_MEMORY_MODE_SHARE_FILE_OPEN)
+	) {
+		/* By convention, if OMRPORT_VMEM_MEMORY_MODE_SHARE_TMP_FILE_OPEN is set,
+		 * we must have the OMRPORT_VMEM_MEMORY_MODE_SHARE_FILE_OPEN bit also set.
+		 */
+		portLibrary->error_set_last_error(portLibrary, errno, OMRPORT_ERROR_VMEM_NOT_SUPPORTED);
+		Trc_PRT_vmem_reserve_exit(result, address, byteAmount);
+		return result;
+	}
+
+	if (OMR_ARE_ANY_BITS_SET(mode, OMRPORT_VMEM_MEMORY_MODE_SHARE_FILE_OPEN)) {
 		flags |= MAP_SHARED;
 		useBackingSharedFile = TRUE;
 	} else {
 		useBackingFile = set_flags_for_mmap(&flags);
 	}
 
-	if (0 != (mode & OMRPORT_VMEM_MEMORY_MODE_MMAP_HUGE_PAGES)) {
+	if (OMR_ARE_ANY_BITS_SET(mode, OMRPORT_VMEM_MEMORY_MODE_MMAP_HUGE_PAGES)) {
 		flags |= MAP_HUGETLB;
 		areHugePagesEnabled = TRUE;
 	}
 
 	if (useBackingSharedFile) {
-		memfd_function_t memfd_createDL = PPG_memfd_function;
-		if (NULL != memfd_createDL) {
-			Trc_PRT_vmem_reserve_doubleMapAPI_available(address, byteAmount);
-			mode |= OMRPORT_VMEM_MEMORY_MODE_DOUBLE_MAP_AVAILABLE;
-			int ft = -1;
-			uintptr_t fdFlags = 0;
+		if (OMR_ARE_ANY_BITS_SET(mode, OMRPORT_VMEM_MEMORY_MODE_SHARE_TMP_FILE_OPEN)) {
+			/* Generate a unique temporary filename from template and open the file. */
 			char filename[FILE_NAME_SIZE + 1];
-			sprintf(filename, "omrvmem_temp_%zu_%09d_%zu",  (size_t)omrtime_current_time_millis(portLibrary),
-								getpid(),
-								(size_t)pthread_self());
-
-			if (areHugePagesEnabled) {
-				fdFlags = MFD_HUGETLB;
+			snprintf(filename, sizeof(filename), "omrvmem_%09d_XXXXXX", getpid());
+			fd = mkostemp(filename, 0);
+			if (OMRPORT_INVALID_FD != fd) {
+				unlink(filename);
+				/* Set the file size with ftruncate. */
+				if (OMRPORT_INVALID_FD == ftruncate(fd, byteAmount)) {
+					close(fd);
+					fd = OMRPORT_INVALID_FD;
+				}
 			}
-			fd = memfd_createDL(filename, fdFlags);
-			ft = ftruncate(fd, byteAmount);
-
-			if ((OMRPORT_INVALID_FD == fd) || (OMRPORT_INVALID_FD == ft)) {
-				Trc_PRT_vmem_reserve_failed(address, byteAmount);
-				update_vmemIdentifier(identifier, NULL, NULL, 0, 0, 0, 0, 0, NULL, -1);
-				Trc_PRT_vmem_reserve_exit(result, address, byteAmount);
-				return result;
+			if (OMRPORT_INVALID_FD == fd) {
+				Trc_PRT_vmem_reserve_tempfile_not_created(filename, byteAmount);
+				/* The main reason for allocating memory with mmap and backed by
+				 * a file is to be able to "disclaim" infrequently accessed memory
+				 * blocks to the backing file, thus reducing physical memory usage.
+				 * If the backing file cannot be opened, we should not terminate
+				 * the process; rather, we should allocate memory using an
+				 * ANONYMOUS PRIVATE map and continue to run.
+				 */
 			}
 		} else {
+			memfd_function_t memfd_createDL = PPG_memfd_function;
+			if (NULL != memfd_createDL) {
+				Trc_PRT_vmem_reserve_doubleMapAPI_available(address, byteAmount);
+				mode |= OMRPORT_VMEM_MEMORY_MODE_DOUBLE_MAP_AVAILABLE;
+				int ft = -1;
+				uintptr_t fdFlags = 0;
+				char filename[FILE_NAME_SIZE + 1];
+				sprintf(
+						filename,
+						"omrvmem_temp_%" OMR_PRId64 "_%09d_%" OMR_PRIuSIZE,
+						omrtime_current_time_millis(portLibrary),
+						getpid(),
+						(size_t)pthread_self());
+
+				if (areHugePagesEnabled) {
+					fdFlags = MFD_HUGETLB;
+				}
+				fd = memfd_createDL(filename, fdFlags);
+				ft = ftruncate(fd, byteAmount);
+
+				if ((OMRPORT_INVALID_FD == fd) || (OMRPORT_INVALID_FD == ft)) {
+					Trc_PRT_vmem_reserve_failed(address, byteAmount);
+					update_vmemIdentifier(identifier, NULL, NULL, 0, 0, 0, 0, 0, NULL, -1);
+					Trc_PRT_vmem_reserve_exit(result, address, byteAmount);
+					return result;
+				}
+			} else {
+				Trc_PRT_vmem_reserve_doubleMapAPI_not_available(address, byteAmount);
+				/* If memfd_create() is not available on the system, the process will
+				 * continue to run, but the "Double Map Arraylets" feature used by the
+				 * garbage collector will not be available.
+				 */
+			}
+		}
+
+		if (OMRPORT_INVALID_FD == fd) {
+			/* Revert to using an ANONYMOUS mmap. */
+			useBackingSharedFile = FALSE;
 			flags = 0;
 			useBackingFile = set_flags_for_mmap(&flags);
-			useBackingSharedFile = FALSE;
-			Trc_PRT_vmem_reserve_doubleMapAPI_not_available(address, byteAmount);
+			if (areHugePagesEnabled) {
+				flags |= MAP_HUGETLB;
+			}
 		}
-	} else if (useBackingFile) {
+	}
+
+	if (useBackingFile) {
 		fd = portLibrary->file_open(portLibrary, "/dev/zero", EsOpenRead | EsOpenWrite, 0);
 	}
 
-	if (((OMRPORT_INVALID_FD == fd) && (!useBackingSharedFile && !useBackingFile)) ||
-	   ((OMRPORT_INVALID_FD != fd) && (useBackingSharedFile || useBackingFile))) {
+	if ((OMRPORT_INVALID_FD != fd) || !(useBackingFile || useBackingSharedFile)) {
 
-		if ((0 != (OMRPORT_VMEM_MEMORY_MODE_COMMIT & mode)) || areHugePagesEnabled) {
+		if (OMR_ARE_ANY_BITS_SET(mode, OMRPORT_VMEM_MEMORY_MODE_COMMIT) || areHugePagesEnabled) {
 			protectionFlags = get_protectionBits(mode);
 		} else {
 			flags |= MAP_NORESERVE;
@@ -1209,7 +1261,7 @@ reserve_memory_with_mmap(struct OMRPortLibrary *portLibrary, void *address, uint
 			}
 			update_vmemIdentifier(identifier, result, result, byteAmount, mode, pageSize, OMRPORT_VMEM_PAGE_FLAG_NOT_USED, allocator, category, fd);
 			omrmem_categories_increment_counters(category, byteAmount);
-			if (0 != (OMRPORT_VMEM_MEMORY_MODE_COMMIT & mode)) {
+			if (OMR_ARE_ANY_BITS_SET(mode, OMRPORT_VMEM_MEMORY_MODE_COMMIT)) {
 				if (NULL == omrvmem_commit_memory(portLibrary, result, byteAmount, identifier)) {
 					/* If the commit fails free the memory */
 					omrvmem_free_memory(portLibrary, result, byteAmount, identifier);
@@ -1307,7 +1359,7 @@ omrvmem_release_double_mapped_region(struct OMRPortLibrary *portLibrary, void *a
  *  @param uintptr_t                    pageSize            [in] Constant describing page size
  *  @param OMRMemCategory               *category           [in] Memory allocation category
  *  @param void                         *preferredAddress    [in] Prefered address of contiguous region to be double mapped
- * 
+ *
  * @return pointer to contiguous region to which regions were double mapped into, NULL is returned if unsuccessful
  */
 
@@ -1410,7 +1462,7 @@ omrvmem_create_double_mapped_region(struct OMRPortLibrary *portLibrary, void* re
 			if (address == MAP_FAILED) {
 				Trc_PRT_double_map_regions_Create_Failure2();
 				successfulContiguousMap = FALSE;
-				portLibrary->error_set_last_error(portLibrary,  errno, OMRPORT_ERROR_VMEM_DOUBLE_MAP_FAILED);
+				portLibrary->error_set_last_error(portLibrary, errno, OMRPORT_ERROR_VMEM_DOUBLE_MAP_FAILED);
 #if defined(OMRVMEM_DEBUG)
 				printf("***************************** errno: %d\n", errno);
 				printf("Failed to mmap address[%zu] at mmapContiguous()\n", i);
@@ -1420,7 +1472,7 @@ omrvmem_create_double_mapped_region(struct OMRPortLibrary *portLibrary, void* re
 			} else if (nextAddress != address) {
 				Trc_PRT_double_map_regions_Create_Failure3(nextAddress, address);
 				successfulContiguousMap = FALSE;
-				portLibrary->error_set_last_error(portLibrary,  errno, OMRPORT_ERROR_VMEM_DOUBLE_MAP_FAILED);
+				portLibrary->error_set_last_error(portLibrary, errno, OMRPORT_ERROR_VMEM_DOUBLE_MAP_FAILED);
 #if defined(OMRVMEM_DEBUG)
 				printf("Map failed to provide the correct address. nextAddress %p != %p\n", nextAddress, address);
 				fflush(stdout);

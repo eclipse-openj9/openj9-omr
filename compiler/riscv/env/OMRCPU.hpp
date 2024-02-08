@@ -50,8 +50,8 @@ protected:
 
    CPU() : OMR::CPU()
       {
-      _processorDescription.processor = OMR_PROCESOR_RISCV64_UNKNOWN;
-      _processorDescription.physicalProcessor = OMR_PROCESOR_RISCV64_UNKNOWN;
+      _processorDescription.processor = OMR_PROCESSOR_RISCV64_UNKNOWN;
+      _processorDescription.physicalProcessor = OMR_PROCESSOR_RISCV64_UNKNOWN;
       memset(_processorDescription.features, 0, OMRPORT_SYSINFO_FEATURES_SIZE*sizeof(uint32_t));
       }
    CPU(const OMRProcessorDesc& processorDescription) : OMR::CPU(processorDescription) {}

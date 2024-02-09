@@ -194,7 +194,7 @@ protected:
 
 	virtual bool acquireExclusiveVMAccessForCycleStart(MM_EnvironmentBase *env)
 	{
-		return env->acquireExclusiveVMAccessForGC(this, true, false);
+		return env->acquireExclusiveVMAccessForGC(this, true);
 	}
 
 public:

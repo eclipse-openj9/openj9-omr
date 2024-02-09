@@ -88,7 +88,7 @@ MM_MemorySubSpaceGenerational::allocationRequestFailed(MM_EnvironmentBase *env, 
 	}
 
 	allocateDescription->saveObjects(env);
-	if (!env->acquireExclusiveVMAccessForGC(_collector, true, true)) {
+	if (!env->acquireExclusiveVMAccessForGC(_collector, true)) {
 		allocateDescription->restoreObjects(env);
 		Trc_MM_MSSGenerational_allocationRequestFailed(env->getLanguageVMThread(), allocateDescription->getBytesRequested(), 2);
 		addr = allocateGeneric(env, allocateDescription, allocationType, objectAllocationInterface, baseSubSpace);

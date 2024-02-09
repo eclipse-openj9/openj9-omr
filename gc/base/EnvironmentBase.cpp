@@ -370,7 +370,7 @@ MM_EnvironmentBase::isExclusiveAccessRequestWaiting()
 }
 
 bool
-MM_EnvironmentBase::acquireExclusiveVMAccessForGC(MM_Collector *collector, bool failIfNotFirst, bool flushCaches)
+MM_EnvironmentBase::acquireExclusiveVMAccessForGC(MM_Collector *collector, bool failIfNotFirst)
 {
 	MM_GCExtensionsBase *extensions = getExtensions();
 	uintptr_t collectorAccessCount = collector->getExclusiveAccessCount();
@@ -451,10 +451,6 @@ MM_EnvironmentBase::acquireExclusiveVMAccessForGC(MM_Collector *collector, bool 
 	acquireExclusiveVMAccess();
 
 	collector->incrementExclusiveAccessCount();
-
-	if (flushCaches) {
-		GC_OMRVMInterface::flushCachesForGC(this);
-	}
 
 	return !_exclusiveAccessBeatenByOtherThread;
 

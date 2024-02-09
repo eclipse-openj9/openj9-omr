@@ -7475,6 +7475,8 @@ void TR_LoopVersioner::buildBoundCheckComparisonsTree(
             else
                incrementI = incrementJ;
 
+            bool isIncreasingI = incrementI > 0; // check before taking abs just below
+
             if (incrementI < 0)
                incrementI = -incrementI;
             if (incrementJ < 0)
@@ -7487,6 +7489,19 @@ void TR_LoopVersioner::buildBoundCheckComparisonsTree(
             TR::ILOpCode stayInLoopOp = _loopTestTree->getNode()->getOpCode();
             if (reverseBranch)
                stayInLoopOp = stayInLoopOp.getOpCodeForReverseBranch();
+
+            if (isIncreasingI == stayInLoopOp.isCompareTrueIfGreater())
+               {
+               dumpOptDetails(
+                  comp(),
+                  "Abandon versioning bound check because while condition %s "
+                  "is incompatible with %s loop driving IV\n",
+                  stayInLoopOp.getName(),
+                  isIncreasingI ? "an increasing" : "a decreasing");
+
+               nextTree = nextTree->getNextElement();
+               continue;
+               }
 
             bool strict = !stayInLoopOp.isCompareTrueIfEqual();
             if (strict)

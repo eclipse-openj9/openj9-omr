@@ -77,6 +77,8 @@ public:
 
 	virtual void flushCache(MM_EnvironmentBase *env);
 	virtual void restartCache(MM_EnvironmentBase *env);
+	virtual uintptr_t getRemainingCacheSize(bool nonZero);
+	virtual uintptr_t getRefreshCacheSize(bool nonZero);
 	
 	/* BEN TODO: Collapse the env->enable/disableInlineTLHAllocate with these enable/disableCachedAllocations */
 	virtual void enableCachedAllocations(MM_EnvironmentBase* env) { _cachedAllocationsEnabled = true; }

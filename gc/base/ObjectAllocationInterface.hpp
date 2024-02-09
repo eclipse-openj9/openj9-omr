@@ -127,7 +127,23 @@ public:
 
 	virtual void flushCache(MM_EnvironmentBase *env);
 	virtual void restartCache(MM_EnvironmentBase *env);
-	
+	/**
+	 *  Return the size of currently remaining/unused part of the cache.
+	 *  With dual cache setup (pre-zeroed or non-pre-zeroed), both sizes can be obtained.
+	 *
+	 *  @param nonZero if true
+	 *  @return pre-zeroed remaining cache size, otherwise non-pre-zeroed one
+	 */
+	virtual uintptr_t getRemainingCacheSize(bool nonZero) { return 0; }
+	/**
+	 *  With dynamically sized caches, return the size of the cache on next refresh
+	 *  With dual cache setup (pre-zeroed or non-pre-zeroed), both sizes can be obtained.
+	 *
+	 *  @param nonZero if true
+	 *  @return pre-zeroed refresh cache size, otherwise non-pre-zeroed one
+	 */
+	virtual uintptr_t getRefreshCacheSize(bool nonZero) { return 0; }
+
 	virtual void enableCachedAllocations(MM_EnvironmentBase* env) {};
 	virtual void disableCachedAllocations(MM_EnvironmentBase* env) {};
 	virtual bool cachedAllocationsEnabled(MM_EnvironmentBase* env) { return true; }

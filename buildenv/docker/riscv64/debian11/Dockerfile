@@ -74,24 +74,13 @@ RUN gpg --homedir /tmp \
         --export 8D69674688B6CB36 > /etc/apt/trusted.gpg.d/debian-ports-archive-2023.gpg
 
 # Install RISC-V 64 build root in /opt/sysroot
-RUN apt-get install -y fakeroot
-RUN wget -O /tmp/libfakeroot_1.31-1.2_riscv64.deb \
-	 http://ftp.ports.debian.org/debian-ports/pool-riscv64/main/f/fakeroot/libfakeroot_1.31-1.2_riscv64.deb
-RUN wget -O /tmp/libfakechroot_2.20.1+ds-15_riscv64.deb \
-	http://ftp.ports.debian.org/debian-ports/pool-riscv64/main/f/fakechroot/libfakechroot_2.20.1+ds-15_riscv64.deb
-RUN dpkg -X /tmp/libfakeroot_1.31-1.2_riscv64.deb /
-RUN dpkg -X /tmp/libfakechroot_2.20.1+ds-15_riscv64.deb /
-
-RUN update-alternatives --set  fakeroot /usr/bin/fakeroot-tcp
-
 RUN mmdebstrap \
 	--mode=fakeroot \
-	--variant=minbase \
+	--variant=extract \
 	--architectures=riscv64 \
 	--include="debian-ports-archive-keyring,build-essential,libdwarf-dev,libelf-dev,libx11-dev,libxext-dev,libxrender-dev,libxrandr-dev,libxtst-dev,libxt-dev,libasound2-dev,libcups2-dev,libfontconfig1-dev" \
-	bullseye "/opt/sysroot" \
-	"deb http://deb.debian.org/debian-ports/ sid main" \
-	"deb http://deb.debian.org/debian-ports/ unreleased main"
+	unstable "/opt/sysroot" \
+	"deb http://deb.debian.org/debian unstable main contrib"
 
 ENV CROSS_SYSROOT_RISCV64=/opt/sysroot
 USER jenkins

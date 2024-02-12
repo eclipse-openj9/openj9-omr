@@ -513,7 +513,6 @@ TR_Debug::dumpOptions(
 #ifdef J9_PROJECT_SPECIFIC
    if (fej9->generateCompressedPointers())
       {
-      TR_VerboseLog::writeLine("");
       TR_VerboseLog::writeLine(TR_Vlog_INFO, "     compressedRefs shiftAmount=%d", TR::Compiler->om.compressedReferenceShift());
       }
 #endif

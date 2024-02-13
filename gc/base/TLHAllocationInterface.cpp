@@ -309,4 +309,30 @@ MM_TLHAllocationInterface::restartCache(MM_EnvironmentBase *env)
 #endif /* defined(OMR_GC_NON_ZERO_TLH) */
 }
 
+uintptr_t
+MM_TLHAllocationInterface::getRemainingCacheSize(bool nonZero)
+{
+#if defined(OMR_GC_NON_ZERO_TLH)
+	if (nonZero) {
+		return _tlhAllocationSupportNonZero.getRemainingSize();
+	} else
+#endif /* defined(OMR_GC_NON_ZERO_TLH) */
+	{
+		return _tlhAllocationSupport.getRemainingSize();
+	}
+}
+
+uintptr_t
+MM_TLHAllocationInterface::getRefreshCacheSize(bool nonZero)
+{
+#if defined(OMR_GC_NON_ZERO_TLH)
+	if (nonZero) {
+		return _tlhAllocationSupportNonZero.getRefreshSize();
+	} else
+#endif /* defined(OMR_GC_NON_ZERO_TLH) */
+	{
+		return _tlhAllocationSupport.getRefreshSize();
+	}
+}
+
 #endif /* OMR_GC_THREAD_LOCAL_HEAP */

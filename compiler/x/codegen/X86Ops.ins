@@ -5909,6 +5909,11 @@ INSTRUCTION(VFNMSUB231SDRegRegMem, vfnmsub231sd,
             PROPERTY0(IA32OpProp_ModifiesTarget | IA32OpProp_DoubleFP | IA32OpProp_UsesTarget),
             PROPERTY1(IA32OpProp1_XMMSource | IA32OpProp1_SourceIsMemRef | IA32OpProp1_XMMTarget),
             FEATURES(0)),
+INSTRUCTION(CLWBMem, clwb,
+            BINARY(VEX_L___, VEX_vNONE, PREFIX_66, REX__, ESCAPE_0F__, 0xae, 6, ModRM_RM__, Immediate_0),
+            PROPERTY0(0),
+            PROPERTY1(IA32OpProp1_SourceIsMemRef),
+            FEATURES(0)),
 
 // OpCodes beyond this point are pseudo instructions; they are for OMR internal usage only.
 INSTRUCTION(DQImm64, dq, // Define 8 bytes

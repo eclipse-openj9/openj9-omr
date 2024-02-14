@@ -44,7 +44,7 @@ OMR::X86::CPU::detect(OMRPortLibrary * const omrPortLib)
                                         OMR_FEATURE_X86_RTM, OMR_FEATURE_X86_AVX512F, OMR_FEATURE_X86_AVX512VL,
                                         OMR_FEATURE_X86_AVX512BW, OMR_FEATURE_X86_AVX512DQ, OMR_FEATURE_X86_AVX512CD,
                                         OMR_FEATURE_X86_AVX512_VBMI2, OMR_FEATURE_X86_AVX512_VPOPCNTDQ,
-                                        OMR_FEATURE_X86_AVX512_BITALG
+                                        OMR_FEATURE_X86_AVX512_BITALG, OMR_FEATURE_X86_CLWB,
                                         };
 
    OMRPORT_ACCESS_FROM_OMRPORT(omrPortLib);

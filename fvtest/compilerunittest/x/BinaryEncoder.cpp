@@ -993,6 +993,21 @@ INSTANTIATE_TEST_CASE_P(XRegMaskRegEncTest, XRegMaskRegEncEncodingTest, ::testin
     std::make_tuple(TR::InstOpCode::MOVDQURegReg, TR::RealRegister::xmm8, TR::RealRegister::k6, TR::RealRegister::xmm6, OMR::X86::EVEX_L512, "62717e4e6fc6")
 )));
 
+class XMemEncEncodingTest : public TRTest::BinaryEncoderTest<>, public ::testing::WithParamInterface<std::tuple<TR::InstOpCode::Mnemonic, TR::RealRegister::RegNum, int32_t, TRTest::BinaryInstruction>> {};
+
+TEST_P(XMemEncEncodingTest, encode) {
+    auto base = getRealRegister(std::get<1>(GetParam()), cg());
+    auto disp = std::get<2>(GetParam());
+
+    auto mr = generateX86MemoryReference(base, disp, cg());
+    auto instr = generateMemInstruction(std::get<0>(GetParam()), fakeNode, mr, cg());
+    ASSERT_EQ(std::get<3>(GetParam()), encodeInstruction(instr));
+}
+
+INSTANTIATE_TEST_CASE_P(X86MemEnc, XMemEncEncodingTest, ::testing::ValuesIn(*TRTest::MakeVector<std::tuple<TR::InstOpCode::Mnemonic, TR::RealRegister::RegNum, int32_t, TRTest::BinaryInstruction>>(
+    std::make_tuple(TR::InstOpCode::CLWBMem, TR::RealRegister::eax, 0, "660fae30")
+)));
+
 class XRegMaskMemEncEncodingTest : public TRTest::BinaryEncoderTest<>, public ::testing::WithParamInterface<std::tuple<TR::InstOpCode::Mnemonic, TR::RealRegister::RegNum, TR::RealRegister::RegNum, TR::RealRegister::RegNum, int32_t, OMR::X86::Encoding, TRTest::BinaryInstruction>> {};
 
 TEST_P(XRegMaskMemEncEncodingTest, encode) {

@@ -21,13 +21,18 @@ SPDX-License-Identifier: EPL-2.0 OR Apache-2.0 OR GPL-2.0-only WITH Classpath-ex
 
 # Eclipse OMR Committer Guide
 
-This document outlines some general rules for Eclipse OMR committers to
-follow when reviewing and merging pull requests and issues.  It also provides
-a checklist of items that committers must ensure have been completed prior to
-merging a pull request.
+This document provides information useful for Eclipse OMR committers.
 
+It outlines general rules for committers to follow when reviewing and merging
+pull requests and issues and provides a checklist of items that committers must
+ensure are completed prior to merging a pull request.
 
-## General Guidelines
+It also documents the minimum participation requirements that Eclipse OMR
+committers must meet to maintain their active committer status.
+
+## Reviewing and Merging Pull Requests
+
+### General Guidelines
 
 * Committers should not merge their own pull requests.
 
@@ -55,7 +60,7 @@ request the author to post a detailed summary of the changes on the
 `omr-dev@eclipse.org` mailing list after the pull request is merged.
 
 
-## Pre-Merge Checklist
+### Pre-Merge Checklist
 
 * Ensure the pull request adheres to all the Eclipse OMR [Contribution Guidelines](https://github.com/eclipse/omr/blob/master/CONTRIBUTING.md)
 
@@ -121,7 +126,7 @@ built on x86 are modified) then pull request testing can be limited to only thos
 platforms.  However, a comment from the committer providing justification is
 mandatory.
 
-## Pull Request Builds: Advanced Options
+### Pull Request Builds: Advanced Options
 
 The advanced options provide finer control over the PR builds.
 
@@ -130,7 +135,7 @@ The advanced options provide finer control over the PR builds.
    jenkins build xlinux(OPTION1,OPTION2,...)
    ```
 
-### Advanced Options
+#### Advanced Options
 
 | Option | Description |
 | :----- | :---------- |
@@ -145,7 +150,7 @@ The advanced options provide finer control over the PR builds.
 | test:'ARGS' | ARGS will be appended while running the tests. <br />Example: `jenkins build xlinux(test:'-R porttest')`. |
 | env:'VAR1=VAL1,VAR2=VAL2' | Environment variables will be added to the build environment. <br />Example: `jenkins build xlinux(env:'GTEST_FILTER=PortDumpTest.*')`. |
 
-### More Examples
+#### More Examples
 
 * **Example 1**: `jenkins build xlinux(<OPTIONS_A>),all`. <br />In this example, the xlinux
 PR build will use OPTIONS_A whereas all other PR builds will use their default
@@ -159,10 +164,35 @@ will be enforced. In this example, OPTIONS_B will be used whereas OPTIONS_A will
 ignored. The same analogy is used if N-sets of options are specified for a PR build
 specification.
 
-### Default Options
+#### Default Options
 
 | Platform | Default Option |
 | :------- | :------------- |
 | x32linux | Run on cgroup.v1 nodes inside a Docker container. |
 | xlinux | Run on cgroup.v2 nodes inside a Docker container. |
 | plinux | Run on cgroup.v2 nodes. |
+
+## Minimum Committer Participation Standard
+
+Eclipse OMR committers are expected to meet at least **one** of the following
+criteria within a consecutive 9-month period in order to maintain their active
+committer status:
+
+* Review and merge at least one pull request, or
+* Author and contribute at least one pull request, or
+* Participate in at least 25% of
+[OMR Architecture Meetings](https://github.com/eclipse/omr/issues/2316), or
+* Other documented contributions not reflected in the above may be considered
+on a case-by-case basis by Eclipse OMR project leadership.  For example, significant
+contributions to the design of a feature, or assistance resolving a defect,
+or project advocacy work may apply.
+
+Committers that do not meet the minimum participation standard will be
+retired as committers by project leadership following notification on the `omr-dev`
+mailing list and a two week grace period.
+
+Committers may voluntarily retire their committer status by visiting the
+[Eclipse OMR project page](https://projects.eclipse.org/projects/technology.omr/who),
+clicking on their picture, and selecting and submitting the retirement box.  More
+details are available in the
+[Eclipse Project Handbook](https://www.eclipse.org/projects/handbook/#elections-retire-cm).

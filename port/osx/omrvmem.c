@@ -215,7 +215,7 @@ omrvmem_commit_memory(struct OMRPortLibrary *portLibrary, void *address, uintptr
 				rc = address;
 			} else {
 				Trc_PRT_vmem_omrvmem_commit_memory_mprotect_failure(errno);
-				portLibrary->error_set_last_error(portLibrary,  errno, OMRPORT_ERROR_VMEM_OPFAILED);
+				portLibrary->error_set_last_error(portLibrary, errno, OMRPORT_ERROR_VMEM_OPFAILED);
 			}
 		} else if (PPG_vmem_pageSize[2] == identifier->pageSize || PPG_vmem_pageFlags[1] == identifier->pageFlags) {
 			rc = address;
@@ -446,7 +446,12 @@ reserveMemory(struct OMRPortLibrary *portLibrary, void *address, uintptr_t byteA
 	int protectionFlags = PROT_NONE;
 	BOOLEAN useBackingSharedFile = FALSE;
 
-	if(mode & OMRPORT_VMEM_MEMORY_MODE_SHARE_FILE_OPEN) {
+	if (OMR_ARE_ANY_BITS_SET(mode, OMRPORT_VMEM_MEMORY_MODE_SHARE_TMP_FILE_OPEN)) {
+		portLibrary->error_set_last_error(portLibrary, errno, OMRPORT_ERROR_VMEM_NOT_SUPPORTED);
+		return result;
+	}
+
+	if (OMR_ARE_ANY_BITS_SET(mode, OMRPORT_VMEM_MEMORY_MODE_SHARE_FILE_OPEN)) {
 		flags = MAP_SHARED;
 		useBackingSharedFile = TRUE;
 	}
@@ -683,7 +688,7 @@ getMemoryInRange(struct OMRPortLibrary *portLibrary, struct J9PortVmemIdentifier
 			currentAddress = (void *)alignmentInBytes;
 		}
 	}
-	
+
 #if defined(VM_FLAGS_SUPERPAGE_SIZE_2MB)
 	if (PPG_vmem_pageSize[2] == pageSize) {
 		/* Don't bother scanning the entire address space if the request can't be satisfied. */
@@ -694,7 +699,7 @@ getMemoryInRange(struct OMRPortLibrary *portLibrary, struct J9PortVmemIdentifier
 		omrvmem_free_memory(portLibrary, tmpPointer, byteAmount, identifier);
 	}
 #endif /* defined(VM_FLAGS_SUPERPAGE_SIZE_2MB) */
-	
+
 	/* Try all addresses within range */
 	while ((startAddress <= currentAddress) && (endAddress >= currentAddress)) {
 		memoryPointer = reserveMemory(portLibrary, currentAddress, byteAmount, identifier, mode, pageSize, pageFlags, category);
@@ -935,7 +940,7 @@ omrvmem_release_double_mapped_region(struct OMRPortLibrary *portLibrary, void *a
  *  @param uintptr_t                    pageSize            [in] Constant describing page size
  *  @param OMRMemCategory               *category           [in] Memory allocation category
  *  @param void                         *preferredAddress    [in] Prefered address of contiguous region to be double mapped
- * 
+ *
  * @return pointer to contiguous region to which regions were double mapped into, NULL is returned if unsuccessful
  */
 
@@ -975,7 +980,7 @@ omrvmem_create_double_mapped_region(struct OMRPortLibrary *portLibrary, void* re
 	if ((contiguousMap == MAP_FAILED) || (NULL == contiguousMap)) {
 		Trc_PRT_double_map_regions_Create_Failure();
 		contiguousMap = NULL;
-		portLibrary->error_set_last_error(portLibrary,  errno, OMRPORT_ERROR_VMEM_DOUBLE_MAP_ADRESS_RESERVE_FAILED);
+		portLibrary->error_set_last_error(portLibrary, errno, OMRPORT_ERROR_VMEM_DOUBLE_MAP_ADRESS_RESERVE_FAILED);
 	} else {
 		Trc_PRT_double_map_regions_Create_Success(contiguousMap, preferredAddress);
 		shouldUnmapAddr = TRUE;
@@ -1029,7 +1034,7 @@ omrvmem_create_double_mapped_region(struct OMRPortLibrary *portLibrary, void* re
 			if (address == MAP_FAILED) {
 				Trc_PRT_double_map_regions_Create_Failure2();
 				successfulContiguousMap = FALSE;
-				portLibrary->error_set_last_error(portLibrary,  errno, OMRPORT_ERROR_VMEM_DOUBLE_MAP_FAILED);
+				portLibrary->error_set_last_error(portLibrary, errno, OMRPORT_ERROR_VMEM_DOUBLE_MAP_FAILED);
 #if defined(OMRVMEM_DEBUG)
 				printf("***************************** errno: %d\n", errno);
 				printf("Failed to mmap address[%zu] at mmapContiguous()\n", i);
@@ -1039,7 +1044,7 @@ omrvmem_create_double_mapped_region(struct OMRPortLibrary *portLibrary, void* re
 			} else if (nextAddress != address) {
 				Trc_PRT_double_map_regions_Create_Failure3(nextAddress, address);
 				successfulContiguousMap = FALSE;
-				portLibrary->error_set_last_error(portLibrary,  errno, OMRPORT_ERROR_VMEM_DOUBLE_MAP_FAILED);
+				portLibrary->error_set_last_error(portLibrary, errno, OMRPORT_ERROR_VMEM_DOUBLE_MAP_FAILED);
 #if defined(OMRVMEM_DEBUG)
 				printf("Map failed to provide the correct address. nextAddress %p != %p\n", nextAddress, address);
 				fflush(stdout);
@@ -1067,6 +1072,6 @@ omrvmem_create_double_mapped_region(struct OMRPortLibrary *portLibrary, void* re
 void *
 omrvmem_get_contiguous_region_memory(struct OMRPortLibrary *portLibrary, void* addresses[], uintptr_t addressesCount, uintptr_t addressSize, uintptr_t byteAmount, struct J9PortVmemIdentifier *oldIdentifier, struct J9PortVmemIdentifier *newIdentifier, uintptr_t mode, uintptr_t pageSize, OMRMemCategory *category)
 {
-	portLibrary->error_set_last_error(portLibrary,  errno, OMRPORT_ERROR_VMEM_NOT_SUPPORTED);
+	portLibrary->error_set_last_error(portLibrary, errno, OMRPORT_ERROR_VMEM_NOT_SUPPORTED);
 	return NULL;
 }

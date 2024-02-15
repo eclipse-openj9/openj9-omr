@@ -4240,6 +4240,9 @@ MM_Scavenger::mainThreadGarbageCollect(MM_EnvironmentBase *envBase, MM_AllocateD
 	bool firstIncrement = true;
 #endif
 
+	/* Flush any VM level changes to prepare for a safe slot walk */
+	GC_OMRVMInterface::flushCachesForGC(env);
+
 	if (firstIncrement)	{
 		if (_extensions->processLargeAllocateStats) {
 			processLargeAllocateStatsBeforeGC(env);
@@ -4580,9 +4583,6 @@ MM_Scavenger::internalPreCollect(MM_EnvironmentBase *env, MM_MemorySubSpace *sub
 			}
 		}
 	}
-
-	/* Flush any VM level changes to prepare for a safe slot walk */
-	GC_OMRVMInterface::flushCachesForGC(env);
 }
 
 /**

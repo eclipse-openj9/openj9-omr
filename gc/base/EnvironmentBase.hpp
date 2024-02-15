@@ -465,7 +465,7 @@ public:
 	 * @note this call should be considered a safe-point as the thread may release VM access to allow the other threads to acquire exclusivity.
 	 * @note this call supports recursion.
 	 */
-	bool acquireExclusiveVMAccessForGC(MM_Collector *collector, bool failIfNotFirst = false, bool flushCaches = true);
+	bool acquireExclusiveVMAccessForGC(MM_Collector *collector, bool failIfNotFirst = false);
 
 	/**
 	 * Release exclusive access.

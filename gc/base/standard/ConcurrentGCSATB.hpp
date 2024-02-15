@@ -31,6 +31,7 @@
 
 #if defined(OMR_GC_MODRON_CONCURRENT_MARK) && defined(OMR_GC_REALTIME)
 #include "ConcurrentGC.hpp"
+#include "OMRVMInterface.hpp"
 
 /**
  * @todo Provide class documentation
@@ -81,7 +82,15 @@ protected:
 		 * SATB marks all newly allocated objectes during active concurrent cycle.
 		 * Since it's done on TLH granularity we have to flush the current ones and start creating new ones, once the cycle starts.
 		 */
-		return env->acquireExclusiveVMAccessForGC(this, true, true);
+
+		bool didAcquire = env->acquireExclusiveVMAccessForGC(this, true);
+
+		if (didAcquire) {
+			GC_OMRVMInterface::flushCachesForGC(env);
+
+		}
+
+		return didAcquire;
 	}
 
 	void enableSATB(MM_EnvironmentBase *env);

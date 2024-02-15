@@ -96,7 +96,7 @@ MM_MemorySubSpaceSemiSpace::allocationRequestFailed(MM_EnvironmentBase *env, MM_
 	void *addr = NULL;
 
 	allocateDescription->saveObjects(env);
-	if (!env->acquireExclusiveVMAccessForGC(_collector, true, true)) {
+	if (!env->acquireExclusiveVMAccessForGC(_collector, true)) {
 		allocateDescription->restoreObjects(env);
 		Trc_MM_MSSSS_allocationRequestFailed(env->getLanguageVMThread(), allocateDescription->getBytesRequested(), 1);
 		addr = allocateGeneric(env, allocateDescription, allocationType, objectAllocationInterface, _memorySubSpaceAllocate);

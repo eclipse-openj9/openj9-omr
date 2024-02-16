@@ -11795,9 +11795,9 @@ OMR::Z::TreeEvaluator::arraycmplenEvaluator(TR::Node * node, TR::CodeGenerator *
 
    if (TR::isJ9() && !comp->getOption(TR_DisableSIMDArrayCompare) && cg->getSupportsVectorRegisters())
       {
-      // An empirical study has showed that CLC is faster for all array sizes if the number of bytes to copy is known to be constant
+      // An empirical study has showed that CLC is faster for all array sizes if the number of bytes to compare is known to be constant
       if (!node->getChild(2)->getOpCode().isLoadConst())
-         return TR::TreeEvaluator::arraycmpSIMDHelper(node, cg, NULL, NULL, true, !node->isArrayCmpSign()/*return102*/, true);
+         return TR::TreeEvaluator::arraycmpSIMDHelper(node, cg, NULL, NULL, true, false/*return102*/, true);
       }
 
    TR::Node * firstBaseAddr = node->getFirstChild();
@@ -15724,18 +15724,43 @@ OMR::Z::TreeEvaluator::arraycmpSIMDHelper(TR::Node *node,
    TR::Register * vectorOutputReg = cg->allocateRegister(TR_VRF);
    TR::Register * resultReg = needResultReg ? cg->allocateRegister() : NULL;
 
-   // VLL uses lastByteIndexReg as the highest 0-based index to load, which is length - 1
-   generateRILInstruction(cg, TR::InstOpCode::getSubtractLogicalImmOpCode(), node, lastByteIndexReg, 1);
-   if(needResultReg && isArrayCmpLen)
-      generateRRInstruction(cg, TR::InstOpCode::getLoadRegOpCode(), node, resultReg, lastByteIndexReg);
+   if(needResultReg)
+      {
+      if(isArrayCmpLen)
+         {
+         generateRRInstruction(cg, TR::InstOpCode::getLoadRegOpCode(), node, resultReg, lastByteIndexReg);
+         }
+      else
+         {
+         generateRRInstruction(cg, TR::InstOpCode::getXORRegOpCode(), node, resultReg, resultReg);
+         }
+      }
 
    TR::LabelSymbol * cFlowRegionStart = generateLabelSymbol(cg);
    TR::LabelSymbol * cFlowRegionEnd = generateLabelSymbol(cg);
    TR::LabelSymbol * mismatch = generateLabelSymbol(cg);
+   TR::LabelSymbol * loopStart = generateLabelSymbol(cg);
+
+   // In certain cases we can branch directly so we must set up the correct global register dependencies
+   TR::RegisterDependencyConditions* compareTargetRDC = getGLRegDepsDependenciesFromIfNode(cg, ificmpNode);
 
    generateS390LabelInstruction(cg, TR::InstOpCode::label, node, cFlowRegionStart);
    cFlowRegionStart->setStartInternalControlFlow();
 
+   // Short circuit if the source addresses are equal
+   if(isFoldedIf && isIfxcmpBrCondContainEqual)
+      {
+      generateS390CompareAndBranchInstruction(cg, TR::InstOpCode::getCmpLogicalRegOpCode(), node, firstAddrReg, secondAddrReg, TR::InstOpCode::COND_BE, compareTarget, compareTargetRDC);
+      }
+   else
+      {
+      generateS390CompareAndBranchInstruction(cg, TR::InstOpCode::getCmpLogicalRegOpCode(), node, firstAddrReg, secondAddrReg, TR::InstOpCode::COND_BE, cFlowRegionEnd);
+      }
+
+   // VLL uses lastByteIndexReg as the highest 0-based index to load, which is length - 1
+   generateRIInstruction(cg, TR::InstOpCode::getAddHalfWordImmOpCode(), node, lastByteIndexReg, -1);
+
+   generateS390LabelInstruction(cg, TR::InstOpCode::label, node, loopStart);
    // Vector is filled with data in memory in [addr,addr+min(15,numBytesLeft)]
    generateVRSbInstruction(cg, TR::InstOpCode::VLL  , node, vectorFirstInputReg , lastByteIndexReg, generateS390MemoryReference(firstAddrReg , 0, cg));
    generateVRSbInstruction(cg, TR::InstOpCode::VLL  , node, vectorSecondInputReg, lastByteIndexReg, generateS390MemoryReference(secondAddrReg, 0, cg));
@@ -15747,29 +15772,19 @@ OMR::Z::TreeEvaluator::arraycmpSIMDHelper(TR::Node *node,
    generateRXInstruction(cg, TR::InstOpCode::getLoadAddressOpCode(), node, secondAddrReg, generateS390MemoryReference(secondAddrReg, 16, cg));
 
    // eds : perf : Can use BRXLE with negative increment for this
-   generateRILInstruction(cg, TR::InstOpCode::getSubtractLogicalImmOpCode(), node, lastByteIndexReg, 16);
+   generateRIInstruction(cg, TR::InstOpCode::getAddHalfWordImmOpCode(), node, lastByteIndexReg, -16);
 
    // ed : perf : replace these 2 with BRXLE
    //Branch if the number of bytes left is not negative
-   generateS390BranchInstruction(cg, TR::InstOpCode::BRC, TR::InstOpCode::COND_MASK3, node, cFlowRegionStart);
-
-   // In certain cases we can branch directly so we must set up the correct global register dependencies
-   TR::RegisterDependencyConditions* compareTargetRDC = getGLRegDepsDependenciesFromIfNode(cg, ificmpNode);
+   generateS390BranchInstruction(cg, TR::InstOpCode::BRC, TR::InstOpCode::COND_BNL, node, loopStart);
 
    // Arrays are equal
-   if(isFoldedIf)
+   if(isFoldedIf && isIfxcmpBrCondContainEqual)
       {
-      if(isIfxcmpBrCondContainEqual)
-         generateS390BranchInstruction(cg, TR::InstOpCode::BRC, TR::InstOpCode::COND_BRC, node, compareTarget, compareTargetRDC);
-      else
-         generateS390BranchInstruction(cg, TR::InstOpCode::BRC, TR::InstOpCode::COND_BRC, node, cFlowRegionEnd);
+      generateS390BranchInstruction(cg, TR::InstOpCode::BRC, TR::InstOpCode::COND_BRC, node, compareTarget, compareTargetRDC);
       }
-   else if(needResultReg)
+   else
       {
-      if(isArrayCmpLen)
-         generateRIInstruction(cg, TR::InstOpCode::getAddHalfWordImmOpCode(), node, resultReg, 1);//Return length of the arrays, which is resultReg += 1
-      else
-         generateRRInstruction(cg, TR::InstOpCode::getXORRegOpCode(), node, resultReg, resultReg);//Return zero to indicate equal
       generateS390BranchInstruction(cg, TR::InstOpCode::BRC, TR::InstOpCode::COND_BRC, node, cFlowRegionEnd);
       }
 
@@ -15784,8 +15799,9 @@ OMR::Z::TreeEvaluator::arraycmpSIMDHelper(TR::Node *node,
       if(isArrayCmpLen)
          {
          // Return 0-based index of first non-matching element
-         // resultReg - lastByteIndexReg = number of elements compared before the last loop
+         // (resultReg - 1) - lastByteIndexReg = number of elements compared before the last loop
          // vectorOutputReg contains the 0-based index of the first non-matching element (index is its position in the vector)
+         generateRIInstruction(cg, TR::InstOpCode::getAddHalfWordImmOpCode(), node, resultReg, -1);
          generateRRInstruction(cg, TR::InstOpCode::getSubstractRegOpCode(), node, resultReg, lastByteIndexReg);
          generateVRScInstruction(cg, TR::InstOpCode::VLGV/*B*/, node, lastByteIndexReg, vectorOutputReg, generateS390MemoryReference(7, cg), 0);
          generateRRInstruction(cg, TR::InstOpCode::getAddRegOpCode(), node, resultReg, lastByteIndexReg);
@@ -15815,7 +15831,6 @@ OMR::Z::TreeEvaluator::arraycmpSIMDHelper(TR::Node *node,
          }
       }
 
-
    int numConditions = 8;
    TR::RegisterDependencyConditions * dependencies = new (cg->trHeapMemory()) TR::RegisterDependencyConditions(0, numConditions, cg);
    dependencies->addPostCondition(firstAddrReg, TR::RealRegister::AssignAny);
@@ -15825,7 +15840,9 @@ OMR::Z::TreeEvaluator::arraycmpSIMDHelper(TR::Node *node,
    dependencies->addPostCondition(vectorSecondInputReg, TR::RealRegister::AssignAny);
    dependencies->addPostCondition(vectorOutputReg, TR::RealRegister::AssignAny);
    if (needResultReg)
+      {
       dependencies->addPostCondition(resultReg, TR::RealRegister::AssignAny);
+      }
 
    generateS390LabelInstruction(cg, TR::InstOpCode::label, node, cFlowRegionEnd, dependencies);
    cFlowRegionEnd->setEndInternalControlFlow();

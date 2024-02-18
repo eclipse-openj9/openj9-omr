@@ -68,7 +68,7 @@ void TR::InliningProposal::print(TR::Compilation* comp)
       if (traceBIProposal)
          traceMsg(comp, "Inlining Proposal is NULL\n");
       if (verboseInlining)
-         TR_VerboseLog::writeLine(TR_Vlog_BI, "%s", "Inlining Proposal is NULL\n");
+         TR_VerboseLog::writeLine(TR_Vlog_BI, "%s", "Inlining Proposal is NULL");
       return;
       }
 

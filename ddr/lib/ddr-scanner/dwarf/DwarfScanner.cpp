@@ -41,6 +41,8 @@
 #include <stack>
 #include <utility>
 
+static DDR_RC getConstValue(Dwarf_Debug debug, Dwarf_Attribute attr, const char *attrName, uint64_t *value);
+
 class DwarfVisitor : public TypeVisitor
 {
 private:
@@ -232,19 +234,17 @@ DwarfScanner::excludedDie(Dwarf_Die die, bool *dieExcluded)
 				goto Done;
 			}
 
-			Dwarf_Unsigned declFile = 0;
-			int ret = dwarf_formudata(attr, &declFile, &err);
+			uint64_t declFile = 0;
+			rc = getConstValue(_debug, attr, "decl_file", &declFile);
 			dwarf_dealloc(_debug, attr, DW_DLA_ATTR);
-			if (DW_DLV_ERROR == ret) {
-				ERRMSG("Getting attr value decl_file: %s\n", dwarf_errmsg(err));
-				rc = DDR_RC_ERROR;
+			if (DDR_RC_OK != rc) {
 				goto Done;
 			}
 
 			if (0 == declFile) {
 				/* no declaring file is specified */
 				excludedFile = false;
-			} else if (declFile <= (Dwarf_Unsigned)_fileNameCount) {
+			} else if (declFile <= (uint64_t)(Dwarf_Unsigned)_fileNameCount) {
 				const string fileName(_fileNamesTable[declFile - 1]);
 				excludedFile = checkExcludedFile(fileName);
 			} else {
@@ -402,19 +402,17 @@ DwarfScanner::getBitField(Dwarf_Die die, size_t *bitField)
 		if (hasAttr) {
 			Dwarf_Attribute attr = NULL;
 			if (DW_DLV_ERROR == dwarf_attr(die, DW_AT_bit_size, &attr, &err)) {
-				ERRMSG("Getting bit size attribute: %s\n", dwarf_errmsg(err));
+				ERRMSG("Getting bit_size attribute: %s\n", dwarf_errmsg(err));
 				rc = DDR_RC_ERROR;
 				goto Done;
 			}
-			Dwarf_Off bitSize = 0;
-			int ret = dwarf_formudata(attr, &bitSize, &err);
+			uint64_t bitSize = 0;
+			rc = getConstValue(_debug, attr, "bit_size", &bitSize);
 			dwarf_dealloc(_debug, attr, DW_DLA_ATTR);
-			if (DW_DLV_ERROR == ret) {
-				ERRMSG("Getting formudata of bit size: %s\n", dwarf_errmsg(err));
-				rc = DDR_RC_ERROR;
+			if (DDR_RC_OK != rc) {
 				goto Done;
 			}
-			*bitField = bitSize;
+			*bitField = (size_t)bitSize;
 		}
 	}
 Done:
@@ -456,7 +454,7 @@ DwarfScanner::getTypeInfo(Dwarf_Die die, Dwarf_Die *dieOut, string *typeName, Mo
 				modifiers->_modifierFlags |= Modifiers::SHARED_TYPE;
 			} else if (DW_TAG_array_type == tag && !foundTypedef) {
 				Dwarf_Die child = NULL;
-				Dwarf_Unsigned upperBound = 0;
+				uint64_t upperBound = 0;
 				int ret = dwarf_child(typeDie, &child, &err);
 
 				/* Get the array size if it is an array. */
@@ -482,11 +480,9 @@ DwarfScanner::getTypeInfo(Dwarf_Die die, Dwarf_Die *dieOut, string *typeName, Mo
 								rc = DDR_RC_ERROR;
 								break;
 							}
-							ret = dwarf_formudata(attr, &upperBound, &err);
+							rc = getConstValue(_debug, attr, "upper_bound", &upperBound);
 							dwarf_dealloc(_debug, attr, DW_DLA_ATTR);
-							if (DW_DLV_ERROR == ret) {
-								ERRMSG("Getting array upper bound value: %s\n", dwarf_errmsg(err));
-								rc = DDR_RC_ERROR;
+							if (DDR_RC_OK != rc) {
 								break;
 							}
 							/* New array length is upperBound + 1. */
@@ -655,14 +651,11 @@ DwarfScanner::getTypeSize(Dwarf_Die die, size_t *typeSize)
 				ERRMSG("Getting size attr of type: %s\n", dwarf_errmsg(err));
 				rc = DDR_RC_ERROR;
 			} else {
-				Dwarf_Unsigned byteSize = 0;
-				int ret = dwarf_formudata(attr, &byteSize, &err);
+				uint64_t byteSize = 0;
+				rc = getConstValue(_debug,  attr, "byte_size", &byteSize);
 				dwarf_dealloc(_debug, attr, DW_DLA_ATTR);
-				if (DW_DLV_ERROR == ret) {
-					ERRMSG("Getting size attr value: %s\n", dwarf_errmsg(err));
-					rc = DDR_RC_ERROR;
-				} else {
-					*typeSize = byteSize;
+				if (DDR_RC_OK == rc) {
+					*typeSize = (size_t)byteSize;
 				}
 			}
 		} else {
@@ -1101,10 +1094,10 @@ DwarfVisitor::visitUnion(UnionUDT *newType) const
 }
 
 /*
- * Given an attribute of type DW_AT_const_value, return its value.
+ * Extract the constant value of the given attribute.
  */
 static DDR_RC
-getConstValue(Dwarf_Debug debug, Dwarf_Attribute attr, uint64_t *value)
+getConstValue(Dwarf_Debug debug, Dwarf_Attribute attr, const char *attrName, uint64_t *value)
 {
 	DDR_RC rc = DDR_RC_ERROR;
 	Dwarf_Error error = NULL;
@@ -1113,12 +1106,12 @@ getConstValue(Dwarf_Debug debug, Dwarf_Attribute attr, uint64_t *value)
 	/* Get the literal value form. */
 	/* Get the literal value. */
 	if (DW_DLV_ERROR == dwarf_whatform(attr, &form, &error)) {
-		ERRMSG("Getting form of const_value attribute: %s\n", dwarf_errmsg(error));
+		ERRMSG("Getting form of %s attribute: %s\n", attrName, dwarf_errmsg(error));
 	} else if ((DW_FORM_block  == form) || (DW_FORM_block1 == form)
 			|| (DW_FORM_block2 == form) || (DW_FORM_block4 == form)) {
 		Dwarf_Block *block = NULL;
 		if (DW_DLV_ERROR == dwarf_formblock(attr, &block, &error)) {
-			ERRMSG("Getting block of const_value attribute: %s\n", dwarf_errmsg(error));
+			ERRMSG("Getting block of %s attribute: %s\n", attrName, dwarf_errmsg(error));
 		} else {
 			/* Note: This assumes the host byte-order. */
 			switch (block->bl_len) {
@@ -1139,7 +1132,7 @@ getConstValue(Dwarf_Debug debug, Dwarf_Attribute attr, uint64_t *value)
 				rc = DDR_RC_OK;
 				break;
 			default:
-				ERRMSG("Unsupported const_value block size: %d\n", (int )block->bl_len);
+				ERRMSG("Unsupported block size of %s attribute: %d\n", attrName, (int)block->bl_len);
 				break;
 			}
 			dwarf_dealloc(debug, block, DW_DLA_BLOCK);
@@ -1148,7 +1141,7 @@ getConstValue(Dwarf_Debug debug, Dwarf_Attribute attr, uint64_t *value)
 		Dwarf_Unsigned uvalue = 0;
 
 		if (DW_DLV_ERROR == dwarf_formudata(attr, &uvalue, &error)) {
-			ERRMSG("Getting const_value of enum: %s\n", dwarf_errmsg(error));
+			ERRMSG("Getting formudata of %s attribute: %s\n", attrName, dwarf_errmsg(error));
 		} else {
 			*value = uvalue;
 			rc = DDR_RC_OK;
@@ -1157,7 +1150,7 @@ getConstValue(Dwarf_Debug debug, Dwarf_Attribute attr, uint64_t *value)
 		Dwarf_Signed svalue = 0;
 
 		if (DW_DLV_ERROR == dwarf_formsdata(attr, &svalue, &error)) {
-			ERRMSG("Getting const_value of enum: %s\n", dwarf_errmsg(error));
+			ERRMSG("Getting formsdata of %s attribute: %s\n", attrName, dwarf_errmsg(error));
 		} else {
 			*value = (uint64_t)(int64_t)svalue;
 			rc = DDR_RC_OK;
@@ -1208,7 +1201,7 @@ DwarfScanner::addEnumMember(Dwarf_Die die, NamespaceUDT *outerUDT, EnumUDT *newE
 		goto AddEnumMemberError;
 	}
 
-	rc = getConstValue(_debug, attr, &enumValue);
+	rc = getConstValue(_debug, attr, "const_value", &enumValue);
 	dwarf_dealloc(_debug, attr, DW_DLA_ATTR);
 
 	if (DDR_RC_OK == rc) {
@@ -1404,6 +1397,7 @@ DwarfScanner::addClassField(Dwarf_Die die, ClassType *newClass, const string &fi
 			if (hasAttrBytes || hasAttrBits) {
 				Dwarf_Attribute attr = NULL;
 				Dwarf_Unsigned offset = 0;
+				uint64_t offset64 = 0;
 				Dwarf_Half attrType = hasAttrBytes ? DW_AT_data_member_location : DW_AT_data_bit_offset;
 				if (DW_DLV_ERROR == dwarf_attr(die, attrType, &attr, &error)) {
 					ERRMSG("Getting offset attribute: %s\n", dwarf_errmsg(error));
@@ -1432,8 +1426,9 @@ DwarfScanner::addClassField(Dwarf_Die die, ClassType *newClass, const string &fi
 								newClass->_name.c_str(), fieldName.c_str());
 						goto FreeAttrThenDone;
 					}
-				} else if (DW_DLV_ERROR == dwarf_formudata(attr, &offset, &error)) {
-					ERRMSG("Getting value of offset attribute: %s\n", dwarf_errmsg(error));
+				} else if (DDR_RC_OK == getConstValue(_debug, attr, "offset", &offset64)) {
+					offset = (Dwarf_Unsigned)offset64;
+				} else {
 FreeAttrThenDone:
 					dwarf_dealloc(_debug, attr, DW_DLA_ATTR);
 					goto AddUDTFieldDone;

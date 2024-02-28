@@ -206,7 +206,7 @@ public:
 
 	/**
 	 * Get the Core Environment.
-	 * @return Pointer to the core environment.
+	 * @return Pointer to the core environment
 	 */
 	MMINLINE static MM_EnvironmentBase *getEnvironment(OMR_VMThread *omrVMThread) { return (MM_EnvironmentBase *)omrVMThread->_gcOmrVMThreadExtensions; }
 	virtual void kill();
@@ -255,7 +255,7 @@ public:
 
 	/**
 	 * Get a pointer to the J9VMThread structure.
-	 * @return Pointer to the J9VMThread structure.
+	 * @return Pointer to the J9VMThread structure
 	 */
 	MMINLINE OMR_VMThread *getOmrVMThread() { return _omrVMThread; }
 	
@@ -296,7 +296,7 @@ public:
 
 	/**
 	 * Get a pointer to the port library.
-	 * @return Pointer to the port library.
+	 * @return Pointer to the port library
 	 */
 	MMINLINE OMRPortLibrary *getPortLibrary() { return _portLibrary; }
 	
@@ -308,13 +308,13 @@ public:
 
 	/**
 	 * Get the thread's priority.
-	 * @return The thread's priority.
+	 * @return The thread's priority
 	 */
 	MMINLINE uintptr_t getPriority() { return omrthread_get_priority(_omrVMThread->_os_thread); }
 	
 	/**
 	 * Set the the thread's priority.
-	 * @param priority The priority to set the thread to.
+	 * @param priority The priority to set the thread to
 	 * @returns 0 on success or negative value on failure (priority wasn't changed)
 	 */
 	MMINLINE intptr_t setPriority(uintptr_t priority) { return omrthread_set_priority(_omrVMThread->_os_thread, priority); }
@@ -350,7 +350,7 @@ public:
 		
 	/**
 	 * Get the threads worker id.
-	 * @return The threads worker id.
+	 * @return The threads worker id
 	 */
 	MMINLINE uintptr_t getWorkerID() { return _workerID; }
 
@@ -367,13 +367,13 @@ public:
 
 	/**
 	 * Gets the threads type.
-	 * @return The type of thread.
+	 * @return The type of thread
 	 */
 	MMINLINE ThreadType getThreadType() { return _threadType; } ;
 
 	/**
 	 * Sets the threads type.
-	 * @param threadType The thread type to set thread to.
+	 * @param threadType The thread type to set thread to
 	 */
 	MMINLINE void
 	setThreadType(ThreadType threadType)
@@ -384,7 +384,7 @@ public:
 
 	/**
 	 * Gets the id used for calculating work packet sublist indexes.
-	 * @return The environment's packet sublist id.
+	 * @return The environment's packet sublist id
 	 */
 	MMINLINE uintptr_t getEnvironmentId() { return _environmentId; }
 
@@ -459,8 +459,8 @@ public:
 	/**
 	 * Acquire exclusive access to request a gc.
 	 * The calling thread will acquire exclusive access for Gc regardless if other threads beat it to exclusive for the same purposes.
-	 * @param collector gc intended to be used for collection.
-	 * @return boolean indicating whether the thread cleanly won exclusive access for its collector or if it had been beaten already.
+	 * @param collector gc intended to be used for collection
+	 * @return boolean indicating whether the thread cleanly won exclusive access for its collector or if it had been beaten already
 	 *
 	 * @note this call should be considered a safe-point as the thread may release VM access to allow the other threads to acquire exclusivity.
 	 * @note this call supports recursion.
@@ -505,7 +505,7 @@ public:
 
 	/**
 	 * Checks to see if any thread has requested exclusive access
-	 * @return true if a thread is waiting on exclusive access, false if not.
+	 * @return true if a thread is waiting on exclusive access, false if not
 	 */
 	bool isExclusiveAccessRequestWaiting();
 
@@ -513,7 +513,7 @@ public:
 	 * Get the time taken to acquire exclusive access.
 	 * Time is stored in raw format (no units).  Output routines
 	 * are responsible for converting to the desired resolution (msec, usec)
-	 * @return The time taken to acquire exclusive access.
+	 * @return The time taken to acquire exclusive access
 	 */
 	uint64_t getExclusiveAccessTime() { return _exclusiveAccessTime; };
 
@@ -521,7 +521,7 @@ public:
 	 * Get the time average threads were idle while acquiring exclusive access.
 	 * Time is stored in raw format (no units).  Output routines
 	 * are responsible for converting to the desired resolution (msec, usec)
-	 * @return The mean idle time during exclusive access acquisition.
+	 * @return The mean idle time during exclusive access acquisition
 	 */
 	uint64_t getMeanExclusiveAccessIdleTime() { return _meanExclusiveAccessIdleTime; };
 
@@ -539,7 +539,7 @@ public:
 
 	/**
 	 * Enquire whether we were beaten to exclusive access by another thread.
-	 * @return true if we were beaten, false otherwise.
+	 * @return true if we were beaten, false otherwise
 	 */
 	bool exclusiveAccessBeatenByOtherThread() { return _exclusiveAccessBeatenByOtherThread; }
 	
@@ -688,6 +688,15 @@ public:
 	MMINLINE MM_HeapRegionQueue *getRegionLocalFree() const { return _regionLocalFree; }
 	MMINLINE MM_HeapRegionQueue *getRegionLocalFull() const { return _regionLocalFull; }
 #endif /* OMR_GC_SEGREGATED_HEAP */
+
+#if defined(J9VM_OPT_CRIU_SUPPORT)
+	/**
+	 * Reinitialize the env's language specific object buffers based on the the number of restore GC threads.
+	 *
+	 * @return boolean indicating whether thread buffers were reinitialized successfully
+	 */
+	MMINLINE bool reinitializeForRestore() { return _delegate.reinitializeForRestore(this); }
+#endif /* defined(J9VM_OPT_CRIU_SUPPORT) */
 
 	/**
 	 * Create an EnvironmentBase object.

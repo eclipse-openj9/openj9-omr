@@ -165,7 +165,7 @@ public:
 	 * allow the heap to grow to a stable operational size. Frequent transitions true->false will limit the quality
 	 * of heap fragmentation stats.
 	 *
-	 * @param[in] env The environment for the calling thread.
+	 * @param[in] env The environment for the calling thread
 	 * @return true to allow heap fragmentation tracking to start or continue
 	 */
 	bool canCollectFragmentationStats(MM_EnvironmentBase *env) { return false; }
@@ -174,6 +174,16 @@ public:
 	 * Return the GC policy preselected for the GC configuration.
 	 */
 	MM_GCPolicy getGCPolicy() { return _gcPolicy; }
+
+#if defined(J9VM_OPT_CRIU_SUPPORT)
+	/**
+	 * Reinitialize the language specific configuration structures.
+	 *
+	 * @param[in] env The environment for the calling thread
+	 * @return boolean indicating whether configuration reinitialization was successful
+	 */
+	bool reinitializeForRestore(MM_EnvironmentBase *env) { return true; }
+#endif /* defined(J9VM_OPT_CRIU_SUPPORT) */
 
 #if defined(J9VM_OPT_CRIU_SUPPORT)
 	/**
@@ -189,7 +199,7 @@ public:
 
 	/**
 	 * Constructor.
-	 * @param gcPolicy The GC policy preselected for the GC configuration.
+	 * @param gcPolicy The GC policy preselected for the GC configuration
 	 */
 	MM_ConfigurationDelegate(MM_GCPolicy gcPolicy)
 		: _gcPolicy(gcPolicy)

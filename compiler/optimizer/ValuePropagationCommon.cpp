@@ -2356,8 +2356,7 @@ void OMR::ValuePropagation::generateArrayTranslateNode(TR::TreeTop *callTree,TR:
 
    bool isISO88591Encoder = (rm == TR::sun_nio_cs_ISO_8859_1_Encoder_encodeISOArray
                              || rm == TR::java_lang_StringCoding_implEncodeISOArray);
-   static char *disableImplEncodeAsciiArray = feGetEnv("TR_disableImplEncodeAsciiArray");
-   bool isAsciiEncoder = (rm == TR::java_lang_StringCoding_implEncodeAsciiArray) && !disableImplEncodeAsciiArray;
+   bool isAsciiEncoder = (rm == TR::java_lang_StringCoding_implEncodeAsciiArray);
    bool isISO88591Decoder = (rm == TR::sun_nio_cs_ISO_8859_1_Decoder_decodeISO8859_1);
    bool isSBCSEncoder = (rm == TR::sun_nio_cs_ext_SBCS_Encoder_encodeSBCS)? true:false;
    bool isSBCSDecoder = (rm == TR::sun_nio_cs_ext_SBCS_Decoder_decodeSBCS)? true:false;
@@ -2613,12 +2612,11 @@ TR::TreeTop* OMR::ValuePropagation::createConverterCallNodeAfterStores(
    TR::MethodSymbol *symbol = root->getSymbol()->castToMethodSymbol();
    TR::RecognizedMethod rm = symbol->getRecognizedMethod();
    TR_ResolvedMethod *m = symbol->getResolvedMethodSymbol()->getResolvedMethod();
-   static char *disableImplEncodeAsciiArray = feGetEnv("TR_disableImplEncodeAsciiArray");
 
 #ifdef J9_PROJECT_SPECIFIC
    bool isISO88591Encoder = (rm == TR::sun_nio_cs_ISO_8859_1_Encoder_encodeISOArray
                              || rm == TR::java_lang_StringCoding_implEncodeISOArray);
-   bool isAsciiEncoder = (rm == TR::java_lang_StringCoding_implEncodeAsciiArray) && !disableImplEncodeAsciiArray;
+   bool isAsciiEncoder = (rm == TR::java_lang_StringCoding_implEncodeAsciiArray);
 #else
    bool isISO88591Encoder = false;
    bool isAsciiEncoder = false;
@@ -2924,11 +2922,10 @@ TR::TreeTop *createStoresForConverterCallChildren(TR::Compilation *comp, TR::Tre
    TR::MethodSymbol *symbol = node->getSymbol()->castToMethodSymbol();
    TR::RecognizedMethod rm = symbol->getRecognizedMethod();
    TR_ResolvedMethod *m = symbol->getResolvedMethodSymbol()->getResolvedMethod();
-   static char *disableImplEncodeAsciiArray = feGetEnv("TR_disableImplEncodeAsciiArray");
 #ifdef J9_PROJECT_SPECIFIC
    bool isISO88591Encoder = (rm == TR::sun_nio_cs_ISO_8859_1_Encoder_encodeISOArray
                              || rm == TR::java_lang_StringCoding_implEncodeISOArray);
-   bool isAsciiEncoder = (rm == TR::java_lang_StringCoding_implEncodeAsciiArray) && !disableImplEncodeAsciiArray;
+   bool isAsciiEncoder = (rm == TR::java_lang_StringCoding_implEncodeAsciiArray);
 #else
    bool isISO88591Encoder = false;
    bool isAsciiEncoder = false;
@@ -4202,12 +4199,11 @@ void OMR::ValuePropagation::transformConverterCall(TR::TreeTop *callTree)
    TR::Node * dstOff = NULL;
    TR::Node * tableNode = NULL;
    bool hasTable = false;
-   static char *disableImplEncodeAsciiArray = feGetEnv("TR_disableImplEncodeAsciiArray");
 
    TR_ResolvedMethod *m = symbol->getResolvedMethodSymbol()->getResolvedMethod();
    bool isISO88591Encoder = (rm == TR::sun_nio_cs_ISO_8859_1_Encoder_encodeISOArray
                              || rm == TR::java_lang_StringCoding_implEncodeISOArray);
-   bool isAsciiEncoder = (rm == TR::java_lang_StringCoding_implEncodeAsciiArray) && !disableImplEncodeAsciiArray;
+   bool isAsciiEncoder = (rm == TR::java_lang_StringCoding_implEncodeAsciiArray);
    int32_t childId = callNode->getFirstArgumentIndex();
    bool hasReciever = symbol->isStatic() ? false : true;
    if (hasReciever)

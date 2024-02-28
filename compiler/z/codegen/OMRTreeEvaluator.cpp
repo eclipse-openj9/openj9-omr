@@ -13497,6 +13497,7 @@ OMR::Z::TreeEvaluator::primitiveArraycopyEvaluator(TR::Node* node, TR::CodeGener
       // We need to decide direction of array copy at runtime.
       if (isConstantByteLen)
          {
+         byteLenReg = cg->gprClobberEvaluate(byteLenNode);
          generateS390LabelInstruction(cg, TR::InstOpCode::label, node, cFlowRegionStart);
          cFlowRegionStart->setStartInternalControlFlow();
          }
@@ -13506,12 +13507,6 @@ OMR::Z::TreeEvaluator::primitiveArraycopyEvaluator(TR::Node* node, TR::CodeGener
 
 
       TR::Register *checkBoundReg = srm->findOrCreateScratchRegister();
-      if (byteLenReg == NULL)
-         {
-         TR_ASSERT_FATAL(isConstantByteLen, "byteLenNode can be not evaluated only when we have constant length");
-         byteLenReg = cg->allocateRegister();
-         genLoadLongConstant(cg, node, byteLenNode->getConst<int64_t>(), byteLenReg);
-         }
       cursor = generateRXInstruction(cg, TR::InstOpCode::LA, node, checkBoundReg, generateS390MemoryReference(byteSrcReg, byteLenReg, 0, cg));
       iComment("nextPointerToLastElement=byteSrcPointer+lengthInBytes");
 

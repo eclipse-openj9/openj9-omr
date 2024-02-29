@@ -1674,6 +1674,7 @@ bool OMR::Compilation::canTransformUnsafeCopyToArrayCopy()
    {
    if (!self()->getOptions()->realTimeGC() &&
        !TR::Compiler->om.canGenerateArraylets() &&
+       !self()->getOption(TR_DisableUnsafe) &&
        self()->cg()->canTransformUnsafeCopyToArrayCopy())
       return true;
 
@@ -1684,6 +1685,7 @@ bool OMR::Compilation::canTransformUnsafeSetMemory()
    {
    if (!self()->getOptions()->realTimeGC() &&
        !TR::Compiler->om.canGenerateArraylets() &&
+       !self()->getOption(TR_DisableUnsafe) &&
        self()->cg()->canTransformUnsafeSetMemory())
       return true;
 

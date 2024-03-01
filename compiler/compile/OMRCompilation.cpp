@@ -2483,17 +2483,14 @@ TR_Debug * OMR::Compilation::findOrCreateDebug()
 
 void OMR::Compilation::diagnosticImpl(const char *s, ...)
    {
-#if defined(DEBUG)
    va_list ap;
    va_start(ap, s);
    self()->diagnosticImplVA(s, ap);
    va_end(ap);
-#endif
    }
 
 void OMR::Compilation::diagnosticImplVA(const char *s, va_list ap)
    {
-#if defined(DEBUG)
    if (self()->getOutFile() != NULL)
       {
       va_list copy;
@@ -2504,7 +2501,6 @@ void OMR::Compilation::diagnosticImplVA(const char *s, va_list ap)
       trfflush(self()->getOutFile());
       va_end(copy);
       }
-#endif
    }
 
 

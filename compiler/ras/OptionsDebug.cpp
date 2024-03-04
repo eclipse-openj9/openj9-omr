@@ -162,7 +162,7 @@ void TR_Debug::dumpOptionHelp(TR::OptionTable * firstOjit, TR::OptionTable * fir
    TR::OptionTable * entry;
 
    TR_VerboseLog::CriticalSection vlogLock;
-   TR_VerboseLog::writeLine(TR_Vlog_INFO,"Usage: -Xjit:option([,option]*)\n");
+   TR_VerboseLog::writeLine(TR_Vlog_INFO,"Usage: -Xjit:option([,option]*)");
 
    for (int32_t cat = 0; optionCategories[cat]; cat++)
       {

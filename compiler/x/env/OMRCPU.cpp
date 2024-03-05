@@ -349,6 +349,8 @@ OMR::X86::CPU::supports_feature_test(uint32_t feature)
          return TR::CodeGenerator::getX86ProcessorInfo().hasProcessorSerialNumber() == ans;
       case OMR_FEATURE_X86_CLFSH:
          return TR::CodeGenerator::getX86ProcessorInfo().supportsCLFLUSHInstruction() == ans;
+      case OMR_FEATURE_X86_CLWB:
+         return TR::CodeGenerator::getX86ProcessorInfo().supportsCLWBInstruction() == ans;
       case OMR_FEATURE_X86_DS:
          return TR::CodeGenerator::getX86ProcessorInfo().supportsDebugTraceStore() == ans;
       case OMR_FEATURE_X86_ACPI:

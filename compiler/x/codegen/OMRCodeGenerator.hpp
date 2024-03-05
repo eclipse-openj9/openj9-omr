@@ -150,6 +150,7 @@ struct TR_X86ProcessorInfo
    bool has36BitPageSizeExtension()        {return testFeatureFlags(TR_36BitPageSizeExtension);}
    bool hasProcessorSerialNumber()         {return testFeatureFlags(TR_ProcessorSerialNumber);}
    bool supportsCLFLUSHInstruction()       {return testFeatureFlags(TR_CLFLUSHInstruction);}
+   bool supportsCLWBInstruction()          {return testFeatureFlags8(TR_CLWB);}
    bool supportsDebugTraceStore()          {return testFeatureFlags(TR_DebugTraceStore);}
    bool hasACPIRegisters()                 {return testFeatureFlags(TR_ACPIRegisters);}
    bool supportsMMXInstructions()          {return testFeatureFlags(TR_MMXInstructions);}

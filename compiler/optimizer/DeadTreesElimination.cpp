@@ -265,6 +265,9 @@ static bool isSafeToReplaceNode(TR::Node *currentNode, TR::TreeTop *curTreeTop, 
       return false;
 
    bool mayBeVolatileReference = currentNode->mightHaveVolatileSymbolReference();
+   // Do not swing down volatile nodes
+   if (mayBeVolatileReference)
+      return false;
 
    // Now scan forwards through the trees looking for the next use and checking
    // to see if any symbols in the subtree are getting modified; if so it is not
@@ -303,8 +306,8 @@ static bool isSafeToReplaceNode(TR::Node *currentNode, TR::TreeTop *curTreeTop, 
        *    => xload/xloadi a.volatileField
        *    ...
        */
-      if (mayBeVolatileReference && !canMoveIfVolatile)
-         return false;
+      //if (mayBeVolatileReference && !canMoveIfVolatile)
+      //   return false;
 
       if (nodeInSubTree)
          {

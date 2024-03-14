@@ -33,6 +33,7 @@
 #include "AllocationStats.hpp"
 #include "ArrayObjectModel.hpp"
 #include "BaseVirtual.hpp"
+#include "CPUUtilStats.hpp"
 #include "ExcessiveGCStats.hpp"
 #include "Forge.hpp"
 #include "GlobalGCStats.hpp"
@@ -876,6 +877,7 @@ public:
 #endif /* defined(OMR_VALGRIND_MEMCHECK) */
 
 	bool shouldForceLowMemoryHeapCeilingShiftIfPossible; /**< Whether we should force compressed reference shift to 3 **/
+	MM_CPUUtilStats cpuUtilStats; /**< CPU/process util between any STW GC increments, hence not part of any Collector Stats */
 	/* Function Members */
 private:
 
@@ -1967,6 +1969,7 @@ public:
 		, valgrindMempoolAddr(0)
 		, memcheckHashTable(NULL)
 		, shouldForceLowMemoryHeapCeilingShiftIfPossible(false)
+		, cpuUtilStats()
 #endif /* defined(OMR_VALGRIND_MEMCHECK) */
 	{
 		_typeId = __FUNCTION__;

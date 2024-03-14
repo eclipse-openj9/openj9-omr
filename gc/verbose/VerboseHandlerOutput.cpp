@@ -934,6 +934,11 @@ MM_VerboseHandlerOutput::handleGCStart(J9HookInterface** hook, uintptr_t eventNu
 
 	enterAtomicReportingBlock();
 	writer->formatAndOutput(env, 0, "<gc-start %s>", tagTemplate);
+
+	if (stats->_cpuUtilStats._validData) {
+		writer->formatAndOutput(env, 1, "<cpu-util id=\"%zu\" total=\"%.2f\" process=\"%.2f\" />",
+				_manager->getIdAndIncrement(), stats->_cpuUtilStats._avgCpuUtil * 100, stats->_cpuUtilStats._avgProcUtil * 100);
+	}
 	outputMemoryInfo(env, _manager->getIndentLevel() + 1, stats);
 	writer->formatAndOutput(env, 0, "</gc-start>");
 	exitAtomicReportingBlock();

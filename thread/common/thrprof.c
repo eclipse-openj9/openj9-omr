@@ -349,6 +349,7 @@ omrthread_get_self_cpu_time(omrthread_t self)
 
 #if defined(J9ZOS390)
 	{
+		extern void _CPUTIME(uint64_t *); /* defined in thrcputime.s */
 		uint64_t time = 0;
 
 		/* _CPUTIME returns time in TOD format (see z/Architecture Principles of Operation) */

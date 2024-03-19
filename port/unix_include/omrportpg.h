@@ -115,6 +115,7 @@ typedef struct OMRPortPlatformGlobals {
 	int pageProtectionPossible;
 #endif
 	uintptr_t criuSupportFlags;
+	uintptr_t mem32BitFlags;
 } OMRPortPlatformGlobals;
 
 
@@ -177,6 +178,8 @@ typedef struct OMRPortPlatformGlobals {
 #endif
 
 #define PPG_criuSupportFlags (portLibrary->portGlobals->platformGlobals.criuSupportFlags)
+
+#define PPG_mem32BitFlags (portLibrary->portGlobals->platformGlobals.mem32BitFlags)
 
 #endif /* omrportpg_h */
 

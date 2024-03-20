@@ -159,7 +159,7 @@ MM_VerboseWriterFileLoggingSynchronous::outputString(MM_EnvironmentBase *env, co
 	if(-1 == _logFileDescriptor) {
 		/**
 		 * Under normal circumstances, new file should be opened during endOfCycle call.
-		 * This path works as one backup, in case we failed to open the file,  we’ll attempt to open it again before outputting the string.
+		 * This path works as one backup, in case we failed to open the file,  we'll attempt to open it again before outputting the string.
 		 */
 		openFile(env);
 	}

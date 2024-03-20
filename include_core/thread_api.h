@@ -552,8 +552,8 @@ intptr_t
 omrthread_monitor_get_acquired_count(omrthread_monitor_t monitor);
 
 /**
- * Return thread that currently owns the monitor. Null 
- * will be returned if monitor is not owned.
+ * Return thread that currently owns the monitor.
+ * Null will be returned if monitor is not owned.
  * @param monitor
  * @return omrthread_t
  */

@@ -157,7 +157,7 @@ MM_VerboseWriterFileLoggingBuffered::outputString(MM_EnvironmentBase *env, const
 	if(NULL == _logFileStream) {
 		/**
 		 * Under normal circumstances, new file should be opened during endOfCycle call.
-		 * This path works as one backup, in case we failed to open the file,  we’ll attempt to open it again before outputting the string.
+		 * This path works as one backup, in case we failed to open the file,  we'll attempt to open it again before outputting the string.
 		 */
 		openFile(env);
 	}

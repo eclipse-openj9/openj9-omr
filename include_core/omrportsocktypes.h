@@ -82,7 +82,7 @@
 #if defined(OMR_OS_WINDOWS)
 typedef SOCKET omr_os_socket;
 typedef struct sockaddr_storage omr_os_sockaddr_storage; /* For IPv4 or IPv6 addresses */
-typedef struct addrinfoW omr_os_addrinfo;  /* addrinfo structure – Unicode, for IPv4 or IPv6 */
+typedef struct addrinfoW omr_os_addrinfo; /* addrinfo structure - Unicode, for IPv4 or IPv6 */
 #else /* defined(OMR_OS_WINDOWS) */
 typedef int omr_os_socket;
 typedef struct sockaddr_storage omr_os_sockaddr_storage; /* For IPv4 or IPv6 addresses */

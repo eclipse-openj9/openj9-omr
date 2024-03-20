@@ -577,7 +577,7 @@ MM_ConcurrentGCSATB::reportConcurrentCollectionStart(MM_EnvironmentBase *env)
 /**
  * TLH is about to be cleared, we must premark it if SATB is active. This is
  * non-trival to do, we must know the start of the last object to mark the proper range of the TLH.
- * Arbitrary bits at the end of the TLH can’t be marked, this is problematic for sweep.
+ * Arbitrary bits at the end of the TLH can't be marked, this is problematic for sweep.
  *
  * To get around this issue we seal the TLH with a bogus/dummy obj at the
  * end of the TLH (done before call to this method). With this, we know the precise addr to batch mark to. We have

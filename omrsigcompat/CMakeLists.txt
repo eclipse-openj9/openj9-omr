@@ -56,11 +56,6 @@ if(OMR_OS_ZOS)
 		__sigactionset
 	)
 endif()
-if((NOT OMR_OS_WINDOWS) AND (NOT OMR_OS_ZOS))
-	omr_add_exports(omrsig
-		sigvec
-	)
-endif()
 
 target_link_libraries(omrsig
 	PRIVATE

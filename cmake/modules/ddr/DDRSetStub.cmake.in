@@ -31,7 +31,6 @@ set(DDR_BLOB "$<TARGET_PROPERTY:@DDR_TARGET_NAME@,BLOB>")
 set(DDR_SUPERSET "$<TARGET_PROPERTY:@DDR_TARGET_NAME@,SUPERSET>")
 set(DDR_MACRO_LIST "${DDR_INFO_DIR}/sets/@DDR_TARGET_NAME@.macros")
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${OMR_MODULES_DIR})
-set(PATH_TOOL "@PATH_TOOL@")
 set(OBJECT_SEARCH_ROOT "$<TARGET_PROPERTY:@DDR_TARGET_NAME@,DDR_OBJECT_SEARCH_ROOT>")
 
 set(DDR_TARGETS
@@ -49,8 +48,8 @@ project(@DDR_TARGET_NAME@ LANGUAGES NONE)
 include("@DDR_TOOLS_EXPORT@")
 include(OmrUtility)
 
-# given a var, make the path specified absolute,
-# assuming paths are relative to the ddr set source directory
+# Given a var, make the path specified absolute,
+# assuming paths are relative to the ddr set source directory.
 macro(make_absolute var_name)
 	if(${var_name})
 		get_filename_component(${var_name} "${${var_name}}"
@@ -59,9 +58,9 @@ macro(make_absolute var_name)
 	endif()
 endmacro()
 
+make_absolute(DDR_BLOB)
 make_absolute(DDR_EXCLUDES)
 make_absolute(DDR_OVERRIDES_FILE)
-make_absolute(DDR_BLOB)
 make_absolute(DDR_SUPERSET)
 
 function(get_relative_path output filename base)
@@ -79,7 +78,7 @@ function(add_filename_extension output filename prefix)
 
 	string(REGEX REPLACE "${extension}$" "${prefix}${extension}" temp "${filename}")
 	set("${output}" "${temp}" PARENT_SCOPE)
-endfunction(add_filename_extension)
+endfunction()
 
 function(process_source_files src_files)
 	set(options "")
@@ -91,7 +90,7 @@ function(process_source_files src_files)
 	set(stub_files)
 	set(annotated_files)
 
-	# build up the command line to the preprocessor
+	# Build up the command line to the preprocessor.
 	set(BASE_ARGS)
 	if("@CMAKE_C_COMPILER_ID@" STREQUAL "MSVC")
 		list(APPEND BASE_ARGS "-nologo")
@@ -106,7 +105,7 @@ function(process_source_files src_files)
 
 	foreach(source_file IN LISTS OPT_UNPARSED_ARGUMENTS)
 		get_filename_component(extension "${source_file}" EXT)
-		# if file isn't a C/C++ file, ignore it
+		# If source_file isn't a C/C++ file, ignore it.
 		if(NOT extension MATCHES "\.[ch](pp)?$")
 			continue()
 		endif()
@@ -123,11 +122,6 @@ function(process_source_files src_files)
 		list(APPEND stub_files "${stub_file}")
 		list(APPEND annotated_files "${annt_file}")
 
-		if(PATH_TOOL)
-			set(path_tool_opt "-DPATH_TOOL=${PATH_TOOL}")
-		else()
-			set(path_tool_opt "")
-		endif()
 		add_custom_command(
 			OUTPUT "${stub_file}"
 			DEPENDS
@@ -136,9 +130,9 @@ function(process_source_files src_files)
 				${DDR_SUPPORT_DIR}/GenerateStub.cmake
 			COMMAND ${CMAKE_COMMAND}
 				-DAWK_SCRIPT=${DDR_SUPPORT_DIR}/cmake_ddr.awk
+				-DUSE_PATH_TOOL=@USE_PATH_TOOL@
 				-Dinput_file=${abs_file}
 				-Doutput_file=${stub_file}
-				"${path_tool_opt}"
 				-P ${DDR_SUPPORT_DIR}/GenerateStub.cmake
 			COMMENT ""
 			VERBATIM
@@ -152,11 +146,11 @@ function(process_source_files src_files)
 			list(APPEND pp_command "-xc++")
 		endif()
 		if("@OMR_OS_ZOS@" AND "@OMR_ENV_DATA64@")
-			# we need to set 64 bit code generation to ensure that limits.h macros are set correctly.
+			# We need to set 64 bit code generation to ensure that limits.h macros are set correctly.
 			list(APPEND pp_command "-Wc,lp64")
 		endif()
 		if("@OMR_OS_WINDOWS@" AND extension MATCHES "\.hpp$")
-			# Visual Studio needs to be told that .hpp files as C++ code.
+			# Visual Studio needs to be told that .hpp files are C++ code.
 			list(APPEND pp_command "/TP")
 		endif()
 		list(APPEND pp_command ${BASE_ARGS} "-E" "${stub_file}")
@@ -184,7 +178,7 @@ set(target_files "")
 function(process_target target)
 	file(MAKE_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/${target}")
 	set(target_info_file "${DDR_INFO_DIR}/targets/${target}.txt")
-	# make cmake configuration depend on input file
+	# Make cmake configuration depend on input file.
 	set_property(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}" APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS "${target_info_file}")
 	file(STRINGS "${target_info_file}" target_config)
 
@@ -217,7 +211,7 @@ function(process_target target)
 	)
 	list(APPEND annotated_files ${project_annt_hdr})
 
-	# bump changes up to parent scope
+	# Bump changes up to parent scope.
 	set(annotated_files "${annotated_files}" PARENT_SCOPE)
 endfunction(process_target)
 
@@ -229,6 +223,7 @@ set(subset_macro_lists "")
 foreach(subset IN LISTS DDR_SUBSETS)
 	list(APPEND subset_macro_lists "${DDR_INFO_DIR}/sets/${subset}.macros")
 endforeach()
+
 add_custom_command(
 	OUTPUT ${DDR_MACRO_LIST}
 	DEPENDS ${annotated_files} ${subset_macro_lists}
@@ -258,7 +253,7 @@ endif()
 
 set(subset_binaries)
 foreach(subset IN LISTS DDR_SUBSETS)
-	# name of file which subset generates, listing all of the input binaries
+	# The name of the file which subset generates, listing all of the input binaries.
 	set(binaries_list_file "${DDR_INFO_DIR}/sets/${subset}.binaries")
 	set_property(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}" APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS "${binaries_list_file}")
 	file(STRINGS "${binaries_list_file}" binaries)
@@ -266,11 +261,11 @@ foreach(subset IN LISTS DDR_SUBSETS)
 endforeach()
 
 if(ZOS)
-	# On zos, we have to glob for the individual .dbg files
+	# On z/OS, we have to glob for the individual .dbg files.
 	set(target_files)
 
 	if(OBJECT_EXCLUDE_REGEX STREQUAL "^")
-		# Empty exclude regex, just include everything
+		# Empty exclude regex, just include everything.
 		file(GLOB_RECURSE target_files "${OBJECT_SEARCH_ROOT}/*.dbg")
 	else()
 		file(GLOB_RECURSE dbg_files RELATIVE "${OBJECT_SEARCH_ROOT}" "${OBJECT_SEARCH_ROOT}/*.dbg")
@@ -282,7 +277,7 @@ if(ZOS)
 	endif()
 endif()
 
-# now we generate our own list of binaries, so that they can be parsed if we are a subset
+# Now we generate our own list of binaries, so that they can be parsed if we are a subset.
 omr_join("\n" binaries_list
 	${target_files}
 	${subset_binaries}
@@ -300,4 +295,5 @@ if(DDR_BLOB OR DDR_SUPERSET)
 			${EXTRA_DDRGEN_OPTIONS}
 	)
 endif()
+
 add_custom_target(@DDR_TARGET_NAME@ ALL DEPENDS ${DDR_BLOB} ${DDR_MACRO_LIST})

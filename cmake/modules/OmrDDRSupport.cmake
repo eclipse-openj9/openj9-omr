@@ -39,17 +39,18 @@ endif()
 set(OMR_MODULES_DIR ${CMAKE_CURRENT_LIST_DIR})
 set(DDR_INFO_DIR "${CMAKE_BINARY_DIR}/ddr_info")
 
+if(OMR_OS_WINDOWS AND (OMR_TOOLCONFIG STREQUAL "msvc"))
+	set(USE_PATH_TOOL TRUE)
+else()
+	set(USE_PATH_TOOL FALSE)
+endif()
+
 function(make_ddr_set set_name)
 	set(DDR_TARGET_NAME "${set_name}")
 	set(DDR_BIN_DIR "${CMAKE_CURRENT_BINARY_DIR}/${DDR_TARGET_NAME}")
 	set(DDR_MACRO_INPUTS_FILE "${DDR_BIN_DIR}/macros.list")
 	set(DDR_TOOLS_EXPORT "${omr_BINARY_DIR}/ddr/tools/DDRTools.cmake")
 	set(DDR_CONFIG_STAMP "${DDR_BIN_DIR}/config.stamp")
-	if((CMAKE_HOST_SYSTEM_NAME STREQUAL "CYGWIN") AND (OMR_TOOLCONFIG STREQUAL "msvc"))
-		set(PATH_TOOL cygpath -w)
-	else()
-		set(PATH_TOOL "")
-	endif()
 
 	# if DDR is not enabled, just skip
 	# Also skip if we are on a multi config generator since it is unsupported at the moment

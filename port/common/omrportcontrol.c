@@ -326,5 +326,12 @@ omrport_control(struct OMRPortLibrary *portLibrary, const char *key, uintptr_t v
 	}
 #endif /* defined(PPG_criuSupportFlags) */
 
+#if defined(PPG_mem32BitFlags)
+	if (0 == strcmp(OMRPORT_CTLDATA_MEM_32BIT, key)) {
+		PPG_mem32BitFlags = value;
+		return 0;
+	}
+#endif /* defined(PPG_mem32BitFlags) */
+
 	return 1;
 }

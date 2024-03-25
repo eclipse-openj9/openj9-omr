@@ -743,14 +743,14 @@ upcall_handler(int signal, siginfo_t *siginfo, void *context_arg)
 	pid_t pid = getpid();
 	uintptr_t tid = omrthread_get_ras_tid();
 
-#if defined(AIXPPCX)
+#if defined(AIXPPC)
 	struct sigaction handler;
 
 	/* altering the signal handler doesn't affect already queued signals on AIX */
 	if ((-1 == sigaction(SUSPEND_SIG, NULL, &handler)) || (handler.sa_sigaction != upcall_handler)) {
 		return;
 	}
-#endif /* defined(AIXPPCX) */
+#endif /* defined(AIXPPC) */
 
 	/* check that this signal was queued by this process. */
 	if ((SI_QUEUE != siginfo->si_code)

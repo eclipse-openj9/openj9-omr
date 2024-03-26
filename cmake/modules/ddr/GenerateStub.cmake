@@ -25,10 +25,10 @@ elseif(NOT EXISTS "${input_file}")
 	message(FATAL_ERROR "Input file '${input_file}' does not exist")
 endif()
 
-macro(convert_path output filename)
-	if(PATH_TOOL)
+if(USE_PATH_TOOL)
+	macro(convert_path output filename)
 		execute_process(
-			COMMAND ${PATH_TOOL} "${filename}"
+			COMMAND cygpath -w "${filename}"
 			OUTPUT_VARIABLE _converted_path
 			RESULT_VARIABLE _convert_rc
 		)
@@ -36,13 +36,15 @@ macro(convert_path output filename)
 			message(FATAL_ERROR "Error converting path ${filename}")
 		endif()
 
-		# remove excess whitespace and save into result variable
+		# Remove excess whitespace and save into result variable.
 		string(STRIP "${_converted_path}" ${output})
-	else()
-		# no defined tool to convert path names, so do nothing
+	endmacro()
+else()
+	macro(convert_path output filename)
+		# No need to convert path names, so do nothing.
 		set(${output} "${filename}")
-	endif()
-endmacro()
+	endmacro()
+endif()
 
 file(WRITE "${output_file}" "/* generated file, DO NOT EDIT */\nconst char ddr_source[] = \"${input_file}\";\n")
 

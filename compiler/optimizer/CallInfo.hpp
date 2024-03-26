@@ -267,8 +267,8 @@ struct TR_CallTarget : public TR_Link<TR_CallTarget>
                   bool isInterface,  \
                   TR_ByteCodeInfo & bcInfo, \
                   TR::Compilation *comp, \
-                  int32_t depth=-1, \
-                  bool allConsts = false) :  \
+                  int32_t depth, \
+                  bool allConsts) :  \
                      BASE (callerResolvedMethod, \
                                  callNodeTreeTop, \
                                  parent, \
@@ -328,8 +328,8 @@ class TR_CallSite : public TR_Link<TR_CallSite>
                   bool isInterface,
                   TR_ByteCodeInfo & bcInfo,
                   TR::Compilation *comp,
-                  int32_t depth=-1,
-                  bool allConsts = false);
+                  int32_t depth,
+                  bool allConsts);
 
       TR_CallSite(const TR_CallSite& other) :
          _allConsts (other._allConsts),

@@ -58,17 +58,6 @@ enum {XXCMP_EQ = 0, XXCMP_LT = 1, XXCMP_GT = 2};
     }                                                                   \
 }
 
-//**************************************
-// Binary identity operation
-//
-// If the second child is a constant that represents an identity operation,
-// replace this node with the first child.
-//
-#define BINARY_IDENTITY_OP(Type,NullValue)               \
-   if (secondChild->getOpCode().isLoadConst() && secondChild->get##Type() == NullValue) \
-      return s->replaceNode(node, firstChild, s->_curTree);
-
-
 /*
  * Helper functions needed by simplifier handlers across projects
  */

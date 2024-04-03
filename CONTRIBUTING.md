@@ -150,18 +150,23 @@ can be achieved with the following labels:
 You can propose contributions by sending pull requests through GitHub.
 Following these guidelines will help us to merge your pull requests smoothly:
 
-1. If you're not sure your contribution would be accepted, and want to validate
+1. Eclipse OMR is an Eclipse Foundation project. All contributors must sign the
+   [Eclipse Contributor Agreement](https://www.eclipse.org/legal/ECA.php) (or ECA)
+   following the instructions on that page before a contribution is accepted.
+
+   See [Eclipse OMR Legal Considerations](#eclipse-omr-legal-considerations) for
+   additional ECA considerations when creating project commits as well as copyright
+   and license requirements for files.
+
+2. If you're not sure your contribution would be accepted, and want to validate
    your approach or idea before writing code, feel free to open an issue. However,
    not every feature or fix needs an issue. If the problem and fix are cleanly
    connected, and you have the fix in hand, feel free to just submit a pull request.
 
-2. Your pull request is an opportunity to explain both what changes you'd like
+3. Your pull request is an opportunity to explain both what changes you'd like
    pulled in, but also _why_ you'd like them added. Providing clarity on why
    you want changes makes it easier to accept, and provides valuable context to
    review.
-
-3. Please read carefully and adhere to the legal considerations and
-   copyright/license requirements outlined below.
 
 4. Follow the coding style and format of the code you are modifying (see the
    [coding standards](doc/CodingStandard.md)). The code base is yet to be unified
@@ -171,7 +176,7 @@ Following these guidelines will help us to merge your pull requests smoothly:
 5. Only use C++ language features supported by our compilers. A list of supported
    features can be found [here](doc/SupportedC++Features.md).
 
-6. Follow the commit guidelines found below.
+6. Follow the [commit guidelines](#commit-guidelines) described below.
 
 7. We encourage you to open a pull request early, and mark it as "Work In Progress"
    (prefix the PR title with WIP). This allows feedback to start early, and helps
@@ -179,8 +184,9 @@ Following these guidelines will help us to merge your pull requests smoothly:
    the WIP prefix to merge your changes.
 
 8. If you are contributing a change to the compiler technology that involves modifications
-   to the Testarossa IL (including, but not limited to, adding a new IL opcode, changing
-   the properties of an opcode, or adding a new datatype) or, in the opinion of a committer,
+   to the Testarossa intermediate language (IL) (including, but not limited to,
+   adding a new IL opcode, changing the properties of an opcode, or adding a new datatype)
+   or, in the opinion of a committer,
    a fundamental element of compiler infrastructure, a committer will request that this
    pull request be presented at an upcoming
    [OMR Compiler Architecture meeting](https://github.com/eclipse/omr/issues/2316)
@@ -331,26 +337,19 @@ If the hook declines your commit, the message will remain in
 Be sure to update your version of the script occasionally as it may evolve as
 our commit guidelines evolve.
 
-## Legal considerations
+## Eclipse OMR Legal Considerations
 
-Please read the [Eclipse Foundation policy on accepting contributions via Git](http://wiki.eclipse.org/Development_Resources/Contributing_via_Git).
+### Pull Requests
 
-Your contribution cannot be accepted unless you have a signed [ECA - Eclipse Foundation Contributor Agreement](https://www.eclipse.org/legal/ECA.php) in place. If you have an active signed Eclipse CLA
-([the CLA was updated by the Eclipse Foundation to become the ECA in August 2016](https://mmilinkov.wordpress.com/2016/08/15/contributor-agreement-update/)),
-then that signed CLA is sufficient. You will have to sign the ECA once your CLA expires.
+When a pull request is created (or when new commits are pushed to an existing pull
+request), a webservice will automatically run that will verify that each commit
+author's email address matches an email address that signed the ECA.
+**This service is case-sensitive, so the case of the email addresses must match exactly.**
+The success or failure of this webservice will be reported in the GitHub pull request.
+Pull requests with a failing ECA check will not be merged.
 
-Here is the checklist for contributions to be _acceptable_:
-
-1. [Create an account at Eclipse](https://dev.eclipse.org/site_login/createaccount.php).
-2. Add your GitHub user name in your account settings.
-3. [Log into the project's portal](https://projects.eclipse.org/) and sign the ["Eclipse ECA"](https://projects.eclipse.org/user/sign/cla).
-4. Ensure that you author the commit using the _same_ email address as your Eclipse account.
-5. Include the appropriate copyright notice and license at the top of each file.
-
-Your signing of the ECA will be verified by a webservice called 'ip-validation'
-that checks the email address(es) that authored your commits has signed the
-ECA. **Note**: This service is case-sensitive, so ensure the email that signed
-the ECA and that authored your commits is the same, down to the case.
+Eclipse OMR pull requests do not need to be signed, but most contributors do so
+as a best practice.
 
 ### Copyright Notice and Licensing Requirements
 

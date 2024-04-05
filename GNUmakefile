@@ -101,7 +101,7 @@ tool_targets += tools/tracemerge
 endif
 
 # FVTest Helper Libraries
-test_prereqs := third_party/pugixml-1.5 fvtest/util fvtest/omrGtestGlue
+test_prereqs := third_party/pugixml-1.8 fvtest/util fvtest/omrGtestGlue
 test_targets += $(test_prereqs)
 
 # Utility Libraries

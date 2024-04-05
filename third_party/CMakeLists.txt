@@ -20,5 +20,5 @@
 # SPDX-License-Identifier: EPL-2.0 OR Apache-2.0 OR GPL-2.0-only WITH Classpath-exception-2.0 OR GPL-2.0-only WITH OpenJDK-assembly-exception-1.0
 ###############################################################################
 
-add_subdirectory(pugixml-1.5)
+add_subdirectory(pugixml-1.8)
 # TODO: gtest/gmock

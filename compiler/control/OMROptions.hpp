@@ -1468,6 +1468,7 @@ public:
       _insertGCRTrees = false;
       _maxLimitedGRACandidates = 0;
       _maxLimitedGRARegs = 0;
+      _graFreqThresholdAtWarm = 0;
       _enableGPU = 0;
       _isAOTCompile = false;
       _jProfilingMethodRecompThreshold = 0;
@@ -1822,6 +1823,7 @@ public:
    int32_t getAlwaysWorthInliningThreshold() const { return _alwaysWorthInliningThreshold; }
    int32_t getMaxLimitedGRACandidates()   { return _maxLimitedGRACandidates; }
    int32_t getMaxLimitedGRARegs()         { return _maxLimitedGRARegs; }
+   int32_t getGRAFreqThresholdAtWarm()    { return _graFreqThresholdAtWarm; }
    int32_t getNumLimitedGRARegsWithheld();
 
    int32_t getProfilingCompNodecountThreshold()  { return _profilingCompNodecountThreshold; }
@@ -2481,6 +2483,7 @@ protected:
 
    int32_t                     _maxLimitedGRACandidates;
    int32_t                     _maxLimitedGRARegs;
+   int32_t                     _graFreqThresholdAtWarm;
 
    int32_t                     _enableGPU;
 

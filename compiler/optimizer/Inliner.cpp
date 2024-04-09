@@ -5878,7 +5878,13 @@ void TR_InlinerTracer::partialTraceM ( const char * fmt, ...)
 
 void TR_InlinerTracer::insertCounter (TR_InlinerFailureReason reason, TR::TreeTop *tt)
    {
-   const char *name = TR::DebugCounter::debugCounterName(comp(), "inliner.callSites/failed/%s",getFailureReasonString(reason));
+   const char *name = TR::DebugCounter::debugCounterName(
+      comp(),
+      "inliner.callSites/failed/%s/(%s)/%s",
+      getFailureReasonString(reason),
+      comp()->signature(),
+      comp()->getHotnessName());
+
    TR::DebugCounter::prependDebugCounter(comp(), name, tt);
    }
 

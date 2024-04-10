@@ -5807,42 +5807,42 @@ TR::Instruction *loadConstant64(TR::CodeGenerator *cg, TR::Node *node, int64_t v
    return cursor;
    }
 
-TR::Instruction *addConstant64(TR::CodeGenerator *cg, TR::Node *node, TR::Register *trgReg, TR::Register *srcReg, int64_t value)
+void addConstant64(TR::CodeGenerator *cg, TR::Node *node, TR::Register *trgReg, TR::Register *srcReg, int64_t value)
    {
-   TR::Instruction *cursor;
-
-   if (constantIsUnsignedImm12(value))
+   if (value == 0)
       {
-      cursor = generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::addimmx, node, trgReg, srcReg, value);
+      // Do nothing
+      }
+   else if (constantIsUnsignedImm12(value))
+      {
+      generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::addimmx, node, trgReg, srcReg, value);
       }
    else
       {
       TR::Register *tempReg = cg->allocateRegister();
       loadConstant64(cg, node, value, tempReg);
-      cursor = generateTrg1Src2Instruction(cg, TR::InstOpCode::addx, node, trgReg, srcReg, tempReg);
+      generateTrg1Src2Instruction(cg, TR::InstOpCode::addx, node, trgReg, srcReg, tempReg);
       cg->stopUsingRegister(tempReg);
       }
-
-   return cursor;
    }
 
-TR::Instruction *addConstant32(TR::CodeGenerator *cg, TR::Node *node, TR::Register *trgReg, TR::Register *srcReg, int32_t value)
+void addConstant32(TR::CodeGenerator *cg, TR::Node *node, TR::Register *trgReg, TR::Register *srcReg, int32_t value)
    {
-   TR::Instruction *cursor;
-
-   if (constantIsUnsignedImm12(value))
+   if (value == 0)
       {
-      cursor = generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::addimmw, node, trgReg, srcReg, value);
+      // Do nothing
+      }
+   else if (constantIsUnsignedImm12(value))
+      {
+      generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::addimmw, node, trgReg, srcReg, value);
       }
    else
       {
       TR::Register *tempReg = cg->allocateRegister();
       loadConstant32(cg, node, value, tempReg);
-      cursor = generateTrg1Src2Instruction(cg, TR::InstOpCode::addw, node, trgReg, srcReg, tempReg);
+      generateTrg1Src2Instruction(cg, TR::InstOpCode::addw, node, trgReg, srcReg, tempReg);
       cg->stopUsingRegister(tempReg);
       }
-
-   return cursor;
    }
 
 /**

@@ -119,7 +119,7 @@ extern TR::Instruction *loadAddressConstantInSnippet(TR::CodeGenerator *cg, TR::
  * @param[in] srcReg : source register
  * @param[in] value : value to be added
  */
-TR::Instruction *addConstant64(TR::CodeGenerator *cg, TR::Node *node, TR::Register *trgReg, TR::Register *srcReg, int64_t value);
+void addConstant64(TR::CodeGenerator *cg, TR::Node *node, TR::Register *trgReg, TR::Register *srcReg, int64_t value);
 
 /**
  * @brief Generates instructions for adding 32-bit integer value to a register
@@ -129,7 +129,7 @@ TR::Instruction *addConstant64(TR::CodeGenerator *cg, TR::Node *node, TR::Regist
  * @param[in] srcReg : source register
  * @param[in] value : value to be added
  */
-TR::Instruction *addConstant32(TR::CodeGenerator *cg, TR::Node *node, TR::Register *trgReg, TR::Register *srcReg, int32_t value);
+void addConstant32(TR::CodeGenerator *cg, TR::Node *node, TR::Register *trgReg, TR::Register *srcReg, int32_t value);
 
 /**
  * @brief Helper function for encoding immediate value of logic instructions.

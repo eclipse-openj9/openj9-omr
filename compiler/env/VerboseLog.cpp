@@ -67,6 +67,7 @@ const char * TR_VerboseLog::_vlogTable[] =
    "#FSD: ",
    "#VECTOR API: ",
    "#CHECKPOINT RESTORE: ",
+   "#METHOD STATS: "
    };
 
 void TR_VerboseLog::writeLine(TR_VlogTag tag, const char *format, ...)

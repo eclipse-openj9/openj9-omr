@@ -483,6 +483,7 @@ class OMR_EXTENSIBLE CodeGenerator : public OMR::CodeGenerator
    int32_t setEstimatedLocationsForDataSnippetLabels(int32_t estimatedSnippetStart);
    void emitDataSnippets();
    bool hasDataSnippets() { return _dataSnippetList.empty() ? false : true; }
+   uint32_t getDataSnippetsSize();
 
    TR::list<TR::Register*> &getSpilledIntRegisters() {return _spilledIntRegisters;}
 
@@ -636,6 +637,8 @@ class OMR_EXTENSIBLE CodeGenerator : public OMR::CodeGenerator
    bool considerTypeForGRA(TR::Node *node);
    bool considerTypeForGRA(TR::DataType dt);
    bool considerTypeForGRA(TR::SymbolReference *symRef);
+
+   uint32_t getOutOfLineCodeSize();
 
    /*
     * \brief create a data snippet.

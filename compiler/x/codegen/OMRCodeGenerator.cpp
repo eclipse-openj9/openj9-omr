@@ -2363,6 +2363,19 @@ void OMR::X86::CodeGenerator::emitDataSnippets()
       }
    }
 
+uint32_t OMR::X86::CodeGenerator::getDataSnippetsSize()
+   {
+   uint32_t length = 0;
+
+   for (auto iterator = _dataSnippetList.begin(); iterator != _dataSnippetList.end(); ++iterator)
+      {
+      length += (*iterator)->getLength(0);
+      }
+
+   return length;
+   }
+
+
 TR::X86ConstantDataSnippet *OMR::X86::CodeGenerator::findOrCreate2ByteConstant(TR::Node * n, int16_t c)
    {
    return self()->findOrCreateConstantDataSnippet(n, &c, 2);
@@ -3310,4 +3323,23 @@ OMR::X86::CodeGenerator::considerTypeForGRA(TR::SymbolReference *symRef)
       {
       return true;
       }
+   }
+
+uint32_t
+OMR::X86::CodeGenerator::getOutOfLineCodeSize()
+   {
+   uint32_t totalSize = 0;
+
+   auto oiIterator = self()->getOutlinedInstructionsList().begin();
+   while (oiIterator != self()->getOutlinedInstructionsList().end())
+      {
+      auto start = (*oiIterator)->getFirstInstruction()->getBinaryEncoding();
+      auto end   = (*oiIterator)->getAppendInstruction()->getBinaryEncoding();
+
+      totalSize += static_cast<uint32_t>(end - start);
+
+      ++oiIterator;
+      }
+
+   return totalSize;
    }

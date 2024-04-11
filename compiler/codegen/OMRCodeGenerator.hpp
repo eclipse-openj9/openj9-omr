@@ -1256,6 +1256,45 @@ public:
 
    TR::list<TR::Snippet*> *getSnippetsToBePatchedOnClassRedefinition() { return &_snippetsToBePatchedOnClassRedefinition; }
 
+   /**
+   * \brief Calculates total size of all code snippets
+   *
+   * \return total size of all code snippets
+   */
+   uint32_t getCodeSnippetsSize();
+
+   /**
+   * \brief Calculates total size of all data snippets
+   *
+   * \return total size of all data snippets
+   */
+   uint32_t getDataSnippetsSize() { return 0; }
+
+   /**
+   * \brief Calculates total size of all out of line code
+   *
+   * \return total size of all out of line code
+   */
+   uint32_t getOutOfLineCodeSize() { return 0; }
+
+   struct MethodStats
+      {
+      uint32_t codeSize;
+      uint32_t warmBlocks;
+      uint32_t coldBlocks;
+      uint32_t prologue;
+      uint32_t snippets;
+      uint32_t outOfLine;
+      uint32_t unaccounted;
+      uint32_t blocksInColdCache;
+      uint32_t overestimateInColdCache;
+      };
+
+   /**
+   * \brief Fills in MethodStats structure with footprint data
+   */
+   void getMethodStats(MethodStats &methodStats);
+
    // --------------------------------------------------------------------------
    // Register pressure
    //

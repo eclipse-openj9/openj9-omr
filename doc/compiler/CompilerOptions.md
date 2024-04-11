@@ -132,10 +132,10 @@ options, etc).
 | disableCFGSimplification                         | disable Control Flow Graph simplification                                       |
 | disableDeadTreeElimination                       | disable dead tree elimination                                                   |
 | disableGlobalDSE                                 | disable global dead store elimination                                           |
+| disableGLU                                       | disable general loop unroller                                                   |
 | disableGRA                                       | disable IL based global register allocator                                      |
 | disableInlining                                  | disable IL inlining                                                             |
 | disableLiveRegisterAnalysis                      | disable live register analysis                                                  |
-| disableLoopUnroller                              | disable loop unroller                                                           |
 | disableOpts={<em>regex</em>}                     | list of optimizations to disable                                                |
 | disableOptTransformations={<em>regex</em>}       | list of optimizer transformations to disable                                    |
 | disableTreeCleansing                             | disable tree cleansing                                                          |

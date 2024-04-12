@@ -73,6 +73,7 @@ template <class T> class TR_Array;
 #define INTERP_CALLEE_COLD_BLOCK_COUNT 4
 #define REVERSE_ARRAYCOPY_COLD_BLOCK_COUNT 5
 #define MAX_COLD_BLOCK_COUNT 5
+#define NUMBER_BLOCK_FREQUENCIES 6
 
 #define MAX_WARM_BLOCK_COUNT ((MAX_BLOCK_COUNT + MAX_COLD_BLOCK_COUNT)/10)
 #define MAX_HOT_BLOCK_COUNT (2*MAX_WARM_BLOCK_COUNT)
@@ -356,6 +357,8 @@ class CFG
       IsOrphanedNode,
       IsOrphanedRegion
       };
+
+   static const char *blockFrequencyNames[];
 
 protected:
    TR::Compilation *_compilation;

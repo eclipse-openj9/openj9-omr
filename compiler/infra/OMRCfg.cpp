@@ -67,6 +67,17 @@ OMR::CFG::self() {
    return static_cast<TR::CFG*>(this);
 }
 
+const char*
+OMR::CFG::blockFrequencyNames[NUMBER_BLOCK_FREQUENCIES] =
+   {
+   "UNKNOWN_COLD_BLOCK_COUNT",
+   "VERSIONED_COLD_BLOCK_COUNT",
+   "UNRESOLVED_COLD_BLOCK_COUNT",
+   "CATCH_COLD_BLOCK_COUNT",
+   "INTERP_CALLEE_COLD_BLOCK_COUNT",
+   "REVERSE_ARRAYCOPY_COLD_BLOCK_COUNT"
+   };
+
 TR::CFGNode *
 OMR::CFG::addNode(TR::CFGNode *n, TR_RegionStructure *parent, bool isEntryInParent)
    {

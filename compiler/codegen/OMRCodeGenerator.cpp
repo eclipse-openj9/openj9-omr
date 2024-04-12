@@ -3388,3 +3388,115 @@ OMR::CodeGenerator::redoTrampolineReservationIfNecessary(TR::Instruction *callIn
       self()->fe()->reserveTrampolineIfNecessary(self()->comp(), calleeSymRef, true);
       }
    }
+
+uint32_t
+OMR::CodeGenerator::getCodeSnippetsSize()
+   {
+   uint32_t codeSnippetsSize = 0;
+
+   TR::list<TR::Snippet*> snippetList = self()->getSnippetList();
+
+   for (auto snippets = snippetList.begin(); snippets != snippetList.end(); ++snippets)
+      codeSnippetsSize += (*snippets)->getLength(0);
+
+   return codeSnippetsSize;
+   }
+
+void
+OMR::CodeGenerator::getMethodStats(MethodStats &methodStats)
+   {
+   auto &codeSize = methodStats.codeSize;
+   auto &warmBlocks = methodStats.warmBlocks;
+   auto &coldBlocks = methodStats.coldBlocks;
+   auto &prologue = methodStats.prologue;
+   auto &snippets = methodStats.snippets;
+   auto &outOfLine = methodStats.outOfLine;
+   auto &unaccounted = methodStats.unaccounted;
+   auto &blocksInColdCache = methodStats.blocksInColdCache;
+   auto &overestimateInColdCache = methodStats.overestimateInColdCache;
+
+   // init
+   codeSize = 0;
+   warmBlocks = 0;
+   coldBlocks = 0;
+   prologue = 0;
+   snippets = 0;
+   outOfLine = 0;
+   unaccounted = 0;
+   blocksInColdCache = 0;
+   overestimateInColdCache = 0;  // TODO: implement
+
+   uint32_t allBlocks = 0;
+   uint32_t sizeBeforeFirstBlock = 0;
+   bool firstBlock = true;
+   bool insideColdCache = false;
+   uint32_t cold_frequence_size[NUMBER_BLOCK_FREQUENCIES] = {0};
+
+   codeSize = (uint32_t)(self()->getCodeEnd() - self()->getCodeStart());
+
+#if 0
+   // enable when splitting warm  and cold blocks is enabled
+   if (self()->getLastWarmInstruction())
+      codeSize = codeSize + self()->getWarmCodeEnd() - self()->getColdCodeStart();
+#endif
+
+   for (TR::TreeTop *tt = self()->comp()->getMethodSymbol()->getFirstTreeTop(); tt ; tt = tt->getNextTreeTop())
+      {
+      TR::Node *node = tt->getNode();
+
+      TR::Block *block;
+      uint8_t *startCursor, *endCursor;
+
+      if (node->getOpCodeValue() == TR::BBStart)
+         {
+         block = node->getBlock();
+         startCursor = block->getFirstInstruction()->getBinaryEncoding();
+         endCursor = block->getLastInstruction()->getBinaryEncoding();
+
+         uint32_t blockSize = static_cast<uint32_t>(endCursor - startCursor);
+         allBlocks += blockSize;
+
+         if (block->isCold())
+            {
+            coldBlocks += blockSize;
+            int32_t freq = block->getFrequency();
+
+            if (freq >= 0 && freq < NUMBER_BLOCK_FREQUENCIES)
+               cold_frequence_size[freq] += blockSize;
+            }
+
+         if (insideColdCache)
+            blocksInColdCache += blockSize;
+
+         if (firstBlock)
+            {
+            sizeBeforeFirstBlock = (uint32_t)(startCursor - self()->getCodeStart());
+            firstBlock = false;
+            }
+#if 0
+         /// enable when splitting warm  and cold blocks is enabled
+         if (block->isLastWarmBlock())
+            insideColdCache = true;
+#endif
+         }
+      }
+
+   warmBlocks = allBlocks - coldBlocks;
+   snippets = self()->getCodeSnippetsSize() + self()->getDataSnippetsSize();
+   outOfLine = self()->getOutOfLineCodeSize();
+   unaccounted = codeSize - allBlocks - sizeBeforeFirstBlock - outOfLine - snippets;
+   prologue = sizeBeforeFirstBlock;
+
+   if (self()->comp()->getOption(TR_TraceCG))
+      {
+      uint32_t known_cold_blocks = 0;
+      for (int i = 0; i < NUMBER_BLOCK_FREQUENCIES; i++)
+         {
+         traceMsg(self()->comp(), "FOOTPRINT: COLD BLOCK TYPE: %s = %d\n", OMR::CFG::blockFrequencyNames[i],
+                                  cold_frequence_size[i]);
+
+         known_cold_blocks += cold_frequence_size[i];
+         }
+      traceMsg(self()->comp(), "FOOTPRINT: COLD BLOCK TYPE: OTHER = %d\n", coldBlocks - known_cold_blocks);
+      }
+   }

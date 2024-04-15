@@ -7393,62 +7393,19 @@ OMR::ARM64::TreeEvaluator::stopUsingCopyReg(TR::Node *node, TR::Register *&reg, 
 static void
 generateCallToArrayCopyHelper(TR::Node *node, TR::Register *srcAddrReg, TR::Register *dstAddrReg, TR::Register *lengthReg,  TR::RegisterDependencyConditions *deps, TR::CodeGenerator *cg)
    {
-   // Start of assembly helper path.
-   TR_RuntimeHelper helper;
-   TR::DataType dt = node->getArrayCopyElementType();
-   uint32_t elementSize;
-   if (node->isReferenceArrayCopy() || dt == TR::Address)
-      elementSize = TR::Compiler->om.sizeofReferenceField();
-   else
-      elementSize = TR::Symbol::convertTypeToSize(dt);
+   TR_RuntimeHelper helper = TR_ARM64arrayCopy; // Generic entry point
 
    if (node->isForwardArrayCopy())
       {
-      switch (elementSize)
-         {
-         case 16:
-            helper = TR_ARM64forwardQuadWordArrayCopy;
-            break;
-         case 8:
-            helper = TR_ARM64forwardDoubleWordArrayCopy;
-            break;
-         case 4:
-            helper = TR_ARM64forwardWordArrayCopy;
-            break;
-         case 2:
-            helper = TR_ARM64forwardHalfWordArrayCopy;
-            break;
-         default:
-            helper = TR_ARM64forwardArrayCopy;
-            break;
-         }
+      helper = TR_ARM64forwardArrayCopy;
       }
    else if (node->isBackwardArrayCopy())
       {
       // Adjusting src and dst addresses
       generateTrg1Src2Instruction(cg, TR::InstOpCode::addx, node, srcAddrReg, srcAddrReg, lengthReg);
       generateTrg1Src2Instruction(cg, TR::InstOpCode::addx, node, dstAddrReg, dstAddrReg, lengthReg);
-      switch (elementSize)
-         {
-         case 16:
-            helper = TR_ARM64backwardQuadWordArrayCopy;
-            break;
-         case 8:
-            helper = TR_ARM64backwardDoubleWordArrayCopy;
-            break;
-         case 4:
-            helper = TR_ARM64backwardWordArrayCopy;
-            break;
-         case 2:
-            helper = TR_ARM64backwardHalfWordArrayCopy;
-            break;
-         default:
-            helper = TR_ARM64backwardArrayCopy;
-            break;
-         }
+      helper = TR_ARM64backwardArrayCopy;
       }
-   else // We are not sure it is forward or we have to do backward.
-      helper = TR_ARM64arrayCopy;
 
    TR::SymbolReference *arrayCopyHelper = cg->symRefTab()->findOrCreateRuntimeHelper(helper, false, false, false);
 
@@ -7459,6 +7416,7 @@ generateCallToArrayCopyHelper(TR::Node *node, TR::Register *srcAddrReg, TR::Regi
 
    return;
    }
+
 TR::Register *
 OMR::ARM64::TreeEvaluator::arraycopyEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
@@ -7548,15 +7506,17 @@ OMR::ARM64::TreeEvaluator::arraycopyEvaluator(TR::Node *node, TR::CodeGenerator 
       stopUsingCopyReg5 = true;
       }
 
-   // x0-x4 are destroyed in the helper
-   TR::RegisterDependencyConditions *deps = new (cg->trHeapMemory()) TR::RegisterDependencyConditions(5, 5, cg->trMemory());
+   // x0-x3 and v30-v31 are destroyed in the helper
+   TR::RegisterDependencyConditions *deps = new (cg->trHeapMemory()) TR::RegisterDependencyConditions(6, 6, cg->trMemory());
    TR::addDependency(deps, lengthReg, TR::RealRegister::x0, TR_GPR, cg);
    TR::addDependency(deps, srcAddrReg, TR::RealRegister::x1, TR_GPR, cg);
    TR::addDependency(deps, dstAddrReg, TR::RealRegister::x2, TR_GPR, cg);
    TR::addDependency(deps, NULL, TR::RealRegister::x3, TR_GPR, cg);
-   TR::addDependency(deps, NULL, TR::RealRegister::x4, TR_GPR, cg);
+   TR::addDependency(deps, NULL, TR::RealRegister::v30, TR_FPR, cg);
+   TR::addDependency(deps, NULL, TR::RealRegister::v31, TR_FPR, cg);
    TR::Register *x3Reg = deps->searchPostConditionRegister(TR::RealRegister::x3);
-   TR::Register *x4Reg = deps->searchPostConditionRegister(TR::RealRegister::x4);
+   TR::Register *v30Reg = deps->searchPostConditionRegister(TR::RealRegister::v30);
+   TR::Register *v31Reg = deps->searchPostConditionRegister(TR::RealRegister::v31);
 
    generateCallToArrayCopyHelper(node, srcAddrReg, dstAddrReg, lengthReg, deps, cg);
 
@@ -7579,7 +7539,8 @@ OMR::ARM64::TreeEvaluator::arraycopyEvaluator(TR::Node *node, TR::CodeGenerator 
       cg->stopUsingRegister(lengthReg);
 
    cg->stopUsingRegister(x3Reg);
-   cg->stopUsingRegister(x4Reg);
+   cg->stopUsingRegister(v30Reg);
+   cg->stopUsingRegister(v31Reg);
 
    cg->decReferenceCount(srcAddrNode);
    cg->decReferenceCount(dstAddrNode);

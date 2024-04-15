@@ -2175,9 +2175,9 @@ bool TR_LoopStrider::examineTreeForInductionVariableUse(TR::Block *loopInvariant
          seenInductionVariableComputation = true;
          examineChildren = false;
 
-         int32_t differenceInAdditiveConstants = 0;
+         int64_t differenceInAdditiveConstants = 0;
          if (isAdditiveTermConst(index))
-            differenceInAdditiveConstants = (int32_t)(-1*getAdditiveTermConst(index));
+            differenceInAdditiveConstants = (-1*getAdditiveTermConst(index));
 
          examineOpCodesForInductionVariableUse(node, parent, childNum, index, originalNode, replacingNode, linearTerm, mulTerm, newSymbolReference, loopInvariantBlock, pinningArrayPointer, differenceInAdditiveConstants, isInternalPointer, downcastNode, usingAladd);
 

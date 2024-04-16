@@ -482,7 +482,7 @@ OMR::TransformUtil::generateArrayElementAddressTrees(TR::Compilation *comp, TR::
       }
    else
       {
-      totalOffsetNode = TR::Node::iconst(TR::Compiler->om.contiguousArrayHeaderSizeInBytes());
+      totalOffsetNode = TR::Node::iconst(static_cast<int32_t>(TR::Compiler->om.contiguousArrayHeaderSizeInBytes()));
       if (offsetNode)
          totalOffsetNode = TR::Node::create(TR::iadd, 2, offsetNode, totalOffsetNode);
       arrayAddressNode = TR::Node::create(TR::aiadd, 2, arrayNode, totalOffsetNode);

@@ -42,6 +42,7 @@
 #include <direct.h>
 #endif /* defined(OMR_OS_WINDOWS) */
 #if !defined(OMR_OS_WINDOWS)
+#include <locale>
 #include <grp.h>
 #include <errno.h>
 #if defined(J9ZOS390)

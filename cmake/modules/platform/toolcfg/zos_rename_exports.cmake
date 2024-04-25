@@ -37,7 +37,7 @@ if(NOT ARCHIVE_DIR)
 	set(ARCHIVE_DIR ${RUNTIME_DIR})
 endif()
 
-if(NOT EXISTS "${ARCHVIVE_DIR}")
+if(NOT EXISTS "${ARCHIVE_DIR}")
 	file(MAKE_DIRECTORY "${ARCHIVE_DIR}")
 endif()
 string(FIND "${LIBRARY_FILE_NAME}" "." dot_pos REVERSE)
@@ -45,11 +45,12 @@ string(SUBSTRING "${LIBRARY_FILE_NAME}" 0 ${dot_pos} base_name)
 
 set(SRC_FILE "${CMAKE_BINARY_DIR}/${base_name}.x")
 set(DEST_FILE "${ARCHIVE_DIR}/${base_name}.x")
-if(NOT "${SRC_FILE}" STREQUAL "${DEST_FILE}")
+
+if(EXISTS ${SRC_FILE} AND NOT "${SRC_FILE}" STREQUAL "${DEST_FILE}")
 	file(RENAME "${SRC_FILE}" "${DEST_FILE}")
 endif()
 
 # Work around a bug in CMake where it looks for .x files in the runime dir rather than the archive dir.
-if(NOT "${ARCHIVE_DIR}" STREQUAL "${RUNTIME_DIR}")
+if(EXISTS ${DEST_FILE} AND NOT "${ARCHIVE_DIR}" STREQUAL "${RUNTIME_DIR}")
 	file(COPY "${DEST_FILE}" DESTINATION "${RUNTIME_DIR}")
 endif()

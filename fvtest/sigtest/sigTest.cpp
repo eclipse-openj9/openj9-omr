@@ -20,7 +20,7 @@
  *******************************************************************************/
 
 #if defined(J9ZOS390)
-#define _OPEN_THREADS 2
+#define _OPEN_THREADS 3
 #define _UNIX03_SOURCE
 #endif /* defined(J9ZOS390) */
 

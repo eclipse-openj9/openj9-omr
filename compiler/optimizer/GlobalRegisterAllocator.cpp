@@ -2733,11 +2733,12 @@ void TR_GlobalRegisterAllocator::offerAllAutosAndRegisterParmAsCandidates(TR::Bl
             if (paramCursor->getLinkageRegisterIndex() >= 0)
                rc->addAllBlocks();
             }
+
+         i = paramCursor->getLiveLocalIndex();
+         autoAndParmLiveLocalIndex.set(i);
+         registerCandidateByIndex[i] = rc;
          }
 
-      i = paramCursor->getLiveLocalIndex();
-      autoAndParmLiveLocalIndex.set(i);
-      registerCandidateByIndex[i] = rc;
       paramCursor = paramIterator.getNext();
       }
 

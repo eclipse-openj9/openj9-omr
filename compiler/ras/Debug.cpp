@@ -2078,7 +2078,7 @@ static const char *commonNonhelperSymbolNames[] =
    "<componentClass>",
    "<componentClassAsPrimitive>",
    "<isArray>",
-   "<isClassAndDepthFlags>",
+   "<isClassDepthAndFlags>",
    "<initializeStatusFromClass>",
    "<isClassFlags>",
    "<vft>",

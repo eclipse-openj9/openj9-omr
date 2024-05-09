@@ -311,9 +311,9 @@ enum TR_CompilationOptions
    TR_DisableCHOpts                       = 0x00040000 + 7,
    TR_ForceLoadAOT                        = 0x00080000 + 7,
    TR_TraceRelocatableDataCG              = 0x00100000 + 7,
-   // Available                           = 0x00200000 + 7,
+   TR_Disable8BitPrimitiveArrayCopyInlineSmallSizeWithoutREPMOVS = 0x00200000 + 7,
    TR_TraceRelocatableDataDetailsCG       = 0x00400000 + 7,
-   // Available                           = 0x00800000 + 7,
+   TR_Disable16BitPrimitiveArrayCopyInlineSmallSizeWithoutREPMOVS = 0x00800000 + 7,
    TR_TurnOffSelectiveNoOptServerIfNoStartupHint = 0x01000000 + 7,
    TR_TraceDominators                     = 0x02000000 + 7,
    TR_EnableHCR                           = 0x04000000 + 7, // enable hot code replacement

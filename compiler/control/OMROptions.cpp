@@ -251,6 +251,8 @@ TR::OptionTable OMR::Options::_jitOptions[] = {
    {"disableAOTStaticField",               "O\tdisable AOT static field inlining",                      SET_OPTION_BIT(TR_DisableAOTStaticField), "F"},
    {"disableAOTValidationOpts",           "O\tdisable AOT optimizations with validations",                      SET_OPTION_BIT(TR_DisableAOTCheckCastInlining | TR_DisableAOTInstanceOfInlining | TR_DisableAOTInstanceFieldResolution | TR_DisableAOTStaticField), "F"},
    {"disableAOTWarmRunThroughputImprovement", "O\tdisable change iprofiler entry choosing heuristic to improve aot warm run throughput",                      SET_OPTION_BIT(TR_DisableAOTWarmRunThroughputImprovement), "F"},
+   {"disableArrayCopyByteArrayInlineSmallSizeWithoutREPMOVS", "O\tdisable array copy optimizations enhancement for 8 bit primitive array", SET_OPTION_BIT(TR_Disable8BitPrimitiveArrayCopyInlineSmallSizeWithoutREPMOVS), "F"},
+   {"disableArrayCopyCharArrayInlineSmallSizeWithoutREPMOVS", "O\tdisable array copy optimizations enhancement for 16 bit primitive array", SET_OPTION_BIT(TR_Disable16BitPrimitiveArrayCopyInlineSmallSizeWithoutREPMOVS), "F"},
    {"disableArrayCopyOpts",               "O\tdisable array copy optimizations",                SET_OPTION_BIT(TR_DisableArrayCopyOpts), "F"},
    {"disableArraySetOpts",                "O\tdisable array set optimizations",                 SET_OPTION_BIT(TR_DisableArraySetOpts), "F"},
    {"disableArraySetStoreElimination",     "O\tdisable arrayset store elimination",                SET_OPTION_BIT(TR_DisableArraysetStoreElimination), "F"},

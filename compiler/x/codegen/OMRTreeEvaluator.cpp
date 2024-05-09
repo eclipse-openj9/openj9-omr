@@ -2259,9 +2259,11 @@ static void arrayCopy8BitPrimitiveInlineSmallSizeWithoutREPMOVS(TR::Node* node, 
 static void arrayCopyDefault(TR::Node* node, uint8_t elementSize, TR::Register* dstReg, TR::Register* srcReg, TR::Register* sizeReg, TR::CodeGenerator* cg)
    {
    static bool disable8BitPrimitiveArrayCopyInlineSmallSizeWithoutREPMOVS = (feGetEnv("TR_Disable8BitPrimitiveArrayCopyInlineSmallSizeWithoutREPMOVS") != NULL);
+   bool disableEnhancement = disable8BitPrimitiveArrayCopyInlineSmallSizeWithoutREPMOVS ||
+                             cg->comp()->getOption(TR_Disable8BitPrimitiveArrayCopyInlineSmallSizeWithoutREPMOVS);
 
    bool enable8BitPrimitiveArrayCopyInlineSmallSizeWithoutREPMOVS = ((elementSize == 1) &&
-                                                                     !disable8BitPrimitiveArrayCopyInlineSmallSizeWithoutREPMOVS &&
+                                                                     !disableEnhancement &&
                                                                      cg->comp()->target().cpu.supportsAVX() &&
                                                                      cg->comp()->target().is64Bit()) ? true : false;
    if (enable8BitPrimitiveArrayCopyInlineSmallSizeWithoutREPMOVS)
@@ -2731,8 +2733,10 @@ TR::Register *OMR::X86::TreeEvaluator::arraycopyEvaluator(TR::Node *node, TR::Co
       else if (elementSize == 2 && !useREPMOVSW)
          {
          static bool disable16BitPrimitiveArrayCopyInlineSmallSizeWithoutREPMOVS = feGetEnv("TR_Disable16BitPrimitiveArrayCopyInlineSmallSizeWithoutREPMOVS") != NULL;
+         bool disableEnhancement = disable16BitPrimitiveArrayCopyInlineSmallSizeWithoutREPMOVS
+                                   || cg->comp()->getOption(TR_Disable16BitPrimitiveArrayCopyInlineSmallSizeWithoutREPMOVS);
 
-         bool enable16BitPrimitiveArrayCopyInlineSmallSizeWithoutREPMOVS = (!disable16BitPrimitiveArrayCopyInlineSmallSizeWithoutREPMOVS &&
+         bool enable16BitPrimitiveArrayCopyInlineSmallSizeWithoutREPMOVS = (!disableEnhancement &&
                                                                             cg->comp()->target().cpu.supportsAVX() &&
                                                                             cg->comp()->target().is64Bit()) ? true : false;
 

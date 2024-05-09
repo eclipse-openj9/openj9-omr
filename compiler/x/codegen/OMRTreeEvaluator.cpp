@@ -2441,7 +2441,7 @@ static void arraySetToZeroForShortConstantArrays(TR::Node* node, TR::Register* a
    if (size < 16)
       {
       tempReg = cg->allocateRegister();
-      generateRegRegInstruction(TR::InstOpCode::XOR8RegReg, node, tempReg, tempReg, cg);
+      generateRegRegInstruction(TR::InstOpCode::XOR4RegReg, node, tempReg, tempReg, cg);
       int32_t index = 0;
       int8_t packs[4] = {8, 4, 2, 1};
 
@@ -4714,7 +4714,7 @@ OMR::X86::TreeEvaluator::bitpermuteEvaluator(TR::Node *node, TR::CodeGenerator *
 
    // Zero result reg
    TR::Register *resultReg = cg->allocateRegister(TR_GPR);
-   generateRegRegInstruction(TR::InstOpCode::XORRegReg(nodeIs64Bit), node, resultReg, resultReg, cg);
+   generateRegRegInstruction(TR::InstOpCode::XOR4RegReg, node, resultReg, resultReg, cg);
 
    if (length->getOpCode().isLoadConst())
       {
@@ -4724,7 +4724,7 @@ OMR::X86::TreeEvaluator::bitpermuteEvaluator(TR::Node *node, TR::CodeGenerator *
          {
          // Zero tmpReg if SET won't do it
          if (x >= 8)
-            generateRegRegInstruction(TR::InstOpCode::XORRegReg(nodeIs64Bit), node, tmpReg, tmpReg, cg);
+            generateRegRegInstruction(TR::InstOpCode::XOR4RegReg, node, tmpReg, tmpReg, cg);
 
          TR::MemoryReference *sourceMR = generateX86MemoryReference(addrReg, x, cg);
          generateRegMemInstruction(TR::InstOpCode::L1RegMem, node, tmpReg, sourceMR, cg);
@@ -4768,7 +4768,7 @@ OMR::X86::TreeEvaluator::bitpermuteEvaluator(TR::Node *node, TR::CodeGenerator *
       generateRegImmInstruction(TR::InstOpCode::SUB4RegImm4, node, indexReg, 1, cg);
 
       // Load the byte, test the bit and set
-      generateRegRegInstruction(TR::InstOpCode::XORRegReg(nodeIs64Bit), node, tmpReg, tmpReg, cg);
+      generateRegRegInstruction(TR::InstOpCode::XOR4RegReg, node, tmpReg, tmpReg, cg);
       TR::MemoryReference *sourceMR = generateX86MemoryReference(addrReg, indexReg, 0, 0, cg);
       generateRegMemInstruction(TR::InstOpCode::L1RegMem, node, tmpReg, sourceMR, cg);
       generateRegRegInstruction(TR::InstOpCode::BTRegReg(nodeIs64Bit), node, valueReg, tmpReg, cg);

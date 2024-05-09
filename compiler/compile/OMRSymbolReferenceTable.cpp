@@ -312,6 +312,12 @@ OMR::SymbolReferenceTable::findClassIsArraySymbolRef()
 
 
 TR::SymbolReference *
+OMR::SymbolReferenceTable::findClassDepthAndFlagsSymbolRef()
+   {
+   return element(isClassDepthAndFlagsSymbol);
+   }
+
+TR::SymbolReference *
 OMR::SymbolReferenceTable::findClassAndDepthFlagsSymbolRef()
    {
    return element(isClassAndDepthFlagsSymbol);
@@ -2142,7 +2148,7 @@ const char *OMR::SymbolReferenceTable::_commonNonHelperSymbolNames[] =
    "<addressOfClassOfMethod>",
    "<componentClass>",
    "<isArray>",
-   "<isClassAndDepthFlags>",
+   "<isClassDepthAndFlags>",
    "<isClassFlags>",
    "<vft>",
    "<currentThread>",

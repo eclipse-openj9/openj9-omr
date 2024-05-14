@@ -293,12 +293,9 @@ omrfilestream_close(struct OMRPortLibrary *portLibrary, OMRFileStream *fileStrea
 		Trc_PRT_filestream_close_invalidFileStream(fileStream);
 		rc = OMRPORT_ERROR_FILE_BADF;
 	} else {
-		/* copy handle to avoid "use-after-free(close)" warning */
-		void *fileTrace = fileStream;
 		rc = fclose(fileStream);
 		if (0 != rc) {
 			rc = portLibrary->error_set_last_error(portLibrary, errno, findError(errno));
-			Trc_PRT_filestream_close_failedToClose(fileTrace, rc);
 		}
 	}
 

@@ -38,24 +38,6 @@
 	.text
 	.align	2
 
-// Obsolete entry points to be removed
-FUNC_LABEL(__fwHalfWordArrayCopy):
-	ret
-FUNC_LABEL(__fwWordArrayCopy):
-	ret
-FUNC_LABEL(__fwDoubleWordArrayCopy):
-	ret
-FUNC_LABEL(__fwQuadWordArrayCopy):
-	ret
-FUNC_LABEL(__bwHalfWordArrayCopy):
-	ret
-FUNC_LABEL(__bwWordArrayCopy):
-	ret
-FUNC_LABEL(__bwDoubleWordArrayCopy):
-	ret
-FUNC_LABEL(__bwQuadWordArrayCopy):
-	ret
-
 // This is a generic entry point that will determine which direction(forward/backward) to copy as appropriate.
 //
 // in:    x0 - length in bytes

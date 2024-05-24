@@ -30,6 +30,11 @@
 #include "MemcheckWrapper.hpp"
 #endif /* defined(OMR_VALGRIND_MEMCHECK) */
 
+#define TWO_GB_ADDRESS ((void *)((uintptr_t)2 * 1024 * 1024 * 1024))
+#define EIGHT_GB_ADDRESS ((void *)((uintptr_t)8 * 1024 * 1024 * 1024))
+#define SIXTEEN_GB_ADDRESS ((void *)((uintptr_t)16 * 1024 * 1024 * 1024))
+#define THIRTY_TWO_GB_ADDRESS ((void *)((uintptr_t)32 * 1024 * 1024 * 1024))
+
 MM_MemoryManager *
 MM_MemoryManager::newInstance(MM_EnvironmentBase *env)
 {
@@ -185,7 +190,6 @@ MM_MemoryManager::createVirtualMemoryForHeap(MM_EnvironmentBase *env, MM_MemoryH
 			/*
 			 * On ZOS an address space below 2G can not be taken for virtual memory
 			 */
-#define TWO_GB_ADDRESS ((void *)((uintptr_t)2 * 1024 * 1024 * 1024))
 			if (NULL == preferredAddress) {
 				startAllocationAddress = TWO_GB_ADDRESS;
 			}
@@ -219,33 +223,74 @@ MM_MemoryManager::createVirtualMemoryForHeap(MM_EnvironmentBase *env, MM_MemoryH
 				if (requestedTopAddress <= ceiling) {
 					bool allocationTopDown = true;
 					/* define the scan direction when reserving the GC heap in the range of (4G, 32G) */
-#if defined(S390) || defined(J9ZOS390)
-					/* s390 benefits from smaller shift values so allocate direction is bottom up */
+#if defined(J9ZOS390)
+					/*
+					 * zOS does not allow to choose direction of allocation and uses Bottom Up.
+					 * So, this flag is not necessary. However set it to match actual behavior.
+					 */
 					options |= OMRPORT_VMEM_ALLOC_DIR_BOTTOM_UP;
 					allocationTopDown = false;
-#else /* defined(S390) || defined(J9ZOS390) */
+#else /* defined(J9ZOS390) */
+					/*
+					 * Use Top Down for all platforms except zOS.
+					 */
 					options |= OMRPORT_VMEM_ALLOC_DIR_TOP_DOWN;
-#endif /* defined(S390) || defined(J9ZOS390) */
+#endif /* defined(J9ZOS390) */
 
 					if (allocationTopDown && extensions->shouldForceSpecifiedShiftingCompression) {
 						/* force to allocate heap top-down from correspondent to shift address */
 						void *maxAddress = (void *)(((uintptr_t)1 << 32) << extensions->forcedShiftingCompressionAmount);
 
-						instance = MM_VirtualMemory::newInstance(env, heapAlignment, allocateSize, pageSize, pageFlags, tailPadding, preferredAddress,
+						instance = MM_VirtualMemory::newInstance(
+								env, heapAlignment, allocateSize, pageSize, pageFlags, tailPadding, preferredAddress,
 								maxAddress, mode, options, memoryCategory);
 					} else {
+						void *adjustedCeiling = NULL;
+
+						/*
+						 * Attempt to allocate heap below 4G.
+						 */
 						if (requestedTopAddress < (void *)NON_SCALING_LOW_MEMORY_HEAP_CEILING) {
-							/*
-							 * Attempt to allocate heap below 4G
-							 */
-							instance = MM_VirtualMemory::newInstance(env, heapAlignment, allocateSize, pageSize, pageFlags, tailPadding, preferredAddress,
-																	 (void *)OMR_MIN(NON_SCALING_LOW_MEMORY_HEAP_CEILING, (uintptr_t)ceiling), mode, options, memoryCategory);
+							adjustedCeiling = (void *)OMR_MIN(NON_SCALING_LOW_MEMORY_HEAP_CEILING, (uintptr_t)ceiling);
+
+							instance = MM_VirtualMemory::newInstance(
+									env, heapAlignment, allocateSize, pageSize, pageFlags, tailPadding, preferredAddress,
+									adjustedCeiling, mode, options, memoryCategory);
 						}
 
 						if ((NULL == instance) && (ceiling > (void *)NON_SCALING_LOW_MEMORY_HEAP_CEILING)) {
 
-#define THIRTY_TWO_GB_ADDRESS ((void *)((uintptr_t)32 * 1024 * 1024 * 1024))
-							if (requestedTopAddress <= THIRTY_TWO_GB_ADDRESS) {
+#if defined(LINUX) && defined(S390)
+							/*
+							 * Z platform executes smaller shift faster, so it is beneficial to have smaller one.
+							 * Attempting to allocate object heap below 8G or 16G to get Compressed
+							 * References shift 1 or 2 for zLinux only.
+							 */
+
+							/*
+							 * Attempt to allocate heap below 8G.
+							 */
+							if ((NULL == instance) && (requestedTopAddress <= EIGHT_GB_ADDRESS)) {
+								adjustedCeiling = (void *)OMR_MIN((uintptr_t)EIGHT_GB_ADDRESS, (uintptr_t)ceiling);
+
+								instance = MM_VirtualMemory::newInstance(
+										env, heapAlignment, allocateSize, pageSize, pageFlags, tailPadding, preferredAddress,
+										adjustedCeiling, mode, options, memoryCategory);
+							}
+
+							/*
+							 * Attempt to allocate heap below 16G.
+							 */
+							if ((NULL == instance) && (requestedTopAddress <= SIXTEEN_GB_ADDRESS)) {
+								adjustedCeiling = (void *)OMR_MIN((uintptr_t)SIXTEEN_GB_ADDRESS, (uintptr_t)ceiling);
+
+								instance = MM_VirtualMemory::newInstance(
+										env, heapAlignment, allocateSize, pageSize, pageFlags, tailPadding, preferredAddress,
+										adjustedCeiling, mode, options, memoryCategory);
+							}
+#endif /* defined(LINUX) && defined(S390) */
+
+							if ((NULL == instance) && (requestedTopAddress <= THIRTY_TWO_GB_ADDRESS)) {
 								/*
 								 * If requested object heap size is in range 28G-32G its allocation with 3-bit shift might compromise amount of low memory below 4G
 								 * To prevent this go straight to 4-bit shift if it possible.
@@ -260,19 +305,23 @@ MM_MemoryManager::createVirtualMemoryForHeap(MM_EnvironmentBase *env, MM_MemoryH
 
 								if (!skipAllocationBelow32G) {
 									/*
-									 * Attempt to allocate heap below 32G
+									 * Attempt to allocate heap below 32G.
 									 */
-									instance = MM_VirtualMemory::newInstance(env, heapAlignment, allocateSize, pageSize, pageFlags, tailPadding, preferredAddress,
-																			 (void *)OMR_MIN((uintptr_t)THIRTY_TWO_GB_ADDRESS, (uintptr_t)ceiling), mode, options, memoryCategory);
+									adjustedCeiling = (void *)OMR_MIN((uintptr_t)THIRTY_TWO_GB_ADDRESS, (uintptr_t)ceiling);
+
+									instance = MM_VirtualMemory::newInstance(
+											env, heapAlignment, allocateSize, pageSize, pageFlags, tailPadding, preferredAddress,
+											adjustedCeiling, mode, options, memoryCategory);
 								}
 							}
 
 							/*
-							 * Attempt to allocate above 32G
+							 * Attempt to allocate heap at any location below ceiling.
 							 */
-							if ((NULL == instance) && (ceiling > THIRTY_TWO_GB_ADDRESS)) {
-								instance = MM_VirtualMemory::newInstance(env, heapAlignment, allocateSize, pageSize, pageFlags, tailPadding, preferredAddress,
-																		 ceiling, mode, options, memoryCategory);
+							if (NULL == instance) {
+								instance = MM_VirtualMemory::newInstance(
+										env, heapAlignment, allocateSize, pageSize, pageFlags, tailPadding, preferredAddress,
+										ceiling, mode, options, memoryCategory);
 							}
 						}
 					}

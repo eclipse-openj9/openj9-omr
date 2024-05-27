@@ -70,7 +70,27 @@
 #define CPUID_FAMILYCODE_INTEL_CORE                       0x06
 #define CPUID_FAMILYCODE_INTEL_PENTIUM4                   0x0F
 
-#define CPUID_MODELCODE_INTEL_SKYLAKE                     0x55
+/**
+ * Intel model code suffix naming convention (post-Broadwell)
+ *
+ * _X : server part (Xeon)
+ * _D : micro server
+ * _L : mobile
+ *    : client
+ */
+#define CPUID_MODELCODE_INTEL_EMERALDRAPIDS_X             0xCF
+
+#define CPUID_MODELCODE_INTEL_SAPPHIRERAPIDS_X            0x8F
+
+#define CPUID_MODELCODE_INTEL_ICELAKE_X                   0x6A
+#define CPUID_MODELCODE_INTEL_ICELAKE_D                   0x6C
+#define CPUID_MODELCODE_INTEL_ICELAKE                     0x7D
+#define CPUID_MODELCODE_INTEL_ICELAKE_L                   0x7E
+
+#define CPUID_MODELCODE_INTEL_SKYLAKE_L                   0x4E
+#define CPUID_MODELCODE_INTEL_SKYLAKE                     0x5E
+#define CPUID_MODELCODE_INTEL_SKYLAKE_X                   0x55
+
 #define CPUID_MODELCODE_INTEL_BROADWELL                   0x4F
 #define CPUID_MODELCODE_INTEL_HASWELL_1                   0x3F
 #define CPUID_MODELCODE_INTEL_HASWELL_2                   0x3C
@@ -83,6 +103,8 @@
 #define CPUID_MODELCODE_INTEL_NEHALEM                     0x1A
 #define CPUID_MODELCODE_INTEL_CORE2_HARPERTOWN            0x17
 #define CPUID_MODELCODE_INTEL_CORE2_WOODCREST_CLOVERTOWN  0x0F
+
+#define CPUID_STEPPING_INTEL_CASCADELAKE                  0x07
 
 #define CPUID_FAMILYCODE_AMD_KSERIES                      0x05
 #define CPUID_FAMILYCODE_AMD_ATHLON                       0x06
@@ -247,6 +269,7 @@ omrsysinfo_get_x86_description(struct OMRPortLibrary *portLibrary, OMRProcessorD
 	char vendor[12];
 	uint32_t familyCode = 0;
 	uint32_t processorSignature = 0;
+	uint32_t processorStepping = 0;
 
 	desc->processor = OMR_PROCESSOR_X86_UNKNOWN;
 
@@ -260,6 +283,7 @@ omrsysinfo_get_x86_description(struct OMRPortLibrary *portLibrary, OMRProcessorD
 	omrsysinfo_get_x86_cpuid(CPUID_FAMILY_INFO, CPUInfo);
 	processorSignature = CPUInfo[CPUID_EAX];
 	familyCode = (processorSignature & CPUID_SIGNATURE_FAMILY) >> CPUID_SIGNATURE_FAMILY_SHIFT;
+	processorStepping = (processorSignature & CPUID_SIGNATURE_STEPPING) >> CPUID_SIGNATURE_STEPPING_SHIFT;
 	if (0 == strncmp(vendor, CPUID_VENDOR_INTEL, CPUID_VENDOR_LENGTH)) {
 		switch (familyCode) {
 		case CPUID_FAMILYCODE_INTEL_PENTIUM:
@@ -272,8 +296,27 @@ omrsysinfo_get_x86_description(struct OMRPortLibrary *portLibrary, OMRProcessorD
 			uint32_t totalModelCode = modelCode + (extendedModelCode << 4);
 
 			switch (totalModelCode) {
+			case CPUID_MODELCODE_INTEL_EMERALDRAPIDS_X:
+				desc->processor = OMR_PROCESSOR_X86_INTEL_EMERALDRAPIDS;
+				break;
+			case CPUID_MODELCODE_INTEL_SAPPHIRERAPIDS_X:
+				desc->processor = OMR_PROCESSOR_X86_INTEL_SAPPHIRERAPIDS;
+				break;
+			case CPUID_MODELCODE_INTEL_ICELAKE_X:
+			case CPUID_MODELCODE_INTEL_ICELAKE_D:
+			case CPUID_MODELCODE_INTEL_ICELAKE_L:
+			case CPUID_MODELCODE_INTEL_ICELAKE:
+				desc->processor = OMR_PROCESSOR_X86_INTEL_ICELAKE;
+				break;
+			case CPUID_MODELCODE_INTEL_SKYLAKE_X:
+			case CPUID_MODELCODE_INTEL_SKYLAKE_L:
 			case CPUID_MODELCODE_INTEL_SKYLAKE:
-				desc->processor = OMR_PROCESSOR_X86_INTEL_SKYLAKE;
+				if (CPUID_STEPPING_INTEL_CASCADELAKE == processorStepping) {
+					desc->processor = OMR_PROCESSOR_X86_INTEL_CASCADELAKE;
+				}
+				else {
+					desc->processor = OMR_PROCESSOR_X86_INTEL_SKYLAKE;
+				}
 				break;
 			case CPUID_MODELCODE_INTEL_BROADWELL:
 				desc->processor = OMR_PROCESSOR_X86_INTEL_BROADWELL;

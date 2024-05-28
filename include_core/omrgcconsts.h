@@ -132,6 +132,12 @@ typedef enum MM_ScavengeScanReason {
 #define OMR_GC_CYCLE_TYPE_GLOBAL      1
 #define OMR_GC_CYCLE_TYPE_SCAVENGE    2
 #define OMR_GC_CYCLE_TYPE_EPSILON	 6
+/**
+ * This bit represents the state to abort a cycle. It is only used in the cycleType of CycleEnd event.
+ * MM_CycleState->_type has uintptr_t type. This code still needs to be supported on 32-bit platforms,
+ * which will require the bit to fit in a 32 bit word.
+ */
+#define OMR_GC_CYCLE_TYPE_STATE_UNSUCCESSFUL 0x80000000
 
 /* Core allocation flags defined for OMR are < OMR_GC_ALLOCATE_OBJECT_LANGUAGE_DEFINED_BASE */
 #define OMR_GC_ALLOCATE_OBJECT_NON_INSTRUMENTABLE 0x0

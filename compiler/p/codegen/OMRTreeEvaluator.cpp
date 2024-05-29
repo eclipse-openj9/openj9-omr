@@ -6002,9 +6002,23 @@ TR::Register *OMR::Power::TreeEvaluator::setmemoryEvaluator(TR::Node *node, TR::
 
    if (arrayCheckNeeded) // CASE (3)
    {
-      //generate array check if needed
-      TR::LabelSymbol *notArray = generateLabelSymbol(cg);
+      // There are two scenarios in which we DON'T want to modify the dest base address:
+      // 1.) If the object is NULL (since we can't load dataAddr from a NULL pointer)
+      // 2.) If the object is a non-array object
+      // So two checks are required (NULL, Array) to determine whether dataAddr should be loaded or not
+      TR::LabelSymbol *noDataAddr = generateLabelSymbol(cg);
 
+      // We only want to generate a runtime NULL check if the status of the object (i.e.: whether it is NULL or non-NULL)
+      // is NOT known. Note that if the object is known to be NULL, arrayCheckNeeded will be false, so there is no need to check
+      // that condition here.
+      if (!dstBaseAddrNode->isNonNull())
+         {
+         //generate NULL test
+         generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::Op_cmpi, node, cndReg, dstBaseAddrReg, 0);
+         generateConditionalBranchInstruction(cg, TR::InstOpCode::beq, node, noDataAddr, cndReg);
+      }
+
+      //Array Check
       TR::Register *dstClassInfoReg = temp1Reg;
       TR::Register *arrayFlagReg = temp2Reg;
 
@@ -6026,14 +6040,14 @@ TR::Register *OMR::Power::TreeEvaluator::setmemoryEvaluator(TR::Node *node, TR::
       generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::andis_r, node, arrayFlagReg, dstClassInfoReg, arrayFlagValue >> 16);
 
       //if object is not an array (i.e.: temp1Reg & temp2Reg == 0), skip adjusting dstBaseAddr and dstOffset
-      generateConditionalBranchInstruction(cg, TR::InstOpCode::beq, node, notArray, cndReg);
+      generateConditionalBranchInstruction(cg, TR::InstOpCode::beq, node, noDataAddr, cndReg);
 
       //load dataAddr if object is array:
       TR::MemoryReference *dataAddrSlotMR = TR::MemoryReference::createWithDisplacement(cg, dstBaseAddrReg, comp->fej9()->getOffsetOfContiguousDataAddrField(), TR::Compiler->om.sizeofReferenceAddress());
       generateTrg1MemInstruction(cg, TR::InstOpCode::Op_load, node, dstBaseAddrReg, dataAddrSlotMR);
       
       //arrayCHK will skip to here if object is not an array
-      generateLabelInstruction(cg, TR::InstOpCode::label, node, notArray);
+      generateLabelInstruction(cg, TR::InstOpCode::label, node, noDataAddr);
 
       //calculate dstAddr = dstBaseAddr + dstOffset
       dstAddrReg = dstBaseAddrReg;
@@ -6047,7 +6061,7 @@ TR::Register *OMR::Power::TreeEvaluator::setmemoryEvaluator(TR::Node *node, TR::
    generateTrg1Src1Imm2Instruction(cg, TR::InstOpCode::rlwimi, node, valueReg, valueReg,  16, 0xffff0000);
    generateTrg1Src1Imm2Instruction(cg, TR::InstOpCode::rldimi, node, valueReg, valueReg,  32, 0xffffffff00000000);
 
-   generateTrg1Src1ImmInstruction(cg, lengthNode->getType().isInt32() ? TR::InstOpCode::cmpli4 : TR::InstOpCode::cmpli8, node, cndReg, lengthReg, 32);
+   generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::Op_cmpli, node, cndReg, lengthReg, 32);
    generateConditionalBranchInstruction(cg, TR::InstOpCode::blt, node, residualLabel, cndReg);
 
    generateTrg1Src1ImmInstruction(cg, lengthNode->getType().isInt32() ? TR::InstOpCode::srawi : TR::InstOpCode::sradi, node, temp1Reg, lengthReg, 5);

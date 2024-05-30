@@ -323,13 +323,7 @@ OMR::X86::CodeGenerator::initializeX86(TR::Compilation *comp)
       self()->setXMMDoubleLoadOpCode(TR::InstOpCode::MOVSDRegMem);
       }
 
-   // Enable software prefetch of the TLH and configure the TLH prefetching
-   // geometry.
-   //
-   TR_ASSERT_FATAL(comp->compileRelocatableCode() || comp->isOutOfProcessCompilation() || comp->compilePortableCode() || comp->target().cpu.is(OMR_PROCESSOR_X86_INTEL_CORE2) == comp->cg()->getX86ProcessorInfo().isIntelCore2(), "isIntelCore2() failed\n");
-   TR_ASSERT_FATAL(comp->compileRelocatableCode() || comp->isOutOfProcessCompilation() || comp->compilePortableCode() || comp->target().cpu.is(OMR_PROCESSOR_X86_INTEL_NEHALEM) == comp->cg()->getX86ProcessorInfo().isIntelNehalem(), "isIntelNehalem() failed\n");
-   if (((!comp->getOption(TR_DisableTLHPrefetch) && (comp->target().cpu.is(OMR_PROCESSOR_X86_INTEL_CORE2) || comp->target().cpu.is(OMR_PROCESSOR_X86_INTEL_NEHALEM))) ||
-       (comp->getOption(TR_TLHPrefetch))))
+   if (comp->getOption(TR_TLHPrefetch))
       {
       self()->setEnableTLHPrefetching();
       }

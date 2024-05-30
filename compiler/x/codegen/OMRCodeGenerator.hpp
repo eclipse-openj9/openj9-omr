@@ -800,7 +800,7 @@ protected:
       EnableTLHPrefetching                     = 0x00000800, ///< enable software prefetches on TLH allocates
       // Available                             = 0x00001000,
       // Available                             = 0x00002000,
-      TargetSupportsSoftwarePrefetches         = 0x00004000, ///< target processor and OS both support software prefetch instructions
+      // Available                             = 0x00004000,
       MethodEnterExitTracingEnabled            = 0x00008000, ///< trace method enter/exits
       // Available                             = 0x00010000,
       PushPreservedRegisters                   = 0x00020000  ///< we've chosen to save/restore preserved regs using push/pop instructions instead of movs
@@ -847,12 +847,6 @@ protected:
       return _flags.testAny(EnableRegisterAssociations);
       }
    void setEnableRegisterAssociations() {_flags.set(EnableRegisterAssociations);}
-
-   bool targetSupportsSoftwarePrefetches()
-      {
-      return _flags.testAny(TargetSupportsSoftwarePrefetches);
-      }
-   void setTargetSupportsSoftwarePrefetches() {_flags.set(TargetSupportsSoftwarePrefetches);}
 
    bool enableTLHPrefetching()
       {

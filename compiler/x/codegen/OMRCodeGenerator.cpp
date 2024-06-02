@@ -169,9 +169,30 @@ void TR_X86ProcessorInfo::initialize(bool force)
          case 0x06:
             {
             uint32_t extended_model = getCPUModel(_processorSignature) + (getCPUExtendedModel(_processorSignature) << 4);
+            uint32_t processorStepping = getCPUStepping(_processorSignature);
             switch (extended_model)
                {
-               case 0x55:
+               case 0xcf:
+                  _processorDescription |= TR_ProcessorIntelEmeraldRapids; break;
+               case 0x8f:
+                  _processorDescription |= TR_ProcessorIntelSapphireRapids; break;
+               case 0x6a:  // IceLake_X
+               case 0x6c:  // IceLake_D
+               case 0x7d:  // IceLake
+               case 0x7e:  // IceLake_L
+                  _processorDescription |= TR_ProcessorIntelIceLake; break;
+               case 0x55:  // Skylake_X
+                  if (processorStepping == 7)
+                     {
+                     _processorDescription |= TR_ProcessorIntelCascadeLake;
+                     }
+                  else
+                     {
+                     _processorDescription |= TR_ProcessorIntelSkylake;
+                     }
+                  break;
+               case 0x4e:  // Skylake_L
+               case 0x5e:  // Skylake
                   _processorDescription |= TR_ProcessorIntelSkylake; break;
                case 0x4f:
                   _processorDescription |= TR_ProcessorIntelBroadwell; break;
@@ -270,8 +291,8 @@ OMR::X86::CodeGenerator::initializeX86(TR::Compilation *comp)
         *
         * TODO: Need to figure out from which mode of Broadwell start supporting TM
         */
-      TR_ASSERT_FATAL(comp->compileRelocatableCode() || comp->isOutOfProcessCompilation() || comp->compilePortableCode() || comp->target().cpu.is(OMR_PROCESSOR_X86_INTELHASWELL) == getX86ProcessorInfo().isIntelHaswell(), "isIntelHaswell() failed\n");
-      if (!comp->target().cpu.is(OMR_PROCESSOR_X86_INTELHASWELL))
+      TR_ASSERT_FATAL(comp->compileRelocatableCode() || comp->isOutOfProcessCompilation() || comp->compilePortableCode() || comp->target().cpu.is(OMR_PROCESSOR_X86_INTEL_HASWELL) == getX86ProcessorInfo().isIntelHaswell(), "isIntelHaswell() failed\n");
+      if (!comp->target().cpu.is(OMR_PROCESSOR_X86_INTEL_HASWELL))
          {
          if (comp->target().is64Bit())
             {
@@ -303,9 +324,9 @@ OMR::X86::CodeGenerator::initializeX86(TR::Compilation *comp)
    // Enable software prefetch of the TLH and configure the TLH prefetching
    // geometry.
    //
-   TR_ASSERT_FATAL(comp->compileRelocatableCode() || comp->isOutOfProcessCompilation() || comp->compilePortableCode() || comp->target().cpu.is(OMR_PROCESSOR_X86_INTELCORE2) == comp->cg()->getX86ProcessorInfo().isIntelCore2(), "isIntelCore2() failed\n");
-   TR_ASSERT_FATAL(comp->compileRelocatableCode() || comp->isOutOfProcessCompilation() || comp->compilePortableCode() || comp->target().cpu.is(OMR_PROCESSOR_X86_INTELNEHALEM) == comp->cg()->getX86ProcessorInfo().isIntelNehalem(), "isIntelNehalem() failed\n");
-   if (((!comp->getOption(TR_DisableTLHPrefetch) && (comp->target().cpu.is(OMR_PROCESSOR_X86_INTELCORE2) || comp->target().cpu.is(OMR_PROCESSOR_X86_INTELNEHALEM))) ||
+   TR_ASSERT_FATAL(comp->compileRelocatableCode() || comp->isOutOfProcessCompilation() || comp->compilePortableCode() || comp->target().cpu.is(OMR_PROCESSOR_X86_INTEL_CORE2) == comp->cg()->getX86ProcessorInfo().isIntelCore2(), "isIntelCore2() failed\n");
+   TR_ASSERT_FATAL(comp->compileRelocatableCode() || comp->isOutOfProcessCompilation() || comp->compilePortableCode() || comp->target().cpu.is(OMR_PROCESSOR_X86_INTEL_NEHALEM) == comp->cg()->getX86ProcessorInfo().isIntelNehalem(), "isIntelNehalem() failed\n");
+   if (((!comp->getOption(TR_DisableTLHPrefetch) && (comp->target().cpu.is(OMR_PROCESSOR_X86_INTEL_CORE2) || comp->target().cpu.is(OMR_PROCESSOR_X86_INTEL_NEHALEM))) ||
        (comp->getOption(TR_TLHPrefetch) && self()->targetSupportsSoftwarePrefetches())))
       {
       self()->setEnableTLHPrefetching();
@@ -459,9 +480,9 @@ OMR::X86::CodeGenerator::initializeX86(TR::Compilation *comp)
    //
    TR_ASSERT_FATAL(comp->compileRelocatableCode() || comp->isOutOfProcessCompilation() || comp->compilePortableCode() || comp->target().cpu.isGenuineIntel() == getX86ProcessorInfo().isGenuineIntel(), "isGenuineIntel() failed\n");
    TR_ASSERT_FATAL(comp->compileRelocatableCode() || comp->isOutOfProcessCompilation() || comp->compilePortableCode() || comp->target().cpu.isAuthenticAMD() == getX86ProcessorInfo().isAuthenticAMD(), "isAuthenticAMD() failed\n");
-   TR_ASSERT_FATAL(comp->compileRelocatableCode() || comp->isOutOfProcessCompilation() || comp->compilePortableCode() || comp->target().cpu.is(OMR_PROCESSOR_X86_AMDFAMILY15H) == getX86ProcessorInfo().isAMD15h(), "isAMD15h() failed\n");
+   TR_ASSERT_FATAL(comp->compileRelocatableCode() || comp->isOutOfProcessCompilation() || comp->compilePortableCode() || comp->target().cpu.is(OMR_PROCESSOR_X86_AMD_FAMILY15H) == getX86ProcessorInfo().isAMD15h(), "isAMD15h() failed\n");
    int32_t boundary;
-   if (comp->target().cpu.isGenuineIntel() || (comp->target().cpu.isAuthenticAMD() && comp->target().cpu.is(OMR_PROCESSOR_X86_AMDFAMILY15H)))
+   if (comp->target().cpu.isGenuineIntel() || (comp->target().cpu.isAuthenticAMD() && comp->target().cpu.is(OMR_PROCESSOR_X86_AMD_FAMILY15H)))
       boundary = 32;
    else
       {

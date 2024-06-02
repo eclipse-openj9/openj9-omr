@@ -265,9 +265,10 @@ enum TR_ProcessorDescription
    TR_ProcessorIntelBroadwell      = 0x00000010,
    TR_ProcessorIntelSkylake        = 0x00000011,
    TR_ProcessorIntelCascadeLake    = 0x00000012,
-   TR_ProcessorIntelIceLake        = 0x00000013,
-   TR_ProcessorIntelSapphireRapids = 0x00000014,
-   TR_ProcessorIntelEmeraldRapids  = 0x00000015,
+   TR_ProcessorIntelCooperLake     = 0x00000013,
+   TR_ProcessorIntelIceLake        = 0x00000014,
+   TR_ProcessorIntelSapphireRapids = 0x00000015,
+   TR_ProcessorIntelEmeraldRapids  = 0x00000016,
    };
 
 #endif

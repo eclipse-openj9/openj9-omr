@@ -182,9 +182,13 @@ void TR_X86ProcessorInfo::initialize(bool force)
                case 0x7e:  // IceLake_L
                   _processorDescription |= TR_ProcessorIntelIceLake; break;
                case 0x55:  // Skylake_X
-                  if (processorStepping == 7)
+                  if (processorStepping >= 5 && processorStepping <= 7)
                      {
                      _processorDescription |= TR_ProcessorIntelCascadeLake;
+                     }
+                  else if (processorStepping >= 0xa && processorStepping <= 0xb)
+                     {
+                     _processorDescription |= TR_ProcessorIntelCooperLake;
                      }
                   else
                      {

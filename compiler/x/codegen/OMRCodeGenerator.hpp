@@ -208,6 +208,7 @@ struct TR_X86ProcessorInfo
    bool isIntelBroadwell()      { return (_processorDescription & 0x000000ff) == TR_ProcessorIntelBroadwell; }
    bool isIntelSkylake()        { return (_processorDescription & 0x000000ff) == TR_ProcessorIntelSkylake; }
    bool isIntelCascadeLake()    { return (_processorDescription & 0x000000ff) == TR_ProcessorIntelCascadeLake; }
+   bool isIntelCooperLake()     { return (_processorDescription & 0x000000ff) == TR_ProcessorIntelCooperLake; }
    bool isIntelIceLake()        { return (_processorDescription & 0x000000ff) == TR_ProcessorIntelIceLake; }
    bool isIntelSapphireRapids() { return (_processorDescription & 0x000000ff) == TR_ProcessorIntelSapphireRapids; }
    bool isIntelEmeraldRapids()  { return (_processorDescription & 0x000000ff) == TR_ProcessorIntelEmeraldRapids; }

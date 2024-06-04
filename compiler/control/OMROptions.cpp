@@ -622,6 +622,7 @@ TR::OptionTable OMR::Options::_jitOptions[] = {
    {"dontDowngradeToCold",                "M\tdon't downgrade first time compilations from warm to cold", SET_OPTION_BIT(TR_DontDowngradeToCold), "F", NOT_IN_SUBSET},
    {"dontDowngradeToColdDuringGracePeriod","M\tdon't downgrade first time compilations from warm to cold during grace period (first second of run)", SET_OPTION_BIT(TR_DontDowgradeToColdDuringGracePeriod), "F", NOT_IN_SUBSET },
    {"dontDowngradeWhenRIIsTemporarilyOff","M\t", SET_OPTION_BIT(TR_DontDowngradeWhenRIIsTemporarilyOff), "F", NOT_IN_SUBSET },
+   {"dontFoldStaticFinalFields=",         "O{regex}\tstatic final fields to avoid folding, to be matched against '<class>.<field>:<sig>', e.g. 'Foo.BAR:LBar;'", TR::Options::setRegex, offsetof(OMR::Options, _dontFoldStaticFinalFields), 0, "P"},
    {"dontIncreaseCountsForNonBootstrapMethods", "M\t", RESET_OPTION_BIT(TR_IncreaseCountsForNonBootstrapMethods), "F", NOT_IN_SUBSET }, // Xjit: option
    {"dontInline=",                        "O{regex}\tlist of callee methods to not inline",
                                           TR::Options::setRegex, offsetof(OMR::Options, _dontInline), 0, "P"},

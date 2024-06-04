@@ -1403,6 +1403,7 @@ public:
       _classesWithFolableFinalFields = NULL;
       _disabledIdiomPatterns = NULL;
       _suppressEA = NULL;
+      _dontFoldStaticFinalFields = NULL;
       _gcCardSize = 0;
       _heapBase = 0;
       _heapTop = 0;
@@ -1724,6 +1725,7 @@ public:
    TR::SimpleRegex * getClassesWithFoldableFinalFields(){return _classesWithFolableFinalFields;}
    TR::SimpleRegex * getDisabledIdiomPatterns()        {return _disabledIdiomPatterns;}
    TR::SimpleRegex * getSuppressEARegex()              {return _suppressEA;}
+   TR::SimpleRegex * getDontFoldStaticFinalFields()    {return _dontFoldStaticFinalFields;}
 
    char* getInduceOSR()                               {return _induceOSR;}
    int32_t getBigCalleeThreshold() const              {return _bigCalleeThreshold;}
@@ -2390,6 +2392,7 @@ protected:
    TR::SimpleRegex *            _classesWithFolableFinalFields;
    TR::SimpleRegex *            _disabledIdiomPatterns;
    TR::SimpleRegex *            _suppressEA;
+   TR::SimpleRegex *            _dontFoldStaticFinalFields;
    uintptr_t                   _gcCardSize;
    uintptr_t                   _heapBase;
    uintptr_t                   _heapTop;

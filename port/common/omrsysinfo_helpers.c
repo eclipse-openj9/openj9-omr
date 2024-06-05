@@ -104,7 +104,10 @@
 #define CPUID_MODELCODE_INTEL_CORE2_HARPERTOWN            0x17
 #define CPUID_MODELCODE_INTEL_CORE2_WOODCREST_CLOVERTOWN  0x0F
 
-#define CPUID_STEPPING_INTEL_CASCADELAKE                  0x07
+#define CPUID_STEPPING_INTEL_CASCADELAKE_MIN              0x05
+#define CPUID_STEPPING_INTEL_CASCADELAKE_MAX              0x07
+#define CPUID_STEPPING_INTEL_COOPERLAKE_MIN               0x0a
+#define CPUID_STEPPING_INTEL_COOPERLAKE_MAX               0x0b
 
 #define CPUID_FAMILYCODE_AMD_KSERIES                      0x05
 #define CPUID_FAMILYCODE_AMD_ATHLON                       0x06
@@ -311,8 +314,13 @@ omrsysinfo_get_x86_description(struct OMRPortLibrary *portLibrary, OMRProcessorD
 			case CPUID_MODELCODE_INTEL_SKYLAKE_X:
 			case CPUID_MODELCODE_INTEL_SKYLAKE_L:
 			case CPUID_MODELCODE_INTEL_SKYLAKE:
-				if (CPUID_STEPPING_INTEL_CASCADELAKE == processorStepping) {
+				if ((CPUID_STEPPING_INTEL_CASCADELAKE_MIN <= processorStepping) &&
+				    (CPUID_STEPPING_INTEL_CASCADELAKE_MAX >= processorStepping)) {
 					desc->processor = OMR_PROCESSOR_X86_INTEL_CASCADELAKE;
+				}
+				else if ((CPUID_STEPPING_INTEL_COOPERLAKE_MIN <= processorStepping) &&
+				         (CPUID_STEPPING_INTEL_COOPERLAKE_MAX >= processorStepping)) {
+					desc->processor = OMR_PROCESSOR_X86_INTEL_COOPERLAKE;
 				}
 				else {
 					desc->processor = OMR_PROCESSOR_X86_INTEL_SKYLAKE;

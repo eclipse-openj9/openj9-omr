@@ -478,7 +478,7 @@ struct _RTL_CRITICAL_SECTION;
 // detecting whether they are enabled or not.  Therefore, we assume that
 // they are enabled unless the user tells us otherwise.
 #  define GTEST_HAS_EXCEPTIONS 1
-# elif defined(__IBMCPP__) && __EXCEPTIONS
+# elif (defined(__IBMCPP__) || (defined(__open_xl__) && defined(__cplusplus))) && __EXCEPTIONS
 // xlC defines __EXCEPTIONS to 1 iff exceptions are enabled.
 #  define GTEST_HAS_EXCEPTIONS 1
 # elif defined(__HP_aCC)
@@ -570,7 +570,7 @@ struct _RTL_CRITICAL_SECTION;
 
 // Starting with version 9.0 IBM Visual Age defines __RTTI_ALL__ to 1 if
 // both the typeid and dynamic_cast features are present.
-# elif defined(__IBMCPP__) && (__IBMCPP__ >= 900)
+# elif (defined(__IBMCPP__) && (__IBMCPP__ >= 900)) || (defined(__open_xl__) && defined(__cplusplus))
 
 #  ifdef __RTTI_ALL__
 #   define GTEST_HAS_RTTI 1
@@ -690,11 +690,11 @@ struct _RTL_CRITICAL_SECTION;
 # elif GTEST_ENV_HAS_STD_TUPLE_
 #  include <tuple>
 
-#if defined(J9ZOS390) || defined(AIXPPC)
+#if (defined(J9ZOS390) && !defined(__open_xl__)) || defined(AIXPPC)
 // On z/OS and AIX, tuple is defined in the ::std::tr1 namespace as it is an
 // extension class since xlc does not support the full C++11 standard. As such,
 // we expose the tuple class in the ::std namespace such that code below will
-// work.
+// work. However, Open XL does support C++11 standard.
 namespace std
 {
 using ::std::tr1::get;
@@ -821,7 +821,7 @@ using ::std::tuple_size;
 // Typed tests need <typeinfo> and variadic macros, which GCC, VC++ 8.0,
 // Sun Pro CC, IBM Visual Age, and HP aCC support.
 #if defined(__GNUC__) || (_MSC_VER >= 1400) || defined(__SUNPRO_CC) || \
-    defined(__IBMCPP__) || defined(__HP_aCC)
+    defined(__IBMCPP__) || defined(__HP_aCC) || (defined(__open_xl__) && defined(__cplusplus))
 # define GTEST_HAS_TYPED_TEST 1
 # define GTEST_HAS_TYPED_TEST_P 1
 #endif
@@ -2200,7 +2200,7 @@ GTEST_API_ size_t GetThreadCount();
 // for objects passed through ellipsis (...), failing for uncopyable
 // objects.  We define this to ensure that only POD is passed through
 // ellipsis on these systems.
-#if defined(__SYMBIAN32__) || defined(__IBMCPP__) || defined(__SUNPRO_CC)
+#if defined(__SYMBIAN32__) || defined(__IBMCPP__) || defined(__SUNPRO_CC) || (defined(__open_xl__) && defined(__cplusplus))
 // We lose support for NULL detection where the compiler doesn't like
 // passing non-POD classes through ellipsis (...).
 # define GTEST_ELLIPSIS_NEEDS_POD_ 1
@@ -2212,7 +2212,7 @@ GTEST_API_ size_t GetThreadCount();
 // const T& and const T* in a function template.  These compilers
 // _can_ decide between class template specializations for T and T*,
 // so a tr1::type_traits-like is_pointer works.
-#if defined(__SYMBIAN32__) || defined(__IBMCPP__)
+#if defined(__SYMBIAN32__) || defined(__IBMCPP__) || (defined(__open_xl__) && defined(__cplusplus))
 # define GTEST_NEEDS_IS_POINTER_ 1
 #endif
 

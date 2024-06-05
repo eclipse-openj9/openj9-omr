@@ -66,8 +66,13 @@ endif()
 if(OMR_OS_AIX OR OMR_OS_ZOS)
 	list(APPEND OMR_GTEST_DEFINITIONS
 		-DGTEST_ENV_HAS_STD_TUPLE_
-		-D__IBMCPP_TR1__
 	)
+
+	if(NOT OMR_TOOLCONFIG STREQUAL "openxl")
+		list(APPEND OMR_GTEST_DEFINITIONS
+			-D__IBMCPP_TR1__
+		)
+	endif()
 endif()
 
 target_compile_options(omrGtest

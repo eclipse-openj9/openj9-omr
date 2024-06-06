@@ -816,7 +816,6 @@ OMR::ARM64::TreeEvaluator::iselectEvaluator(TR::Node *node, TR::CodeGenerator *c
    TR::Node *trueNode = node->getChild(1);
    TR::Node *falseNode = node->getChild(2);
 
-   TR::Register *condReg = cg->evaluate(condNode);
    TR::Register *trueReg = cg->evaluate(trueNode);
    TR::Register *falseReg = cg->evaluate(falseNode);
    TR::Register *resultReg = trueReg;
@@ -844,11 +843,36 @@ OMR::ARM64::TreeEvaluator::iselectEvaluator(TR::Node *node, TR::CodeGenerator *c
       resultReg = (node->getOpCodeValue() == TR::aselect) ? cg->allocateCollectedReferenceRegister() : cg->allocateRegister();
       }
 
-   generateCompareImmInstruction(cg, node, condReg, 0, true); // 64-bit compare
-   generateCondTrg1Src2Instruction(cg, TR::InstOpCode::cselx, node, resultReg, trueReg, falseReg, TR::CC_NE);
+   if ((condNode->getOpCodeValue() == TR::acmpeq
+        || condNode->getOpCodeValue() == TR::lcmpeq
+        || condNode->getOpCodeValue() == TR::icmpeq
+        || condNode->getOpCodeValue() == TR::scmpeq
+        || condNode->getOpCodeValue() == TR::bcmpeq)
+       && condNode->getReferenceCount() == 1
+       && condNode->getRegister() == NULL)
+      {
+      TR::Node *cmp1Node = condNode->getChild(0);
+      TR::Node *cmp2Node = condNode->getChild(1);
+      TR::Register *cmp1Reg = cg->evaluate(cmp1Node);
+      TR::Register *cmp2Reg = cg->evaluate(cmp2Node);
+      bool is64bit = (condNode->getOpCodeValue() == TR::acmpeq || condNode->getOpCodeValue() == TR::lcmpeq);
+
+      generateCompareInstruction(cg, node, cmp1Reg, cmp2Reg, is64bit);
+      generateCondTrg1Src2Instruction(cg, TR::InstOpCode::cselx, node, resultReg, trueReg, falseReg, TR::CC_EQ);
+
+      cg->recursivelyDecReferenceCount(condNode);
+      }
+   else
+      {
+      TR::Register *condReg = cg->evaluate(condNode);
+
+      generateCompareImmInstruction(cg, node, condReg, 0, true); // 64-bit compare
+      generateCondTrg1Src2Instruction(cg, TR::InstOpCode::cselx, node, resultReg, trueReg, falseReg, TR::CC_NE);
+
+      cg->decReferenceCount(condNode);
+      }
 
    node->setRegister(resultReg);
-   cg->decReferenceCount(condNode);
    cg->decReferenceCount(trueNode);
    cg->decReferenceCount(falseNode);
 

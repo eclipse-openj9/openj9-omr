@@ -412,6 +412,17 @@ if (NULL != myPointer) {
 }
 ```
 
+* Utilize the below format for comparisons `(<, <=, >, or >=)` of the form `(min <= value <= max)` to improve clarity.
+
+Correct
+```c
+if ((0 <= logLevelValue) && (logLevelValue <= 4)) {
+```
+
+Wrong
+```c
+if ((logLevelValue >= 0) && (logLevelValue <= 4)) {
+```
 
 #### Rationale
 * Keeping rvalues on the left can prevent accidental assignment (= vs ==).

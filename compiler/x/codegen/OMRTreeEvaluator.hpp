@@ -519,6 +519,31 @@ class OMR_EXTENSIBLE TreeEvaluator: public OMR::TreeEvaluator
 
    static bool setCarryBorrow(TR::Node *flagNode, bool invertValue, TR::CodeGenerator *cg);
 
+   static void arrayCopy64BitPrimitiveInlineSmallSizeWithoutREPMOVSImplRoot16(TR::Node *node,
+                                                                              TR::Register *dstReg,
+                                                                              TR::Register *srcReg,
+                                                                              TR::Register *sizeReg,
+                                                                              TR::Register *tmpReg1,
+                                                                              TR::Register *tmpReg2,
+                                                                              TR::Register *tmpXmmYmmReg1,
+                                                                              TR::Register *tmpXmmYmmReg2,
+                                                                              TR::CodeGenerator *cg,
+                                                                              int repMovsThresholdBytes,
+                                                                              TR::LabelSymbol *repMovsLabel,
+                                                                              TR::LabelSymbol *mainEndLabel);
+
+   static void arrayCopy32BitPrimitiveInlineSmallSizeWithoutREPMOVSImplRoot16(TR::Node *node,
+                                                                              TR::Register *dstReg,
+                                                                              TR::Register *srcReg,
+                                                                              TR::Register *sizeReg,
+                                                                              TR::Register *tmpReg1,
+                                                                              TR::Register *tmpReg2,
+                                                                              TR::Register *tmpXmmYmmReg1,
+                                                                              TR::Register *tmpXmmYmmReg2,
+                                                                              TR::CodeGenerator *cg,
+                                                                              int repMovsThresholdBytes,
+                                                                              TR::LabelSymbol *repMovsLabel,
+                                                                              TR::LabelSymbol *mainEndLabel);
    protected:
 
    static TR::Register *performHelperCall(TR::Node *node, TR::SymbolReference *helperSymRef, TR::ILOpCodes helperCallOpCode, bool spillFPRegs, TR::CodeGenerator *cg);

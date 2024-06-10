@@ -4435,6 +4435,11 @@ void
 MM_Scavenger::reportGCCycleFinalIncrementEnding(MM_EnvironmentStandard *env)
 {
 	OMRPORT_ACCESS_FROM_OMRPORT(env->getPortLibrary());
+	uintptr_t cycleType = env->_cycleState->_type;
+	/* set OMR_GC_CYCLE_TYPE_STATE_UNSUCCESSFUL bit in the cycleType of CycleEnd event in scavenge backout case */
+	if (env->getExtensions()->isScavengerBackOutFlagRaised()) {
+		cycleType |= OMR_GC_CYCLE_TYPE_STATE_UNSUCCESSFUL;
+	}
 
 	MM_CommonGCData commonData;
 
@@ -4444,7 +4449,7 @@ MM_Scavenger::reportGCCycleFinalIncrementEnding(MM_EnvironmentStandard *env)
 		omrtime_hires_clock(),
 		J9HOOK_MM_OMR_GC_CYCLE_END,
 		_extensions->getHeap()->initializeCommonGCData(env, &commonData),
-		env->_cycleState->_type,
+		cycleType,
 		omrgc_condYieldFromGC
 	);
 }

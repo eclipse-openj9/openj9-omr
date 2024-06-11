@@ -76,4 +76,6 @@ $(foreach lib,$(OMRLIBS), \
     $(shell MAKEFLAGS= $(MAKE) -s --no-print-directory -C $(lib) show-objects), \
     $(if $(filter /%,$(object)),$(object),$(lib)/$(object))))
 
+MODULE_INCLUDES += $(top_srcdir)/gc/startup
+
 include $(top_srcdir)/omrmakefiles/rules.mk

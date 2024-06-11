@@ -76,6 +76,7 @@ $(foreach lib,$(OMRLIBS), \
     $(shell MAKEFLAGS= $(MAKE) -s --no-print-directory -C $(lib) show-objects), \
     $(if $(filter /%,$(object)),$(object),$(lib)/$(object))))
 
-MODULE_INCLUDES += $(top_srcdir)/gc/startup
+$(OBJECTS) :
+	@echo "omr_static_lib: Assuming $(top_srcdir)/omr/makefile ensured that $@ is up to date"
 
 include $(top_srcdir)/omrmakefiles/rules.mk

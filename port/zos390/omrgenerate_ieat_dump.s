@@ -44,7 +44,7 @@ _TDUMP   EDCXPRLG BASEREG=8
 .JMP1    ANOP
 _TDUMP   CELQPRLG BASEREG=8
 * IEATDUMP macro will toast R1, so keep it in R3
-         LR    3,1
+         LGR   3,1
          USING IOPARMS,3
          CALL  BPX4ENV,                                                +
                (=A(ENV_TOGGLE_SEC),                                    +

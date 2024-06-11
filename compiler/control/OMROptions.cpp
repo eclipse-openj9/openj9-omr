@@ -2260,19 +2260,6 @@ OMR::Options::jitLatePostProcess(TR::OptionSet *optionSet, void * jitConfig)
               _coldUpgradeSampleThreshold == TR_DEFAULT_COLD_UPGRADE_SAMPLE_THRESHOLD)
                _coldUpgradeSampleThreshold = 10;
             }
-
-         // disable DelayRelocationForAOTCompilations feature because with higher
-         // method counts, the JIT collects enough IProfiler info prior to
-         // compilation that it doesn't need to wait any longer before running the
-
-         if (self()->getOption(TR_UseHigherMethodCounts))
-            {
-            self()->setOption(TR_DisableDelayRelocationForAOTCompilations, true);// If scount has not been changed on the command line, adjust it here
-            if (self()->getInitialSCount() == TR_INITIAL_SCOUNT)
-               {
-               _initialSCount = _initialCount;
-               }
-            }
          }
       else // No AOT
          {
@@ -2330,6 +2317,24 @@ OMR::Options::jitLatePostProcess(TR::OptionSet *optionSet, void * jitConfig)
 
       if (self()->setCounts())
          return false; // bad string count
+
+      // After the counts have been set, and if SCC is used, set scount = count
+      if (TR::Options::sharedClassCache())
+         {
+         if (self()->getOption(TR_UseHigherMethodCounts))
+            {
+            // disable DelayRelocationForAOTCompilations feature because with higher
+            // method counts, the JIT collects enough IProfiler info prior to
+            // compilation that it doesn't need to wait any longer before running
+            self()->setOption(TR_DisableDelayRelocationForAOTCompilations, true);
+
+            // If scount has not been changed on the command line, adjust it here
+            if (self()->getInitialSCount() == TR_INITIAL_SCOUNT)
+               {
+               _initialSCount = _initialCount;
+               }
+            }
+         }
 
       // If Iprofiler is disabled we will not have block frequencies so we should
       // disable the logic that makes inlining more conservative based on block frequencies

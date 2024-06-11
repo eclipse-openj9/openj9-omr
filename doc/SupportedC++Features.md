@@ -26,10 +26,10 @@ SPDX-License-Identifier: EPL-2.0 OR Apache-2.0 OR GPL-2.0-only WITH Classpath-ex
 
 OS      | Architecture | Build Compiler | Version
 --------|--------------|----------------|--------
-Linux   | x86          | g++            | [4.4.7](https://gcc.gnu.org/gcc-4.4/cxx0x_status.html)
-Linux   | s390x        | g++            | [4.4.7](https://gcc.gnu.org/gcc-4.4/cxx0x_status.html)
+Linux   | x86          | g++            | [4.8](https://gcc.gnu.org/gcc-4.8/cxx0x_status.html)
+Linux   | s390x        | g++            | [4.8](https://gcc.gnu.org/gcc-4.8/cxx0x_status.html)
 Linux   | ppc64le      | XLC            | [12.1](https://www.ibm.com/developerworks/community/blogs/5894415f-be62-4bc0-81c5-3956e82276f3/entry/xlc_compiler_s_c_11_support50?lang=en)
-Linux   | ppc64le      | g++            | [4.4.7](https://gcc.gnu.org/gcc-4.4/cxx0x_status.html)
+Linux   | ppc64le      | g++            | [4.8](https://gcc.gnu.org/gcc-4.8/cxx0x_status.html)
 AIX     | ppc64        | XLC            | [12.1](https://www.ibm.com/developerworks/community/blogs/5894415f-be62-4bc0-81c5-3956e82276f3/entry/xlc_compiler_s_c_11_support50?lang=en)
 z/OS    | s390x        | XLC            | [v2r2](http://www-01.ibm.com/support/docview.wss?uid=swg27036892)
 Windows | x86-64       | MSVC           | [2010 (version 10)](https://docs.microsoft.com/en-us/previous-versions/hh567368(v=vs.140))
@@ -73,25 +73,25 @@ The supported language and library features are set by the minimum compiler vers
 * Variadic macros: `#define m(p, ...)`, `__VA_ARGS__`
 * `__func__` macro
 * `long long`
+* Lambda expressions and closures: `[](int i) -> int { return i + 1; }`
+* Generalized attributes: `[[attribute]]`
+* Null pointer constant: `nullptr`
+* Alignment support: `alignas`, `alignof`
+* Explicit conversion operators
 
 ## Unsupported C++11 Features
 
 * SFINAE (MSVC 2010)
 * Generalized constant expressions: `constexpr` (MSVC 2010)
-* Lambda expressions and closures: `[](int i) -> int { return i + 1; }` (GCC 4.4.7)
 * Initializer lists: `std::vector<int> v = { 1, 2, 3 };` (MSVC 2010)
 * Type and template aliases: `using MyAlias = MyType;` (MSVC 2010)
 * Variadic templates: `template <class... Ts>`, `sizeof...` (MSVC 2010)
 * Defaulted and deleted functions (MSVC 2010, XLC 12.1)
-* Range based for loops: `for (auto& x : container) { ... }` (GCC 4.4.7, MSVC 2010)
-* Non throwing exception specifier: `noexcept` (GCC 4.4.7, MSVC 2010)
-* Generalized attributes: `[[attribute]]` (GCC 4.4.7)
-* Null pointer constant: `nullptr` (GCC 4.4.7)
-* Alignment support: `alignas`, `alignof` (GCC 4.4.7)
+* Range based for loops: `for (auto& x : container) { ... }` (MSVC 2010)
+* Non throwing exception specifier: `noexcept` (MSVC 2010)
 * Inline namespaces: `inline namespace inner {}` (MSVC 2010)
 * Inheriting constructors (MSVC 2010)
 * Forward declarations for enums (MSVC 2010)
-* Explicit conversion operators (GCC 4.4.7)
 * Extensible literals: `12_km` (MSVC 2010)
 * Thread-local storage
 * Standard Layout Types: `is_standard_layout<T>::value`

@@ -808,6 +808,83 @@ OMR::ARM64::TreeEvaluator::lminEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    return commonMinMaxEvaluator(node, true, TR::CC_LT, cg);
    }
 
+static TR::ARM64ConditionCode
+getConditionCodeFromOpCode(TR::ILOpCodes op) {
+   switch (op)
+      {
+      /* -- Signed ops -- */
+      case TR::bcmpeq:
+      case TR::scmpeq:
+      case TR::icmpeq:
+      case TR::lcmpeq:
+      case TR::acmpeq:
+         return TR::CC_EQ;
+
+      case TR::bcmpne:
+      case TR::scmpne:
+      case TR::icmpne:
+      case TR::lcmpne:
+      case TR::acmpne:
+         return TR::CC_NE;
+
+      case TR::bcmplt:
+      case TR::scmplt:
+      case TR::icmplt:
+      case TR::lcmplt:
+         return TR::CC_LT;
+
+      case TR::bcmpge:
+      case TR::scmpge:
+      case TR::icmpge:
+      case TR::lcmpge:
+         return TR::CC_GE;
+
+      case TR::bcmpgt:
+      case TR::scmpgt:
+      case TR::icmpgt:
+      case TR::lcmpgt:
+         return TR::CC_GT;
+
+      case TR::bcmple:
+      case TR::scmple:
+      case TR::icmple:
+      case TR::lcmple:
+         return TR::CC_LE;
+
+      /* -- Unsigned ops -- */
+      case TR::bucmplt:
+      case TR::sucmplt:
+      case TR::iucmplt:
+      case TR::lucmplt:
+      case TR::acmplt:
+         return TR::CC_CC;
+
+      case TR::bucmpge:
+      case TR::sucmpge:
+      case TR::iucmpge:
+      case TR::lucmpge:
+      case TR::acmpge:
+         return TR::CC_CS;
+
+      case TR::bucmpgt:
+      case TR::sucmpgt:
+      case TR::iucmpgt:
+      case TR::lucmpgt:
+      case TR::acmpgt:
+         return TR::CC_HI;
+
+      case TR::bucmple:
+      case TR::sucmple:
+      case TR::iucmple:
+      case TR::lucmple:
+      case TR::acmple:
+         return TR::CC_LS;
+
+      default:
+         return TR::CC_Illegal;
+      }
+}
+
 // also handles lselect, bselect, sselect, aselect
 TR::Register *
 OMR::ARM64::TreeEvaluator::iselectEvaluator(TR::Node *node, TR::CodeGenerator *cg)
@@ -843,22 +920,18 @@ OMR::ARM64::TreeEvaluator::iselectEvaluator(TR::Node *node, TR::CodeGenerator *c
       resultReg = (node->getOpCodeValue() == TR::aselect) ? cg->allocateCollectedReferenceRegister() : cg->allocateRegister();
       }
 
-   if ((condNode->getOpCodeValue() == TR::acmpeq
-        || condNode->getOpCodeValue() == TR::lcmpeq
-        || condNode->getOpCodeValue() == TR::icmpeq
-        || condNode->getOpCodeValue() == TR::scmpeq
-        || condNode->getOpCodeValue() == TR::bcmpeq)
-       && condNode->getReferenceCount() == 1
-       && condNode->getRegister() == NULL)
+   TR::ARM64ConditionCode cc = getConditionCodeFromOpCode(condNode->getOpCodeValue());
+   if (cc != TR::CC_Illegal &&
+       condNode->getReferenceCount() == 1 && condNode->getRegister() == NULL)
       {
       TR::Node *cmp1Node = condNode->getChild(0);
       TR::Node *cmp2Node = condNode->getChild(1);
       TR::Register *cmp1Reg = cg->evaluate(cmp1Node);
       TR::Register *cmp2Reg = cg->evaluate(cmp2Node);
-      bool is64bit = (condNode->getOpCodeValue() == TR::acmpeq || condNode->getOpCodeValue() == TR::lcmpeq);
+      bool is64bit = (TR::DataType::getSize(cmp1Node->getDataType()) == 8);
 
       generateCompareInstruction(cg, node, cmp1Reg, cmp2Reg, is64bit);
-      generateCondTrg1Src2Instruction(cg, TR::InstOpCode::cselx, node, resultReg, trueReg, falseReg, TR::CC_EQ);
+      generateCondTrg1Src2Instruction(cg, TR::InstOpCode::cselx, node, resultReg, trueReg, falseReg, cc);
 
       cg->recursivelyDecReferenceCount(condNode);
       }

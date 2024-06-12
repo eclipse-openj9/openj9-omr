@@ -789,6 +789,8 @@ TR::OptionTable OMR::Options::_jitOptions[] = {
                                           SET_OPTION_BIT(TR_EnableJitSamplingUpgradesDuringHWProfiling), "F", NOT_IN_SUBSET},
    {"enableUpgradingAllColdCompilations", "O\ttry to upgrade to warm all cold compilations", SET_OPTION_BIT(TR_EnableUpgradingAllColdCompilations), "F"},
    {"enableValueTracing",                 "O\tenable runtime value tracing (experimental)", SET_OPTION_BIT(TR_EnableValueTracing), "F"},
+   {"enableVectorAPIExpansion",           "M\tenable expansion of Vector API, disableVectorAPIExpansion option takes precedence", SET_OPTION_BIT(TR_EnableVectorAPIExpansion), "F"},
+
    {"enableVirtualPersistentMemory",      "M\tenable persistent memory to be allocated using virtual memory allocators",
                                           SET_OPTION_BIT(TR_EnableVirtualPersistentMemory), "F", NOT_IN_SUBSET},
    {"enableVpicForResolvedVirtualCalls",  "O\tenable PIC for resolved virtual calls",         SET_OPTION_BIT(TR_EnableVPICForResolvedVirtualCalls), "F"},

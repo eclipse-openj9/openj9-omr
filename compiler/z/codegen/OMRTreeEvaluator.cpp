@@ -10759,9 +10759,7 @@ OMR::Z::TreeEvaluator::arraycmpHelper(TR::Node *node,
 
       bool lengthCanBeZero = true;
       bool lenMinusOne = false;
-
-      // Length is specified to be 64 bits, however on 32 bit target the length is guaranteed to fit in 32 bits
-      bool needs64BitOpCode = cg->comp()->target().is64Bit();
+      bool needs64BitOpCode = false;
 
       TR::LabelSymbol *cFlowRegionStart = generateLabelSymbol(cg);
       TR::LabelSymbol *cFlowRegionEnd = generateLabelSymbol(cg);
@@ -10771,6 +10769,15 @@ OMR::Z::TreeEvaluator::arraycmpHelper(TR::Node *node,
       TR::Register *lengthCopyReg = NULL;
       TR::RegisterPair *source1Pair = NULL;
       TR::RegisterPair *source2Pair = NULL;
+
+      if (lengthNode)
+         {
+         needs64BitOpCode = lengthNode->getSize() > 4;
+         }
+      else
+         {
+         needs64BitOpCode =  cg->comp()->target().is64Bit();
+         }
 
       if (maxLenIn256)
          {

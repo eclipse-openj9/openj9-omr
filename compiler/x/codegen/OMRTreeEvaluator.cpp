@@ -1776,20 +1776,21 @@ static void arrayCopy16BitPrimitiveInlineSmallSizeWithoutREPMOVSImplRoot16(TR::N
                                                                            TR::Register* tmpXmmYmmReg1,
                                                                            TR::Register* tmpXmmYmmReg2,
                                                                            TR::CodeGenerator* cg,
+                                                                           int32_t repMovsThresholdBytes,
+                                                                           TR::LabelSymbol *repMovsLabel,
                                                                            TR::LabelSymbol* mainEndLabel)
    {
-   int32_t REP_MOVS_THRESHOLD_BYTES = 64;
-
    if (cg->comp()->getOption(TR_TraceCG))
       {
-      traceMsg(cg->comp(), "%s: node n%dn srcReg %s dstReg %s sizeReg %s REP_MOVS_THRESHOLD_BYTES %d\n", __FUNCTION__,
-         node->getGlobalIndex(), cg->comp()->getDebug()->getName(srcReg), cg->comp()->getDebug()->getName(dstReg),
-         cg->comp()->getDebug()->getName(sizeReg), REP_MOVS_THRESHOLD_BYTES);
+      traceMsg(cg->comp(), "%s: node n%dn srcReg %s dstReg %s sizeReg %s repMovsThresholdBytes %d\n", __FUNCTION__,
+         node->getGlobalIndex(), cg->comp()->getDebug()->getName(srcReg), cg->comp()->getDebug()->getName(dstReg), cg->comp()->getDebug()->getName(sizeReg), repMovsThresholdBytes);
       }
 
+   TR_ASSERT_FATAL((repMovsThresholdBytes == 32) || (repMovsThresholdBytes == 64), "%s: repMovsThresholdBytes %d is not supported\n", __FUNCTION__, repMovsThresholdBytes);
+
    /*
-    * The setup to run `rep movsd` is not efficient on copying smaller sizes.
-    * This method inlines copy size <= REP_MOVS_THRESHOLD_BYTES without using `rep movsd`.
+    * The setup to run `rep movsd` or `rep movsw` is not efficient on copying smaller sizes.
+    * This method inlines copy size <= repMovsThresholdBytes without using `rep movs[d|w]]`.
     *
     *    if copySize > 16
     *       jmp copy18ORMoreBytesLabel ------+
@@ -1820,7 +1821,7 @@ static void arrayCopy16BitPrimitiveInlineSmallSizeWithoutREPMOVSImplRoot16(TR::N
     *       jmp mainEndLabel                 |
     *                                        |
     *    copy34ORMoreBytesLabel: <-----------+
-    *       if copySize > 64   // REP_MOVS_THRESHOLD_BYTES
+    *       if copySize > 64
     *       jmp repMovsLabel ----------------+
     *                                        |
     *       copy 34-64 bytes                 |
@@ -1842,15 +1843,16 @@ static void arrayCopy16BitPrimitiveInlineSmallSizeWithoutREPMOVSImplRoot16(TR::N
     *   |----------- temp2 ------------|
     */
 
-   TR::LabelSymbol* repMovsLabel = generateLabelSymbol(cg);
 
    TR::LabelSymbol* copy4ORMoreBytesLabel = generateLabelSymbol(cg);
    TR::LabelSymbol* copy10ORMoreBytesLabel = generateLabelSymbol(cg);
    TR::LabelSymbol* copy18ORMoreBytesLabel = generateLabelSymbol(cg);
    TR::LabelSymbol* copy34ORMoreBytesLabel = generateLabelSymbol(cg);
 
+   TR::LabelSymbol* copyLabel = (repMovsThresholdBytes == 32) ? repMovsLabel : copy34ORMoreBytesLabel;
+
    /* ---------------------------------
-    * size <= REP_MOVS_THRESHOLD_BYTES
+    * size <= repMovsThresholdBytes
     */
    generateRegImmInstruction(TR::InstOpCode::CMPRegImm4(), node, sizeReg, 16, cg);
    generateLabelInstruction(TR::InstOpCode::JA4, node, copy18ORMoreBytesLabel, cg);
@@ -1891,7 +1893,8 @@ static void arrayCopy16BitPrimitiveInlineSmallSizeWithoutREPMOVSImplRoot16(TR::N
    // ---------------------------------
    generateLabelInstruction(TR::InstOpCode::label, node, copy18ORMoreBytesLabel, cg);
    generateRegImmInstruction(TR::InstOpCode::CMPRegImm4(), node, sizeReg, 32, cg);
-   generateLabelInstruction(TR::InstOpCode::JA4, node, copy34ORMoreBytesLabel, cg);
+
+   generateLabelInstruction(TR::InstOpCode::JA4, node, copyLabel, cg);
 
    // 18-32 Bytes
    generateRegMemInstruction(TR::InstOpCode::MOVDQURegMem, node, tmpXmmYmmReg1, generateX86MemoryReference(srcReg, sizeReg, 0, -16, cg), cg);
@@ -1900,20 +1903,66 @@ static void arrayCopy16BitPrimitiveInlineSmallSizeWithoutREPMOVSImplRoot16(TR::N
    generateMemRegInstruction(TR::InstOpCode::MOVDQUMemReg, node, generateX86MemoryReference(dstReg, 0, cg), tmpXmmYmmReg2, cg);
    generateLabelInstruction(TR::InstOpCode::JMP4, node, mainEndLabel, cg);
 
+   if (repMovsThresholdBytes == 32)
+      return;
+
    // ---------------------------------
    generateLabelInstruction(TR::InstOpCode::label, node, copy34ORMoreBytesLabel, cg);
    generateRegImmInstruction(TR::InstOpCode::CMPRegImm4(), node, sizeReg, 64, cg);
    generateLabelInstruction(TR::InstOpCode::JA4, node, repMovsLabel, cg);
 
    // 34-64 Bytes
-   generateRegMemInstruction(TR::InstOpCode::InstOpCode::VMOVDQUYmmMem, node, tmpXmmYmmReg1, generateX86MemoryReference(srcReg, sizeReg, 0, -32, cg), cg);
-   generateRegMemInstruction(TR::InstOpCode::InstOpCode::VMOVDQUYmmMem, node, tmpXmmYmmReg2, generateX86MemoryReference(srcReg, 0, cg), cg);
-   generateMemRegInstruction(TR::InstOpCode::InstOpCode::VMOVDQUMemYmm, node, generateX86MemoryReference(dstReg, sizeReg, 0, -32, cg), tmpXmmYmmReg1, cg);
-   generateMemRegInstruction(TR::InstOpCode::InstOpCode::VMOVDQUMemYmm, node, generateX86MemoryReference(dstReg, 0, cg), tmpXmmYmmReg2, cg);
+   generateRegMemInstruction(TR::InstOpCode::VMOVDQUYmmMem, node, tmpXmmYmmReg1, generateX86MemoryReference(srcReg, sizeReg, 0, -32, cg), cg);
+   generateRegMemInstruction(TR::InstOpCode::VMOVDQUYmmMem, node, tmpXmmYmmReg2, generateX86MemoryReference(srcReg, 0, cg), cg);
+   generateMemRegInstruction(TR::InstOpCode::VMOVDQUMemYmm, node, generateX86MemoryReference(dstReg, sizeReg, 0, -32, cg), tmpXmmYmmReg1, cg);
+   generateMemRegInstruction(TR::InstOpCode::VMOVDQUMemYmm, node, generateX86MemoryReference(dstReg, 0, cg), tmpXmmYmmReg2, cg);
    generateLabelInstruction(TR::InstOpCode::JMP4, node, mainEndLabel, cg);
+   }
+
+static void arrayCopy16BitPrimitiveInlineSmallSizeWithoutREPMOVSLargeSizeREPMOVSD(TR::Node* node,
+                                                                                  TR::Register* dstReg,
+                                                                                  TR::Register* srcReg,
+                                                                                  TR::Register* sizeReg,
+                                                                                  TR::CodeGenerator* cg,
+                                                                                  int32_t repMovsThresholdBytes)
+   {
+   TR::Register* tmpReg1 = cg->allocateRegister(TR_GPR);
+   TR::Register* tmpReg2 = cg->allocateRegister(TR_GPR);
+   TR::Register* tmpXmmYmmReg1 = cg->allocateRegister(TR_VRF);
+   TR::Register* tmpXmmYmmReg2 = cg->allocateRegister(TR_VRF);
+
+   TR::RegisterDependencyConditions* dependencies = generateRegisterDependencyConditions((uint8_t)7, (uint8_t)7, cg);
+
+   dependencies->addPreCondition(srcReg, TR::RealRegister::esi, cg);
+   dependencies->addPreCondition(dstReg, TR::RealRegister::edi, cg);
+   dependencies->addPreCondition(sizeReg, TR::RealRegister::ecx, cg);
+   dependencies->addPreCondition(tmpReg1, TR::RealRegister::NoReg, cg);
+   dependencies->addPreCondition(tmpReg2, TR::RealRegister::NoReg, cg);
+   dependencies->addPreCondition(tmpXmmYmmReg1, TR::RealRegister::NoReg, cg);
+   dependencies->addPreCondition(tmpXmmYmmReg2, TR::RealRegister::NoReg, cg);
+
+   dependencies->addPostCondition(srcReg, TR::RealRegister::esi, cg);
+   dependencies->addPostCondition(dstReg, TR::RealRegister::edi, cg);
+   dependencies->addPostCondition(sizeReg, TR::RealRegister::ecx, cg);
+   dependencies->addPostCondition(tmpReg1, TR::RealRegister::NoReg, cg);
+   dependencies->addPostCondition(tmpReg2, TR::RealRegister::NoReg, cg);
+   dependencies->addPostCondition(tmpXmmYmmReg1, TR::RealRegister::NoReg, cg);
+   dependencies->addPostCondition(tmpXmmYmmReg2, TR::RealRegister::NoReg, cg);
+
+   TR::LabelSymbol* mainBegLabel = generateLabelSymbol(cg);
+   mainBegLabel->setStartInternalControlFlow();
+
+   TR::LabelSymbol* mainEndLabel = generateLabelSymbol(cg);
+   mainEndLabel->setEndInternalControlFlow();
+
+   TR::LabelSymbol* repMovsLabel = generateLabelSymbol(cg);
+
+   generateLabelInstruction(TR::InstOpCode::label, node, mainBegLabel, cg);
+
+   arrayCopy16BitPrimitiveInlineSmallSizeWithoutREPMOVSImplRoot16(node, dstReg, srcReg, sizeReg, tmpReg1, tmpReg2, tmpXmmYmmReg1, tmpXmmYmmReg2, cg, repMovsThresholdBytes, repMovsLabel, mainEndLabel);
 
    /* ---------------------------------
-    * size > REP_MOVS_THRESHOLD_BYTES
+    * size > repMovsThresholdBytes
     *   rep movsd
     *   if remainder is 0 -> mainEndLabel
     *   process remainder
@@ -1921,6 +1970,7 @@ static void arrayCopy16BitPrimitiveInlineSmallSizeWithoutREPMOVSImplRoot16(TR::N
     * mainEndLabel:
     */
    generateLabelInstruction(TR::InstOpCode::label, node, repMovsLabel, cg);
+
    if (node->isForwardArrayCopy())
       {
       generateRegImmInstruction(TR::InstOpCode::SHRRegImm1(), node, sizeReg, 2, cg);
@@ -1955,42 +2005,6 @@ static void arrayCopy16BitPrimitiveInlineSmallSizeWithoutREPMOVSImplRoot16(TR::N
       og.endOutlinedInstructionSequence();
       }
       }
-   }
-
-static void arrayCopy16BitPrimitiveInlineSmallSizeWithoutREPMOVS(TR::Node* node, TR::Register* dstReg, TR::Register* srcReg, TR::Register* sizeReg, TR::CodeGenerator* cg)
-   {
-   TR::Register* tmpReg1 = cg->allocateRegister(TR_GPR);
-   TR::Register* tmpReg2 = cg->allocateRegister(TR_GPR);
-   TR::Register* tmpXmmYmmReg1 = cg->allocateRegister(TR_VRF);
-   TR::Register* tmpXmmYmmReg2 = cg->allocateRegister(TR_VRF);
-
-   TR::RegisterDependencyConditions* dependencies = generateRegisterDependencyConditions((uint8_t)7, (uint8_t)7, cg);
-
-   dependencies->addPreCondition(srcReg, TR::RealRegister::esi, cg);
-   dependencies->addPreCondition(dstReg, TR::RealRegister::edi, cg);
-   dependencies->addPreCondition(sizeReg, TR::RealRegister::ecx, cg);
-   dependencies->addPreCondition(tmpReg1, TR::RealRegister::NoReg, cg);
-   dependencies->addPreCondition(tmpReg2, TR::RealRegister::NoReg, cg);
-   dependencies->addPreCondition(tmpXmmYmmReg1, TR::RealRegister::NoReg, cg);
-   dependencies->addPreCondition(tmpXmmYmmReg2, TR::RealRegister::NoReg, cg);
-
-   dependencies->addPostCondition(srcReg, TR::RealRegister::esi, cg);
-   dependencies->addPostCondition(dstReg, TR::RealRegister::edi, cg);
-   dependencies->addPostCondition(sizeReg, TR::RealRegister::ecx, cg);
-   dependencies->addPostCondition(tmpReg1, TR::RealRegister::NoReg, cg);
-   dependencies->addPostCondition(tmpReg2, TR::RealRegister::NoReg, cg);
-   dependencies->addPostCondition(tmpXmmYmmReg1, TR::RealRegister::NoReg, cg);
-   dependencies->addPostCondition(tmpXmmYmmReg2, TR::RealRegister::NoReg, cg);
-
-   TR::LabelSymbol* mainBegLabel = generateLabelSymbol(cg);
-   mainBegLabel->setStartInternalControlFlow();
-
-   TR::LabelSymbol* mainEndLabel = generateLabelSymbol(cg);
-   mainEndLabel->setEndInternalControlFlow();
-
-   generateLabelInstruction(TR::InstOpCode::label, node, mainBegLabel, cg);
-
-   arrayCopy16BitPrimitiveInlineSmallSizeWithoutREPMOVSImplRoot16(node, dstReg, srcReg, sizeReg, tmpReg1, tmpReg2, tmpXmmYmmReg1, tmpXmmYmmReg2, cg, mainEndLabel);
 
    generateLabelInstruction(TR::InstOpCode::label, node, mainEndLabel, dependencies, cg);
 
@@ -2009,23 +2023,24 @@ static void arrayCopy8BitPrimitiveInlineSmallSizeWithoutREPMOVSImplRoot8(TR::Nod
                                                                          TR::Register *tmpXmmYmmReg1,
                                                                          TR::Register *tmpXmmYmmReg2,
                                                                          TR::CodeGenerator *cg,
+                                                                         int32_t repMovsThresholdBytes,
                                                                          TR::LabelSymbol *repMovsLabel,
                                                                          TR::LabelSymbol *mainEndLabel)
    {
-   int32_t REP_MOVS_THRESHOLD_BYTES = 64;
-
    if (cg->comp()->getOption(TR_TraceCG))
       {
-      traceMsg(cg->comp(), "%s: node n%dn srcReg %s dstReg %s sizeReg %s REP_MOVS_THRESHOLD_BYTES %d\n", __FUNCTION__,
+      traceMsg(cg->comp(), "%s: node n%dn srcReg %s dstReg %s sizeReg %s repMovsThresholdBytes %d\n", __FUNCTION__,
          node->getGlobalIndex(), cg->comp()->getDebug()->getName(srcReg), cg->comp()->getDebug()->getName(dstReg),
-         cg->comp()->getDebug()->getName(sizeReg), REP_MOVS_THRESHOLD_BYTES);
+         cg->comp()->getDebug()->getName(sizeReg), repMovsThresholdBytes);
       }
+
+   TR_ASSERT_FATAL((repMovsThresholdBytes == 32) || (repMovsThresholdBytes == 64), "%s: repMovsThresholdBytes %d is not supported\n", __FUNCTION__, repMovsThresholdBytes);
 
    /*
     * This method is adapted from `arrayCopy16BitPrimitiveInlineSmallSizeWithoutREPMOVSImplRoot16`.
     *
     * The setup to run `rep movsb` is not efficient on copying smaller sizes.
-    * This method inlines copy size <= REP_MOVS_THRESHOLD_BYTES without using `rep movsb`.
+    * This method inlines copy size <= repMovsThresholdBytes without using `rep movsb`.
     *
     *    if copySize > 8
     *       jmp copy9ORMoreBytesLabel ----+
@@ -2063,7 +2078,7 @@ static void arrayCopy8BitPrimitiveInlineSmallSizeWithoutREPMOVSImplRoot8(TR::Nod
     *       jmp mainEndLabel              |
     *                                     |
     *    copy33ORMoreBytesLabel: <--------+
-    *       if copySize > 64   // REP_MOVS_THRESHOLD_BYTES
+    *       if copySize > 64
     *       jmp repMovsLabel -------------+
     *                                     |
     *       copy 33-64 bytes              |
@@ -2074,13 +2089,15 @@ static void arrayCopy8BitPrimitiveInlineSmallSizeWithoutREPMOVSImplRoot8(TR::Nod
     */
 
    /* ---------------------------------
-    * size <= REP_MOVS_THRESHOLD_BYTES
+    * size <= repMovsThresholdBytes
     */
    TR::LabelSymbol* copy3ORMoreBytesLabel = generateLabelSymbol(cg);
    TR::LabelSymbol* copy5ORMoreBytesLabel = generateLabelSymbol(cg);
    TR::LabelSymbol* copy9ORMoreBytesLabel = generateLabelSymbol(cg);
    TR::LabelSymbol* copy17ORMoreBytesLabel = generateLabelSymbol(cg);
    TR::LabelSymbol* copy33ORMoreBytesLabel = generateLabelSymbol(cg);
+
+   TR::LabelSymbol* copyLabel = (repMovsThresholdBytes == 32) ? repMovsLabel : copy33ORMoreBytesLabel;
 
    generateRegImmInstruction(TR::InstOpCode::CMPRegImm4(), node, sizeReg, 8, cg);
    generateLabelInstruction(TR::InstOpCode::JA4, node, copy9ORMoreBytesLabel, cg);
@@ -2135,7 +2152,8 @@ static void arrayCopy8BitPrimitiveInlineSmallSizeWithoutREPMOVSImplRoot8(TR::Nod
    // ---------------------------------
    generateLabelInstruction(TR::InstOpCode::label, node, copy17ORMoreBytesLabel, cg);
    generateRegImmInstruction(TR::InstOpCode::CMPRegImm4(), node, sizeReg, 32, cg);
-   generateLabelInstruction(TR::InstOpCode::JA4, node, copy33ORMoreBytesLabel, cg);
+
+   generateLabelInstruction(TR::InstOpCode::JA4, node, copyLabel, cg);
 
    // 17-32 Bytes
    generateRegMemInstruction(TR::InstOpCode::MOVDQURegMem, node, tmpXmmYmmReg1, generateX86MemoryReference(srcReg, sizeReg, 0, -16, cg), cg);
@@ -2144,20 +2162,28 @@ static void arrayCopy8BitPrimitiveInlineSmallSizeWithoutREPMOVSImplRoot8(TR::Nod
    generateMemRegInstruction(TR::InstOpCode::MOVDQUMemReg, node, generateX86MemoryReference(dstReg, 0, cg), tmpXmmYmmReg2, cg);
    generateLabelInstruction(TR::InstOpCode::JMP4, node, mainEndLabel, cg);
 
+   if (repMovsThresholdBytes == 32)
+      return;
+
    // ---------------------------------
    generateLabelInstruction(TR::InstOpCode::label, node, copy33ORMoreBytesLabel, cg);
-   generateRegImmInstruction(TR::InstOpCode::CMPRegImm4(), node, sizeReg, REP_MOVS_THRESHOLD_BYTES, cg);
+   generateRegImmInstruction(TR::InstOpCode::CMPRegImm4(), node, sizeReg, 64, cg);
    generateLabelInstruction(TR::InstOpCode::JA4, node, repMovsLabel, cg);
 
    // 33-64 Bytes
-   generateRegMemInstruction(TR::InstOpCode::InstOpCode::VMOVDQUYmmMem, node, tmpXmmYmmReg1, generateX86MemoryReference(srcReg, sizeReg, 0, -32, cg), cg);
-   generateRegMemInstruction(TR::InstOpCode::InstOpCode::VMOVDQUYmmMem, node, tmpXmmYmmReg2, generateX86MemoryReference(srcReg, 0, cg), cg);
-   generateMemRegInstruction(TR::InstOpCode::InstOpCode::VMOVDQUMemYmm, node, generateX86MemoryReference(dstReg, sizeReg, 0, -32, cg), tmpXmmYmmReg1, cg);
-   generateMemRegInstruction(TR::InstOpCode::InstOpCode::VMOVDQUMemYmm, node, generateX86MemoryReference(dstReg, 0, cg), tmpXmmYmmReg2, cg);
+   generateRegMemInstruction(TR::InstOpCode::VMOVDQUYmmMem, node, tmpXmmYmmReg1, generateX86MemoryReference(srcReg, sizeReg, 0, -32, cg), cg);
+   generateRegMemInstruction(TR::InstOpCode::VMOVDQUYmmMem, node, tmpXmmYmmReg2, generateX86MemoryReference(srcReg, 0, cg), cg);
+   generateMemRegInstruction(TR::InstOpCode::VMOVDQUMemYmm, node, generateX86MemoryReference(dstReg, sizeReg, 0, -32, cg), tmpXmmYmmReg1, cg);
+   generateMemRegInstruction(TR::InstOpCode::VMOVDQUMemYmm, node, generateX86MemoryReference(dstReg, 0, cg), tmpXmmYmmReg2, cg);
    generateLabelInstruction(TR::InstOpCode::JMP4, node, mainEndLabel, cg);
    }
 
-static void arrayCopy8BitPrimitiveInlineSmallSizeWithoutREPMOVS(TR::Node* node, TR::Register* dstReg, TR::Register* srcReg, TR::Register* sizeReg, TR::CodeGenerator* cg)
+static void arrayCopy8BitPrimitiveInlineSmallSizeWithoutREPMOVS(TR::Node* node,
+                                                                TR::Register* dstReg,
+                                                                TR::Register* srcReg,
+                                                                TR::Register* sizeReg,
+                                                                TR::CodeGenerator* cg,
+                                                                int32_t repMovsThresholdBytes)
    {
    TR::Register* tmpReg1 = cg->allocateRegister(TR_GPR);
    TR::Register* tmpReg2 = cg->allocateRegister(TR_GPR);
@@ -2192,10 +2218,11 @@ static void arrayCopy8BitPrimitiveInlineSmallSizeWithoutREPMOVS(TR::Node* node, 
 
    generateLabelInstruction(TR::InstOpCode::label, node, mainBegLabel, cg);
 
-   arrayCopy8BitPrimitiveInlineSmallSizeWithoutREPMOVSImplRoot8(node, dstReg, srcReg, sizeReg, tmpReg1, tmpReg2, tmpXmmYmmReg1, tmpXmmYmmReg2, cg, repMovsLabel, mainEndLabel);
+   arrayCopy8BitPrimitiveInlineSmallSizeWithoutREPMOVSImplRoot8(node, dstReg, srcReg, sizeReg, tmpReg1, tmpReg2, tmpXmmYmmReg1, tmpXmmYmmReg2,
+                                                                cg, repMovsThresholdBytes, repMovsLabel, mainEndLabel);
 
    /* ---------------------------------
-    * size > REP_MOVS_THRESHOLD_BYTES
+    * size > repMovsThresholdBytes
     *   rep movsb
     * mainEndLabel:
     */
@@ -2266,9 +2293,11 @@ static void arrayCopyDefault(TR::Node* node, uint8_t elementSize, TR::Register* 
                                                                      !disableEnhancement &&
                                                                      cg->comp()->target().cpu.supportsAVX() &&
                                                                      cg->comp()->target().is64Bit()) ? true : false;
+   int32_t repMovsThresholdBytes = 32;
+
    if (enable8BitPrimitiveArrayCopyInlineSmallSizeWithoutREPMOVS)
       {
-      arrayCopy8BitPrimitiveInlineSmallSizeWithoutREPMOVS(node, dstReg, srcReg, sizeReg, cg);
+      arrayCopy8BitPrimitiveInlineSmallSizeWithoutREPMOVS(node, dstReg, srcReg, sizeReg, cg, repMovsThresholdBytes);
       return;
       }
 
@@ -2739,9 +2768,10 @@ TR::Register *OMR::X86::TreeEvaluator::arraycopyEvaluator(TR::Node *node, TR::Co
          bool enable16BitPrimitiveArrayCopyInlineSmallSizeWithoutREPMOVS = (!disableEnhancement &&
                                                                             cg->comp()->target().cpu.supportsAVX() &&
                                                                             cg->comp()->target().is64Bit()) ? true : false;
+         int32_t repMovsThresholdBytes = 32;
 
          if (enable16BitPrimitiveArrayCopyInlineSmallSizeWithoutREPMOVS)
-            arrayCopy16BitPrimitiveInlineSmallSizeWithoutREPMOVS(node, dstReg, srcReg, sizeReg, cg);
+            arrayCopy16BitPrimitiveInlineSmallSizeWithoutREPMOVSLargeSizeREPMOVSD(node, dstReg, srcReg, sizeReg, cg, repMovsThresholdBytes);
          else
             arrayCopy16BitPrimitive(node, dstReg, srcReg, sizeReg, cg);
          }

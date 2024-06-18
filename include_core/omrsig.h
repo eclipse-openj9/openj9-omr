@@ -44,9 +44,7 @@ typedef void (*sighandler_t)(int sig);
 typedef void (*sighandler_t)(int sig);
 #define __THROW
 #elif defined(OMR_OS_WINDOWS)
-/* Use sig_handler_t instead of sighandler_t for Windows. Define it for compatibility. */
-#define sig_handler_t sighandler_t
-typedef void (__cdecl *sighandler_t)(int signum);
+typedef void (__cdecl *sighandler_t)(int sig);
 #define __THROW
 #endif /* defined(OMR_OS_WINDOWS) */
 

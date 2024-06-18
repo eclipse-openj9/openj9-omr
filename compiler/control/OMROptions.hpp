@@ -344,20 +344,20 @@ enum TR_CompilationOptions
    TR_DisablePeephole                     = 0x00200000 + 8,
    TR_NoOptServer                         = 0x00400000 + 8,
    TR_DisableDLTrecompilationPrevention   = 0x00800000 + 8,
-   // Available                           = 0x01000000 + 8,
+   TR_Disable32BitPrimitiveArrayCopyInlineSmallSizeWithoutREPMOVS = 0x01000000 + 8,
    TR_DisablePeekAOTResolutions           = 0x02000000 + 8,
    TR_UseFlattenedArrayElementRuntimeHelpers = 0x04000000 + 8,
    TR_UseFlattenedFieldRuntimeHelpers     = 0x08000000 + 8,
    TR_DisableLiveRangeSplitter            = 0x10000000 + 8,
    TR_DisableHalfSlotSpills               = 0x20000000 + 8,
    TR_DisableMHInlineWithoutPeeking       = 0x40000000 + 8,
-   // Available                           = 0x80000000 + 8,
+   TR_Disable64BitPrimitiveArrayCopyInlineSmallSizeWithoutREPMOVS = 0x80000000 + 8,
 
 
    // Option word 9
    //
    TR_SplitWarmAndColdBlocks              = 0x00000020 + 9,
-   // Available                           = 0x00000040 + 9,
+   TR_DisableReferenceArrayCopyInlineSmallSizeWithoutREPMOVS = 0x00000040 + 9,
    TR_DisableTLHPrefetch                  = 0x00000080 + 9,
    TR_DisableJProfilerThread              = 0x00000100 + 9,
    TR_DisableIProfilerThread              = 0x00000200 + 9,

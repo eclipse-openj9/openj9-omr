@@ -2122,7 +2122,7 @@ TR::Node *generateArrayAddressTree(
 
    bool is64BitTarget = comp->target().is64Bit() ? true : false;
 
-   TR::Node *array;
+   TR::Node *array = NULL;
 
 #if defined(OMR_GC_SPARSE_HEAP_ALLOCATION)
    if (TR::Compiler->om.isOffHeapAllocationEnabled())

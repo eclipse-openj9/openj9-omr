@@ -10259,7 +10259,12 @@ TR::Node *ishlSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
    if (identity)
       return identity;
 
-   if (secondChild->getOpCode().isLoadConst() &&
+   // Replace shift of constant zero with constant zero
+   if (firstChild->getOpCode().isLoadConst() && firstChild->getInt() == 0)
+      {
+      return s->replaceNode(node, firstChild, s->_curTree);
+      }
+   else if (secondChild->getOpCode().isLoadConst() &&
        performTransformation(s->comp(), "%sChanged ishl by const into imul by const in node [%s]\n", s->optDetailString(), node->getName(s->getDebug())))
       {
       // Normalize shift by a constant into multiply by a constant
@@ -10301,7 +10306,12 @@ TR::Node *lshlSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
    if (identity)
       return identity;
 
-   if (secondChild->getOpCode().isLoadConst())
+   // Replace shift of constant zero with constant zero
+   if (firstChild->getOpCode().isLoadConst() && firstChild->getLongInt() == 0)
+      {
+      return s->replaceNode(node, firstChild, s->_curTree);
+      }
+   else if (secondChild->getOpCode().isLoadConst())
       {
       // Canonicalize shift by a constant into multiply by a constant
       //
@@ -10345,6 +10355,12 @@ TR::Node *bshlSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
    if (identity)
       return identity;
 
+   // Replace shift of constant zero with constant zero
+   if (firstChild->getOpCode().isLoadConst() && firstChild->getByte() == 0)
+      {
+      return s->replaceNode(node, firstChild, s->_curTree);
+      }
+
    return node;
    }
 
@@ -10364,6 +10380,12 @@ TR::Node *sshlSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
    auto identity = binOpSimplifier.tryToSimplifyIdentityOp(node, 0);
    if (identity)
       return identity;
+
+   // Replace shift of constant zero with constant zero
+   if (firstChild->getOpCode().isLoadConst() && firstChild->getShortInt() == 0)
+      {
+      return s->replaceNode(node, firstChild, s->_curTree);
+      }
 
    return node;
    }
@@ -10391,7 +10413,13 @@ TR::Node *ishrSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
    if (identity)
       return identity;
 
-   normalizeShiftAmount(node, 31, s);
+   // Replace shift of constant zero with constant zero
+   if (firstChild->getOpCode().isLoadConst() && firstChild->getInt() == 0)
+      {
+      return s->replaceNode(node, firstChild, s->_curTree);
+      }
+   else
+      normalizeShiftAmount(node, 31, s);
 
    return node;
    }
@@ -10415,7 +10443,13 @@ TR::Node *lshrSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
    if (identity)
       return identity;
 
-   normalizeShiftAmount(node, 63, s);
+   // Replace shift of constant zero with constant zero
+   if (firstChild->getOpCode().isLoadConst() && firstChild->getLongInt() == 0)
+      {
+      return s->replaceNode(node, firstChild, s->_curTree);
+      }
+   else
+      normalizeShiftAmount(node, 63, s);
 
    return node;
    }
@@ -10437,6 +10471,12 @@ TR::Node *bshrSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
    if (identity)
       return identity;
 
+   // Replace shift of constant zero with constant zero
+   if (firstChild->getOpCode().isLoadConst() && firstChild->getByte() == 0)
+      {
+      return s->replaceNode(node, firstChild, s->_curTree);
+      }
+
    return node;
    }
 
@@ -10456,6 +10496,12 @@ TR::Node *sshrSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
    auto identity = binOpSimplifier.tryToSimplifyIdentityOp(node, 0);
    if (identity)
       return identity;
+
+   // Replace shift of constant zero with constant zero
+   if (firstChild->getOpCode().isLoadConst() && firstChild->getShortInt() == 0)
+      {
+      return s->replaceNode(node, firstChild, s->_curTree);
+      }
 
    return node;
    }
@@ -10549,7 +10595,13 @@ TR::Node *iushrSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s
          }
       }
 
-   normalizeShiftAmount(node, 31, s);
+   // Replace shift of constant zero with constant zero
+   if (firstChild->getOpCode().isLoadConst() && firstChild->getUnsignedInt() == 0)
+      {
+      return s->replaceNode(node, firstChild, s->_curTree);
+      }
+   else
+      normalizeShiftAmount(node, 31, s);
 
    return node;
    }
@@ -10691,7 +10743,13 @@ TR::Node *lushrSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s
          }
       }
 
-   normalizeShiftAmount(node, 63, s);
+   // Replace shift of constant zero with constant zero
+   if (firstChild->getOpCode().isLoadConst() && firstChild->getUnsignedLongInt() == 0)
+      {
+      return s->replaceNode(node, firstChild, s->_curTree);
+      }
+   else
+      normalizeShiftAmount(node, 63, s);
 
    return node;
    }
@@ -10713,6 +10771,12 @@ TR::Node *bushrSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s
    if (identity)
       return identity;
 
+   // Replace shift of constant zero with constant zero
+   if (firstChild->getOpCode().isLoadConst() && firstChild->getUnsignedByte() == 0)
+      {
+      return s->replaceNode(node, firstChild, s->_curTree);
+      }
+
    return node;
    }
 
@@ -10732,6 +10796,12 @@ TR::Node *sushrSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s
    auto identity = binOpSimplifier.tryToSimplifyIdentityOp(node, 0);
    if (identity)
       return identity;
+
+   // Replace shift of constant zero with constant zero
+   if (firstChild->getOpCode().isLoadConst() && firstChild->getUnsignedShortInt() == 0)
+      {
+      return s->replaceNode(node, firstChild, s->_curTree);
+      }
 
    return node;
    }
@@ -10761,7 +10831,13 @@ TR::Node *irolSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
       return s->replaceNode(node, firstChild, s->_curTree);
       }
 
-   normalizeShiftAmount(node, 31, s);
+   // Replace rotate of constant zero with constant zero
+   if (firstChild->getOpCode().isLoadConst() && firstChild->getInt() == 0)
+      {
+      return s->replaceNode(node, firstChild, s->_curTree);
+      }
+   else
+      normalizeShiftAmount(node, 31, s);
    return node;
    }
 
@@ -10785,7 +10861,13 @@ TR::Node *lrolSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
       return s->replaceNode(node, firstChild, s->_curTree);
       }
 
-   normalizeShiftAmount(node, 63, s);
+   // Replace rotate of constant zero with constant zero
+   if (firstChild->getOpCode().isLoadConst() && firstChild->getLongInt() == 0)
+      {
+      return s->replaceNode(node, firstChild, s->_curTree);
+      }
+   else
+      normalizeShiftAmount(node, 63, s);
    return node;
    }
 

@@ -7109,6 +7109,13 @@ TR::Node *constrainIshl(OMR::ValuePropagation *vp, TR::Node *node)
       vp->replaceByConstant(node, constraint, lhsGlobal);
       }
 
+   // Replace shift of constant zero with constant zero
+   if (lhs && lhs->asIntConst()
+       && lhs->asIntConst()->getInt() == 0)
+      {
+      return vp->replaceNode(node, node->getFirstChild(), vp->_curTree);
+      }
+
    checkForNonNegativeAndOverflowProperties(vp, node);
    return node;
    }
@@ -7132,7 +7139,13 @@ TR::Node *constrainLshl(OMR::ValuePropagation *vp, TR::Node *node)
       vp->replaceByConstant(node, constraint, lhsGlobal);
       }
 
-   if (lhs && lhs->asLongConst() &&
+   // Replace shift of constant zero with constant zero
+   if (lhs && lhs->asLongConst()
+       && lhs->asLongConst()->getLong() == 0)
+      {
+      return vp->replaceNode(node, node->getFirstChild(), vp->_curTree);
+      }
+   else if (lhs && lhs->asLongConst() &&
        lhs->asLongConst()->getLong() == 1)
       {
       TR::VPConstraint *constraint = TR::VPLongRange::create(vp, TR::getMinSigned<TR::Int64>(), TR::getMaxSigned<TR::Int64>(), true);
@@ -7273,16 +7286,22 @@ TR::Node *constrainIshr(OMR::ValuePropagation *vp, TR::Node *node)
       return node;
    constrainChildren(vp, node);
 
-   bool rhsGlobal;
+   bool lhsGlobal, rhsGlobal;
+   TR::VPConstraint *lhs = vp->getConstraint(node->getFirstChild(), lhsGlobal);
    TR::VPConstraint *rhs = vp->getConstraint(node->getSecondChild(), rhsGlobal);
+   lhsGlobal &= rhsGlobal;
+
+   // Replace shift of constant zero with constant zero
+   if (lhs && lhs->asIntConst()
+       && lhs->asIntConst()->getInt() == 0)
+      {
+      return vp->replaceNode(node, node->getFirstChild(), vp->_curTree);
+      }
+
    if (rhs && rhs->asIntConst())
       {
       int32_t rhsConst = rhs->asIntConst()->getInt();
       int32_t shiftAmount = rhsConst & 0x01F;
-
-      bool lhsGlobal;
-      TR::VPConstraint *lhs = vp->getConstraint(node->getFirstChild(), lhsGlobal);
-      lhsGlobal &= rhsGlobal;
 
       int32_t low, high;
       if (lhs)
@@ -7328,6 +7347,7 @@ TR::Node *constrainIshr(OMR::ValuePropagation *vp, TR::Node *node)
       //lhs->decReferenceCount();
       //rhs->decReferenceCount();
       }
+
    // this handler is not called for unsigned shifts
    //#ifdef DEBUG
    //else if(!firstChild->getType().isSignedInt()) dumpOptDetails(vp->comp(), "FIXME: Need to support ishr opt for Unsigned datatypes!\n");
@@ -7345,16 +7365,22 @@ TR::Node *constrainLshr(OMR::ValuePropagation *vp, TR::Node *node)
 
    constrainChildren(vp, node);
 
-   bool rhsGlobal;
+   bool lhsGlobal, rhsGlobal;
+   TR::VPConstraint *lhs = vp->getConstraint(node->getFirstChild(), lhsGlobal);
    TR::VPConstraint *rhs = vp->getConstraint(node->getSecondChild(), rhsGlobal);
+   lhsGlobal &= rhsGlobal;
+
+   // Replace shift of constant zero with constant zero
+   if (lhs && lhs->asLongConst()
+       && lhs->asLongConst()->getLong() == 0)
+      {
+      return vp->replaceNode(node, node->getFirstChild(), vp->_curTree);
+      }
+
    if (rhs && rhs->asIntConst())
       {
       int32_t rhsConst = rhs->asIntConst()->getInt();
       int32_t shiftAmount = rhsConst & 0x03F;
-
-      bool lhsGlobal;
-      TR::VPConstraint *lhs = vp->getConstraint(node->getFirstChild(), lhsGlobal);
-      lhsGlobal &= rhsGlobal;
 
       int64_t low, high;
       if (lhs)
@@ -7422,8 +7448,18 @@ TR::Node *constrainIushr(OMR::ValuePropagation *vp, TR::Node *node)
    //if (parent && parent->getType().isUnsignedInt())
    //   isUnsigned = true;
 
-   bool rhsGlobal;
+   bool lhsGlobal, rhsGlobal;
+   TR::VPConstraint *lhs = vp->getConstraint(node->getFirstChild(), lhsGlobal);
    TR::VPConstraint *rhs = vp->getConstraint(node->getSecondChild(), rhsGlobal);
+   lhsGlobal &= rhsGlobal;
+
+   // Replace shift of constant zero with constant zero
+   if (lhs && lhs->asIntConst()
+       && lhs->asIntConst()->getInt() == 0)
+      {
+      return vp->replaceNode(node, node->getFirstChild(), vp->_curTree);
+      }
+
    if (rhs && rhs->asIntConst())
       {
       int32_t rhsConst = rhs->asIntConst()->getInt();
@@ -7499,8 +7535,18 @@ TR::Node *constrainLushr(OMR::ValuePropagation *vp, TR::Node *node)
       return node;
    constrainChildren(vp, node);
 
-   bool rhsGlobal;
+   bool lhsGlobal, rhsGlobal;
+   TR::VPConstraint *lhs = vp->getConstraint(node->getFirstChild(), lhsGlobal);
    TR::VPConstraint *rhs = vp->getConstraint(node->getSecondChild(), rhsGlobal);
+   lhsGlobal &= rhsGlobal;
+
+   // Replace shift of constant zero with constant zero
+   if (lhs && lhs->asLongConst()
+       && lhs->asLongConst()->getLong() == 0)
+      {
+      return vp->replaceNode(node, node->getFirstChild(), vp->_curTree);
+      }
+
    if (rhs && rhs->asIntConst())
       {
       int32_t rhsConst = rhs->asIntConst()->getInt();

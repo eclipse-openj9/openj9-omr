@@ -1590,6 +1590,7 @@ protected:
 public:
    // For opcode properties
    bool hasPinningArrayPointer();
+   bool supportsPinningArrayPointerInNodeExtension();
 
 // Protected inner classes and structs.
 protected:
@@ -1651,8 +1652,8 @@ protected:
       TR::TreeTop           *_branchDestinationNode;        ///< hasBranchDestinationNode()
       TR::Block             *_block;                        ///< hasBlock()
       int32_t                _arrayStride;                  ///< hasArrayStride()
-      TR::AutomaticSymbol  *_pinningArrayPointer;          ///< hasPinningArrayPointer()
-      TR::DataTypes         _dataType;                     ///< hasDataType()  TODO: Change to TR::DataType once all target compilers support it
+      TR::AutomaticSymbol   *_pinningArrayPointer;          ///< hasPinningArrayPointer()
+      TR::DataTypes          _dataType;                     ///< hasDataType()  TODO: Change to TR::DataType once all target compilers support it
 
       UnionPropertyA()
          {

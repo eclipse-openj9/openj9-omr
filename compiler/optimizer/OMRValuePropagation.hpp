@@ -994,6 +994,7 @@ class ValuePropagation : public TR::Optimization
    List<TR_ArrayCopySpineCheck> _arrayCopySpineCheck;
    List<TR::TreeTop> _multiLeafCallsToInline;
    List<TR_TreeTopNodePair> _scalarizedArrayCopies;
+   List<TR_TreeTopNodePair> _offHeapCopyMemory;
    List<TR::TreeTop> _converterCalls;
    List<TR::TreeTop> _objectCloneCalls;
    List<TR::TreeTop> _arrayCloneCalls;

@@ -7264,6 +7264,22 @@ void OMR::ValuePropagation::doDelayedTransformations()
       }
    _scalarizedArrayCopies.deleteAll();
 
+#if defined(J9_PROJECT_SPECIFIC) && defined(OMR_GC_SPARSE_HEAP_ALLOCATION)
+   // Transform Unsafe.copyMemory in OffHeap
+   if (TR::Compiler->om.isOffHeapAllocationEnabled())
+      {
+      ListIterator<TR_TreeTopNodePair> copyMemoryIt(&_offHeapCopyMemory);
+      TR_TreeTopNodePair *copyMemoryPair;
+      for (copyMemoryPair = copyMemoryIt.getFirst();
+         copyMemoryPair; copyMemoryPair = copyMemoryIt.getNext())
+         {
+         if (performTransformation(comp(), "O^O Call arraycopy instead of Unsafe.copyMemory: %p\n", copyMemoryPair->_node))
+            TR::TransformUtil::transformUnsafeCopyMemorytoArrayCopyForOffHeap(self()->comp(), copyMemoryPair->_treetop, copyMemoryPair->_node);
+         }
+      _offHeapCopyMemory.deleteAll();
+      }
+#endif
+
    // NOTE: the array copy spine checks are processed before the reference, realtime, and
    //       unknown arraycopies because it refactors the CFG at a higher (outer) level
    //       than the others.  To simplify the CFG it should be run first.

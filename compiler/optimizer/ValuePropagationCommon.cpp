@@ -120,6 +120,7 @@ OMR::ValuePropagation::ValuePropagation(TR::OptimizationManager *manager)
      _javaLangClassGetComponentTypeCalls(trMemory()),
      _unknownTypeArrayCopyTrees(trMemory()),
      _scalarizedArrayCopies(trMemory()),
+     _offHeapCopyMemory(trMemory()),
      _predictedThrows(trMemory()),
      _prexClasses(trMemory()),
      _prexMethods(trMemory()),

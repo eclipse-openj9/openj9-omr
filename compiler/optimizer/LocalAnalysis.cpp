@@ -136,6 +136,9 @@ bool TR_LocalAnalysis::isSupportedNodeForFunctionality(TR::Node *node, TR::Compi
         node->getSymbolReference()->isUnresolved()))
       return false;
 
+   if (node->isDataAddrPointer())
+      return false;
+
    if (isSupportedOpCode(node->getOpCode(), comp) || isSupportedStoreNode || node->getOpCode().isLoadConst())
        {
        if (node->getDataType() == TR::Address)

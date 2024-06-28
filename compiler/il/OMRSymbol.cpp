@@ -118,7 +118,6 @@ OMR::Symbol::convertSigCharToType(char sigChar)
       case 'F': return TR::Float;
       case 'D': return TR::Double;
       case 'L':
-      case 'Q':
       case '[': return TR::Address;
       }
    TR_ASSERT(0, "unknown signature character");

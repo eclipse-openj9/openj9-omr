@@ -1493,6 +1493,11 @@ public:
       _edoRecompSizeThreshold = 0;
       _edoRecompSizeThresholdInStartupMode = 0;
       _catchBlockCounterThreshold = 0;
+      _arraycopyRepMovsByteArrayThreshold = 32;
+      _arraycopyRepMovsCharArrayThreshold = 32;
+      _arraycopyRepMovsIntArrayThreshold = 32;
+      _arraycopyRepMovsLongArrayThreshold = 32;
+      _arraycopyRepMovsReferenceArrayThreshold = 32;
 
       memset(_options, 0, sizeof(_options));
       memset(_disabledOptimizations, false, sizeof(_disabledOptimizations));
@@ -1836,6 +1841,12 @@ public:
    int32_t getEdoRecompSizeThreshold() { return _edoRecompSizeThreshold; }
    int32_t getEdoRecompSizeThresholdInStartupMode() { return _edoRecompSizeThresholdInStartupMode; }
    int32_t getCatchBlockCounterThreshold() { return _catchBlockCounterThreshold; }
+
+   int32_t getArraycopyRepMovsByteArrayThreshold() { return _arraycopyRepMovsByteArrayThreshold; }
+   int32_t getArraycopyRepMovsCharArrayThreshold() { return _arraycopyRepMovsCharArrayThreshold; }
+   int32_t getArraycopyRepMovsIntArrayThreshold() { return _arraycopyRepMovsIntArrayThreshold; }
+   int32_t getArraycopyRepMovsLongArrayThreshold() { return _arraycopyRepMovsLongArrayThreshold; }
+   int32_t getArraycopyRepMovsReferenceArrayThreshold() { return _arraycopyRepMovsReferenceArrayThreshold; }
 
 
 public:
@@ -2517,6 +2528,13 @@ protected:
    int32_t                     _edoRecompSizeThreshold; // Size threshold (in nodes) for candidates to recompilation through EDO
    int32_t                     _edoRecompSizeThresholdInStartupMode; // Size threshold (in nodes) for candidates to recompilation through EDO during startup
    int32_t                     _catchBlockCounterThreshold; // Counter threshold for catch blocks to trigger more aggresive inlining on the throw path
+
+   int32_t                     _arraycopyRepMovsByteArrayThreshold; // Byte array copy threshold for using REP MOVS instructions. Only supports 32 or 64 bytes
+   int32_t                     _arraycopyRepMovsCharArrayThreshold; // Char array copy threshold for using REP MOVS instructions. Only supports 32 or 64 bytes
+   int32_t                     _arraycopyRepMovsIntArrayThreshold; //  Int array copy threshold for using REP MOVS instructions. Only supports 32, 64, or 128 bytes
+   int32_t                     _arraycopyRepMovsLongArrayThreshold; // Long array copy threshold for using REP MOVS instructions. Only supports 32, 64, or 128 bytes
+   int32_t                     _arraycopyRepMovsReferenceArrayThreshold; // Reference array copy threshold for using REP MOVS instructions. Only supports 32, 64, or 128 bytes
+
    }; // TR::Options
 
 }

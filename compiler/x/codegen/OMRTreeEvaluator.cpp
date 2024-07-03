@@ -2602,7 +2602,7 @@ static void arrayCopyPrimitiveInlineSmallSizeWithoutREPMOVS(TR::Node* node,
    cg->stopUsingRegister(tmpXmmYmmReg2);
    }
 
-static bool enablePrimitiveArrayCopyInlineSmallSizeWithoutREPMOVS(uint8_t elementSize, TR::CodeGenerator* cg, int& threshold)
+static bool enablePrimitiveArrayCopyInlineSmallSizeWithoutREPMOVS(uint8_t elementSize, TR::CodeGenerator* cg, int32_t& threshold)
    {
    static bool disable8BitPrimitiveArrayCopyInlineSmallSizeWithoutREPMOVS  = feGetEnv("TR_Disable8BitPrimitiveArrayCopyInlineSmallSizeWithoutREPMOVS") != NULL;
    static bool disable16BitPrimitiveArrayCopyInlineSmallSizeWithoutREPMOVS = feGetEnv("TR_Disable16BitPrimitiveArrayCopyInlineSmallSizeWithoutREPMOVS") != NULL;
@@ -2617,20 +2617,52 @@ static bool enablePrimitiveArrayCopyInlineSmallSizeWithoutREPMOVS(uint8_t elemen
    switch (elementSize)
       {
       case 8:
+         {
          disableEnhancement = disable64BitPrimitiveArrayCopyInlineSmallSizeWithoutREPMOVS
                               || cg->comp()->getOption(TR_Disable64BitPrimitiveArrayCopyInlineSmallSizeWithoutREPMOVS);
+
+         int32_t newThreshold = cg->comp()->getOptions()->getArraycopyRepMovsLongArrayThreshold();
+         if ((threshold < newThreshold) && ((newThreshold == 64) || (newThreshold == 128)))
+            {
+            // If the CPU doesn't support AVX512, reduce the threshold to 64 bytes
+            threshold = ((newThreshold == 128) && !cg->comp()->target().cpu.supportsFeature(OMR_FEATURE_X86_AVX512F)) ? 64 : newThreshold;
+            }
+         }
          break;
       case 4:
+         {
          disableEnhancement = disable32BitPrimitiveArrayCopyInlineSmallSizeWithoutREPMOVS
                               || cg->comp()->getOption(TR_Disable32BitPrimitiveArrayCopyInlineSmallSizeWithoutREPMOVS);
+
+         int32_t newThreshold = cg->comp()->getOptions()->getArraycopyRepMovsIntArrayThreshold();
+         if ((threshold < newThreshold) && ((newThreshold == 64) || (newThreshold == 128)))
+            {
+            // If the CPU doesn't support AVX512, reduce the threshold to 64 bytes
+            threshold = ((newThreshold == 128) && !cg->comp()->target().cpu.supportsFeature(OMR_FEATURE_X86_AVX512F)) ? 64 : newThreshold;
+            }
+         }
          break;
       case 2:
+         {
          disableEnhancement = disable16BitPrimitiveArrayCopyInlineSmallSizeWithoutREPMOVS
                               || cg->comp()->getOption(TR_Disable16BitPrimitiveArrayCopyInlineSmallSizeWithoutREPMOVS);
+
+         int32_t newThreshold = cg->comp()->getOptions()->getArraycopyRepMovsCharArrayThreshold();
+
+         // Char array enhancement supports only 32 or 64 bytes
+         threshold = (newThreshold == 64) ? 64 : threshold;
+         }
          break;
       default: // 1 byte
+         {
          disableEnhancement = disable8BitPrimitiveArrayCopyInlineSmallSizeWithoutREPMOVS
                               || cg->comp()->getOption(TR_Disable8BitPrimitiveArrayCopyInlineSmallSizeWithoutREPMOVS);
+
+         int32_t newThreshold = cg->comp()->getOptions()->getArraycopyRepMovsByteArrayThreshold();
+
+         // Byte array enhancement supports only 32 or 64 bytes
+         threshold = (newThreshold == 64) ? 64 : threshold;
+         }
          break;
       }
 

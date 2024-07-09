@@ -1321,6 +1321,9 @@ OMR::CodeCache::printOccupancyStats()
    fprintf(stderr, "Code Cache @%p flags=0x%x almostFull=%d\n", this, _flags, _almostFull);
    fprintf(stderr, "   cold-warm hole size        = %8" OMR_PRIuSIZE " bytes\n", self()->getFreeContiguousSpace());
    fprintf(stderr, "   warmCodeAlloc=%p coldCodeAlloc=%p\n", (void*)_warmCodeAlloc, (void*)_coldCodeAlloc);
+   size_t warmCodeSize = _warmCodeAlloc - _segment->segmentBase();
+   size_t coldCodeSize = _trampolineBase - _coldCodeAlloc;
+   fprintf(stderr, "   warmCodeSize= %zu coldCodeSize= %zu\n", warmCodeSize, coldCodeSize);
    size_t totalReclaimed = 0;
    if (_freeBlockList)
       {

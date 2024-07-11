@@ -877,6 +877,8 @@ typedef struct J9ProcessorInfos {
 #define OMRPORT_CTLDATA_MEM_CATEGORIES_SET  "MEM_CATEGORIES_SET"
 #define OMRPORT_CTLDATA_AIX_PROC_ATTR  "AIX_PROC_ATTR"
 #define OMRPORT_CTLDATA_ALLOCATE32_COMMIT_SIZE  "ALLOCATE32_COMMIT_SIZE"
+#define OMRPORT_CTLDATA_ALLOCATE32_INCREMENT_SIZE  "ALLOCATE32_INCREMENT_SIZE"
+#define OMRPORT_CTLDATA_ALLOCATE32_QUICK_ALLOC  "ALLOCATE32_QUICK_ALLOC"
 #define OMRPORT_CTLDATA_NOSUBALLOC32BITMEM  "NOSUBALLOC32BITMEM"
 #define OMRPORT_CTLDATA_VMEM_ADVISE_OS_ONFREE  "VMEM_ADVISE_OS_ONFREE"
 #define OMRPORT_CTLDATA_VECTOR_REGS_SUPPORT_ON  "VECTOR_REGS_SUPPORT_ON"
@@ -2483,6 +2485,10 @@ typedef struct OMRPortLibrary {
 	int32_t (*port_startup_library)(struct OMRPortLibrary *portLibrary) ;
 	/** see @ref omrport.c::omrport_create_library "omrport_create_library"*/
 	int32_t (*port_create_library)(struct OMRPortLibrary *portLibrary, uintptr_t size) ;
+#if defined(OMR_ENV_DATA64)
+	/** see @ref omrport.c::omrport_copy_suballocator_heap_globals "omrport_copy_suballocator_heap_globals" */
+	void (*port_copy_suballocator_heap_globals)(struct OMRPortLibrary *destPortLibrary, struct OMRPortLibrary *srcPortLibrary) ;
+#endif /* defined(OMR_ENV_DATA64) */
 	/** see @ref omrsyslog.c::omrsyslog_write "omrsyslog_write"*/
 	uintptr_t (*syslog_write)(struct OMRPortLibrary *portLibrary, uintptr_t flags, const char *message) ;
 	/** see @ref omrintrospect.c::omrintrospect_startup "omrintrospect_startup"*/

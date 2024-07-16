@@ -151,7 +151,7 @@ OMR::SymbolReferenceTable::findOrCreateContiguousArraySizeSymbolRef()
    return element(contiguousArraySizeSymbol);
    }
 
-#if defined(J9VM_GC_ENABLE_SPARSE_HEAP_ALLOCATION)
+#if defined(OMR_GC_SPARSE_HEAP_ALLOCATION)
 TR::SymbolReference *
 OMR::SymbolReferenceTable::findOrCreateContiguousArrayDataAddrFieldShadowSymRef()
    {
@@ -164,7 +164,7 @@ OMR::SymbolReferenceTable::findOrCreateContiguousArrayDataAddrFieldShadowSymRef(
       }
    return element(contiguousArrayDataAddrFieldSymbol);
    }
-#endif // defined(J9VM_GC_ENABLE_SPARSE_HEAP_ALLOCATION)
+#endif // defined(OMR_GC_SPARSE_HEAP_ALLOCATION)
 
 TR::SymbolReference *
 OMR::SymbolReferenceTable::findContiguousArrayDataAddrFieldShadowSymRef()

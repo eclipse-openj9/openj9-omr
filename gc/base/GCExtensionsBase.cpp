@@ -38,6 +38,7 @@
 #include "Configuration.hpp"
 #include "RememberedSetSATB.hpp"
 #endif /* defined(OMR_GC_REALTIME) */
+#include "Heap.hpp"
 
 MM_GCExtensionsBase*
 MM_GCExtensionsBase::newInstance(MM_EnvironmentBase* env)

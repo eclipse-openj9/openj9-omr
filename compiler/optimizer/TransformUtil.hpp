@@ -32,6 +32,10 @@ namespace TR
       {
       public:
 
+	   static TR::Node *generateArrayElementShiftAmountTrees(
+	         TR::Compilation *comp,
+	         TR::Node *object) { return NULL; }
+
       TransformUtil() :
          OMR::TransformUtilConnector()
          {

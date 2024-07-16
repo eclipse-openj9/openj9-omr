@@ -1032,3 +1032,5 @@ TraceEvent=Trc_MM_cleanUpSegmentsInAnonymousClassLoader_stats Overhead=1 Level=1
 TraceEvent=Trc_MM_CPUUtilStats_processAndCpuUtilization_process_larger_than_elapsed Overhead=1 Level=1 Group=gclogger Template="process %lld larger than elapsed %lld; both adjusted to %lld"
 TraceEvent=Trc_MM_CPUUtilStats_processAndCpuUtilization_cpu_larger_than_elapsed Overhead=1 Level=1 Group=gclogger Template="cpu %lld larger than elapsed %lld; cpu adjusted to elapsed"
 TraceEvent=Trc_MM_CPUUtilStats_processAndCpuUtilization_cpu_smaller_than_process Overhead=1 Level=1 Group=gclogger Template="cpu %lld smaller than process %lld; cpu adjusted to process"
+
+TraceEntry=Trc_MM_double_map_EntryNew Overhead=1 Level=3 Group=arraylet Template="MM_IndexableObjectAllocationModel::doubleMapArraylets. originalDataSize: %p, adjustedDataSize: %p, spine: %p, leafSize: %p leavesCount: %zu"

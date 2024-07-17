@@ -207,6 +207,28 @@ static void collectColdPathLoads(TR::Block* firstBlock, TR_BitVector &coldPathLo
       }
    }
 
+/**
+ * Check for nodes that have shadow symref's
+ *
+ * @param node to check
+ * @param checklist of nodes already checked for shadows
+ */
+static bool checkForShadow(TR::Node* node, TR::NodeChecklist &checklist)
+   {
+   if (!checklist.contains(node))
+      {
+      checklist.add(node);
+      if (node->getOpCode().hasSymbolReference() && node->getSymbol()->isShadow())
+         return true;
+      for (int i = 0; i < node->getNumChildren(); i++)
+         {
+         if (checkForShadow(node->getChild(i), checklist))
+            return true;
+         }
+      }
+   return false;
+   }
+
 static bool safeToMoveGuard(TR::Block *destination, TR::TreeTop *guardCandidate,
    TR::TreeTop *branchDest, TR_BitVector &privArgSymRefs, TR::Compilation *comp)
    {
@@ -230,6 +252,7 @@ static bool safeToMoveGuard(TR::Block *destination, TR::TreeTop *guardCandidate,
       }
    else
       {
+      TR::NodeChecklist checklist(comp);
       privArgSymRefs.empty();
       for (TR::TreeTop *tt = start; tt && tt != guardCandidate; tt = tt->getNextTreeTop())
          {
@@ -255,6 +278,11 @@ static bool safeToMoveGuard(TR::Block *destination, TR::TreeTop *guardCandidate,
 
          if (tt->getNode()->isNopableInlineGuard()
              && tt->getNode()->getBranchDestination() != branchDest)
+            return false;
+
+         // Moving a guard can allow an unguarded load to occur which can expose an invalid reference to the GC
+         // Aborting in the presence of shadow symrefs avoides this possibility
+         if (checkForShadow(tt->getNode(), checklist))
             return false;
          }
       }

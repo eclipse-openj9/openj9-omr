@@ -53,6 +53,7 @@ typedef struct J9HookInterface {
 	void (*J9HookDispatch)(struct J9HookInterface **hookInterface, uintptr_t eventNum, void *eventData);
 	intptr_t (*J9HookDisable)(struct J9HookInterface **hookInterface, uintptr_t eventNum);
 	intptr_t (*J9HookReserve)(struct J9HookInterface **hookInterface, uintptr_t eventNum);
+	void (*J9HookUnreserve)(struct J9HookInterface **hookInterface, uintptr_t eventNum);
 	intptr_t (*J9HookRegister)(struct J9HookInterface **hookInterface, uintptr_t eventNum, J9HookFunction function, void *userData, ...);
 	intptr_t (*J9HookRegisterWithCallSite)(struct J9HookInterface **hookInterface, uintptr_t eventNum, J9HookFunction function, const char *callsite, void *userData, ...);
 	void (*J9HookUnregister)(struct J9HookInterface **hookInterface, uintptr_t eventNum, J9HookFunction function, void *userData);

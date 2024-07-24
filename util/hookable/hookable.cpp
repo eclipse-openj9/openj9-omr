@@ -41,6 +41,7 @@ static intptr_t J9HookDisable(struct J9HookInterface **hookInterface, uintptr_t 
 static intptr_t J9HookIsEnabled(struct J9HookInterface **hookInterface, uintptr_t taggedEventNum);
 static void J9HookDispatch(struct J9HookInterface **hookInterface, uintptr_t taggedEventNum, void *eventData);
 static intptr_t J9HookReserve(struct J9HookInterface **hookInterface, uintptr_t taggedEventNum);
+static void J9HookUnreserve(struct J9HookInterface **hookInterface, uintptr_t taggedEventNum);
 static uintptr_t J9HookAllocateAgentID(struct J9HookInterface **hookInterface);
 static void J9HookDeallocateAgentID(struct J9HookInterface **hookInterface, uintptr_t agentID);
 
@@ -48,6 +49,7 @@ static const J9HookInterface hookFunctionTable = {
 	J9HookDispatch,
 	J9HookDisable,
 	J9HookReserve,
+	J9HookUnreserve,
 	J9HookRegister,
 	J9HookRegisterWithCallSite,
 	J9HookUnregister,
@@ -343,6 +345,26 @@ J9HookReserve(struct J9HookInterface **hookInterface, uintptr_t taggedEventNum)
 	omrthread_monitor_exit(commonInterface->lock);
 
 	return rc;
+}
+
+/*
+ * Clear the J9HOOK_FLAG_RESERVED flag from an event.
+ * This flag can be removed regardless of current flag(s) of the event,
+ * J9HOOK_FLAG_RESERVED, J9HOOK_FLAG_HOOKED or J9HOOK_FLAG_DISABLED.
+ *
+ * This function should not be called directly. It should be called through the hook interface.
+ */
+static void
+J9HookUnreserve(struct J9HookInterface **hookInterface, uintptr_t taggedEventNum)
+{
+	J9CommonHookInterface *commonInterface = (J9CommonHookInterface *)hookInterface;
+	uintptr_t eventNum = taggedEventNum & J9HOOK_EVENT_NUM_MASK;
+
+	omrthread_monitor_enter(commonInterface->lock);
+
+	HOOK_FLAGS(commonInterface, eventNum) &= ~J9HOOK_FLAG_RESERVED;
+
+	omrthread_monitor_exit(commonInterface->lock);
 }
 
 static intptr_t

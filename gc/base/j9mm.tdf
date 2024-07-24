@@ -1028,3 +1028,7 @@ TraceEvent=Trc_MM_MSSSS_flip_restore_tilt_after_percolate_current_status Overhea
 
 TraceEvent=Trc_MM_clearheap Overhead=1 Level=1 Group=gclogger Template="clearheap with free memory size: %zu, object size: %zu"
 TraceEvent=Trc_MM_cleanUpSegmentsInAnonymousClassLoader_stats Overhead=1 Level=1 Group=gclogger Template="Anonymous classes: total: %zu, unloaded: %zu, searched ROM: %zu, found ROM fast: %zu, found ROM slow: %zu, not found ROM: %zu"
+
+TraceEvent=Trc_MM_CPUUtilStats_processAndCpuUtilization_process_larger_than_elapsed Overhead=1 Level=1 Group=gclogger Template="process %lld larger than elapsed %lld; both adjusted to %lld"
+TraceEvent=Trc_MM_CPUUtilStats_processAndCpuUtilization_cpu_larger_than_elapsed Overhead=1 Level=1 Group=gclogger Template="cpu %lld larger than elapsed %lld; cpu adjusted to elapsed"
+TraceEvent=Trc_MM_CPUUtilStats_processAndCpuUtilization_cpu_smaller_than_process Overhead=1 Level=1 Group=gclogger Template="cpu %lld smaller than process %lld; cpu adjusted to process"

@@ -32,6 +32,7 @@ xmlns:vgc="http://www.ibm.com/j9/verbosegc">
 	<element name="arraylet-reference" type="vgc:arraylet-reference" />
 	<element name="arraylet-primitive" type="vgc:arraylet-primitive" />
 	<element name="arraylet-unknown" type="vgc:arraylet-unknown" />	
+	<element name="cpu-util" type="vgc:cpu-util" />
 	<element name="numa" type="vgc:numa" />
 	<element name="vmarg" type="vgc:vmarg" />
 	<element name="vmargs" type="vgc:vmargs" />
@@ -141,6 +142,7 @@ xmlns:vgc="http://www.ibm.com/j9/verbosegc">
 				<element ref="vgc:cycle-end" maxOccurs="1" minOccurs="1" />
 				<element ref="vgc:allocation-stats" maxOccurs="1" minOccurs="1" />
 				<element ref="vgc:mem-info" maxOccurs="1" minOccurs="1" />
+				<element ref="vgc:cpu-util" maxOccurs="1" minOccurs="1" />
 				<element ref="vgc:gc-start" maxOccurs="1" minOccurs="1" />
 				<element ref="vgc:gc-end" maxOccurs="1" minOccurs="1" />
 				<element ref="vgc:concurrent-kickoff" maxOccurs="1" minOccurs="1" />
@@ -362,6 +364,9 @@ xmlns:vgc="http://www.ibm.com/j9/verbosegc">
 	</complexType>
 
 	<complexType name="gc-start">
+		<sequence maxOccurs="1" minOccurs="0">
+			<element ref="vgc:cpu-util" maxOccurs="1" minOccurs="0" />
+		</sequence>
 		<sequence maxOccurs="1" minOccurs="1">
 			<element ref="vgc:mem-info" maxOccurs="1" minOccurs="0" />
 		</sequence>
@@ -452,6 +457,11 @@ xmlns:vgc="http://www.ibm.com/j9/verbosegc">
 		<attribute name="default" type="integer" use="required" />
 		<attribute name="reference" type="integer" use="required" />
 		<attribute name="classloader" type="integer" use="required" />
+	</complexType>
+
+	<complexType name="cpu-util">
+		<attribute name="total" type="float" use="required" />
+		<attribute name="process" type="float" use="required" />
 	</complexType>
 
 	<complexType name="continuation-objects">

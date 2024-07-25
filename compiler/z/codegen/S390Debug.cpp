@@ -1972,51 +1972,6 @@ TR_Debug::print(TR::FILE *pOutFile, TR::MemoryReference * mr, TR::Instruction * 
    trfflush(pOutFile);
    }
 
-
-
-static void intToString(int num, char *str, int len=10, bool padWithZeros=false)
-   {
-   unsigned char packedDecValue[16];
-   unsigned char c[16];
-   int i=0,j=0,n=0;
-
-   #if !defined(LINUX) && !defined(TR_HOST_X86)
-   __cvd(num, (char *)packedDecValue);
-   __unpk(c, len-1, packedDecValue, 7 );
-   c[len-1] = c[len-1] | 0xf0;
-
-   if (!padWithZeros) while((c[j]=='0') && (j < len-1)) { j++; }
-   if (num < 0) str[n++]='-';
-   for (i=0; i < len-j; i++) str[n+i] = c[i+j];
-   str[n+len-j]=NULL;
-
-   #else
-   if (!padWithZeros) sprintf(str, "%d", num);
-   else  sprintf(str, "%0*d", len, num);
-   #endif
-   }
-
-static void intToHex(uint32_t num, char *str, int len)
-   {
-   unsigned char temp[16];
-   const unsigned char ebcdic_translate[16] =
-                     { 0xF0, 0xF1, 0xF2, 0xF3,
-                       0xF4, 0xF5, 0xF6, 0xF7,
-           0xF8, 0xF9, 0xC1, 0xC2,
-           0xC3, 0xC4, 0xC5, 0xC6
-                     };
-
-   #if !defined(LINUX) && !defined(TR_HOST_X86)
-   memcpy(temp, &num, 4);
-   __unpk((unsigned char *)str, len, temp, 4);
-   __tr((unsigned char *)str, ebcdic_translate-240, len);
-   str[len]=NULL;
-   #else
-   sprintf(str, "%0*X", len,num);
-   #endif
-
-   }
-
 char *
 TR_Debug::printSymbolName(TR::FILE *pOutFile, TR::Symbol *sym,  TR::SymbolReference *symRef, TR::MemoryReference * mr)
    {

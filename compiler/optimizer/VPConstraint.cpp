@@ -5114,35 +5114,177 @@ bool TR::VPMergedConstraints::mustBeNotEqual(TR::VPConstraint *other, OMR::Value
    }
 
 
-//FIXME: this is too conservative, can do more for non-fixed objects
 bool TR::VPClass::mustBeNotEqual(TR::VPConstraint *other, OMR::ValuePropagation *vp)
    {
    if (isNullObject() && other->isNonNullObject())
       return true;
+
    if (isNonNullObject() && other->isNullObject())
       return true;
 
-   if (getKnownObject() && other->getKnownObject() && isNonNullObject() && other->isNonNullObject())
-      return getKnownObject()->getIndex() != other->getKnownObject()->getIndex();
+   if (!isNonNullObject() && !other->isNonNullObject())
+      return false; // both could be null
 
-   TR::VPClass *otherClass = NULL;
-   if (other)
-      otherClass = other->asClass();
-  if (!_preexistence &&
-       !_arrayInfo && _type &&
-       _type->isFixedClass() && isNonNullObject() &&
-       other && otherClass &&
-       !otherClass->getArrayInfo() &&
-       !otherClass->isPreexistentObject() &&
-       otherClass->getClassType() && otherClass->getClassType()->isFixedClass() && otherClass->isNonNullObject() &&
-       (isClassObject() == TR_yes) &&
-       (other->isClassObject() == TR_yes))
+   // At this point either this or other is known to be non-null (or both are).
+   // We can return true if all possible combinations of non-null values are
+   // distinct, ignoring the possibility of a null. If at runtime one value is
+   // null, the other is necessarily non-null, so null doesn't interfere.
+
+   // Try to distinguish based on known object. If both are known objects, then
+   // we have an immediate result.
+   TR::VPKnownObject *thisKnownObject = getKnownObject();
+   if (thisKnownObject != NULL)
       {
-      if (_type->asFixedClass()->getClass() != otherClass->getClassType()->asFixedClass()->getClass())
-         return true;
+      TR::VPKnownObject *otherKnownObject = other->getKnownObject();
+      if (otherKnownObject != NULL)
+         return thisKnownObject->getIndex() != otherKnownObject->getIndex();
       }
 
-   return false;
+   // Try to distinguish based on heap location.
+   TR_YesNoMaybe thisIsHeapObj = isHeapObject();
+   TR_YesNoMaybe otherIsHeapObj = other->isHeapObject();
+   if (thisIsHeapObj != TR_maybe
+       && otherIsHeapObj != TR_maybe
+       && thisIsHeapObj != otherIsHeapObj)
+      {
+      // One is an object on the heap and the other is not.
+      return true;
+      }
+
+   // Try to distinguish based on stack location.
+   TR_YesNoMaybe thisIsStackObj = isStackObject();
+   TR_YesNoMaybe otherIsStackObj = other->isStackObject();
+   if (thisIsStackObj != TR_maybe
+       && otherIsStackObj != TR_maybe
+       && thisIsStackObj != otherIsStackObj)
+      {
+      // One is an object on the stack and the other is not.
+      return true;
+      }
+
+   // Try to distinguish based on class location.
+   TR_YesNoMaybe thisIsClassObj = isClassObject();
+   TR_YesNoMaybe otherIsClassObj = other->isClassObject();
+   if (thisIsClassObj != TR_maybe && otherIsClassObj != TR_maybe)
+      {
+      if (thisIsClassObj != otherIsClassObj)
+         return true; // one is a class and the other is not
+
+      // They're both classes or both not classes. If they're both classes, we
+      // might be able to distinguish them based on what kind.
+      if (thisIsClassObj == TR_yes)
+         {
+         TR_YesNoMaybe thisIsVMClass = isJ9ClassObject();
+         TR_YesNoMaybe otherIsVMClass = other->isJ9ClassObject();
+         if (thisIsVMClass != TR_maybe
+             && otherIsVMClass != TR_maybe
+             && thisIsVMClass != otherIsVMClass)
+            {
+            // One is a VM-internal class pointer and the other is not.
+            return true;
+            }
+
+         TR_YesNoMaybe thisIsHeapClass = isJavaLangClassObject();
+         TR_YesNoMaybe otherIsHeapClass = other->isJavaLangClassObject();
+         if (thisIsHeapClass != TR_maybe
+             && otherIsHeapClass != TR_maybe
+             && thisIsHeapClass != otherIsHeapClass)
+            {
+            // One is a language-level class object and the other is not.
+            return true;
+            }
+         }
+      }
+
+   // Try to distinguish based on array info.
+   TR::VPArrayInfo *thisArrayInfo = getArrayInfo();
+   if (thisArrayInfo != NULL)
+      {
+      TR::VPArrayInfo *otherArrayInfo = other->getArrayInfo();
+      if (otherArrayInfo != NULL)
+         {
+         int32_t thisElemSize = thisArrayInfo->elementSize();
+         int32_t otherElemSize = otherArrayInfo->elementSize();
+         if (thisElemSize != 0 && otherElemSize != 0 && thisElemSize != otherElemSize)
+            return true; // They're arrays with different element sizes.
+
+         int32_t thisLo = thisArrayInfo->lowBound();
+         int32_t thisHi = thisArrayInfo->highBound();
+         int32_t otherLo = otherArrayInfo->lowBound();
+         int32_t otherHi = otherArrayInfo->highBound();
+         if (thisHi < otherLo || otherHi < thisLo)
+            return false; // They're arrays with different lengths.
+         }
+      }
+
+   // From here on out, we're trying to distinguish based on class hierarchy.
+
+   if ((thisIsClassObj == TR_yes) != (otherIsClassObj == TR_yes))
+      {
+      // Can't compare type bounds. One constrains the runtime type of an
+      // object, and the other constrains the class that an object can
+      // represent reflectively.
+      return false;
+      }
+
+   TR_OpaqueClassBlock *thisClass = getClass();
+   TR_OpaqueClassBlock *otherClass = other->getClass();
+   if (thisClass == NULL || otherClass == NULL)
+      {
+      // At least one has no (resolved) class. Don't bother with symbolic type
+      // bounds without actual class pointers, i.e. VPUnresolvedClass. Usually
+      // we should have the class pointer, and the information we can get
+      // without it isn't very good anyway.
+      return false;
+      }
+
+   if (thisClass == otherClass)
+      return false; // No point continuing in this case. Trivially could be equal.
+
+   bool thisIsFixedClass = isFixedClass();
+   bool otherIsFixedClass = other->isFixedClass();
+   if (thisIsFixedClass && otherIsFixedClass)
+      return thisClass != otherClass;
+
+   if (thisIsFixedClass || otherIsFixedClass)
+      {
+      // Only one is a fixed-type constraint (or we'd have returned above).
+      TR_OpaqueClassBlock *fixedClass = NULL;
+      TR_OpaqueClassBlock *boundClass = NULL;
+      if (thisIsFixedClass)
+         {
+         fixedClass = thisClass;
+         boundClass = otherClass;
+         }
+      else
+         {
+         fixedClass = otherClass;
+         boundClass = thisClass;
+         }
+
+      return vp->fe()->isInstanceOf(fixedClass, boundClass, true, true) != TR_yes;
+      }
+
+   // Neither type is fixed.
+   if (TR::Compiler->cls.isInterfaceClass(vp->comp(), thisClass))
+      {
+      if (other->getClassType()->isArray() == TR_yes)
+         return !getClassType()->isCloneableOrSerializable();
+      else
+         return false; // a subtype of otherClass could implement thisClass
+      }
+
+   if (TR::Compiler->cls.isInterfaceClass(vp->comp(), otherClass))
+      {
+      if (getClassType()->isArray() == TR_yes)
+         return !other->getClassType()->isCloneableOrSerializable();
+      else
+         return false; // a subtype of thisClass could implement otherClass
+      }
+
+   // Two unrelated non-interface classes can't have a common subtype.
+   return vp->fe()->isInstanceOf(thisClass, otherClass, true, true) != TR_yes
+      && vp->fe()->isInstanceOf(otherClass, thisClass, true, true) != TR_yes;
    }
 
 bool TR::VPNullObject::mustBeNotEqual(TR::VPConstraint *other, OMR::ValuePropagation *vp)

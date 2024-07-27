@@ -226,6 +226,7 @@
    fsubs,            // Floating subtract single
    isync,            // Instruction synchronize
    lbz,              // Load byte and zero extend
+   lbarx,            // Load byte and reserve indexed
    lbzu,             // Load byte and zero extend with update
    lbzux,            // Load byte and zero extend with update indexed
    lbzx,             // Load byte and zero extend indexed
@@ -247,6 +248,7 @@
    lfsux,            // Load floating short with update indexed
    lfsx,             // Load floating short indexed
    lha,              // Load half word algebraic
+   lharx,            // Load half word and reserve indexed
    lhau,             // Load half word algebraic
    lhaux,            // Load half word algebraic
    lhax,             // Load half word algebraic
@@ -390,11 +392,12 @@
    srw,              // Shift right word
    srw_r,            // Shift right word Rc=1
    stb,              // Store byte
+   stbcx_r,          // Store byte conditional indexed
    stbu,             // Store byte with update
    stbux,            // Store byte with update indexed
    stbx,             // Store byte indexed
    std,              // Store dword
-   stdcx_r,          // Store word conditional indexed
+   stdcx_r,          // Store dword conditional indexed
    stdu,             // Store dword with update
    stdux,            // Store dword with update indexed
    stdx,             // Store dword indexed
@@ -411,6 +414,7 @@
    stfsx,            // Store float single indexed
    sth,              // Store half word
    sthbrx,           // Store half word byte reversed indexed
+   sthcx_r,          // Store half word conditional indexed
    sthu,             // Store half word with update
    sthux,            // Store half word with update indexed
    sthx,             // Store half word indexed

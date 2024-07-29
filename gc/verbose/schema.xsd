@@ -11,7 +11,7 @@ is available at https://www.apache.org/licenses/LICENSE-2.0.
 This Source Code may also be made available under the following
 Secondary Licenses when the conditions for such availability set
 forth in the Eclipse Public License, v. 2.0 are satisfied: GNU
-General Public License, version 2 with the GNU Classpath 
+General Public License, version 2 with the GNU Classpath
 Exception [1] and GNU General Public License, version 2 with the
 OpenJDK Assembly Exception [2].
 
@@ -31,7 +31,7 @@ xmlns:vgc="http://www.ibm.com/j9/verbosegc">
 	<element name="mem-info" type="vgc:mem-info" />
 	<element name="arraylet-reference" type="vgc:arraylet-reference" />
 	<element name="arraylet-primitive" type="vgc:arraylet-primitive" />
-	<element name="arraylet-unknown" type="vgc:arraylet-unknown" />	
+	<element name="arraylet-unknown" type="vgc:arraylet-unknown" />
 	<element name="cpu-util" type="vgc:cpu-util" />
 	<element name="numa" type="vgc:numa" />
 	<element name="vmarg" type="vgc:vmarg" />
@@ -99,7 +99,7 @@ xmlns:vgc="http://www.ibm.com/j9/verbosegc">
 	<element name="concurrent-end" type="vgc:concurrent-end" />
 	<element name="concurrent-mark-start" type="vgc:concurrent-mark-start" />
 	<element name="concurrent-mark-end" type="vgc:concurrent-mark-end" />
-	<element name="region" type="vgc:region" />	
+	<element name="region" type="vgc:region" />
 	<element name="metronome" type="vgc:metronome" />
 	<element name="syncgc-info" type="vgc:syncgc-info" />
 	<element name="free-mem-delta" type="vgc:free-mem-delta" />
@@ -124,7 +124,7 @@ xmlns:vgc="http://www.ibm.com/j9/verbosegc">
 		<attribute name="micro-fragmented" type="integer" use="optional" />
 		<attribute name="macro-fragmented" type="integer" use="optional" />
 	</attributeGroup>
-	
+
 	<complexType name="verbosegc">
 		<sequence maxOccurs="1" minOccurs="1">
 			<element ref="vgc:initialized" maxOccurs="1" minOccurs="0" />
@@ -174,7 +174,7 @@ xmlns:vgc="http://www.ibm.com/j9/verbosegc">
 			<element ref="vgc:mem" maxOccurs="unbounded" minOccurs="0" />
 			<element ref="vgc:arraylet-reference" maxOccurs="1" minOccurs="0" />
 			<element ref="vgc:arraylet-primitive" maxOccurs="1" minOccurs="0" />
-			<element ref="vgc:arraylet-unknown" maxOccurs="1" minOccurs="0" />			
+			<element ref="vgc:arraylet-unknown" maxOccurs="1" minOccurs="0" />
 			<element ref="vgc:numa" maxOccurs="1" minOccurs="0" />
 			<element ref="vgc:pending-finalizers" maxOccurs="1" minOccurs="0" />
 			<element ref="vgc:continuation-objects" maxOccurs="1" minOccurs="0" />
@@ -235,7 +235,7 @@ xmlns:vgc="http://www.ibm.com/j9/verbosegc">
 		<attribute name="regionsstable" type="integer" use="optional" />
 		<attribute name="regionsrebuilding" type="integer" use="optional" />
 	</complexType>
-	
+
 	<complexType name="remembered-set-cleared">
 		<attribute name="processed" type="integer" use="required" />
 		<attribute name="cleared" type="integer" use="required" />
@@ -293,13 +293,13 @@ xmlns:vgc="http://www.ibm.com/j9/verbosegc">
 		<attribute name="success" type="string" use="optional" />
 		<attribute name="from" type="string" use="optional" />
 	</complexType>
-	
+
 	<complexType name="allocation-taxation">
 		<attribute name="id" type="integer" use="required" />
 		<attribute name="taxation-threshold" type="integer" use="required" />
 		<attribute name="timestamp" type="dateTime" use="required" />
 		<attribute name="intervalms" type="float" use="required" />
-	</complexType>	
+	</complexType>
 
 	<complexType name="concurrent-global-final">
 		<sequence maxOccurs="1" minOccurs="1">
@@ -310,7 +310,7 @@ xmlns:vgc="http://www.ibm.com/j9/verbosegc">
 		<attribute name="timestamp" type="dateTime" use="required" />
 		<attribute name="intervalms" type="float" use="required" />
 	</complexType>
-	
+
 	<complexType name="concurrent-trace-info">
 		<attribute name="reason" type="string" use="required" />
 		<attribute name="tracedByMutators" type="integer" use="required" />
@@ -364,11 +364,9 @@ xmlns:vgc="http://www.ibm.com/j9/verbosegc">
 	</complexType>
 
 	<complexType name="gc-start">
-		<sequence maxOccurs="1" minOccurs="0">
-			<element ref="vgc:cpu-util" maxOccurs="1" minOccurs="0" />
-		</sequence>
 		<sequence maxOccurs="1" minOccurs="1">
-			<element ref="vgc:mem-info" maxOccurs="1" minOccurs="0" />
+			<element ref="vgc:cpu-util" maxOccurs="1" minOccurs="0" />
+			<element ref="vgc:mem-info" maxOccurs="1" minOccurs="1" />
 		</sequence>
 		<attribute name="id" type="integer" use="required" />
 		<attribute name="type" type="string" use="optional" />
@@ -378,7 +376,7 @@ xmlns:vgc="http://www.ibm.com/j9/verbosegc">
 
 	<complexType name="gc-end">
 		<sequence maxOccurs="1" minOccurs="1">
-			<element ref="vgc:mem-info" maxOccurs="1" minOccurs="0" />
+			<element ref="vgc:mem-info" maxOccurs="1" minOccurs="1" />
 		</sequence>
 		<attribute name="id" type="integer" use="required" />
 		<attribute name="type" type="string" use="optional" />
@@ -474,7 +472,7 @@ xmlns:vgc="http://www.ibm.com/j9/verbosegc">
 		<attribute name="scancount" type="integer" use="required" />
 		<attribute name="scanbytes" type="integer" use="required" />
 	</complexType>
-	
+
 	<complexType name="cardclean-info">
 		<attribute name="objects" type="integer" use="required" />
 		<attribute name="bytes" type="integer" use="required" />
@@ -686,12 +684,12 @@ xmlns:vgc="http://www.ibm.com/j9/verbosegc">
 			<element ref="vgc:attribute" maxOccurs="unbounded" minOccurs="0" />
 		</sequence>
 	</complexType>
-	
+
 	<complexType name="region">
 		<sequence maxOccurs="1" minOccurs="1">
 			<element ref="vgc:attribute" maxOccurs="7" minOccurs="0" />
 		</sequence>
-	</complexType>	
+	</complexType>
 
 	<complexType name="syncgc-info">
 		<attribute name="reason" type="string" use="required" />
@@ -774,30 +772,30 @@ xmlns:vgc="http://www.ibm.com/j9/verbosegc">
 		<attribute name="id" type="integer" use="required" />
 		<attribute name="timestamp" type="dateTime" use="required" />
 	</complexType>
-	
+
 	<complexType name="arraylet-reference">
 		<attribute name="objects" type="integer" use="required" />
 		<attribute name="leaves" type="integer" use="required" />
 		<attribute name="largest" type="integer" use="required" />
 	</complexType>
-	
+
 	<complexType name="arraylet-primitive">
 		<attribute name="objects" type="integer" use="required" />
 		<attribute name="leaves" type="integer" use="required" />
 		<attribute name="largest" type="integer" use="required" />
 	</complexType>
-	
+
 	<complexType name="arraylet-unknown">
 		<attribute name="objects" type="integer" use="required" />
 		<attribute name="leaves" type="integer" use="required" />
-	</complexType>	
-	
+	</complexType>
+
 	<complexType name="allocation-satisfied">
 		<attribute name="id" type="integer" use="required" />
 		<attribute name="threadId" type="hexBinary" use="required" />
 		<attribute name="bytesRequested" type="integer" use="required" />
 	</complexType>
-	
+
 	<complexType name="allocation-unsatisfied">
 		<attribute name="id" type="integer" use="required" />
 		<attribute name="threadId" type="hexBinary" use="required" />

@@ -4399,11 +4399,11 @@ TR_CallSite* TR_InlinerBase::findAndUpdateCallSiteInGraph(TR_CallStack *callStac
       int32_t k=0;
       for (k = 0; k < callsite->numRemovedTargets(); k++)
          {
-         tracer()->insertCounter(callsite->getRemovedTarget(k)->getCallTargetFailureReason(), callsite->_callNodeTreeTop);
+         tracer()->insertCounter(callsite->getRemovedTarget(k)->getCallTargetFailureReason(), tt);
          }
       if (k == 0)  //if you never found a target in the first place.
          {
-         tracer()->insertCounter(callsite->getCallSiteFailureReason(), callsite->_callNodeTreeTop);
+         tracer()->insertCounter(callsite->getCallSiteFailureReason(), tt);
          }
       }
 
@@ -5878,7 +5878,13 @@ void TR_InlinerTracer::partialTraceM ( const char * fmt, ...)
 
 void TR_InlinerTracer::insertCounter (TR_InlinerFailureReason reason, TR::TreeTop *tt)
    {
-   const char *name = TR::DebugCounter::debugCounterName(comp(), "inliner.callSites/failed/%s",getFailureReasonString(reason));
+   const char *name = TR::DebugCounter::debugCounterName(
+      comp(),
+      "inliner.callSites/failed/%s/(%s)/%s",
+      getFailureReasonString(reason),
+      comp()->signature(),
+      comp()->getHotnessName());
+
    TR::DebugCounter::prependDebugCounter(comp(), name, tt);
    }
 

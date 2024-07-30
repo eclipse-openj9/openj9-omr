@@ -863,7 +863,7 @@ public:
    const char *getHotnessName();
 
    template<typename Exception>
-   void failCompilation(const char *format, ...)
+   void OMR_NORETURN failCompilation(const char *format, ...)
       {
       char buffer[512];
 

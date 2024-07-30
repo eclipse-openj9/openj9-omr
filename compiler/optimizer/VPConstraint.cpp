@@ -5213,7 +5213,7 @@ bool TR::VPClass::mustBeNotEqual(TR::VPConstraint *other, OMR::ValuePropagation 
          int32_t otherLo = otherArrayInfo->lowBound();
          int32_t otherHi = otherArrayInfo->highBound();
          if (thisHi < otherLo || otherHi < thisLo)
-            return false; // They're arrays with different lengths.
+            return true; // They're arrays with different lengths.
          }
       }
 

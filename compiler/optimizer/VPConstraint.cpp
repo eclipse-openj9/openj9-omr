@@ -5287,7 +5287,7 @@ bool TR::VPClass::mustBeNotEqual(TR::VPConstraint *other, OMR::ValuePropagation 
          boundClass = thisClass;
          }
 
-      return vp->fe()->isInstanceOf(fixedClass, boundClass, true, true) != TR_yes;
+      return vp->fe()->isInstanceOf(fixedClass, boundClass, true, true) == TR_no;
       }
 
    // Neither type is fixed.
@@ -5308,8 +5308,8 @@ bool TR::VPClass::mustBeNotEqual(TR::VPConstraint *other, OMR::ValuePropagation 
       }
 
    // Two unrelated non-interface classes can't have a common subtype.
-   return vp->fe()->isInstanceOf(thisClass, otherClass, true, true) != TR_yes
-      && vp->fe()->isInstanceOf(otherClass, thisClass, true, true) != TR_yes;
+   return vp->fe()->isInstanceOf(thisClass, otherClass, true, true) == TR_no
+      && vp->fe()->isInstanceOf(otherClass, thisClass, true, true) == TR_no;
 #endif
    }
 

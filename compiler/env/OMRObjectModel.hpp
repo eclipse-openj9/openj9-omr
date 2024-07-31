@@ -130,6 +130,10 @@ class ObjectModel
    * @brief: Returns the write type kind of VM's GC
    */
    MM_GCWriteBarrierType writeBarrierType() { return gc_modron_wrtbar_none;  }
+
+	bool isOffHeapAllocationEnabled() { return false; }
+
+	uintptr_t offsetOfContiguousDataAddrField() { return 0; }
    };
 }
 

@@ -804,9 +804,9 @@ class SymbolReferenceTable
    TR::SymbolReference * findOrCreateTemporaryWithKnowObjectIndex(TR::ResolvedMethodSymbol * owningMethodSymbol, TR::KnownObjectTable::Index knownObjectIndex);
    TR::SymbolReference * findOrCreateThisRangeExtensionSymRef(TR::ResolvedMethodSymbol *owningMethodSymbol = 0);
    TR::SymbolReference * findOrCreateContiguousArraySizeSymbolRef();
-#if defined(J9VM_GC_ENABLE_SPARSE_HEAP_ALLOCATION)
+#if defined(OMR_GC_SPARSE_HEAP_ALLOCATION)
    TR::SymbolReference * findOrCreateContiguousArrayDataAddrFieldShadowSymRef();
-#endif // defined(J9VM_GC_ENABLE_SPARSE_HEAP_ALLOCATION)
+#endif // defined(OMR_GC_SPARSE_HEAP_ALLOCATION)
    TR::SymbolReference * findContiguousArrayDataAddrFieldShadowSymRef();
    TR::SymbolReference * findOrCreateNewArrayNoZeroInitSymbolRef(TR::ResolvedMethodSymbol * owningMethodSymbol);
    TR::SymbolReference * findOrCreateNewObjectSymbolRef(TR::ResolvedMethodSymbol * owningMethodSymbol);

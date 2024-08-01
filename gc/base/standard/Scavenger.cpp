@@ -4967,12 +4967,24 @@ MM_Scavenger::calculateTiltRatio()
 void
 MM_Scavenger::reportGCIncrementStart(MM_EnvironmentStandard *env)
 {
+	OMRPORT_ACCESS_FROM_ENVIRONMENT(env);
 	MM_CollectionStatisticsStandard *stats = (MM_CollectionStatisticsStandard *)env->_cycleState->_collectionStatistics;
 	stats->collectCollectionStatistics(env, stats);
-	/* Among other things this will get process and elapse time info&timestamps that are not only needed for
-	 * mutator CPU util calc but also needed for GC STW user/system/stall breakdown reporting
-	 */
-	_extensions->cpuUtilStats.calculateProcessAndCpuUtilizationDelta(env, stats);
+	stats->_startTime = omrtime_hires_clock();
+
+	intptr_t rc = omrthread_get_process_times(&stats->_startProcessTimes);
+	switch (rc) {
+	case -1: /* Error: Function un-implemented on architecture */
+	case -2: /* Error: getrusage() or GetProcessTimes() returned error value */
+		stats->_startProcessTimes._userTime = I_64_MAX;
+		stats->_startProcessTimes._systemTime = I_64_MAX;
+		break;
+	case  0:
+		break; /* Success */
+	default:
+		Assert_MM_unreachable();
+	}
+
 	TRIGGER_J9HOOK_MM_PRIVATE_GC_INCREMENT_START(
 		_extensions->privateHookInterface,
 		env->getOmrVMThread(),
@@ -4984,12 +4996,24 @@ MM_Scavenger::reportGCIncrementStart(MM_EnvironmentStandard *env)
 void
 MM_Scavenger::reportGCIncrementEnd(MM_EnvironmentStandard *env)
 {
+	OMRPORT_ACCESS_FROM_ENVIRONMENT(env);
 	MM_CollectionStatisticsStandard *stats = (MM_CollectionStatisticsStandard *)env->_cycleState->_collectionStatistics;
 	stats->collectCollectionStatistics(env, stats);
-	/* Among other things this will get process and elapse time info&timestamps that are not only needed for
-	 * mutator CPU util calc but also needed for GC STW user/system/stall breakdown reporting
-	 */
-	_extensions->cpuUtilStats.recordProcessAndCpuUtilization(env, stats);
+
+	intptr_t rc = omrthread_get_process_times(&stats->_endProcessTimes);
+	switch (rc) {
+	case -1: /* Error: Function un-implemented on architecture */
+	case -2: /* Error: getrusage() or GetProcessTimes() returned error value */
+		stats->_endProcessTimes._userTime = 0;
+		stats->_endProcessTimes._systemTime = 0;
+		break;
+	case  0:
+		break; /* Success */
+	default:
+		Assert_MM_unreachable();
+	}
+
+	stats->_endTime = omrtime_hires_clock();
 	stats->_stallTime = _extensions->scavengerStats.getStallTime();
 
 	TRIGGER_J9HOOK_MM_PRIVATE_GC_INCREMENT_END(

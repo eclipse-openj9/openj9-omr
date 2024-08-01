@@ -458,6 +458,7 @@ xmlns:vgc="http://www.ibm.com/j9/verbosegc">
 	</complexType>
 
 	<complexType name="cpu-util">
+		<attribute name="id" type="integer" use="required" />
 		<attribute name="total" type="float" use="required" />
 		<attribute name="process" type="float" use="required" />
 	</complexType>

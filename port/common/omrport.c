@@ -339,9 +339,6 @@ static OMRPortLibrary MainPortLibraryTable = {
 	omrport_init_library, /* port_init_library */
 	omrport_startup_library, /* port_startup_library */
 	omrport_create_library, /* port_create_library */
-#if defined(OMR_ENV_DATA64)
-	omrport_copy_suballocator_heap_globals, /* port_copy_suballocator_heap_globals */
-#endif /* defined(OMR_ENV_DATA64) */
 	omrsyslog_write, /* syslog_write */
 	omrintrospect_startup, /* introspect_startup */
 	omrintrospect_shutdown, /* introspect_shutdown */
@@ -591,28 +588,6 @@ omrport_create_library(struct OMRPortLibrary *portLibrary, uintptr_t size)
 
 	return 0;
 }
-
-#if defined(OMR_ENV_DATA64)
-/**
- * Copy the subAllocHeapMem32 values from a source OMRPortLibrary to a destination OMRPortLibrary.
- *
- * This is a helper for ensuring memCheckPortLib picks up the subAllocHeapMem32 default and/or -Xgc
- * specified values.
- *
- * @param[in,out] destPortLibrary The port library to copy the port globals to.
- * @param[in,out] sourcePortLibrary The port library to copy the port globals from.
- *
- */
-void
-omrport_copy_suballocator_heap_globals(struct OMRPortLibrary *destPortLibrary, struct OMRPortLibrary *srcPortLibrary)
-{
-	J9SubAllocateHeapMem32 subAllocGlobals = srcPortLibrary->portGlobals->platformGlobals.subAllocHeapMem32;
-	omrport_control(destPortLibrary, OMRPORT_CTLDATA_ALLOCATE32_COMMIT_SIZE, subAllocGlobals.suballocator_commitSize);
-	omrport_control(destPortLibrary, OMRPORT_CTLDATA_ALLOCATE32_INCREMENT_SIZE, subAllocGlobals.suballocator_incrementSize);
-	omrport_control(destPortLibrary, OMRPORT_CTLDATA_ALLOCATE32_QUICK_ALLOC, subAllocGlobals.suballocator_quickAlloc ? 1 : 0);
-	return;
-}
-#endif /* defined(OMR_ENV_DATA64) */
 
 /**
  * PortLibrary startup.

@@ -931,10 +931,6 @@ extern J9_CFUNC int32_t
 omrport_startup_library(struct OMRPortLibrary *portLibrary);
 extern J9_CFUNC int32_t
 omrport_create_library(struct OMRPortLibrary *portLibrary, uintptr_t size);
-#if defined(OMR_ENV_DATA64)
-extern J9_CFUNC void
-omrport_copy_suballocator_heap_globals(struct OMRPortLibrary *destPortLibrary, struct OMRPortLibrary *srcPortLibrary);
-#endif /* defined(OMR_ENV_DATA64) */
 
 /* J9Syslog */
 extern J9_CFUNC uintptr_t

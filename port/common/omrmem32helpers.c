@@ -37,14 +37,26 @@ static void *reserveAndCommitRegion(struct OMRPortLibrary *portLibrary, uintptr_
 #define VMEM_MODE_COMMIT OMRPORT_VMEM_MEMORY_MODE_READ | OMRPORT_VMEM_MEMORY_MODE_WRITE | OMRPORT_VMEM_MEMORY_MODE_COMMIT
 #define VMEM_MODE_WITHOUT_COMMIT OMRPORT_VMEM_MEMORY_MODE_READ | OMRPORT_VMEM_MEMORY_MODE_WRITE
 
-#define MEM32_LIMIT ((uintptr_t)0XFFFFFFFFU)
 struct {
 	uintptr_t base;
 	uintptr_t limit;
 } regions[] = {
-	{0x0, MEM32_LIMIT}
+	{0x0, 0xFFFFFFFF}
 };
 
+#define MEM32_LIMIT 0XFFFFFFFF
+
+/* VMDESIGN 1761 The size of a suballocation heap.
+ * See VMDESIGN 1761 for the rationale behind the selection of this size.
+ * We use a 8MB heap to give us more room in case an application loads a larger amount of classes than usual.
+ * For testing purposes, this value is mirrored in port library test. If we tune this value, we should also adjust it in omrmemTest.cpp
+ */
+#if defined(AIXPPC) && defined(OMR_GC_COMPRESSED_POINTERS)
+/* virtual memory is allocated in 256M segments on AIX, so grab the whole segment */
+#define HEAP_SIZE_BYTES (256 * 1024 * 1024)
+#else
+#define HEAP_SIZE_BYTES (8 * 1024 * 1024)
+#endif
 /* Creates any of the resources required to use allocate_memory32
  *
  * Note: Any resources created here need to be cleaned up in shutdown_memory32_using_vmem
@@ -60,8 +72,6 @@ startup_memory32(struct OMRPortLibrary *portLibrary)
 	PPG_mem_mem32_subAllocHeapMem32.subCommitHeapWrapper = NULL;
 	PPG_mem_mem32_subAllocHeapMem32.suballocator_initialSize = 0;
 	PPG_mem_mem32_subAllocHeapMem32.suballocator_commitSize = 0;
-	PPG_mem_mem32_subAllocHeapMem32.suballocator_incrementSize = 0;
-	PPG_mem_mem32_subAllocHeapMem32.suballocator_quickAlloc = TRUE;
 
 	/* initialize the monitor in subAllocHeap32 */
 	if (0 != omrthread_monitor_init(&(PPG_mem_mem32_subAllocHeapMem32.monitor), 0)) {
@@ -428,26 +438,15 @@ allocate_memory32(struct OMRPortLibrary *portLibrary, uintptr_t byteAmount, cons
 #endif
 		omrthread_monitor_enter(PPG_mem_mem32_subAllocHeapMem32.monitor);
 
-		/* Check if byteAmount is larger than PPG_mem_mem32_subAllocHeapMem32.suballocator_incrementSize.
+		/* Check if byteAmount is larger than HEAP_SIZE_BYTES.
 		 * The majority of size requests will typically be much smaller.
 		 */
 		returnPtr = iterateHeapsAndSubAllocate(portLibrary, byteAmount);
 		if (NULL == returnPtr) {
-			if (byteAmount >= PPG_mem_mem32_subAllocHeapMem32.suballocator_incrementSize) {
-				returnPtr = allocateLargeRegion(
-							portLibrary,
-							byteAmount,
-							callSite,
-							0);
+			if (byteAmount >= HEAP_SIZE_BYTES) {
+				returnPtr = allocateLargeRegion(portLibrary, byteAmount, callSite, 0);
 			} else {
-				/* For 64-bit Linux, use the OMRPORT_VMEM_ALLOC_QUICK flag if it has not been disabled. */
-				uintptr_t vmemAllocOptions = PPG_mem_mem32_subAllocHeapMem32.suballocator_quickAlloc ? OMRPORT_VMEM_ALLOC_QUICK : 0;
-				returnPtr = allocateRegion(
-							portLibrary,
-							PPG_mem_mem32_subAllocHeapMem32.suballocator_incrementSize,
-							byteAmount,
-							callSite,
-							vmemAllocOptions);
+				returnPtr = allocateRegion(portLibrary, HEAP_SIZE_BYTES, byteAmount, callSite, 0);
 			}
 		}
 
@@ -467,11 +466,11 @@ ensure_capacity32(struct OMRPortLibrary *portLibrary, uintptr_t byteAmount)
 	J9HeapWrapper *heapWrapperCursor = NULL;
 	uintptr_t returnValue = OMRPORT_ENSURE_CAPACITY_FAILED;
 #if defined(OMR_ENV_DATA64)
-	/* For 64-bit OS, use the OMRPORT_VMEM_ALLOC_QUICK flag during startup. */
+	/* For 64 bit os, use flag OMRPORT_VMEM_ALLOC_QUICK as it is in the startup period. */
 	uintptr_t vmemAllocOptions = OMRPORT_VMEM_ALLOC_QUICK;
-#else /* defined(OMR_ENV_DATA64) */
+#else
 	uintptr_t vmemAllocOptions = 0;
-#endif /* defined(OMR_ENV_DATA64) */
+#endif
 
 	Trc_PRT_mem_ensure_capacity32_Entry(byteAmount);
 
@@ -482,9 +481,9 @@ ensure_capacity32(struct OMRPortLibrary *portLibrary, uintptr_t byteAmount)
 	}
 #endif
 
-	/* Ensured byte amount should be at least PPG_mem_mem32_subAllocHeapMem32.suballocator_incrementSize large. */
-	if (byteAmount < PPG_mem_mem32_subAllocHeapMem32.suballocator_incrementSize) {
-		byteAmount = PPG_mem_mem32_subAllocHeapMem32.suballocator_incrementSize;
+	/* Ensured byte amount should be at least HEAP_SIZE_BYTES large */
+	if (byteAmount < HEAP_SIZE_BYTES) {
+		byteAmount = HEAP_SIZE_BYTES;
 	}
 
 	omrthread_monitor_enter(PPG_mem_mem32_subAllocHeapMem32.monitor);

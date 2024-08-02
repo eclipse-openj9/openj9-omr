@@ -54,11 +54,11 @@ omrport_control(struct OMRPortLibrary *portLibrary, const char *key, uintptr_t v
 		return 0;
 	}
 #if defined(OMR_ENV_DATA64)
-	if (0 == strcmp(OMRPORT_CTLDATA_ALLOCATE32_COMMIT_SIZE, key)) {
+	if (!strcmp(OMRPORT_CTLDATA_ALLOCATE32_COMMIT_SIZE, key)) {
 		if (0 != value) {
 			/* CommitSize is immutable. It can only be set once. */
 			if (0 == PPG_mem_mem32_subAllocHeapMem32.suballocator_commitSize) {
-				/* Round up the commit size to the page size and set it to global variable. */
+				/* Round up the commit size to the page size and set it to global variable */
 				uintptr_t pageSize = portLibrary->vmem_supported_page_sizes(portLibrary)[0];
 				uintptr_t roundedCommitSize = pageSize * (value / pageSize);
 				if (roundedCommitSize < value) {
@@ -72,29 +72,8 @@ omrport_control(struct OMRPortLibrary *portLibrary, const char *key, uintptr_t v
 			return (int32_t)PPG_mem_mem32_subAllocHeapMem32.suballocator_commitSize;
 		}
 		return 0;
-	} else if (0 == strcmp(OMRPORT_CTLDATA_ALLOCATE32_INCREMENT_SIZE, key)) {
-		if (0 != value) {
-			/* IncrementSize is immutable. It can only be set once. */
-			if (0 == PPG_mem_mem32_subAllocHeapMem32.suballocator_incrementSize) {
-				/* Round up the increment size to the page size and set it to global variable. */
-				uintptr_t pageSize = portLibrary->vmem_supported_page_sizes(portLibrary)[0];
-				uintptr_t roundedIncrementSize = pageSize * (value / pageSize);
-				if (roundedIncrementSize < value) {
-					roundedIncrementSize += pageSize;
-				}
-				PPG_mem_mem32_subAllocHeapMem32.suballocator_incrementSize = roundedIncrementSize;
-			} else {
-				return 1;
-			}
-		} else {
-			return (int32_t)PPG_mem_mem32_subAllocHeapMem32.suballocator_incrementSize;
-		}
-		return 0;
-	} else if (0 == strcmp(OMRPORT_CTLDATA_ALLOCATE32_QUICK_ALLOC, key)) {
-		PPG_mem_mem32_subAllocHeapMem32.suballocator_quickAlloc = (0 != value) ? TRUE : FALSE;
-		return 0;
 	}
-#endif /* defined(OMR_ENV_DATA64) */
+#endif
 
 #if defined(OMR_RAS_TDF_TRACE)
 	if (!strcmp(OMRPORT_CTLDATA_TRACE_START, key) && value) {

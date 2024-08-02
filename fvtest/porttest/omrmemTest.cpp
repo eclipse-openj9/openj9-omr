@@ -56,8 +56,8 @@ extern PortTestEnvironment *portTestEnv;
 #endif
 
 #if defined(OMR_ENV_DATA64)
-/* This macro corresponds to SUBALLOCATOR_INCREMENT_SIZE defined in omrgcconsts.h. */
-#define HEAP_SIZE_BYTES (8 * 1024 * 1024)
+/* this macro corresponds to the one defined in omrmem32helpers */
+#define HEAP_SIZE_BYTES 8*1024*1024
 #endif
 
 #define COMPLETE_LARGE_REGION 1

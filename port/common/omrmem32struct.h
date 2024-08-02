@@ -41,8 +41,6 @@ typedef struct J9SubAllocateHeapMem32 {
 	J9HeapWrapper *subCommitHeapWrapper;
 	uintptr_t suballocator_initialSize;
 	uintptr_t suballocator_commitSize;
-	uintptr_t suballocator_incrementSize;
-	BOOLEAN suballocator_quickAlloc;
 } J9SubAllocateHeapMem32;
 
 #endif	/* omrmem32struct_h */

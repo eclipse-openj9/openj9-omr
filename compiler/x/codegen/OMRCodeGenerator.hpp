@@ -658,7 +658,7 @@ class OMR_EXTENSIBLE CodeGenerator : public OMR::CodeGenerator
     * \brief move out-of-line instructions from cold code to warm
     *
     */
-   void moveOutOfLineInstructionsToWarm();
+   void moveOutOfLineInstructionsToWarmCode();
 
    uint32_t getOutOfLineCodeSize();
 

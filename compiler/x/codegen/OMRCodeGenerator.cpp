@@ -1868,8 +1868,8 @@ void OMR::X86::CodeGenerator::doRegisterAssignment(TR_RegisterKinds kindsToAssig
       self()->doBackwardsRegisterAssignment(kindsToAssign, self()->getAppendInstruction());
       }
 
-   if (TR::Options::getCmdLineOptions()->getOption(TR_EnableCodeCacheDisclaiming))
-      moveOutOfLineInstructionsToWarm();
+   if (TR::Options::getCmdLineOptions()->getOption(TR_MoveOOLInstructionsToWarmCode))
+      moveOutOfLineInstructionsToWarmCode();
    }
 
 bool OMR::X86::CodeGenerator::isReturnInstruction(TR::Instruction *instr)
@@ -3505,58 +3505,58 @@ OMR::X86::CodeGenerator::getOutOfLineCodeSize()
    }
 
 void
-OMR::X86::CodeGenerator::moveOutOfLineInstructionsToWarm()
+OMR::X86::CodeGenerator::moveOutOfLineInstructionsToWarmCode()
    {
    // OOL instructions are already attached at the end of the IL (after cold instructions)
    // and register allocated.
-   // Move them to immediately after the last warm instruction, unless they already happend to be
+   // Move them to immediately after the last warm instruction, unless they already happened to be
    // there (e.g. there are no cold instructions)
    //
+   if (!self()->getLastWarmInstruction())
+      return;
+
    if (self()->comp()->getOption(TR_TraceCG))
-      traceMsg(self()->comp(), "Moving OutOfLine instructions\n");
+      traceMsg(self()->comp(), "Moving OutOfLine instructions to after %p\n", self()->getLastWarmInstruction());
 
    auto oiIterator = self()->getOutlinedInstructionsList().begin();
 
    while (oiIterator != self()->getOutlinedInstructionsList().end())
       {
-      TR::Instruction *firstInstruction = (*oiIterator)->getFirstInstruction();
-      TR::Instruction *lastInstruction  = (*oiIterator)->getAppendInstruction();
+      TR::Instruction *firstOLInstruction = (*oiIterator)->getFirstInstruction();
+      TR::Instruction *lastOLInstruction  = (*oiIterator)->getAppendInstruction();
 
-      TR_ASSERT_FATAL(firstInstruction, "VFPRestore instruciton should preceeed any OOL section\n");
+      TR_ASSERT_FATAL(firstOLInstruction, "VFPRestore instruction should preceeed any OOL section\n");
       TR_ASSERT_FATAL(self()->getLastWarmInstruction() != self()->getAppendInstruction(),
                       "Last warm instruction can't be append instruction since OOL code was attached already\n");
 
-      if (self()->getLastWarmInstruction() &&
-          self()->getLastWarmInstruction() != firstInstruction->getPrev())
+      if (self()->getLastWarmInstruction() != firstOLInstruction->getPrev())
          {
-         TR::Instruction *appendInstruction;
+         // remove from previous location
+         if (firstOLInstruction->getPrev())
+            firstOLInstruction->getPrev()->setNext(lastOLInstruction->getNext());
 
-         // remove from prrevious location
-         if (firstInstruction->getPrev())
-            firstInstruction->getPrev()->setNext(lastInstruction->getNext());
-
-         if (lastInstruction->getNext())
-            lastInstruction->getNext()->setPrev(firstInstruction->getPrev());
+         if (lastOLInstruction->getNext())
+            lastOLInstruction->getNext()->setPrev(firstOLInstruction->getPrev());
 
          // update codegen append instruction
-         if (lastInstruction == self()->getAppendInstruction())
-            self()->setAppendInstruction(firstInstruction->getPrev());
+         if (lastOLInstruction == self()->getAppendInstruction())
+            self()->setAppendInstruction(firstOLInstruction->getPrev());
 
          // insert after last warm instruction
-         appendInstruction = self()->getLastWarmInstruction();
-         appendInstruction->setLastWarmInstruction(false);
-         lastInstruction->setLastWarmInstruction(true);
-         self()->setLastWarmInstruction(lastInstruction);
+         TR::Instruction *mainlineAppendInstruction = self()->getLastWarmInstruction();
+         mainlineAppendInstruction->setLastWarmInstruction(false);
+         lastOLInstruction->setLastWarmInstruction(true);
+         self()->setLastWarmInstruction(lastOLInstruction);
 
-         TR::Instruction *followInstruction = appendInstruction->getNext();
+         TR::Instruction *mainlineFollowInstruction = mainlineAppendInstruction->getNext();
 
-         appendInstruction->setNext(firstInstruction);
-         firstInstruction->setPrev(appendInstruction);
+         mainlineAppendInstruction->setNext(firstOLInstruction);
+         firstOLInstruction->setPrev(mainlineAppendInstruction);
 
-         lastInstruction->setNext(followInstruction);
+         lastOLInstruction->setNext(mainlineFollowInstruction);
 
-         if (followInstruction)
-            followInstruction->setPrev(lastInstruction);
+         if (mainlineFollowInstruction)
+            mainlineFollowInstruction->setPrev(lastOLInstruction);
          }
 
       ++oiIterator;

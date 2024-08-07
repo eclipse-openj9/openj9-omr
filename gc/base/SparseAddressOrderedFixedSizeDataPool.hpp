@@ -86,6 +86,7 @@ protected:
 	uintptr_t _lastFreeBytes; /**< Number of bytes free at end of last GC */
 	uintptr_t _freeListPoolFreeNodesCount; /**< Number of free list nodes. There's always at least one node in list therefore >= 1 */
 	uintptr_t _freeListPoolAllocBytes; /**< Byte amount allocated from sparse heap */
+	uintptr_t _allocObjectCount; /**< Object count allocated from sparse heap */
 
 	MM_GCExtensionsBase *_extensions; /**< GC Extensions for this JVM */
 	J9Pool *_freeListPool; /**< Memory pool to be used to create MM_SparseHeapLinkedFreeHeader nodes */
@@ -195,6 +196,14 @@ public:
 	}
 
 	/**
+	 * Get the total count of the allocated objects
+	 */
+	MMINLINE uintptr_t getAllocObjectCount()
+	{
+		return _allocObjectCount;
+	}
+
+	/**
 	 * Update the proxyObjPtr after an object has moved for the sparse data entry associated with the given dataPtr.
 	 *
 	 * @param dataPtr		void*	Data pointer
@@ -216,6 +225,7 @@ protected:
 		, _lastFreeBytes(0)
 		, _freeListPoolFreeNodesCount(0)
 		, _freeListPoolAllocBytes(0)
+		, _allocObjectCount(0)
 		, _extensions(env->getExtensions())
 		, _freeListPool(NULL)
 		, _heapFreeList(NULL)

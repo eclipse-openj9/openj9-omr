@@ -64,7 +64,7 @@ typedef enum RootScannerEntity {
 	RootScannerEntity_MonitorLookupCachesComplete,
 	RootScannerEntity_MonitorReferenceObjectsComplete,
 	RootScannerEntity_DoubleMappedObjects, /* Obsolete */
-	RootScannerEntity_DoubleMappedOrVirtualLargeObjectHeapObjects,
+	RootScannerEntity_virtualLargeObjectHeapObjects,
 
 	/* Must be last, do not use this entity! */
 	RootScannerEntity_Count

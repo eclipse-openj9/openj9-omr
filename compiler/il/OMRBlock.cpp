@@ -1157,11 +1157,11 @@ static TR::SymbolReference * createSymRefForNode(TR::Compilation *comp, TR::Reso
          symRef = comp->getSymRefTab()->createTemporary(methodSymbol, TR::Address, true, 0);
          if (value->isNotCollected())
             symRef->getSymbol()->setNotCollected();
-         else if (value->getOpCode().isArrayRef())
+         else if (value->getOpCode().isArrayRef() || value->isDataAddrPointer())
             value->setIsInternalPointer(true);
 
          TR::AutomaticSymbol *pinningArray = NULL;
-         if (value->getOpCode().isArrayRef())
+         if (value->getOpCode().isArrayRef() || value->isDataAddrPointer())
             {
             TR::Node *valueChild = value->getFirstChild();
             if (valueChild->isInternalPointer() &&

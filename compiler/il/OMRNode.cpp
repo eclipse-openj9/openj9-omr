@@ -5214,7 +5214,7 @@ OMR::Node::getPinningArrayPointer()
    if (self()->getOpCode().hasPinningArrayPointer())
       return _unionPropertyA._pinningArrayPointer;
 
-   return _unionBase._extension.getExtensionPtr()->getElem<TR::AutomaticSymbol *>(5);
+   return _unionBase._extension.getNumElems() >= 6 ? _unionBase._extension.getExtensionPtr()->getElem<TR::AutomaticSymbol *>(5) : NULL;
    }
 
 TR::AutomaticSymbol*

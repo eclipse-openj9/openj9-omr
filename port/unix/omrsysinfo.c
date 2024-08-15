@@ -2719,7 +2719,7 @@ find_executable_name(struct OMRPortLibrary *portLibrary, char **result)
 	portLibrary->mem_free_memory(portLibrary, buf.ps_pathptr);
 
 	/* Return val of w_getpsent == -1 indicates error, == 0 indicates no more processes */
-	if (token <= 0) {
+	if ((token <= 0) || (NULL == e2aName)) {
 		retval = -1;
 		goto cleanup;
 	}

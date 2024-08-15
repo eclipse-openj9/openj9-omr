@@ -51,8 +51,10 @@ WRITE_TTY(int fileno, char *b, int bcount)
 {
 #if !defined(OMR_EBCDIC)
 	char *s = a2e(b, bcount);
-	write(fileno, s, bcount);
-	free(s);
+	if (NULL != s) {
+		write(fileno, s, bcount);
+		free(s);
+	}
 #else /* !defined(OMR_EBCDIC) */
 	write(fileno, b, bcount);
 #endif /* !defined(OMR_EBCDIC) */

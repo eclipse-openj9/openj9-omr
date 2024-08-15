@@ -568,8 +568,10 @@ next_char:
 					CheckRet(requiredSpace);
 					if ((freeCap > 0) && (requiredSpace > 0)) {
 						char *tempAsciiValue = e2a_string(this.buffer);
-						strcpy(this.buffer, tempAsciiValue);
-						free(tempAsciiValue);
+						if (NULL != tempAsciiValue) {
+							strcpy(this.buffer, tempAsciiValue);
+							free(tempAsciiValue);
+						}
 					}
 					this.buffer += requiredSpace;
 				}

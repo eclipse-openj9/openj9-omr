@@ -3865,11 +3865,14 @@ slowBlock-> n39n      BBStart <block_10> (freq 0) (cold)
    TR::TreeTop *ifDstTree = NULL;
    if (needTestDstArray)
       {
-      // Create the test node to check if the destination array component type is primitive VT (null restricted value type).
-      TR::Node *ifNode = comp()->fej9()->checkArrayCompClassPrimitiveValueType(dstArrayRefNode, TR::ificmpne);
-      // If the destination array component type is primitive VT (null restricted value type),
-      // jump to the slow path (slowBlock)
-      ifNode->setBranchDestination(slowBlock->getEntry());
+      // If the destination array type is null restricted, jump to the slow path (slowBlock)
+      //
+      TR::SymbolReference* const vftSymRef = comp()->getSymRefTab()->findOrCreateVftSymbolRef();
+      TR::Node *vftNode = TR::Node::createWithSymRef(TR::aloadi, 1, 1, dstArrayRefNode, vftSymRef);
+
+      TR::Node *testIsNullRestrictedArray = comp()->fej9()->testIsArrayClassNullRestrictedType(vftNode);
+
+      TR::Node *ifNode = TR::Node::createif(TR::ificmpne, testIsNullRestrictedArray, TR::Node::iconst(0), slowBlock->getEntry());
 
       ifDstTree = TR::TreeTop::create(comp(), ifNode);
       prevTT->insertAfter(ifDstTree);
@@ -3883,10 +3886,14 @@ slowBlock-> n39n      BBStart <block_10> (freq 0) (cold)
    // can't handle copying between flattened and non-flattened arrays.
    if (needTestSrcArray)
       {
-      // If the source array component type is primitive VT (null restricted value type),
-      // jump to the slow path (slowBlock)
-      TR::Node *ifNode = comp()->fej9()->checkArrayCompClassPrimitiveValueType(srcArrayRefNode, TR::ificmpne);
-      ifNode->setBranchDestination(slowBlock->getEntry());
+      // If the destination array type is null restricted, jump to the slow path (slowBlock)
+      //
+      TR::SymbolReference* const vftSymRef = comp()->getSymRefTab()->findOrCreateVftSymbolRef();
+      TR::Node *vftNode = TR::Node::createWithSymRef(TR::aloadi, 1, 1, srcArrayRefNode, vftSymRef);
+
+      TR::Node *testIsNullRestrictedArray = comp()->fej9()->testIsArrayClassNullRestrictedType(vftNode);
+
+      TR::Node *ifNode = TR::Node::createif(TR::ificmpne, testIsNullRestrictedArray, TR::Node::iconst(0), slowBlock->getEntry());
 
       TR::TreeTop *ifSrcTree = TR::TreeTop::create(comp(), ifNode);
 

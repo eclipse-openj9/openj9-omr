@@ -1528,7 +1528,7 @@ OMR::SymbolReferenceTable::findOrCreateMethodSymbol(
    if (!resolvedMethod)
       symRef->setUnresolved();
    else if (callKind == TR::MethodSymbol::Virtual && cpIndex != -1)
-      symRef->setOffset(resolvedMethod->virtualCallSelector(cpIndex));
+      symRef->setOffset(resolvedMethod->virtualCallSelector());
 
    aliasBuilder.methodSymRefs().set(symRef->getReferenceNumber());
 

@@ -218,7 +218,7 @@ public:
    virtual uint32_t classCPIndexOfMethod(uint32_t);
    virtual void * & addressOfClassOfMethod();
 
-   virtual uint32_t vTableSlot(uint32_t);
+   virtual uint32_t vTableSlot();
 
    virtual TR_OpaqueClassBlock *getResolvedInterfaceMethod(int32_t cpIndex, uintptr_t * pITableIndex);
 
@@ -236,7 +236,7 @@ public:
    virtual bool virtualMethodIsOverridden();
    virtual void setVirtualMethodIsOverridden();
    virtual void *addressContainingIsOverriddenBit();
-   virtual int32_t virtualCallSelector(uint32_t cpIndex);
+   virtual int32_t virtualCallSelector();
 
    virtual int32_t exceptionData(int32_t exceptionNumber, int32_t * startIndex, int32_t * endIndex, int32_t * catchType);
    virtual uint32_t numberOfExceptionHandlers();

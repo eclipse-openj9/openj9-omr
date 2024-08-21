@@ -5122,31 +5122,6 @@ bool TR::VPClass::mustBeNotEqual(TR::VPConstraint *other, OMR::ValuePropagation 
    if (isNonNullObject() && other->isNullObject())
       return true;
 
-   // The new logic below is causing some test failures that need to be investigated.
-   // This original logic is reinstated in the meantime.
-   if (getKnownObject() && other->getKnownObject() && isNonNullObject() && other->isNonNullObject())
-      return getKnownObject()->getIndex() != other->getKnownObject()->getIndex();
-
-   TR::VPClass *otherClass = NULL;
-   if (other)
-      otherClass = other->asClass();
-  if (!_preexistence &&
-       !_arrayInfo && _type &&
-       _type->isFixedClass() && isNonNullObject() &&
-       other && otherClass &&
-       !otherClass->getArrayInfo() &&
-       !otherClass->isPreexistentObject() &&
-       otherClass->getClassType() && otherClass->getClassType()->isFixedClass() && otherClass->isNonNullObject() &&
-       (isClassObject() == TR_yes) &&
-       (other->isClassObject() == TR_yes))
-      {
-      if (_type->asFixedClass()->getClass() != otherClass->getClassType()->asFixedClass()->getClass())
-         return true;
-      }
-
-   return false;
-
-#if 0
    if (!isNonNullObject() && !other->isNonNullObject())
       return false; // both could be null
 
@@ -5287,7 +5262,7 @@ bool TR::VPClass::mustBeNotEqual(TR::VPConstraint *other, OMR::ValuePropagation 
          boundClass = thisClass;
          }
 
-      return vp->fe()->isInstanceOf(fixedClass, boundClass, true, true) != TR_yes;
+      return vp->fe()->isInstanceOf(fixedClass, boundClass, true, true) == TR_no;
       }
 
    // Neither type is fixed.
@@ -5308,9 +5283,8 @@ bool TR::VPClass::mustBeNotEqual(TR::VPConstraint *other, OMR::ValuePropagation 
       }
 
    // Two unrelated non-interface classes can't have a common subtype.
-   return vp->fe()->isInstanceOf(thisClass, otherClass, true, true) != TR_yes
-      && vp->fe()->isInstanceOf(otherClass, thisClass, true, true) != TR_yes;
-#endif
+   return vp->fe()->isInstanceOf(thisClass, otherClass, true, true) == TR_no
+      && vp->fe()->isInstanceOf(otherClass, thisClass, true, true) == TR_no;
    }
 
 bool TR::VPNullObject::mustBeNotEqual(TR::VPConstraint *other, OMR::ValuePropagation *vp)

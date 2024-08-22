@@ -153,6 +153,8 @@ OMR::Z::Machine::registerCopy(TR::CodeGenerator* cg,
       case TR_VRF:
          cursor = generateVRRaInstruction(cg, TR::InstOpCode::VLR, node, targetReg, sourceReg, precedingInstruction);
          break;
+      default:
+         break;
       }
 
    cg->traceRAInstruction(cursor);
@@ -2474,6 +2476,8 @@ OMR::Z::Machine::freeBestRegister(TR::Instruction * currentInstruction, TR::Regi
          maskI = first = TR::RealRegister::FirstVRF;
          last = TR::RealRegister::LastVRF;
          break;
+      default:
+         break;
       }
 
    int32_t preference = 0, pref_favored = 0;
@@ -2669,6 +2673,8 @@ OMR::Z::Machine::spillRegister(TR::Instruction * currentInstruction, TR::Registe
 
        opCode = TR::InstOpCode::VL;
        break;
+      default:
+         break;
      }
 
    TR::MemoryReference * tempMR = generateS390MemoryReference(currentNode, location->getSymbolReference(), self()->cg());
@@ -2841,6 +2847,8 @@ OMR::Z::Machine::reverseSpillState(TR::Instruction      *currentInstruction,
       case TR_VRF:
          dataSize = 16;
          opCode = TR::InstOpCode::VST;
+         break;
+      default:
          break;
       }
 

@@ -2112,7 +2112,8 @@ OMR::Z::Machine::findBestFreeRegister(TR::Instruction   *currentInstruction,
          }
       else
          {
-         if (bestRegister = self()->findBestLegalEvenRegister(availRegMask))
+         bestRegister = self()->findBestLegalEvenRegister(availRegMask);
+         if (NULL != bestRegister)
             // Set the pair's sibling to a high weight so that assignment to this real reg is unlikely
             {
             _registerFile[toRealRegister(bestRegister)->getRegisterNumber() + 1]->setWeight(S390_REGISTER_PAIR_SIBLING);
@@ -2161,7 +2162,8 @@ OMR::Z::Machine::findBestFreeRegister(TR::Instruction   *currentInstruction,
          }
       else
          {
-         if (bestRegister = self()->findBestLegalOddRegister(availRegMask))
+         bestRegister = self()->findBestLegalOddRegister(availRegMask);
+         if (NULL != bestRegister)
             // Set the pair's sibling to a high weight so that assignment to this real reg is unlikely
             {
             _registerFile[toRealRegister(bestRegister)->getRegisterNumber() - 1]->setWeight(S390_REGISTER_PAIR_SIBLING);
@@ -2200,7 +2202,8 @@ OMR::Z::Machine::findBestFreeRegister(TR::Instruction   *currentInstruction,
          }
       else
          {
-         if (bestRegister = self()->findBestLegalSiblingFPRegister(true,availRegMask))
+         bestRegister = self()->findBestLegalSiblingFPRegister(true,availRegMask);
+         if (NULL != bestRegister)
             // Set the pair's sibling to a high weight so that assignment to this real reg is unlikely
             {
             _registerFile[toRealRegister(bestRegister)->getRegisterNumber() + 2]->setWeight(S390_REGISTER_PAIR_SIBLING);
@@ -2239,7 +2242,8 @@ OMR::Z::Machine::findBestFreeRegister(TR::Instruction   *currentInstruction,
          }
       else
          {
-         if (bestRegister = self()->findBestLegalSiblingFPRegister(false,availRegMask))
+         bestRegister = self()->findBestLegalSiblingFPRegister(false,availRegMask);
+         if (NULL != bestRegister)
             // Set the pair's sibling to a high weight so that assignment to this real reg is unlikely
             {
             _registerFile[toRealRegister(bestRegister)->getRegisterNumber() - 2]->setWeight(S390_REGISTER_PAIR_SIBLING);
@@ -3219,7 +3223,8 @@ OMR::Z::Machine::coerceRegisterAssignment(TR::Instruction                       
                // to prevent exception in findBestSwapRegister
                currentTargetVirtual->setAssignedRegister(targetRegister);
 
-            if (reg = self()->findBestSwapRegister(virtualRegister, currentTargetVirtual))
+            reg = self()->findBestSwapRegister(virtualRegister, currentTargetVirtual);
+            if (NULL != reg)
                {
                spareReg = reg;
                }

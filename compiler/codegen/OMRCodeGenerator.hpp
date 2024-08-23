@@ -344,7 +344,16 @@ public:
 
    void lowerTreesPropagateBlockToNode(TR::Node *node);
 
-   void findLastWarmBlock();
+   /**
+    * @brief Inserts goto into the last block if necessary
+    */
+   void insertGotoIntoLastBlock(TR::Block *lastBlock);
+
+   /**
+    * @brief Finds last warm block and inserts necessary gotos
+    *        for splitting code into warm and cold
+    */
+   void prepareLastWarmBlockForCodeSplitting();
 
    void setUpForInstructionSelection();
    void doInstructionSelection();

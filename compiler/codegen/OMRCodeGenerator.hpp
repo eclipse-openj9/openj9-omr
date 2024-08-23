@@ -349,7 +349,11 @@ public:
     */
    void insertGotoIntoLastBlock(TR::Block *lastBlock);
 
-   void findLastWarmBlock();
+   /**
+    * @brief Finds last warm block and inserts necessary gotos
+    *        for splitting code into warm and cold
+    */
+   void prepareLastWarmBlockForCodeSplitting();
 
    void setUpForInstructionSelection();
    void doInstructionSelection();

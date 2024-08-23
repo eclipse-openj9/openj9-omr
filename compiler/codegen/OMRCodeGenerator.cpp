@@ -435,7 +435,7 @@ OMR::CodeGenerator::insertGotoIntoLastBlock(TR::Block *lastBlock)
       }
    }
 
-void OMR::CodeGenerator::findLastWarmBlock()
+void OMR::CodeGenerator::prepareLastWarmBlockForCodeSplitting()
    {
    TR::Compilation *comp = self()->comp();
    TR::TreeTop * tt;
@@ -598,7 +598,7 @@ void OMR::CodeGenerator::postLowerTrees()
    if (comp()->getOption(TR_SplitWarmAndColdBlocks) &&
        !comp()->compileRelocatableCode())
       {
-      self()->findLastWarmBlock();
+      self()->prepareLastWarmBlockForCodeSplitting();
       }
    }
 

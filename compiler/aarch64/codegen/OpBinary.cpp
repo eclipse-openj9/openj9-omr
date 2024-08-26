@@ -907,6 +907,10 @@ const OMR::ARM64::InstOpCode::OpCodeBinaryEntry OMR::ARM64::InstOpCode::binaryEn
 		0x4E405800,	/* UZP2      	vuzp2_8h */
 		0x4E805800,	/* UZP2      	vuzp2_4s */
 		0x4EC05800,	/* UZP2      	vuzp2_2d */
+		0x0E002800,	/* TRN1      	vtrn1_8b */
+		0x4E002800,	/* TRN1      	vtrn1_16b */
+		0x0E006800,	/* TRN2      	vtrn2_8b */
+		0x4E006800,	/* TRN2      	vtrn2_16b */
 	/* Vector extract */
 		0x6E000000,	/* EXT       	vext16b	 */
 	/* Vector Data-processing (1 source) */

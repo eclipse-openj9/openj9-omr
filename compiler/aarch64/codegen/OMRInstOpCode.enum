@@ -906,6 +906,10 @@
 		vuzp2_8h,                                                 	/* 0x4E405800	UZP2      	 */
 		vuzp2_4s,                                                 	/* 0x4E805800	UZP2      	 */
 		vuzp2_2d,                                                 	/* 0x4EC05800	UZP2      	 */
+		vtrn1_8b,                                               	/* 0x0E002800	TRN1      	 */
+		vtrn1_16b,                                              	/* 0x4E002800	TRN1      	 */
+		vtrn2_8b,                                               	/* 0x0E006800	TRN2      	 */
+		vtrn2_16b,                                              	/* 0x4E006800	TRN2      	 */
 	/* Vector extract */
 		vext16b,                                                  	/* 0x6E000000	EXT      	 */
 	/* Vector Data-processing (1 source) */

@@ -689,6 +689,7 @@ TR::OptionTable OMR::Options::_jitOptions[] = {
    {"enableClassChainValidationCaching",  "M\tenable class chain validation caching", SET_OPTION_BIT(TR_EnableClassChainValidationCaching), "F", NOT_IN_SUBSET},
    {"enableCodeCacheConsolidation",       "M\tenable code cache consolidation", SET_OPTION_BIT(TR_EnableCodeCacheConsolidation), "F", NOT_IN_SUBSET},
    {"enableCodeCacheDisclaiming",         "M\tenable memory disclaiming for code cache (linux specific).", SET_OPTION_BIT(TR_EnableCodeCacheDisclaiming),"F", NOT_IN_SUBSET},
+   {"enableCodeCacheDisclaimingSupport",  "M\tenable all experimental options that help code cache disclaiming.", SET_OPTION_BIT(TR_EnableCodeCacheDisclaimingSupport),"F", NOT_IN_SUBSET},
    {"enableColdCheapTacticalGRA",         "O\tenable cold cheap tactical GRA", SET_OPTION_BIT(TR_EnableColdCheapTacticalGRA), "F"},
    {"enableCompilationBeforeCheckpoint",  "C\tenable compilation before checkpoint", RESET_OPTION_BIT(TR_DisableCompilationBeforeCheckpoint), "F", NOT_IN_SUBSET},
    {"enableCompilationSpreading",         "C\tenable adding spreading invocations to methods before compiling", SET_OPTION_BIT(TR_EnableCompilationSpreading), "F", NOT_IN_SUBSET},
@@ -2454,6 +2455,15 @@ OMR::Options::jitLatePostProcess(TR::OptionSet *optionSet, void * jitConfig)
    if (self()->getOption(TR_DisableLockResevation))
       {
          self()->setOption(TR_ReservingLocks, false);
+      }
+
+   if (self()->getOption(TR_EnableCodeCacheDisclaimingSupport))
+      {
+      self()->setOption(TR_SplitWarmAndColdBlocks);
+      self()->setOption(TR_DisclaimMemoryOnSwap);
+      self()->setOption(TR_InstallAOTToColdCode);
+      self()->setOption(TR_MoveOOLInstructionsToWarmCode);
+      self()->setOption(TR_MoveSnippetsToWarmCode);
       }
 
    return true;

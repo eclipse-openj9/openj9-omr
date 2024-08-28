@@ -1962,7 +1962,7 @@ TR::Node *constrainAload(OMR::ValuePropagation *vp, TR::Node *node)
                         if (elementSize != 0)
                            {
                            constraint = TR::VPClass::create(vp, (TR::VPClassType*)constraint, NULL, NULL,
-                                 TR::VPArrayInfo::create(vp, 0, elementSize == 0 ? TR::getMaxSigned<TR::Int32>() : TR::getMaxSigned<TR::Int32>()/elementSize, elementSize),
+                                 TR::VPArrayInfo::create(vp, 0, TR::Compiler->om.maxArraySizeInElements(elementSize, vp->comp()), elementSize),
                                  TR::VPObjectLocation::create(vp, TR::VPObjectLocation::NotClassObject));
                            }
                         }

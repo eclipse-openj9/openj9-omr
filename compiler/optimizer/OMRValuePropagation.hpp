@@ -367,14 +367,14 @@ class ValuePropagation : public TR::Optimization
    TR_YesNoMaybe isCastClassObject(TR::VPClassType *type);
 
    /**
-    * Determine whether the component type of an array is, or might be, a primitive value
-    * type.
+    * Determine whether the array is, or might be, null-restricted
+    *
     * \param arrayConstraint The \ref TR::VPConstraint type constraint for the array reference
-    * \returns \c TR_yes if the array's component type is definitely a primitive value type;\n
-    *          \c TR_no if it is definitely not a primitive value type; or\n
+    * \returns \c TR_yes if the array is definitely a null-restricted array;\n
+    *          \c TR_no if it is definitely not a null-restricted array; or\n
     *          \c TR_maybe otherwise.
     */
-   virtual TR_YesNoMaybe isArrayCompTypePrimitiveValueType(TR::VPConstraint *arrayConstraint);
+   virtual TR_YesNoMaybe isArrayNullRestricted(TR::VPConstraint *arrayConstraint);
 
    /**
     * \brief

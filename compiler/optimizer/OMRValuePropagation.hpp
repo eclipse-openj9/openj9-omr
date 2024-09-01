@@ -616,15 +616,16 @@ class ValuePropagation : public TR::Optimization
      {
      TR_ALLOC(TR_Memory::ValuePropagation)
 
-     TR_NeedRuntimeTestNullRestrictedArrayCopy(TR::Node *dstArrRef, TR::Node *srcArrRef,
+     TR_NeedRuntimeTestNullRestrictedArrayCopy(TR::SymbolReference *dstArrRefSymRef, TR::SymbolReference *srcArrRefSymRef,
                                                TR::TreeTop *ptt, TR::TreeTop *ntt,
                                                TR::Block *originBlock, TR::Block *slowBlock,
                                                bool testDstArray)
-        : _dstArrayRefNode(dstArrRef),  _srcArrayRefNode(srcArrRef), _prevTT(ptt), _nextTT(ntt), _originBlock(originBlock), _slowBlock(slowBlock), _needRuntimeTestDstArray(testDstArray)
+        : _dstArrRefSymRef(dstArrRefSymRef), _srcArrRefSymRef(srcArrRefSymRef), _prevTT(ptt), _nextTT(ntt),
+          _originBlock(originBlock), _slowBlock(slowBlock), _needRuntimeTestDstArray(testDstArray)
         {}
 
-     TR::Node *_dstArrayRefNode;
-     TR::Node *_srcArrayRefNode;
+     TR::SymbolReference * _dstArrRefSymRef;
+     TR::SymbolReference * _srcArrRefSymRef;
 
      TR::TreeTop *_prevTT;
      TR::TreeTop *_nextTT;

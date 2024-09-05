@@ -391,11 +391,11 @@ char *       TR_ResolvedMethod::fieldNameChars(int32_t, int32_t &)         { TR_
 char *       TR_ResolvedMethod::fieldSignatureChars(int32_t, int32_t &)    { TR_UNIMPLEMENTED(); return 0; }
 char *       TR_ResolvedMethod::staticSignatureChars(int32_t, int32_t &)   { TR_UNIMPLEMENTED(); return 0; }
 void * &     TR_ResolvedMethod::addressOfClassOfMethod()                   { TR_UNIMPLEMENTED(); throw std::exception(); }
-uint32_t     TR_ResolvedMethod::vTableSlot(uint32_t)                       { TR_UNIMPLEMENTED(); return 0; }
+uint32_t     TR_ResolvedMethod::vTableSlot()                               { TR_UNIMPLEMENTED(); return 0; }
 bool         TR_ResolvedMethod::virtualMethodIsOverridden()                { TR_UNIMPLEMENTED(); return false; }
 void         TR_ResolvedMethod::setVirtualMethodIsOverridden()             { TR_UNIMPLEMENTED(); }
 void *       TR_ResolvedMethod::addressContainingIsOverriddenBit()         { TR_UNIMPLEMENTED(); return 0; }
-int32_t     TR_ResolvedMethod::virtualCallSelector(uint32_t)               { TR_UNIMPLEMENTED(); return 0; }
+int32_t     TR_ResolvedMethod::virtualCallSelector()                       { TR_UNIMPLEMENTED(); return 0; }
 uint32_t     TR_ResolvedMethod::numberOfExceptionHandlers()                { TR_UNIMPLEMENTED(); return 0; }
 uint8_t *    TR_ResolvedMethod::allocateException(uint32_t,TR::Compilation*){ TR_UNIMPLEMENTED(); return 0; }
 

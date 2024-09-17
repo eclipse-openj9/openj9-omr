@@ -270,6 +270,7 @@ MM_SparseAddressOrderedFixedSizeDataPool::findFreeListEntry(uintptr_t size)
 		Assert_MM_true(NULL != returnAddr);
 		_approximateFreeMemorySize -= size;
 		_freeListPoolAllocBytes += size;
+		_allocObjectCount += 1;
 
 		Trc_MM_SparseAddressOrderedFixedSizeDataPool_freeListEntryFoundForData_success(returnAddr, (void *)size, _freeListPoolFreeNodesCount, (void *)_approximateFreeMemorySize, (void *)_freeListPoolAllocBytes);
 	}
@@ -356,6 +357,7 @@ MM_SparseAddressOrderedFixedSizeDataPool::returnFreeListEntry(void *dataAddr, ui
 
 	_approximateFreeMemorySize += size;
 	_freeListPoolAllocBytes -= size;
+	_allocObjectCount -= 1;
 	_lastFreeBytes = size;
 
 	Trc_MM_SparseAddressOrderedFixedSizeDataPool_returnFreeListEntry_success(dataAddr, (void *)size, _freeListPoolFreeNodesCount, (void *)_approximateFreeMemorySize, (void *)_freeListPoolAllocBytes);

@@ -417,7 +417,7 @@ bool TR_InterferenceGraph::simplify()
                }
             }
 
-         TR_ASSERT(bestSpillNode, "Could not find a spill candidate.\n");
+         TR_ASSERT_FATAL(bestSpillNode, "Could not find a spill candidate");
 
          virtualRemoveNodeFromIG(bestSpillNode);
          workingSet->reset(bestSpillNode->getIndex());

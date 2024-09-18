@@ -440,6 +440,26 @@ bool branchToFollowingBlock(TR::Node * node, TR::Block * block, TR::Compilation 
    return true;
    }
 
+bool fallthroughGoesToBranchBlock(TR::Node *node, TR::Block *block, TR::Compilation *comp)
+   {
+   TR::Block *fallthroughBlock = block->getNextBlock();
+   if (fallthroughBlock == NULL ||
+       !fallthroughBlock->isGotoBlock(comp) ||
+       fallthroughBlock->getPredecessors().size() > 1 ||
+       fallthroughBlock->getExceptionPredecessors().size() > 0 ||
+       fallthroughBlock->getFirstRealTreeTop()->getNode()->getBranchDestination() != node->getBranchDestination())
+      return false;
+
+   // If this is an extended basic block there may be real nodes after the
+   // conditional branch. In this case the conditional branch must remain.
+   //
+   TR::TreeTop * treeTop = block->getLastRealTreeTop();
+   if (treeTop->getNode() != node)
+      return false;
+
+   return true;
+   }
+
 // If the first child is a constant but the second isn't, swap them.
 //
 void makeConstantTheRightChild(TR::Node * node, TR::Node * & firstChild, TR::Node * & secondChild, TR::Simplifier * s)
@@ -693,6 +713,20 @@ TR::Node *removeIfToFollowingBlock(TR::Node * node, TR::Block * block, TR::Simpl
          s->prepareToStopUsingNode(node, s->_curTree);
          node->recursivelyDecReferenceCount();
          return NULL;
+         }
+      }
+   if (fallthroughGoesToBranchBlock(node, block, s->comp()))
+      {
+      // Immediately following block goes to branch block. The branch can (later) be removed
+      //
+      static bool disable = feGetEnv("TR_disableSimplifyIfFallthroughGoto") != NULL;
+      if (!disable)
+         {
+         if (performTransformation(s->comp(), "%sMaking %s [" POINTER_PRINTF_FORMAT "] unconditional to following block\n", s->optDetailString(), node->getOpCode().getName(), node))
+            {
+            s->conditionalToUnconditional(node, block, false);
+            s->requestOpt(OMR::redundantGotoElimination, true, block);
+            }
          }
       }
    return node;

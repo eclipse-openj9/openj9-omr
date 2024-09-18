@@ -173,6 +173,7 @@ void orderChildren(TR::Node * node, TR::Node * & firstChild, TR::Node * & second
 TR::Node *foldRedundantAND(TR::Node * node, TR::ILOpCodes andOpCode, TR::ILOpCodes constOpCode, int64_t andVal, TR::Simplifier * s);
 TR::Node* tryFoldAndWidened(TR::Simplifier* simplifier, TR::Node* node);
 bool branchToFollowingBlock(TR::Node * node, TR::Block * block, TR::Compilation *comp);
+bool fallthroughGoesToBranchBlock(TR::Node *node, TR::Block *block, TR::Compilation *comp);
 void makeConstantTheRightChild(TR::Node * node, TR::Node * & firstChild, TR::Node * & secondChild, TR::Simplifier * s);
 void makeConstantTheRightChildAndSetOpcode(TR::Node * node, TR::Node * & firstChild, TR::Node * & secondChild, TR::Simplifier * s);
 TR::Node *replaceChild(int32_t childIndex, TR::Node* node, TR::Node* newChild, TR::Simplifier* s);

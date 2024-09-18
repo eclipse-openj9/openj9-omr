@@ -6695,6 +6695,15 @@ TR::Block *TR_BlockSplitter::splitBlock(TR::Block *pred, TR_LinkHeadAndTail<Bloc
           newBlock->append(TR::TreeTop::create(comp(), TR::Node::create(lastRealNode, TR::Goto, 0, nextTree)));
           cfg->addEdge(cloneEnd, newBlock);
           cfg->addEdge(newBlock, nextTree->getNode()->getBlock());
+          // The branch target may be the fall-through path. If so, since we're redirecting the fall-through path to a goto block
+          // and removing the single edge that represents both the fall-through and branch paths, we should also redirect the branch
+          // to the goto block.
+          if (lastRealNode->getBranchDestination()->getNode()->getBlock()->getNumber() == nextTree->getNode()->getBlock()->getNumber())
+             {
+             if (trace())
+                traceMsg(comp(), "   Redirecting branch %d->%d to %d\n", cloneEnd->getNumber(), nextTree->getNode()->getBlock()->getNumber(), newBlock->getNumber());
+             lastRealNode->setBranchDestination(newBlock->getEntry());
+             }
           cfg->removeEdge(cloneEnd, nextTree->getNode()->getBlock());
 
           if (trace())

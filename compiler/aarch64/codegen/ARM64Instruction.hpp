@@ -2325,7 +2325,7 @@ class ARM64Trg1Src1ImmInstruction : public ARM64Trg1Src1Instruction
     * @brief Sets the N bit (bit 22)
     * @param[in] n : N bit value
     * @return N bit value
-    */ 
+    */
    bool setNbit(bool n) { return (_Nbit = n);}
 
    /**
@@ -4696,8 +4696,8 @@ class ARM64SynchronizationInstruction : public ARM64ImmInstruction
     * @param[in] cg : CodeGenerator
     */
    ARM64SynchronizationInstruction(TR::InstOpCode::Mnemonic op, TR::Node *node,
-                                    uint32_t imm, TR::CodeGenerator *cg)
-      : ARM64ImmInstruction(op, node, imm, cg)
+                                    TR::InstOpCode::AArch64BarrierLimitation lim, TR::CodeGenerator *cg)
+      : ARM64ImmInstruction(op, node, static_cast<uint32_t>(lim), cg)
       {
       }
 
@@ -4710,9 +4710,9 @@ class ARM64SynchronizationInstruction : public ARM64ImmInstruction
     * @param[in] cg : CodeGenerator
     */
    ARM64SynchronizationInstruction(TR::InstOpCode::Mnemonic op, TR::Node *node,
-                                    uint32_t imm, TR::Instruction *precedingInstruction,
-                                    TR::CodeGenerator *cg)
-      : ARM64ImmInstruction(op, node, imm, precedingInstruction, cg)
+                                    TR::InstOpCode::AArch64BarrierLimitation lim,
+                                    TR::Instruction *precedingInstruction, TR::CodeGenerator *cg)
+      : ARM64ImmInstruction(op, node, static_cast<uint32_t>(lim), precedingInstruction, cg)
       {
       }
 

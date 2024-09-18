@@ -56,16 +56,31 @@ class InstOpCode: public OMR::InstOpCode
    InstOpCode(Mnemonic m) : OMR::InstOpCode(m) {}
 
    public:
+      enum AArch64BarrierLimitation
+         {
+         sy = 0xF,    // Full System full barrier
+         st = 0xE,    // Full System write barrier
+         ld = 0xD,    // Full System read barrier
+         ish = 0xB,   // Inner Shareable full barrier
+         ishst = 0xA, // Inner Shareable write barrier
+         ishld = 0x9, // Inner Shareable read barrier
+         nsh = 0x7,   // Non-shareable full barrier
+         nshst = 0x6, // Non-shareable write barrier
+         nshld = 0x5, // Non-shareable read barrier
+         osh = 0x3,   // Outer Shareable full barrier
+         oshst = 0x2, // Outer Shareable write barrier
+         oshld = 0x1  // Outer Shareable load barrier
+         };
 
-   typedef uint32_t OpCodeBinaryEntry;
-   static const OpCodeBinaryEntry binaryEncodings[ARM64NumOpCodes];
+      typedef uint32_t OpCodeBinaryEntry;
+      static const OpCodeBinaryEntry binaryEncodings[ARM64NumOpCodes];
 
-   /*
-    * @brief Answers binary encoding of Mnemonic
-    * @param[in] m : mnemonic
-    * @return binary encoding
-    */
-   static const OpCodeBinaryEntry getOpCodeBinaryEncoding(Mnemonic m)
+      /*
+       * @brief Answers binary encoding of Mnemonic
+       * @param[in] m : mnemonic
+       * @return binary encoding
+       */
+      static const OpCodeBinaryEntry getOpCodeBinaryEncoding(Mnemonic m)
       {
       return binaryEncodings[m];
       }

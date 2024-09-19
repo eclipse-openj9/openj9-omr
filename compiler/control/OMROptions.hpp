@@ -393,7 +393,7 @@ enum TR_CompilationOptions
    TR_EnableCodeCacheDisclaiming          = 0x00000200 + 10,
    // Available                           = 0x00000400 + 10,
    TR_EnableCodeCacheDisclaimingSupport   = 0x00000800 + 10,
-   // Available                           = 0x00001000 + 10,
+   TR_RequestJITServerCachedMethods       = 0x00001000 + 10,
    TR_DisableNewMethodOverride            = 0x00002000 + 10,
    // Available                           = 0x00004000 + 10,
    // Available                           = 0x00008000 + 10,

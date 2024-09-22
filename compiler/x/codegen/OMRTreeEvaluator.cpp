@@ -1704,6 +1704,132 @@ static void arrayCopy64BitPrimitiveOnIA32(TR::Node* node, TR::Register* dstReg, 
    cg->stopUsingRegister(scratch);
    }
 
+
+/** \brief
+*    Generate instructions to copy memory
+*
+*  \param node
+*     The tree node
+*
+*  \param dstReg
+*     The destination address register
+*
+*  \param srcReg
+*     The source address register
+*
+*  \param sizeReg
+*     The register holding the total size to be copied, in bytes
+*
+*  \param tmpReg1
+*     The temporary register that must support the register size (regSize)
+*
+*  \param tmpReg2
+*     The temporary register that must support the register size (regSize)
+*
+*  \param regSize
+*     The size of the register to use, in bytes
+**
+*  \param cg
+*     The code generator
+*/
+static void generateMemoryCopyInstructions(TR::Node* node,
+                                           TR::Register* dstReg,
+                                           TR::Register* srcReg,
+                                           TR::Register* sizeReg,
+                                           TR::Register* tmpReg1,
+                                           TR::Register* tmpReg2,
+                                           uint8_t regSize,
+                                           TR::CodeGenerator* cg)
+   {
+   TR::InstOpCode::Mnemonic loadOpCode;
+   TR::InstOpCode::Mnemonic storeOpCode;
+
+   bool supported = false;
+
+   switch (regSize)
+      {
+      case 1:
+         if ((tmpReg1->getKind() == TR_GPR) && (tmpReg2->getKind() == TR_GPR))
+            {
+            loadOpCode  = TR::InstOpCode::L1RegMem;
+            storeOpCode = TR::InstOpCode::S1MemReg;
+            supported = true;
+            }
+         break;
+      case 2:
+         if ((tmpReg1->getKind() == TR_GPR) && (tmpReg2->getKind() == TR_GPR))
+            {
+            loadOpCode  = TR::InstOpCode::L2RegMem;
+            storeOpCode = TR::InstOpCode::S2MemReg;
+            supported = true;
+            }
+         break;
+      case 4:
+         if ((tmpReg1->getKind() == TR_GPR) && (tmpReg2->getKind() == TR_GPR))
+            {
+            loadOpCode  = TR::InstOpCode::L4RegMem;
+            storeOpCode = TR::InstOpCode::S4MemReg;
+            supported = true;
+            }
+         else if ((tmpReg1->getKind() == TR_FPR) && (tmpReg2->getKind() == TR_FPR))
+            {
+            loadOpCode  = TR::InstOpCode::MOVDRegMem;
+            storeOpCode = TR::InstOpCode::MOVDMemReg;
+            supported = true;
+            }
+         break;
+      case 8:
+         if ((tmpReg1->getKind() == TR_GPR) && (tmpReg2->getKind() == TR_GPR))
+            {
+            loadOpCode  = TR::InstOpCode::L8RegMem;
+            storeOpCode = TR::InstOpCode::S8MemReg;
+            supported = true;
+            }
+         else if ((tmpReg1->getKind() == TR_FPR) && (tmpReg2->getKind() == TR_FPR))
+            {
+            loadOpCode  = TR::InstOpCode::MOVQRegMem;
+            storeOpCode = TR::InstOpCode::MOVQMemReg;
+            supported = true;
+            }
+         break;
+      case 16:
+         if (((tmpReg1->getKind() == TR_FPR) && (tmpReg2->getKind() == TR_FPR)) ||
+             ((tmpReg1->getKind() == TR_VRF) && (tmpReg2->getKind() == TR_VRF)))
+            {
+            loadOpCode  = TR::InstOpCode::MOVDQURegMem;
+            storeOpCode = TR::InstOpCode::MOVDQUMemReg;
+            supported = true;
+            }
+         break;
+      case 32:
+         if ((tmpReg1->getKind() == TR_VRF) && (tmpReg2->getKind() == TR_VRF))
+            {
+            loadOpCode  = TR::InstOpCode::VMOVDQUYmmMem;
+            storeOpCode = TR::InstOpCode::VMOVDQUMemYmm;
+            supported = true;
+            }
+         break;
+      case 64:
+         if ((tmpReg1->getKind() == TR_VRF) && (tmpReg2->getKind() == TR_VRF))
+            {
+            loadOpCode  = TR::InstOpCode::VMOVDQUZmmMem;
+            storeOpCode = TR::InstOpCode::VMOVDQUMemZmm;
+            supported = true;
+            }
+         break;
+      default:
+         break;
+      }
+
+   TR_ASSERT_FATAL(supported, "%s: Unsupported tmpReg1 %d tmpReg2 %d regSize %u", __FUNCTION__, tmpReg1->getKind(), tmpReg2->getKind(), regSize);
+
+   int32_t index = 0 - regSize;
+   generateRegMemInstruction(loadOpCode, node, tmpReg1, generateX86MemoryReference(srcReg, sizeReg, 0, index, cg), cg);
+   generateRegMemInstruction(loadOpCode, node, tmpReg2, generateX86MemoryReference(srcReg, 0, cg), cg);
+   generateMemRegInstruction(storeOpCode, node, generateX86MemoryReference(dstReg, sizeReg, 0, index, cg), tmpReg1, cg);
+   generateMemRegInstruction(storeOpCode, node, generateX86MemoryReference(dstReg, 0, cg), tmpReg2, cg);
+   }
+
 void OMR::X86::TreeEvaluator::arrayCopy64BitPrimitiveInlineSmallSizeWithoutREPMOVSImplRoot16(TR::Node *node,
                                                                                              TR::Register *dstReg,
                                                                                              TR::Register *srcReg,
@@ -1780,10 +1906,7 @@ void OMR::X86::TreeEvaluator::arrayCopy64BitPrimitiveInlineSmallSizeWithoutREPMO
    generateLabelInstruction(TR::InstOpCode::JE4, node, mainEndLabel, cg);
 
    // 8 or 16 Bytes
-   generateRegMemInstruction(TR::InstOpCode::L8RegMem, node, tmpReg1, generateX86MemoryReference(srcReg, sizeReg, 0, -8, cg), cg);
-   generateRegMemInstruction(TR::InstOpCode::L8RegMem, node, tmpReg2, generateX86MemoryReference(srcReg, 0, cg), cg);
-   generateMemRegInstruction(TR::InstOpCode::S8MemReg, node, generateX86MemoryReference(dstReg, sizeReg, 0, -8, cg), tmpReg1, cg);
-   generateMemRegInstruction(TR::InstOpCode::S8MemReg, node, generateX86MemoryReference(dstReg, 0, cg), tmpReg2, cg);
+   generateMemoryCopyInstructions(node, dstReg, srcReg, sizeReg, tmpReg1, tmpReg2, 8, cg);
    generateLabelInstruction(TR::InstOpCode::JMP4, node, mainEndLabel, cg);
 
    // ---------------------------------
@@ -1793,10 +1916,7 @@ void OMR::X86::TreeEvaluator::arrayCopy64BitPrimitiveInlineSmallSizeWithoutREPMO
    generateLabelInstruction(TR::InstOpCode::JA4, node, copyLabel1, cg);
 
    // 24 or 32 Bytes
-   generateRegMemInstruction(TR::InstOpCode::MOVDQURegMem, node, tmpXmmYmmReg1, generateX86MemoryReference(srcReg, sizeReg, 0, -16, cg), cg);
-   generateRegMemInstruction(TR::InstOpCode::MOVDQURegMem, node, tmpXmmYmmReg2, generateX86MemoryReference(srcReg, 0, cg), cg);
-   generateMemRegInstruction(TR::InstOpCode::MOVDQUMemReg, node, generateX86MemoryReference(dstReg, sizeReg, 0, -16, cg), tmpXmmYmmReg1, cg);
-   generateMemRegInstruction(TR::InstOpCode::MOVDQUMemReg, node, generateX86MemoryReference(dstReg, 0, cg), tmpXmmYmmReg2, cg);
+   generateMemoryCopyInstructions(node, dstReg, srcReg, sizeReg, tmpXmmYmmReg1, tmpXmmYmmReg2, 16, cg);
    generateLabelInstruction(TR::InstOpCode::JMP4, node, mainEndLabel, cg);
 
    if (repMovsThresholdBytes == 32)
@@ -1809,10 +1929,7 @@ void OMR::X86::TreeEvaluator::arrayCopy64BitPrimitiveInlineSmallSizeWithoutREPMO
    generateLabelInstruction(TR::InstOpCode::JA4, node, copyLabel2, cg);
 
    // 40-64 Bytes
-   generateRegMemInstruction(TR::InstOpCode::VMOVDQUYmmMem, node, tmpXmmYmmReg1, generateX86MemoryReference(srcReg, sizeReg, 0, -32, cg), cg);
-   generateRegMemInstruction(TR::InstOpCode::VMOVDQUYmmMem, node, tmpXmmYmmReg2, generateX86MemoryReference(srcReg, 0, cg), cg);
-   generateMemRegInstruction(TR::InstOpCode::VMOVDQUMemYmm, node, generateX86MemoryReference(dstReg, sizeReg, 0, -32, cg), tmpXmmYmmReg1, cg);
-   generateMemRegInstruction(TR::InstOpCode::VMOVDQUMemYmm, node, generateX86MemoryReference(dstReg, 0, cg), tmpXmmYmmReg2, cg);
+   generateMemoryCopyInstructions(node, dstReg, srcReg, sizeReg, tmpXmmYmmReg1, tmpXmmYmmReg2, 32, cg);
    generateLabelInstruction(TR::InstOpCode::JMP4, node, mainEndLabel, cg);
 
    if (repMovsThresholdBytes == 64)
@@ -1824,10 +1941,7 @@ void OMR::X86::TreeEvaluator::arrayCopy64BitPrimitiveInlineSmallSizeWithoutREPMO
    generateLabelInstruction(TR::InstOpCode::JA4, node, repMovsLabel, cg);
 
    // 72-128 Bytes
-   generateRegMemInstruction(TR::InstOpCode::VMOVDQUZmmMem, node, tmpXmmYmmReg1, generateX86MemoryReference(srcReg, sizeReg, 0, -64, cg), cg);
-   generateRegMemInstruction(TR::InstOpCode::VMOVDQUZmmMem, node, tmpXmmYmmReg2, generateX86MemoryReference(srcReg, 0, cg), cg);
-   generateMemRegInstruction(TR::InstOpCode::VMOVDQUMemZmm, node, generateX86MemoryReference(dstReg, sizeReg, 0, -64, cg), tmpXmmYmmReg1, cg);
-   generateMemRegInstruction(TR::InstOpCode::VMOVDQUMemZmm, node, generateX86MemoryReference(dstReg, 0, cg), tmpXmmYmmReg2, cg);
+   generateMemoryCopyInstructions(node, dstReg, srcReg, sizeReg, tmpXmmYmmReg1, tmpXmmYmmReg2, 64, cg);
    generateLabelInstruction(TR::InstOpCode::JMP4, node, mainEndLabel, cg);
    }
 
@@ -1917,20 +2031,14 @@ void OMR::X86::TreeEvaluator::arrayCopy32BitPrimitiveInlineSmallSizeWithoutREPMO
    generateLabelInstruction(TR::InstOpCode::JE4, node, mainEndLabel, cg);
 
    // 4 or 8 Bytes
-   generateRegMemInstruction(TR::InstOpCode::L4RegMem, node, tmpReg1, generateX86MemoryReference(srcReg, sizeReg, 0, -4, cg), cg);
-   generateRegMemInstruction(TR::InstOpCode::L4RegMem, node, tmpReg2, generateX86MemoryReference(srcReg, 0, cg), cg);
-   generateMemRegInstruction(TR::InstOpCode::S4MemReg, node, generateX86MemoryReference(dstReg, sizeReg, 0, -4, cg), tmpReg1, cg);
-   generateMemRegInstruction(TR::InstOpCode::S4MemReg, node, generateX86MemoryReference(dstReg, 0, cg), tmpReg2, cg);
+   generateMemoryCopyInstructions(node, dstReg, srcReg, sizeReg, tmpReg1, tmpReg2, 4, cg);
    generateLabelInstruction(TR::InstOpCode::JMP4, node, mainEndLabel, cg);
 
    // ---------------------------------
    generateLabelInstruction(TR::InstOpCode::label, node, copy12RMoreBytesLabel, cg);
 
    // 12 or 16 Bytes
-   generateRegMemInstruction(TR::InstOpCode::L8RegMem, node, tmpReg1, generateX86MemoryReference(srcReg, sizeReg, 0, -8, cg), cg);
-   generateRegMemInstruction(TR::InstOpCode::L8RegMem, node, tmpReg2, generateX86MemoryReference(srcReg, 0, cg), cg);
-   generateMemRegInstruction(TR::InstOpCode::S8MemReg, node, generateX86MemoryReference(dstReg, sizeReg, 0, -8, cg), tmpReg1, cg);
-   generateMemRegInstruction(TR::InstOpCode::S8MemReg, node, generateX86MemoryReference(dstReg, 0, cg), tmpReg2, cg);
+   generateMemoryCopyInstructions(node, dstReg, srcReg, sizeReg, tmpReg1, tmpReg2, 8, cg);
    generateLabelInstruction(TR::InstOpCode::JMP4, node, mainEndLabel, cg);
 
    // ---------------------------------
@@ -1940,10 +2048,7 @@ void OMR::X86::TreeEvaluator::arrayCopy32BitPrimitiveInlineSmallSizeWithoutREPMO
    generateLabelInstruction(TR::InstOpCode::JA4, node, copyLabel1, cg);
 
    // 20-32 Bytes
-   generateRegMemInstruction(TR::InstOpCode::MOVDQURegMem, node, tmpXmmYmmReg1, generateX86MemoryReference(srcReg, sizeReg, 0, -16, cg), cg);
-   generateRegMemInstruction(TR::InstOpCode::MOVDQURegMem, node, tmpXmmYmmReg2, generateX86MemoryReference(srcReg, 0, cg), cg);
-   generateMemRegInstruction(TR::InstOpCode::MOVDQUMemReg, node, generateX86MemoryReference(dstReg, sizeReg, 0, -16, cg), tmpXmmYmmReg1, cg);
-   generateMemRegInstruction(TR::InstOpCode::MOVDQUMemReg, node, generateX86MemoryReference(dstReg, 0, cg), tmpXmmYmmReg2, cg);
+   generateMemoryCopyInstructions(node, dstReg, srcReg, sizeReg, tmpXmmYmmReg1, tmpXmmYmmReg2, 16, cg);
    generateLabelInstruction(TR::InstOpCode::JMP4, node, mainEndLabel, cg);
 
    if (repMovsThresholdBytes == 32)
@@ -1956,10 +2061,7 @@ void OMR::X86::TreeEvaluator::arrayCopy32BitPrimitiveInlineSmallSizeWithoutREPMO
    generateLabelInstruction(TR::InstOpCode::JA4, node, copyLabel2, cg);
 
    // 36-64 Bytes
-   generateRegMemInstruction(TR::InstOpCode::VMOVDQUYmmMem, node, tmpXmmYmmReg1, generateX86MemoryReference(srcReg, sizeReg, 0, -32, cg), cg);
-   generateRegMemInstruction(TR::InstOpCode::VMOVDQUYmmMem, node, tmpXmmYmmReg2, generateX86MemoryReference(srcReg, 0, cg), cg);
-   generateMemRegInstruction(TR::InstOpCode::VMOVDQUMemYmm, node, generateX86MemoryReference(dstReg, sizeReg, 0, -32, cg), tmpXmmYmmReg1, cg);
-   generateMemRegInstruction(TR::InstOpCode::VMOVDQUMemYmm, node, generateX86MemoryReference(dstReg, 0, cg), tmpXmmYmmReg2, cg);
+   generateMemoryCopyInstructions(node, dstReg, srcReg, sizeReg, tmpXmmYmmReg1, tmpXmmYmmReg2, 32, cg);
    generateLabelInstruction(TR::InstOpCode::JMP4, node, mainEndLabel, cg);
 
    if (repMovsThresholdBytes == 64)
@@ -1971,10 +2073,7 @@ void OMR::X86::TreeEvaluator::arrayCopy32BitPrimitiveInlineSmallSizeWithoutREPMO
    generateLabelInstruction(TR::InstOpCode::JA4, node, repMovsLabel, cg);
 
    // 68-128 Bytes
-   generateRegMemInstruction(TR::InstOpCode::VMOVDQUZmmMem, node, tmpXmmYmmReg1, generateX86MemoryReference(srcReg, sizeReg, 0, -64, cg), cg);
-   generateRegMemInstruction(TR::InstOpCode::VMOVDQUZmmMem, node, tmpXmmYmmReg2, generateX86MemoryReference(srcReg, 0, cg), cg);
-   generateMemRegInstruction(TR::InstOpCode::VMOVDQUMemZmm, node, generateX86MemoryReference(dstReg, sizeReg, 0, -64, cg), tmpXmmYmmReg1, cg);
-   generateMemRegInstruction(TR::InstOpCode::VMOVDQUMemZmm, node, generateX86MemoryReference(dstReg, 0, cg), tmpXmmYmmReg2, cg);
+   generateMemoryCopyInstructions(node, dstReg, srcReg, sizeReg, tmpXmmYmmReg1, tmpXmmYmmReg2, 64, cg);
    generateLabelInstruction(TR::InstOpCode::JMP4, node, mainEndLabel, cg);
    }
 
@@ -2156,20 +2255,14 @@ static void arrayCopy16BitPrimitiveInlineSmallSizeWithoutREPMOVSImplRoot16(TR::N
    generateLabelInstruction(TR::InstOpCode::JA4, node, copy10ORMoreBytesLabel, cg);
 
    // 4, 6, 8 Bytes
-   generateRegMemInstruction(TR::InstOpCode::L4RegMem, node, tmpReg1, generateX86MemoryReference(srcReg, sizeReg, 0, -4, cg), cg);
-   generateRegMemInstruction(TR::InstOpCode::L4RegMem, node, tmpReg2, generateX86MemoryReference(srcReg, 0, cg), cg);
-   generateMemRegInstruction(TR::InstOpCode::S4MemReg, node, generateX86MemoryReference(dstReg, sizeReg, 0, -4, cg), tmpReg1, cg);
-   generateMemRegInstruction(TR::InstOpCode::S4MemReg, node, generateX86MemoryReference(dstReg, 0, cg), tmpReg2, cg);
+   generateMemoryCopyInstructions(node, dstReg, srcReg, sizeReg, tmpReg1, tmpReg2, 4, cg);
    generateLabelInstruction(TR::InstOpCode::JMP4, node, mainEndLabel, cg);
 
    // ---------------------------------
    generateLabelInstruction(TR::InstOpCode::label, node, copy10ORMoreBytesLabel, cg);
 
    // 10-16 Bytes
-   generateRegMemInstruction(TR::InstOpCode::L8RegMem, node, tmpReg1, generateX86MemoryReference(srcReg, sizeReg, 0, -8, cg), cg);
-   generateRegMemInstruction(TR::InstOpCode::L8RegMem, node, tmpReg2, generateX86MemoryReference(srcReg, 0, cg), cg);
-   generateMemRegInstruction(TR::InstOpCode::S8MemReg, node, generateX86MemoryReference(dstReg, sizeReg, 0, -8, cg), tmpReg1, cg);
-   generateMemRegInstruction(TR::InstOpCode::S8MemReg, node, generateX86MemoryReference(dstReg, 0, cg), tmpReg2, cg);
+   generateMemoryCopyInstructions(node, dstReg, srcReg, sizeReg, tmpReg1, tmpReg2, 8, cg);
    generateLabelInstruction(TR::InstOpCode::JMP4, node, mainEndLabel, cg);
 
    // ---------------------------------
@@ -2179,10 +2272,7 @@ static void arrayCopy16BitPrimitiveInlineSmallSizeWithoutREPMOVSImplRoot16(TR::N
    generateLabelInstruction(TR::InstOpCode::JA4, node, copyLabel, cg);
 
    // 18-32 Bytes
-   generateRegMemInstruction(TR::InstOpCode::MOVDQURegMem, node, tmpXmmYmmReg1, generateX86MemoryReference(srcReg, sizeReg, 0, -16, cg), cg);
-   generateRegMemInstruction(TR::InstOpCode::MOVDQURegMem, node, tmpXmmYmmReg2, generateX86MemoryReference(srcReg, 0, cg), cg);
-   generateMemRegInstruction(TR::InstOpCode::MOVDQUMemReg, node, generateX86MemoryReference(dstReg, sizeReg, 0, -16, cg), tmpXmmYmmReg1, cg);
-   generateMemRegInstruction(TR::InstOpCode::MOVDQUMemReg, node, generateX86MemoryReference(dstReg, 0, cg), tmpXmmYmmReg2, cg);
+   generateMemoryCopyInstructions(node, dstReg, srcReg, sizeReg, tmpXmmYmmReg1, tmpXmmYmmReg2, 16, cg);
    generateLabelInstruction(TR::InstOpCode::JMP4, node, mainEndLabel, cg);
 
    if (repMovsThresholdBytes == 32)
@@ -2194,10 +2284,7 @@ static void arrayCopy16BitPrimitiveInlineSmallSizeWithoutREPMOVSImplRoot16(TR::N
    generateLabelInstruction(TR::InstOpCode::JA4, node, repMovsLabel, cg);
 
    // 34-64 Bytes
-   generateRegMemInstruction(TR::InstOpCode::VMOVDQUYmmMem, node, tmpXmmYmmReg1, generateX86MemoryReference(srcReg, sizeReg, 0, -32, cg), cg);
-   generateRegMemInstruction(TR::InstOpCode::VMOVDQUYmmMem, node, tmpXmmYmmReg2, generateX86MemoryReference(srcReg, 0, cg), cg);
-   generateMemRegInstruction(TR::InstOpCode::VMOVDQUMemYmm, node, generateX86MemoryReference(dstReg, sizeReg, 0, -32, cg), tmpXmmYmmReg1, cg);
-   generateMemRegInstruction(TR::InstOpCode::VMOVDQUMemYmm, node, generateX86MemoryReference(dstReg, 0, cg), tmpXmmYmmReg2, cg);
+   generateMemoryCopyInstructions(node, dstReg, srcReg, sizeReg, tmpXmmYmmReg1, tmpXmmYmmReg2, 32, cg);
    generateLabelInstruction(TR::InstOpCode::JMP4, node, mainEndLabel, cg);
    }
 
@@ -2296,10 +2383,7 @@ static void arrayCopy8BitPrimitiveInlineSmallSizeWithoutREPMOVSImplRoot8(TR::Nod
    generateLabelInstruction(TR::InstOpCode::JE4, node, mainEndLabel, cg);
 
    // 1-2 Bytes
-   generateRegMemInstruction(TR::InstOpCode::L1RegMem, node, tmpReg1, generateX86MemoryReference(srcReg, sizeReg, 0, -1, cg), cg);
-   generateRegMemInstruction(TR::InstOpCode::L1RegMem, node, tmpReg2, generateX86MemoryReference(srcReg, 0, cg), cg);
-   generateMemRegInstruction(TR::InstOpCode::S1MemReg, node, generateX86MemoryReference(dstReg, sizeReg, 0, -1, cg), tmpReg1, cg);
-   generateMemRegInstruction(TR::InstOpCode::S1MemReg, node, generateX86MemoryReference(dstReg, 0, cg), tmpReg2, cg);
+   generateMemoryCopyInstructions(node, dstReg, srcReg, sizeReg, tmpReg1, tmpReg2, 1, cg);
    generateLabelInstruction(TR::InstOpCode::JMP4, node, mainEndLabel, cg);
 
    // ---------------------------------
@@ -2308,20 +2392,14 @@ static void arrayCopy8BitPrimitiveInlineSmallSizeWithoutREPMOVSImplRoot8(TR::Nod
    generateLabelInstruction(TR::InstOpCode::JA4, node, copy5ORMoreBytesLabel, cg);
 
    // 3-4 Bytes
-   generateRegMemInstruction(TR::InstOpCode::L2RegMem, node, tmpReg1, generateX86MemoryReference(srcReg, sizeReg, 0, -2, cg), cg);
-   generateRegMemInstruction(TR::InstOpCode::L2RegMem, node, tmpReg2, generateX86MemoryReference(srcReg, 0, cg), cg);
-   generateMemRegInstruction(TR::InstOpCode::S2MemReg, node, generateX86MemoryReference(dstReg, sizeReg, 0, -2, cg), tmpReg1, cg);
-   generateMemRegInstruction(TR::InstOpCode::S2MemReg, node, generateX86MemoryReference(dstReg, 0, cg), tmpReg2, cg);
+   generateMemoryCopyInstructions(node, dstReg, srcReg, sizeReg, tmpReg1, tmpReg2, 2, cg);
    generateLabelInstruction(TR::InstOpCode::JMP4, node, mainEndLabel, cg);
 
    // ---------------------------------
    generateLabelInstruction(TR::InstOpCode::label, node, copy5ORMoreBytesLabel, cg);
 
    // 5-8 Bytes
-   generateRegMemInstruction(TR::InstOpCode::L4RegMem, node, tmpReg1, generateX86MemoryReference(srcReg, sizeReg, 0, -4, cg), cg);
-   generateRegMemInstruction(TR::InstOpCode::L4RegMem, node, tmpReg2, generateX86MemoryReference(srcReg, 0, cg), cg);
-   generateMemRegInstruction(TR::InstOpCode::S4MemReg, node, generateX86MemoryReference(dstReg, sizeReg, 0, -4, cg), tmpReg1, cg);
-   generateMemRegInstruction(TR::InstOpCode::S4MemReg, node, generateX86MemoryReference(dstReg, 0, cg), tmpReg2, cg);
+   generateMemoryCopyInstructions(node, dstReg, srcReg, sizeReg, tmpReg1, tmpReg2, 4, cg);
    generateLabelInstruction(TR::InstOpCode::JMP4, node, mainEndLabel, cg);
 
    // ---------------------------------
@@ -2330,10 +2408,7 @@ static void arrayCopy8BitPrimitiveInlineSmallSizeWithoutREPMOVSImplRoot8(TR::Nod
    generateLabelInstruction(TR::InstOpCode::JA4, node, copy17ORMoreBytesLabel, cg);
 
    // 9-16 Bytes
-   generateRegMemInstruction(TR::InstOpCode::L8RegMem, node, tmpReg1, generateX86MemoryReference(srcReg, sizeReg, 0, -8, cg), cg);
-   generateRegMemInstruction(TR::InstOpCode::L8RegMem, node, tmpReg2, generateX86MemoryReference(srcReg, 0, cg), cg);
-   generateMemRegInstruction(TR::InstOpCode::S8MemReg, node, generateX86MemoryReference(dstReg, sizeReg, 0, -8, cg), tmpReg1, cg);
-   generateMemRegInstruction(TR::InstOpCode::S8MemReg, node, generateX86MemoryReference(dstReg, 0, cg), tmpReg2, cg);
+   generateMemoryCopyInstructions(node, dstReg, srcReg, sizeReg, tmpReg1, tmpReg2, 8, cg);
    generateLabelInstruction(TR::InstOpCode::JMP4, node, mainEndLabel, cg);
 
    // ---------------------------------
@@ -2343,10 +2418,7 @@ static void arrayCopy8BitPrimitiveInlineSmallSizeWithoutREPMOVSImplRoot8(TR::Nod
    generateLabelInstruction(TR::InstOpCode::JA4, node, copyLabel, cg);
 
    // 17-32 Bytes
-   generateRegMemInstruction(TR::InstOpCode::MOVDQURegMem, node, tmpXmmYmmReg1, generateX86MemoryReference(srcReg, sizeReg, 0, -16, cg), cg);
-   generateRegMemInstruction(TR::InstOpCode::MOVDQURegMem, node, tmpXmmYmmReg2, generateX86MemoryReference(srcReg, 0, cg), cg);
-   generateMemRegInstruction(TR::InstOpCode::MOVDQUMemReg, node, generateX86MemoryReference(dstReg, sizeReg, 0, -16, cg), tmpXmmYmmReg1, cg);
-   generateMemRegInstruction(TR::InstOpCode::MOVDQUMemReg, node, generateX86MemoryReference(dstReg, 0, cg), tmpXmmYmmReg2, cg);
+   generateMemoryCopyInstructions(node, dstReg, srcReg, sizeReg, tmpXmmYmmReg1, tmpXmmYmmReg2, 16, cg);
    generateLabelInstruction(TR::InstOpCode::JMP4, node, mainEndLabel, cg);
 
    if (repMovsThresholdBytes == 32)
@@ -2358,10 +2430,7 @@ static void arrayCopy8BitPrimitiveInlineSmallSizeWithoutREPMOVSImplRoot8(TR::Nod
    generateLabelInstruction(TR::InstOpCode::JA4, node, repMovsLabel, cg);
 
    // 33-64 Bytes
-   generateRegMemInstruction(TR::InstOpCode::VMOVDQUYmmMem, node, tmpXmmYmmReg1, generateX86MemoryReference(srcReg, sizeReg, 0, -32, cg), cg);
-   generateRegMemInstruction(TR::InstOpCode::VMOVDQUYmmMem, node, tmpXmmYmmReg2, generateX86MemoryReference(srcReg, 0, cg), cg);
-   generateMemRegInstruction(TR::InstOpCode::VMOVDQUMemYmm, node, generateX86MemoryReference(dstReg, sizeReg, 0, -32, cg), tmpXmmYmmReg1, cg);
-   generateMemRegInstruction(TR::InstOpCode::VMOVDQUMemYmm, node, generateX86MemoryReference(dstReg, 0, cg), tmpXmmYmmReg2, cg);
+   generateMemoryCopyInstructions(node, dstReg, srcReg, sizeReg, tmpXmmYmmReg1, tmpXmmYmmReg2, 32, cg);
    generateLabelInstruction(TR::InstOpCode::JMP4, node, mainEndLabel, cg);
    }
 
@@ -2664,13 +2733,15 @@ static void arrayCopyPrimitiveInlineSmallSizeWithoutREPMOVS(TR::Node* node,
 
 static bool enablePrimitiveArrayCopyInlineSmallSizeWithoutREPMOVS(uint8_t elementSize, TR::CodeGenerator* cg, int32_t& threshold)
    {
+   if (!cg->comp()->target().cpu.supportsAVX() || !cg->comp()->target().is64Bit())
+      return false;
+
    static bool disable8BitPrimitiveArrayCopyInlineSmallSizeWithoutREPMOVS  = feGetEnv("TR_Disable8BitPrimitiveArrayCopyInlineSmallSizeWithoutREPMOVS") != NULL;
    static bool disable16BitPrimitiveArrayCopyInlineSmallSizeWithoutREPMOVS = feGetEnv("TR_Disable16BitPrimitiveArrayCopyInlineSmallSizeWithoutREPMOVS") != NULL;
    static bool disable32BitPrimitiveArrayCopyInlineSmallSizeWithoutREPMOVS = feGetEnv("TR_Disable32BitPrimitiveArrayCopyInlineSmallSizeWithoutREPMOVS") != NULL;
    static bool disable64BitPrimitiveArrayCopyInlineSmallSizeWithoutREPMOVS = feGetEnv("TR_Disable64BitPrimitiveArrayCopyInlineSmallSizeWithoutREPMOVS") != NULL;
 
    bool disableEnhancement = false;
-   bool result = false;
 
    threshold = 32;
 
@@ -2726,11 +2797,269 @@ static bool enablePrimitiveArrayCopyInlineSmallSizeWithoutREPMOVS(uint8_t elemen
          break;
       }
 
-   result = (!disableEnhancement &&
-            cg->comp()->target().cpu.supportsAVX() &&
-            cg->comp()->target().is64Bit()) ? true : false;
+   return disableEnhancement ? false : true;
+   }
 
-   return result;
+/** \brief
+ *    Generate a store instruction
+ *
+ *  \param node
+ *     The tree node
+ *
+ *  \param addressReg
+ *     The base register for the destination mem address
+ *
+ *  \param index
+ *     The index for the destination mem address
+ *
+ *  \param valueReg
+ *     The value that needs be stored
+ *
+ *  \param size
+ *     The size of valueReg
+ *
+ *  \param cg
+ *     The code generator
+ *
+ */
+static void generateArrayElementStore(TR::Node* node, TR::Register* addressReg, int32_t index, TR::Register* valueReg, uint8_t size,  TR::CodeGenerator* cg)
+   {
+   TR::InstOpCode::Mnemonic storeOpcode;
+   if (valueReg->getKind() == TR_VRF)
+      {
+      switch (size)
+         {
+         case 16:
+            storeOpcode  = TR::InstOpCode::MOVDQUMemReg;
+            break;
+         case 32:
+            storeOpcode  = TR::InstOpCode::VMOVDQUMemYmm;
+            break;
+         case 64:
+            storeOpcode  = TR::InstOpCode::VMOVDQUMemZmm;
+            break;
+         default:
+            TR_ASSERT_FATAL(0, "%s: Unsupported size: %u for TR_VRF registers\n", __FUNCTION__, size);
+            break;
+         }
+      }
+   else if (valueReg->getKind() == TR_FPR)
+      {
+      switch (size)
+         {
+         case 4:
+            storeOpcode = TR::InstOpCode::MOVDMemReg;
+            break;
+         case 8:
+            storeOpcode = TR::InstOpCode::MOVQMemReg;
+            break;
+         case 16:
+            storeOpcode = TR::InstOpCode::MOVDQUMemReg;
+            break;
+         default:
+            TR_ASSERT_FATAL(0, "%s: Unsupported size: %u for TR_FPR registers\n", __FUNCTION__, size);
+            break;
+         }
+      }
+   else if (valueReg->getKind() == TR_GPR)
+      {
+      switch (size)
+         {
+         case 1:
+            storeOpcode = TR::InstOpCode::S1MemReg;
+            break;
+         case 2:
+            storeOpcode = TR::InstOpCode::S2MemReg;
+            break;
+         case 4:
+            storeOpcode = TR::InstOpCode::S4MemReg;
+            break;
+         case 8:
+            storeOpcode = TR::InstOpCode::S8MemReg;
+            break;
+         default:
+            TR_ASSERT_FATAL(0, "%s: Unsupported size: %u for TR_GPR registers\n", __FUNCTION__, size);
+            break;
+
+         }
+      }
+   else
+      {
+      TR_ASSERT_FATAL(0, "%s: Unsupported register type %d\n", __FUNCTION__, valueReg->getKind());
+      }
+   generateMemRegInstruction(storeOpcode, node, generateX86MemoryReference(addressReg, index, cg), valueReg, cg);
+   }
+
+/** \brief
+ *    Generate a load instruction
+ *
+ *  \param node
+ *     The tree node
+ *
+ *  \param valueReg
+ *     The destination register
+ *
+ *  \param size
+ *     The size of the loaded value
+ *
+ *  \param addressReg
+ *     The base register for the source mem address
+ *
+ *  \param index
+ *     The index for the destination mem address
+ *
+ *  \param cg
+ *     The code generator
+ */
+static void generateArrayElementLoad(TR::Node* node, TR::Register* valueReg, uint8_t size, TR::Register* addressReg, int32_t index, TR::CodeGenerator* cg)
+   {
+   TR::InstOpCode::Mnemonic loadOpCode;
+   if (valueReg->getKind() == TR_VRF)
+      {
+      switch (size)
+         {
+         case 16:
+            loadOpCode  = TR::InstOpCode::MOVDQURegMem;
+            break;
+         case 32:
+            loadOpCode  = TR::InstOpCode::VMOVDQUYmmMem;
+            break;
+         case 64:
+            loadOpCode  = TR::InstOpCode::VMOVDQUZmmMem;
+            break;
+         default:
+            TR_ASSERT_FATAL(0, "%s: Unsupported size %u for TR_VRF registers\n", __FUNCTION__, size);
+            break;
+         }
+      }
+   else if (valueReg->getKind() == TR_FPR)
+      {
+      switch (size)
+         {
+         case 4:
+            loadOpCode  = TR::InstOpCode::MOVDRegMem;
+            break;
+         case 8:
+            loadOpCode  = TR::InstOpCode::MOVQRegMem;
+            break;
+         case 16:
+            loadOpCode  = TR::InstOpCode::MOVDQURegMem;
+            break;
+         default:
+            TR_ASSERT_FATAL(0, "%s: Unsupported size %u for TR_FPR registers\n", __FUNCTION__, size);
+            break;
+         }
+      }
+   else if (valueReg->getKind() == TR_GPR)
+      {
+      switch (size)
+         {
+         case 1:
+            loadOpCode  = TR::InstOpCode::L1RegMem;
+            break;
+         case 2:
+            loadOpCode  = TR::InstOpCode::L2RegMem;
+            break;
+         case 4:
+            loadOpCode  = TR::InstOpCode::L4RegMem;
+            break;
+         case 8:
+            loadOpCode  = TR::InstOpCode::L8RegMem;
+            break;
+         default:
+            TR_ASSERT_FATAL(0, "%s: Unsupported size %u for TR_GPR registers\n", __FUNCTION__, size);
+            break;
+
+         }
+      }
+   else
+      {
+      TR_ASSERT_FATAL(0, "%s: Unsupported register type %d\n", __FUNCTION__, valueReg->getKind());
+      }
+   generateRegMemInstruction(loadOpCode,  node, valueReg, generateX86MemoryReference(addressReg, index, cg), cg);
+   }
+
+/** \brief
+*    Generate instructions to do array copy with copy size as a constant
+*
+*  \param node
+*     The tree node
+*
+*  \param dstReg
+*     The destination array address register
+*
+*  \param srcReg
+*     The source array address register
+*
+*  \param sizeReg
+*     The register holding the total size of elements to be copied, in bytes
+*
+*  \param elementSize
+*     The size of an element, in bytes
+*
+*  \param copySize
+*     The copy size, in bytes
+*
+*  \param cg
+*     The code generator
+*/
+static void arrayCopyPrimitiveInlineSmallSizeConstantCopySize(TR::Node* node,
+                                                              TR::Register* dstReg,
+                                                              TR::Register* srcReg,
+                                                              TR::Register* sizeReg,
+                                                              uint32_t copySize,
+                                                              TR::CodeGenerator* cg)
+   {
+   if (cg->comp()->getOption(TR_TraceCG))
+      {
+      traceMsg(cg->comp(), "%s: node n%dn srcReg %s dstReg %s sizeReg %s copySize %d\n", __FUNCTION__, node->getGlobalIndex(),
+         cg->comp()->getDebug()->getName(srcReg), cg->comp()->getDebug()->getName(dstReg), cg->comp()->getDebug()->getName(sizeReg), copySize);
+      }
+
+   if (copySize == 0)
+      return;
+
+   TR_ASSERT_FATAL(copySize <= 64, "%s: copySize %u is not supported\n", __FUNCTION__, copySize);
+
+   TR::Register* tmpReg1 = cg->allocateRegister(TR_GPR);
+   TR::Register* tmpReg2 = cg->allocateRegister(TR_GPR);
+   TR::Register* tmpVRFReg1 = cg->allocateRegister(TR_VRF);
+   TR::Register* tmpVRFReg2 = cg->allocateRegister(TR_VRF);
+
+   if (((copySize < 64) && ((copySize & (copySize - 1)) == 0)) // power of 2
+       || ((copySize == 64) && cg->comp()->target().cpu.supportsFeature(OMR_FEATURE_X86_AVX512F)))
+      {
+      TR::Register* valueReg = (copySize >= 16) ? tmpVRFReg1 : tmpReg1;
+      generateArrayElementLoad(node, valueReg, copySize, srcReg, 0 /* index */, cg);
+      generateArrayElementStore(node, dstReg, 0 /* index */, valueReg, copySize, cg);
+      }
+   else
+      {
+      uint8_t regSize = 0;
+      TR::Register* t1 = tmpReg1;
+      TR::Register* t2 = tmpReg2;
+
+      if (copySize < 8)
+         {
+         regSize = (copySize < 4) ? 2 : 4;
+         }
+      else if (copySize < 16) // 8-15
+         {
+         regSize = 8;
+         }
+      else // 16-64
+         {
+         regSize = (copySize < 32) ? 16 : 32;
+         t1 = tmpVRFReg1;
+         t2 = tmpVRFReg2;
+         }
+      generateMemoryCopyInstructions(node, dstReg, srcReg, sizeReg, t1, t2, regSize, cg);
+      }
+
+   cg->stopUsingRegister(tmpReg1);
+   cg->stopUsingRegister(tmpReg2);
+   cg->stopUsingRegister(tmpVRFReg1);
+   cg->stopUsingRegister(tmpVRFReg2);
    }
 
 /** \brief
@@ -2759,6 +3088,20 @@ static void arrayCopyDefault(TR::Node* node, uint8_t elementSize, TR::Register* 
    int32_t repMovsThresholdBytes = 0;
    if (enablePrimitiveArrayCopyInlineSmallSizeWithoutREPMOVS(elementSize, cg, repMovsThresholdBytes))
       {
+      static bool disableArrayCopyInlineSmallSizeConstantCopySize = feGetEnv("TR_DisableArrayCopyInlineSmallSizeConstantCopySize") != NULL;
+      TR::Node* sizeNode = node->getChild(2); // the size of memory to copy, in bytes
+
+      if (sizeNode->getOpCode().isLoadConst() && !disableArrayCopyInlineSmallSizeConstantCopySize)
+         {
+         uint32_t copySize = static_cast<uint32_t>(TR::TreeEvaluator::integerConstNodeValue(sizeNode, cg));
+
+         if (copySize <= 64)
+            {
+            arrayCopyPrimitiveInlineSmallSizeConstantCopySize(node, dstReg, srcReg, sizeReg, copySize, cg);
+            return;
+            }
+         }
+
       arrayCopyPrimitiveInlineSmallSizeWithoutREPMOVS(node, dstReg, srcReg, sizeReg, cg, elementSize, repMovsThresholdBytes);
       return;
       }
@@ -2820,149 +3163,6 @@ static void arrayCopyDefault(TR::Node* node, uint8_t elementSize, TR::Register* 
 
       generateLabelInstruction(TR::InstOpCode::label, node, mainEndLabel, dependencies, cg);
       }
-   }
-
-/** \brief
- *    Generate a store instruction
- *
- *  \param node
- *     The tree node
- *
- *  \param addressReg
- *     The base register for the destination mem address
- *
- *  \param index
- *     The index for the destination mem address
- *
- *  \param valueReg
- *     The value that needs be stored
- *
- *  \param size
- *     The size of valueReg
- *
- *  \param cg
- *     The code generator
- *
- */
-static void generateArrayElementStore(TR::Node* node, TR::Register* addressReg, int32_t index, TR::Register* valueReg, uint8_t size,  TR::CodeGenerator* cg)
-   {
-   TR::InstOpCode::Mnemonic storeOpcode;
-   if (valueReg->getKind() == TR_FPR)
-      {
-      switch (size)
-         {
-         case 4:
-            storeOpcode = TR::InstOpCode::MOVDMemReg;
-            break;
-         case 8:
-            storeOpcode = TR::InstOpCode::MOVQMemReg;
-            break;
-         case 16:
-            storeOpcode = TR::InstOpCode::MOVDQUMemReg;
-            break;
-         default:
-            TR_ASSERT(0, "Unsupported size in generateArrayElementStore, size: %d", size);
-            break;
-         }
-      }
-   else if (valueReg->getKind() == TR_GPR)
-      {
-      switch (size)
-         {
-         case 1:
-            storeOpcode = TR::InstOpCode::S1MemReg;
-            break;
-         case 2:
-            storeOpcode = TR::InstOpCode::S2MemReg;
-            break;
-         case 4:
-            storeOpcode = TR::InstOpCode::S4MemReg;
-            break;
-         case 8:
-            storeOpcode = TR::InstOpCode::S8MemReg;
-            break;
-         default:
-            TR_ASSERT(0, "Unsupported size in generateArrayElementStore, size: %d", size);
-            break;
-
-         }
-      }
-   else
-      {
-      TR_ASSERT(0, "Unsupported register type in generateArrayElementStore");
-      }
-   generateMemRegInstruction(storeOpcode, node, generateX86MemoryReference(addressReg, index, cg), valueReg, cg);
-   }
-
-/** \brief
- *    Generate a load instruction
- *
- *  \param node
- *     The tree node
- *
- *  \param valueReg
- *     The destination register
- *
- *  \param size
- *     The size of the loaded value
- *
- *  \param addressReg
- *     The base register for the source mem address
- *
- *  \param index
- *     The index for the destination mem address
- *
- *  \param cg
- *     The code generator
- */
-static void generateArrayElementLoad(TR::Node* node, TR::Register* valueReg, uint8_t size, TR::Register* addressReg, int32_t index, TR::CodeGenerator* cg)
-   {
-   TR::InstOpCode::Mnemonic loadOpCode;
-   if (valueReg->getKind() == TR_FPR)
-      {
-      switch (size)
-         {
-         case 4:
-            loadOpCode  = TR::InstOpCode::MOVDRegMem;
-            break;
-         case 8:
-            loadOpCode  = TR::InstOpCode::MOVQRegMem;
-            break;
-         case 16:
-            loadOpCode  = TR::InstOpCode::MOVDQURegMem;
-            break;
-         default:
-            TR_ASSERT(0, "Unsupported size in generateArrayElementLoad, size: %d", size);
-            break;
-         }
-      }
-   else if (valueReg->getKind() == TR_GPR)
-      {
-      switch (size)
-         {
-         case 1:
-            loadOpCode  = TR::InstOpCode::L1RegMem;
-            break;
-         case 2:
-            loadOpCode  = TR::InstOpCode::L2RegMem;
-            break;
-         case 4:
-            loadOpCode  = TR::InstOpCode::L4RegMem;
-            break;
-         case 8:
-            loadOpCode  = TR::InstOpCode::L8RegMem;
-            break;
-         default:
-            TR_ASSERT(0, "Unsupported size in generateArrayElementLoad, size: %d", size);
-            break;
-
-         }
-      }
-   else
-      {
-      TR_ASSERT(0, "Unsupported register type in generateArrayElementLoad");
-      }
-   generateRegMemInstruction(loadOpCode,  node, valueReg, generateX86MemoryReference(addressReg, index, cg), cg);
    }
 
 /** \brief

@@ -555,14 +555,27 @@ typedef enum {
 #define PREFERRED_HEAP_BASE 0x0
 #endif
 
-#define SUBALLOCATOR_INITIAL_SIZE (200*1024*1024)
-#define SUBALLOCATOR_COMMIT_SIZE (50*1024*1024)
+#define SUBALLOCATOR_INITIAL_SIZE (200 * 1024 * 1024)
+#define SUBALLOCATOR_COMMIT_SIZE (50 * 1024 * 1024)
 #if defined(AIXPPC)
 /* virtual memory is assigned in segment of 256M, so grab the entire segment */
-#define SUBALLOCATOR_ALIGNMENT (256*1024*1024)
+#define SUBALLOCATOR_ALIGNMENT (256 * 1024 * 1024)
 #else /* defined(AIXPPC) */
-#define SUBALLOCATOR_ALIGNMENT (8*1024*1024)
+#define SUBALLOCATOR_ALIGNMENT (8 * 1024 * 1024)
 #endif /* defined(AIXPPC) */
+
+/* VMDESIGN 1761 The size of a suballocation heap.
+ * See VMDESIGN 1761 for the rationale behind the selection of this size.
+ * An 8MB heap is used to provide more capacity in the cases where an application loads a greater
+ * number of classes than typical.
+ * For testing purposes, this value is mirrored in the port library test. omrmemTest.cpp should be
+ * updated if this value is changed.
+ */
+#if defined(AIXPPC) && defined(OMR_GC_COMPRESSED_POINTERS)
+#define SUBALLOCATOR_INCREMENT_SIZE (256 * 1024 * 1024)
+#else /* defined(AIXPPC) && defined(OMR_GC_COMPRESSED_POINTERS) */
+#define SUBALLOCATOR_INCREMENT_SIZE (8 * 1024 * 1024)
+#endif /* defined(AIXPPC) && defined(OMR_GC_COMPRESSED_POINTERS) */
 
 #define MAXIMUM_HEAP_SIZE_RECOMMENDED_FOR_COMPRESSEDREFS            ((U_64)57 * 1024 * 1024 * 1024)
 #define MAXIMUM_HEAP_SIZE_RECOMMENDED_FOR_3BIT_SHIFT_COMPRESSEDREFS ((U_64)25 * 1024 * 1024 * 1024)

@@ -1113,7 +1113,7 @@ TR_Debug::print(TR::FILE *pOutFile, TR::Instruction *instr)
          print(pOutFile, (TR::ARM64ImmInstruction *)instr);
          break;
       case OMR::Instruction::IsSynchronization:
-         print(pOutFile, (TR::ARM64ImmInstruction *)instr); // printing handled by superclass
+         print(pOutFile, (TR::ARM64SynchronizationInstruction *)instr);
          break;
       case OMR::Instruction::IsException:
          print(pOutFile, (TR::ARM64ImmInstruction *)instr); // printing handled by superclass
@@ -1780,7 +1780,7 @@ TR_Debug::print(TR::FILE *pOutFile, TR::ARM64Trg1Src1ImmInstruction *instr)
             done = true;
             trfprintf(pOutFile, "sxt%cw \t", (imms == 7) ? 'b' : 'h');
             print(pOutFile, instr->getTargetRegister(), TR_WordReg); trfprintf(pOutFile, ", ");
-            print(pOutFile, instr->getSource1Register(), TR_WordReg); 
+            print(pOutFile, instr->getSource1Register(), TR_WordReg);
             }
          }
       if (!done)
@@ -2227,6 +2227,37 @@ TR_Debug::print(TR::FILE *pOutFile, TR::ARM64Src2CondInstruction *instr)
    trfprintf(pOutFile, ", %d", instr->getConditionFlags());
    trfprintf(pOutFile, ", %s", ARM64ConditionNames[instr->getConditionCode()]);
 
+   trfflush(_comp->getOutFile());
+   }
+
+static const char *
+getBarrierLimitationName(TR::InstOpCode::AArch64BarrierLimitation lim)
+   {
+   switch (lim)
+      {
+      case TR::InstOpCode::sy: return "sy";
+      case TR::InstOpCode::st: return "st";
+      case TR::InstOpCode::ld: return "ld";
+      case TR::InstOpCode::ish: return "ish";
+      case TR::InstOpCode::ishst: return "ishst";
+      case TR::InstOpCode::ishld: return "ishld";
+      case TR::InstOpCode::nsh: return "nsh";
+      case TR::InstOpCode::nshst: return "nshst";
+      case TR::InstOpCode::nshld: return "nshld";
+      case TR::InstOpCode::osh: return "osh";
+      case TR::InstOpCode::oshst: return "oshst";
+      case TR::InstOpCode::oshld: return "oshld";
+
+      default: return "???";
+      }
+   }
+
+void
+TR_Debug::print(TR::FILE *pOutFile, TR::ARM64SynchronizationInstruction *instr)
+   {
+   printPrefix(pOutFile, instr);
+   const char *lim = getBarrierLimitationName(static_cast<TR::InstOpCode::AArch64BarrierLimitation>(instr->getSourceImmediate()));
+   trfprintf(pOutFile, "%s \t%s", getOpCodeName(&instr->getOpCode()), lim);
    trfflush(_comp->getOutFile());
    }
 

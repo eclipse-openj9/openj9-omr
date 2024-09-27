@@ -1183,7 +1183,7 @@ TR::ARM64SynchronizationInstruction *generateSynchronizationInstruction(
                   TR::CodeGenerator *cg,
                   TR::InstOpCode::Mnemonic op,
                   TR::Node *node,
-                  uint32_t imm,
+                  TR::InstOpCode::AArch64BarrierLimitation lim,
                   TR::Instruction *preced = NULL);
 
 /*

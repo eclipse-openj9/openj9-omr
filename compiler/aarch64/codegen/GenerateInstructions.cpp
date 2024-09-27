@@ -641,11 +641,11 @@ TR::Instruction *generateCIncInstruction(TR::CodeGenerator *cg, TR::Node *node,
    }
 
 TR::ARM64SynchronizationInstruction *generateSynchronizationInstruction(TR::CodeGenerator *cg, TR::InstOpCode::Mnemonic op,
-   TR::Node *node, uint32_t imm, TR::Instruction *preced)
+   TR::Node *node, TR::InstOpCode::AArch64BarrierLimitation lim, TR::Instruction *preced)
    {
    if (preced)
-      return new (cg->trHeapMemory()) TR::ARM64SynchronizationInstruction(op, node, imm, preced, cg);
-   return new (cg->trHeapMemory()) TR::ARM64SynchronizationInstruction(op, node, imm, cg);
+      return new (cg->trHeapMemory()) TR::ARM64SynchronizationInstruction(op, node, lim, preced, cg);
+   return new (cg->trHeapMemory()) TR::ARM64SynchronizationInstruction(op, node, lim, cg);
    }
 
 TR::ARM64ExceptionInstruction *generateExceptionInstruction(TR::CodeGenerator *cg, TR::InstOpCode::Mnemonic op,

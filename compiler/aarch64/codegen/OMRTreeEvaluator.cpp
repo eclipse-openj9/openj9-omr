@@ -6059,7 +6059,7 @@ TR::Register *commonLoadEvaluator(TR::Node *node, TR::InstOpCode::Mnemonic op, i
 
    if (needSync)
       {
-      generateSynchronizationInstruction(cg, TR::InstOpCode::dmb, node, 0x9); // dmb ishld
+      generateSynchronizationInstruction(cg, TR::InstOpCode::dmb, node, TR::InstOpCode::ishld);
       }
 
    tempMR->decNodeReferenceCounts(cg);
@@ -6125,7 +6125,7 @@ OMR::ARM64::TreeEvaluator::aloadEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    bool needSync = (node->getSymbolReference()->getSymbol()->isSyncVolatile() && cg->comp()->target().isSMP());
    if (needSync)
       {
-      generateSynchronizationInstruction(cg, TR::InstOpCode::dmb, node, 0x9); // dmb ishld
+      generateSynchronizationInstruction(cg, TR::InstOpCode::dmb, node, TR::InstOpCode::ishld);
       }
 
    tempMR->decNodeReferenceCounts(cg);
@@ -6195,7 +6195,7 @@ TR::Register *commonStoreEvaluator(TR::Node *node, TR::InstOpCode::Mnemonic op, 
 
    if (needSync)
       {
-      generateSynchronizationInstruction(cg, TR::InstOpCode::dmb, node, 0xA); // dmb ishst
+      generateSynchronizationInstruction(cg, TR::InstOpCode::dmb, node, TR::InstOpCode::ishst);
       }
 
    TR::Node *valueChildRoot = NULL;
@@ -6253,7 +6253,7 @@ TR::Register *commonStoreEvaluator(TR::Node *node, TR::InstOpCode::Mnemonic op, 
       // ordered and lazySet operations will not generate a post-write sync
       if (!lazyVolatile)
          {
-         generateSynchronizationInstruction(cg, TR::InstOpCode::dmb, node, 0xB); // dmb ish
+         generateSynchronizationInstruction(cg, TR::InstOpCode::dmb, node, TR::InstOpCode::ish);
          }
       }
 
@@ -8001,7 +8001,7 @@ static TR::Register *intrinsicAtomicAdd(TR::Node *node, TR::CodeGenerator *cg)
       generateTrg1MemSrc1Instruction(cg, storeop, node, oldValueReg, TR::MemoryReference::createWithDisplacement(cg, addressReg, 0), newValueReg);
       generateCompareBranchInstruction(cg, TR::InstOpCode::cbnzx, node, oldValueReg, loopLabel);
 
-      generateSynchronizationInstruction(cg, TR::InstOpCode::dmb, node, 0xB); // dmb ish
+      generateSynchronizationInstruction(cg, TR::InstOpCode::dmb, node, TR::InstOpCode::ish);
 
       //Set the conditions and dependencies
       auto conditions = new (cg->trHeapMemory()) TR::RegisterDependencyConditions(0, 4, cg->trMemory());
@@ -8166,7 +8166,7 @@ TR::Register *intrinsicAtomicFetchAndAdd(TR::Node *node, TR::CodeGenerator *cg)
       generateTrg1MemSrc1Instruction(cg, storeop, node, tempReg, TR::MemoryReference::createWithDisplacement(cg, addressReg, 0), newValueReg);
       generateCompareBranchInstruction(cg, TR::InstOpCode::cbnzx, node, tempReg, loopLabel);
 
-      generateSynchronizationInstruction(cg, TR::InstOpCode::dmb, node, 0xB); // dmb ish
+      generateSynchronizationInstruction(cg, TR::InstOpCode::dmb, node, TR::InstOpCode::ish);
 
       //Set the conditions and dependencies
       const int numDeps = (valueReg != NULL) ? 5 : 4;
@@ -8281,7 +8281,7 @@ TR::Register *intrinsicAtomicSwap(TR::Node *node, TR::CodeGenerator *cg)
       generateTrg1MemSrc1Instruction(cg, storeop, node, tempReg, TR::MemoryReference::createWithDisplacement(cg, addressReg, 0), valueReg);
       generateCompareBranchInstruction(cg, TR::InstOpCode::cbnzx, node, tempReg, loopLabel);
 
-      generateSynchronizationInstruction(cg, TR::InstOpCode::dmb, node, 0xB); // dmb ish
+      generateSynchronizationInstruction(cg, TR::InstOpCode::dmb, node, TR::InstOpCode::ish);
 
       //Set the conditions and dependencies
       auto conditions = new (cg->trHeapMemory()) TR::RegisterDependencyConditions(0, 4, cg->trMemory());

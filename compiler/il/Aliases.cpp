@@ -440,22 +440,23 @@ OMR::SymbolReference::getUseDefAliasesBV(bool isDirectCall, bool includeGCSafePo
 #ifdef J9_PROJECT_SPECIFIC
          TR::ResolvedMethodSymbol * resolvedMethodSymbol = _symbol->castToResolvedMethodSymbol();
 
-         if (!comp->getOption(TR_EnableHCR))
+         if (resolvedMethodSymbol->getRecognizedMethod() == TR::java_lang_System_arraycopy)
             {
+            TR_BitVector * aliases = new (aliasRegion) TR_BitVector(bvInitialSize, aliasRegion, growability);
+            *aliases |= symRefTab->aliasBuilder.arrayElementSymRefs();
+            if (comp->generateArraylets())
+               *aliases |= symRefTab->aliasBuilder.arrayletElementSymRefs();
+
+            return aliases;
+            }
+
+         if (!comp->getOption(TR_EnableHCR) || comp->fej9()->isIntrinsicCandidate(resolvedMethodSymbol->getResolvedMethod()))
+            {
+            if (resolvedMethodSymbol->isPureFunction())
+               return NULL;
+
             switch (resolvedMethodSymbol->getRecognizedMethod())
                {
-               case TR::java_lang_System_arraycopy:
-                  {
-                  TR_BitVector * aliases = new (aliasRegion) TR_BitVector(bvInitialSize, aliasRegion, growability);
-                  *aliases |= symRefTab->aliasBuilder.arrayElementSymRefs();
-                  if (comp->generateArraylets())
-                     *aliases |= symRefTab->aliasBuilder.arrayletElementSymRefs();
-                  return aliases;
-                  }
-
-                  if (resolvedMethodSymbol->isPureFunction())
-                      return NULL;
-
                case TR::java_lang_Double_longBitsToDouble:
                case TR::java_lang_Double_doubleToLongBits:
                case TR::java_lang_Float_intBitsToFloat:
@@ -501,9 +502,7 @@ OMR::SymbolReference::getUseDefAliasesBV(bool isDirectCall, bool includeGCSafePo
                	break;
                }
             }
-#endif //J9_PROJECT_SPECIFIC
 
-#ifdef J9_PROJECT_SPECIFIC
          TR_ResolvedMethod * method = resolvedMethodSymbol->getResolvedMethod();
          TR_PersistentMethodInfo * methodInfo = comp->getRecompilationInfo() ? TR_PersistentMethodInfo::get(method) : NULL;
          if (methodInfo && (methodInfo->hasRefinedAliasSets() ||
@@ -604,7 +603,7 @@ OMR::SymbolReference::getUseDefAliasesBV(bool isDirectCall, bool includeGCSafePo
             *aliases &= *methodAliases;
             return aliases;
             }
-#endif
+#endif  //J9_PROJECT_SPECIFIC
 
          return symRefTab->aliasBuilder.methodAliases(self());
          }

@@ -743,8 +743,10 @@ public:
 	};
 	HeapInitializationFailureReason heapInitializationFailureReason; /**< Error code provided additional information about heap initialization failure */
 	bool scavengerAlignHotFields; /**< True if the scavenger is to check the hot field description for an object in order to better cache align it when tenuring (enabled with the -Xgc:hotAlignment option) */
-	uintptr_t suballocatorInitialSize; /**< the initial chunk size in bytes for the J9Heap suballocator (enabled with the -Xgc:suballocatorInitialSize option) */
-	uintptr_t suballocatorCommitSize; /**< the commit size in bytes for the J9Heap suballocator (enabled with the -Xgc:suballocatorCommitSize option) */
+	uintptr_t suballocatorInitialSize; /**< the initial chunk size in bytes for the heap suballocator (enabled with the -Xgc:suballocatorInitialSize option) */
+	uintptr_t suballocatorCommitSize; /**< the commit size in bytes for the heap suballocator (enabled with the -Xgc:suballocatorCommitSize option) */
+	uintptr_t suballocatorIncrementSize; /**< the increment size in bytes for the heap suballocator (enabled with the -Xgc:suballocatorIncrementSize option) */
+	bool suballocatorQuickAlloc; /**< use OMRPORT_VMEM_ALLOC_QUICK for the heap suballocator (disabled with the -Xgc:suballocatorQuickAllocDisable option) (Linux only) */
 
 #if defined(OMR_GC_COMPRESSED_POINTERS)
 	bool shouldAllowShiftingCompression; /**< temporary option to enable compressed reference scaling by shifting pointers */
@@ -1868,8 +1870,10 @@ public:
 		, heapCeiling(0) /* default for normal platforms is 0 (i.e. no ceiling) */
 		, heapInitializationFailureReason(HEAP_INITIALIZATION_FAILURE_REASON_NO_ERROR)
 		, scavengerAlignHotFields(true) /* VM Design 1774: hot field alignment is on by default */
-		, suballocatorInitialSize(SUBALLOCATOR_INITIAL_SIZE) /* default for J9Heap suballocator initial size is 200 MB */
-		, suballocatorCommitSize(SUBALLOCATOR_COMMIT_SIZE) /* default for J9Heap suballocator commit size is 50 MB */
+		, suballocatorInitialSize(SUBALLOCATOR_INITIAL_SIZE) /* default for heap suballocator initial size is 200 MB */
+		, suballocatorCommitSize(SUBALLOCATOR_COMMIT_SIZE) /* default for heap suballocator commit size is 50 MB */
+		, suballocatorIncrementSize(SUBALLOCATOR_INCREMENT_SIZE) /* default for heap suballocator commit size is 8 MB or 256 MB for AIX */
+		, suballocatorQuickAlloc(true) /* use mmap-based allocation by default for the heap suballocator (Linux only) */
 #if defined(OMR_GC_COMPRESSED_POINTERS)
 		, shouldAllowShiftingCompression(true) /* VM Design 1810: shifting compression enabled, by default, for compressed refs */
 		, shouldForceSpecifiedShiftingCompression(0)

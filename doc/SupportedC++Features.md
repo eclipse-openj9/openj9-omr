@@ -26,16 +26,16 @@ SPDX-License-Identifier: EPL-2.0 OR Apache-2.0 OR GPL-2.0-only WITH Classpath-ex
 
 OS      | Architecture | Build Compiler | Version
 --------|--------------|----------------|--------
-Linux   | x86          | g++            | [4.8](https://gcc.gnu.org/gcc-4.8/cxx0x_status.html)
-Linux   | s390x        | g++            | [4.8](https://gcc.gnu.org/gcc-4.8/cxx0x_status.html)
-Linux   | ppc64le      | XLC            | [12.1](https://www.ibm.com/developerworks/community/blogs/5894415f-be62-4bc0-81c5-3956e82276f3/entry/xlc_compiler_s_c_11_support50?lang=en)
-Linux   | ppc64le      | g++            | [4.8](https://gcc.gnu.org/gcc-4.8/cxx0x_status.html)
-AIX     | ppc64        | XLC            | [12.1](https://www.ibm.com/developerworks/community/blogs/5894415f-be62-4bc0-81c5-3956e82276f3/entry/xlc_compiler_s_c_11_support50?lang=en)
-z/OS    | s390x        | XLC            | [v2r2](http://www-01.ibm.com/support/docview.wss?uid=swg27036892)
-Windows | x86-64       | MSVC           | [2010 (version 10)](https://docs.microsoft.com/en-us/previous-versions/hh567368(v=vs.140))
-
-* Note: moving to gcc 7.3
-* Note: moving to msvc 2017
+Linux   | ARMv7        | g++            | [7.3](https://gcc.gnu.org/onlinedocs/7.3.0/)
+Linux   | AArch64      | g++            | [7.3](https://gcc.gnu.org/onlinedocs/7.3.0/)
+Linux   | x86/x86-64   | g++            | [7.3](https://gcc.gnu.org/onlinedocs/7.3.0/)
+Linux   | s390x        | g++            | [7.3](https://gcc.gnu.org/onlinedocs/7.3.0/)
+Linux   | ppc64le      | g++            | [7.3](https://gcc.gnu.org/onlinedocs/7.3.0/)
+AIX     | ppc64        | XLC            | [13.1.3](https://www.ibm.com/docs/en/SSGH3R_13.1.3/com.ibm.compilers.aix.doc/compiler.pdf)
+z/OS    | s390x        | XLC            | [v2r3](https://www.ibm.com/docs/en/SSLTBW_2.3.0/pdf/cbcux01_v2r3.pdf)
+macOS   | x86-64       | XCode 12       | Documentation available [here](https://developer.apple.com/download/all) with an Apple Developer account
+macOS   | AArch64      | XCode 13       | Documentation available [here](https://developer.apple.com/download/all) with an Apple Developer account
+Windows | x86-64       | MSVC 19        | [Visual Studio 2017](https://learn.microsoft.com/en-us/cpp/cpp/?view=msvc-170)
 
 ### External Resources
 

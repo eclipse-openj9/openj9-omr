@@ -4120,7 +4120,7 @@ void OMR::ValuePropagation::transformArrayCloneCall(TR::TreeTop *callTree, OMR::
          }
       else
          {
-         TR::SymbolReference *symRef = comp()->getSymRefTab()->findOrCreateNewArrayNoZeroInitSymbolRef(objNode->getSymbolReference()->getOwningMethodSymbol(comp()));
+         TR::SymbolReference *symRef = comp()->getSymRefTab()->findOrCreateNewArraySymbolRef(objNode->getSymbolReference()->getOwningMethodSymbol(comp()));
          TR::Node::recreateWithoutProperties(callNode, TR::newarray, 2, lenNode, typeConst, symRef);
          callNode->setCanSkipZeroInitialization(true);
          }

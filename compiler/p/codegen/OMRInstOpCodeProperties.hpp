@@ -2507,6 +2507,18 @@
    },
 
    {
+   /* .mnemonic    = */ OMR::InstOpCode::lbarx,
+   /* .name        = */ "lbarx",
+   /* .description =    "Load byte and reserve indexed", */
+   /* .prefix      = */ 0x00000000,
+   /* .opcode      = */ 0x7C000068,
+   /* .format      = */ FORMAT_RT_RA_RB_MEM,
+   /* .minimumALS  = */ OMR_PROCESSOR_PPC_P7,
+   /* .properties  = */ PPCOpProp_IsLoad |
+                        PPCOpProp_ExcludeR0ForRA,
+   },
+
+   {
    /* .mnemonic    = */ OMR::InstOpCode::lbzu,
    /* .name        = */ "lbzu",
    /* .description =    "Load byte and zero extend with update", */
@@ -2776,6 +2788,18 @@
    /* .opcode      = */ 0xA8000000,
    /* .format      = */ FORMAT_RT_D16_RA,
    /* .minimumALS  = */ OMR_PROCESSOR_PPC_RIOS1,
+   /* .properties  = */ PPCOpProp_IsLoad |
+                        PPCOpProp_ExcludeR0ForRA,
+   },
+
+   {
+   /* .mnemonic    = */ OMR::InstOpCode::lharx,
+   /* .name        = */ "lharx",
+   /* .description =    "Load half word and reserve indexed", */
+   /* .prefix      = */ 0x00000000,
+   /* .opcode      = */ 0x7C0000E8,
+   /* .format      = */ FORMAT_RT_RA_RB_MEM,
+   /* .minimumALS  = */ OMR_PROCESSOR_PPC_P7,
    /* .properties  = */ PPCOpProp_IsLoad |
                         PPCOpProp_ExcludeR0ForRA,
    },
@@ -4461,6 +4485,19 @@
    },
 
    {
+   /* .mnemonic    = */ OMR::InstOpCode::stbcx_r,
+   /* .name        = */ "stbcx.",
+   /* .description =    "Store byte conditional indexed", */
+   /* .prefix      = */ 0x00000000,
+   /* .opcode      = */ 0x7C00056D,
+   /* .format      = */ FORMAT_RS_RA_RB_MEM,
+   /* .minimumALS  = */ OMR_PROCESSOR_PPC_P7,
+   /* .properties  = */ PPCOpProp_IsStore |
+                        PPCOpProp_ExcludeR0ForRA |
+                        PPCOpProp_IsRecordForm,
+   },
+
+   {
    /* .mnemonic    = */ OMR::InstOpCode::stbu,
    /* .name        = */ "stbu",
    /* .description =    "Store byte with update", */
@@ -4514,7 +4551,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::stdcx_r,
    /* .name        = */ "stdcx.",
-   /* .description =    "Store word conditional indexed", */
+   /* .description =    "Store dword conditional indexed", */
    /* .prefix      = */ 0x00000000,
    /* .opcode      = */ 0x7C0001AD,
    /* .format      = */ FORMAT_RS_RA_RB_MEM,
@@ -4731,6 +4768,19 @@
    /* .minimumALS  = */ OMR_PROCESSOR_PPC_RIOS1,
    /* .properties  = */ PPCOpProp_IsStore |
                         PPCOpProp_ExcludeR0ForRA,
+   },
+
+   {
+   /* .mnemonic    = */ OMR::InstOpCode::sthcx_r,
+   /* .name        = */ "sthcx.",
+   /* .description =    "Store half word conditional indexed", */
+   /* .prefix      = */ 0x00000000,
+   /* .opcode      = */ 0x7C0005AD,
+   /* .format      = */ FORMAT_RS_RA_RB_MEM,
+   /* .minimumALS  = */ OMR_PROCESSOR_PPC_P7,
+   /* .properties  = */ PPCOpProp_IsStore |
+                        PPCOpProp_ExcludeR0ForRA |
+                        PPCOpProp_IsRecordForm,
    },
 
    {

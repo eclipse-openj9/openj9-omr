@@ -761,12 +761,16 @@ bool OMR::X86::CodeGenerator::willBeEvaluatedAsCallByCodeGen(TR::Node *node, TR:
    TR::MethodSymbol *methodSymbol = callSymRef->getSymbol()->castToMethodSymbol();
    switch (methodSymbol->getRecognizedMethod())
       {
-      case TR::sun_misc_Unsafe_compareAndSwapLong_jlObjectJJJ_Z:
-         return willNotInlineCompareAndSwapNative(node, 8, comp);
       case TR::sun_misc_Unsafe_compareAndSwapInt_jlObjectJII_Z:
+      case TR::jdk_internal_misc_Unsafe_compareAndExchangeInt:
          return willNotInlineCompareAndSwapNative(node, 4, comp);
+      case TR::sun_misc_Unsafe_compareAndSwapLong_jlObjectJJJ_Z:
+      case TR::jdk_internal_misc_Unsafe_compareAndExchangeLong:
+         return willNotInlineCompareAndSwapNative(node, 8, comp);
       case TR::sun_misc_Unsafe_compareAndSwapObject_jlObjectJjlObjectjlObject_Z:
-         return willNotInlineCompareAndSwapNative(node, (comp->target().is64Bit() && !comp->useCompressedPointers()) ? 8 : 4, comp);
+      case TR::jdk_internal_misc_Unsafe_compareAndExchangeObject:
+      case TR::jdk_internal_misc_Unsafe_compareAndExchangeReference:
+         return willNotInlineCompareAndSwapNative(node, TR::Compiler->om.sizeofReferenceField(), comp);
 
       default:
          break;

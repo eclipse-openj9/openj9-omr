@@ -431,8 +431,15 @@ bool TR_RedundantAsyncCheckRemoval::callDoesAnImplicitAsyncCheck(TR::Node *callN
    if (symbol->isNative() &&
        ((symbol->getRecognizedMethod()==TR::sun_misc_Unsafe_compareAndSwapInt_jlObjectJII_Z) ||
        (symbol->getRecognizedMethod()==TR::sun_misc_Unsafe_compareAndSwapLong_jlObjectJJJ_Z) ||
-       (symbol->getRecognizedMethod()==TR::sun_misc_Unsafe_compareAndSwapObject_jlObjectJjlObjectjlObject_Z))
-      )
+       (symbol->getRecognizedMethod()==TR::sun_misc_Unsafe_compareAndSwapObject_jlObjectJjlObjectjlObject_Z)))
+      return false;
+
+   if (symbol->isNative() &&
+       (comp()->target().cpu.isPower() || comp()->target().cpu.isX86()) &&
+       ((symbol->getRecognizedMethod()==TR::jdk_internal_misc_Unsafe_compareAndExchangeInt) ||
+        (symbol->getRecognizedMethod()==TR::jdk_internal_misc_Unsafe_compareAndExchangeLong) ||
+        (symbol->getRecognizedMethod()==TR::jdk_internal_misc_Unsafe_compareAndExchangeObject) ||
+        (symbol->getRecognizedMethod()==TR::jdk_internal_misc_Unsafe_compareAndExchangeReference)))
       return false;
 #endif
    return true;

@@ -3827,12 +3827,6 @@ TR_Debug::getRuntimeHelperName(int32_t index)
             case TR_IA32double2LongSSE:                               return "__SSEdouble2LongIA32";
             case TR_IA32jitCollapseJNIReferenceFrame:                 return "_jitCollapseJNIReferenceFrame";
 
-            case TR_IA32compressString:                               return "_compressString";
-            case TR_IA32compressStringNoCheck:                        return "_compressStringNoCheck";
-            case TR_IA32compressStringJ:                              return "_compressStringJ";
-            case TR_IA32compressStringNoCheckJ:                       return "_compressStringNoCheckJ";
-            case TR_IA32andORString:                                  return "_andORString";
-
             case TR_IA32samplingRecompileMethod:                      return "__samplingRecompileMethod";
             case TR_IA32countingRecompileMethod:                      return "__countingRecompileMethod";
             case TR_IA32samplingPatchCallSite:                        return "__samplingPatchCallSite";
@@ -3853,12 +3847,6 @@ TR_Debug::getRuntimeHelperName(int32_t index)
             case TR_AMD64icallVMprJavaSendVirtualF:                   return "_icallVMprJavaSendVirtualF";
             case TR_AMD64icallVMprJavaSendVirtualD:                   return "_icallVMprJavaSendVirtualD";
             case TR_AMD64jitCollapseJNIReferenceFrame:                return "_jitCollapseJNIReferenceFrame";
-
-            case TR_AMD64compressString:                               return "_compressString";
-            case TR_AMD64compressStringNoCheck:                        return "_compressStringNoCheck";
-            case TR_AMD64compressStringJ:                              return "_compressStringJ";
-            case TR_AMD64compressStringNoCheckJ:                       return "_compressStringNoCheckJ";
-            case TR_AMD64andORString:                                  return "_andORString";
 
             case TR_AMD64samplingRecompileMethod:                     return "__samplingRecompileMethod";
             case TR_AMD64countingRecompileMethod:                     return "__countingRecompileMethod";
@@ -3952,12 +3940,6 @@ TR_Debug::getRuntimeHelperName(int32_t index)
 
          case TR_PPCencodeUTF16Big:                                return "__encodeUTF16Big";
          case TR_PPCencodeUTF16Little:                             return "__encodeUTF16Little";
-
-         case TR_PPCcompressString:                                 return "__compressString";
-         case TR_PPCcompressStringNoCheck:                          return "__compressStringNoCheck";
-         case TR_PPCcompressStringJ:                                return "__compressStringJ";
-         case TR_PPCcompressStringNoCheckJ:                         return "__compressStringNoCheckJ";
-         case TR_PPCandORString:                                    return "__andORString";
 
          case TR_PPCreferenceArrayCopy:                            return "__referenceArrayCopy";
          case TR_PPCgeneralArrayCopy:                              return "__generalArrayCopy";

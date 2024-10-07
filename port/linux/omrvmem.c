@@ -1164,8 +1164,8 @@ reserve_memory_with_mmap(struct OMRPortLibrary *portLibrary, void *address, uint
 			fd = mkostemp(filename, 0);
 			if (OMRPORT_INVALID_FD != fd) {
 				unlink(filename);
-				/* Set the file size with ftruncate. */
-				if (OMRPORT_INVALID_FD == ftruncate(fd, byteAmount)) {
+				/* Set the file size with fallocate . */
+				if (OMRPORT_INVALID_FD == fallocate(fd, 0, 0, byteAmount)) {
 					close(fd);
 					fd = OMRPORT_INVALID_FD;
 				}

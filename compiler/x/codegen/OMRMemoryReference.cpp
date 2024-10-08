@@ -1003,7 +1003,6 @@ OMR::X86::MemoryReference::estimateBinaryLength(TR::CodeGenerator *cg)
 
       case 5:
          displacement = self()->getDisplacement();
-         TR_ASSERT(IS_32BIT_SIGNED(displacement), "64-bit displacement should have been replaced in TR_AMD64MemoryReference::generateBinaryEncoding");
          if (displacement == 0 &&
              !base->needsDisp() &&
              !base->needsSIB() &&
@@ -1033,7 +1032,6 @@ OMR::X86::MemoryReference::estimateBinaryLength(TR::CodeGenerator *cg)
 
       case 7:
          displacement = self()->getDisplacement();
-         TR_ASSERT(IS_32BIT_SIGNED(displacement), "64-bit displacement should have been replaced in TR_AMD64MemoryReference::generateBinaryEncoding");
          if (displacement >= -128 &&
              displacement <= 127  &&
              !self()->isForceWideDisplacement())

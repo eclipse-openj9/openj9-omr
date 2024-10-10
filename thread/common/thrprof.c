@@ -28,6 +28,11 @@
  * APIs for querying per-thread statistics: CPU usage, stack usage.
  */
 
+#if defined(LINUX)
+#define _GNU_SOURCE
+#include <sys/resource.h>
+#endif /* defined(LINUX) */
+
 #include <string.h> /* for memset() */
 #include "omrcfg.h"
 
@@ -1024,4 +1029,65 @@ omrthread_get_jvm_cpu_usage_info_error_recovery(void)
 		lib->threadWalkMutexesHeld = 0;
 		GLOBAL_UNLOCK_SIMPLE(lib);
 	}
+}
+
+intptr_t
+omrthread_get_thread_times(omrthread_thread_time_t *threadTime)
+{
+#if defined(LINUX)
+	struct rusage rUsage;
+	memset(&rUsage, 0, sizeof(rUsage));
+
+	if (0 == getrusage(RUSAGE_THREAD, &rUsage)) {
+		threadTime->userTime = (SEC_TO_NANO_CONVERSION_CONSTANT * (int64_t)rUsage.ru_utime.tv_sec)
+			+ (MICRO_TO_NANO_CONVERSION_CONSTANT * (int64_t)rUsage.ru_utime.tv_usec);
+		threadTime->sysTime = (SEC_TO_NANO_CONVERSION_CONSTANT * (int64_t)rUsage.ru_stime.tv_sec)
+			+ (MICRO_TO_NANO_CONVERSION_CONSTANT * (int64_t)rUsage.ru_stime.tv_usec);
+
+		return 0;
+	}
+
+	return -1;
+#elif defined(OMR_OS_WINDOWS) && !defined(BREW) /* defined(LINUX) */
+	omrthread_t self = omrthread_self();
+	FILETIME creationTime;
+	FILETIME exitTime;
+	FILETIME kernelTime;
+	FILETIME userTime;
+	memset(&creationTime, 0, sizeof(creationTime));
+	memset(&exitTime, 0, sizeof(exitTime));
+	memset(&kernelTime, 0, sizeof(kernelTime));
+	memset(&userTime, 0, sizeof(userTime));
+
+	if (GetThreadTimes(self->handle, &creationTime, &exitTime, &kernelTime, &userTime)) {
+		/* Time is in 100's of nanos. Convert to nanos. */
+		threadTime->sysTime = ((int64_t)kernelTime.dwLowDateTime | ((int64_t)kernelTime.dwHighDateTime << 32)) * 100;
+		threadTime->userTime = ((int64_t)userTime.dwLowDateTime | ((int64_t)userTime.dwHighDateTime << 32)) * 100;
+
+		return 0;
+	}
+
+	return -1;
+#elif defined(AIXPPC) /* defined(OMR_OS_WINDOWS) && !defined(BREW) */
+	omrthread_t self = omrthread_self();
+
+	/* AIX provides a function call that returns an entire structure of
+	 * information about the thread.
+	 */
+	struct rusage rUsage;
+	memset(&rUsage, 0, sizeof(rUsage));
+
+	if (0 == pthread_getrusage_np(self->handle, &rUsage, PTHRDSINFO_RUSAGE_COLLECT)) {
+		threadTime->userTime = (SEC_TO_NANO_CONVERSION_CONSTANT * (int64_t)rUsage.ru_utime.tv_sec)
+			+ (MICRO_TO_NANO_CONVERSION_CONSTANT * (int64_t)rUsage.ru_utime.tv_usec);
+		threadTime->sysTime = (SEC_TO_NANO_CONVERSION_CONSTANT * (int64_t)rUsage.ru_stime.tv_sec)
+			+ (MICRO_TO_NANO_CONVERSION_CONSTANT * (int64_t)rUsage.ru_stime.tv_usec);
+		return 0;
+	}
+
+	return -1;
+#else /* defined(AIXPPC) */
+	/* Return -1 since the user time can only be retrieved on Windows, Linux, and AIX. */
+	return -1;
+#endif /* defined(LINUX) */
 }

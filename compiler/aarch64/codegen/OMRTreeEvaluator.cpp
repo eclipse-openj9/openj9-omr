@@ -6433,26 +6433,38 @@ OMR::ARM64::TreeEvaluator::arraytranslateEvaluator(TR::Node *node, TR::CodeGener
    // Number of translated elements is returned
 
    TR::Compilation *comp = cg->comp();
+   bool arrayTranslateTRTO255 = false;
 
    TR_ASSERT_FATAL(!node->isSourceByteArrayTranslate(), "Source is byte[] for arraytranslate");
    TR_ASSERT_FATAL(node->isTargetByteArrayTranslate(), "Target is char[] for arraytranslate");
-   TR_ASSERT_FATAL(node->getChild(3)->getOpCodeValue() == TR::iconst && node->getChild(3)->getInt() == 0x0ff00ff00, "Non-ISO8859 stop character for arraytranslate");
+   TR_ASSERT_FATAL(node->getChild(3)->getOpCodeValue() == TR::iconst, "Non-constant stop char for arraytranslate");
+
+   if (node->getChild(3)->getInt() == 0x0ff00ff00)
+      {
+      arrayTranslateTRTO255 = true;
+      }
+   else
+      {
+      TR_ASSERT_FATAL(node->getChild(3)->getInt() == 0x0ff80ff80, "Unknown stop char for arraytranslate");
+      }
 
    static bool verboseArrayTranslate = (feGetEnv("TR_verboseArrayTranslate") != NULL);
    if (verboseArrayTranslate)
       {
-      fprintf(stderr, "arrayTranslateTRTO255: %s @ %s\n",
+      fprintf(stderr, "arrayTranslateTRTO: %s @ %s [isTO255: %d]\n",
          comp->signature(),
-         comp->getHotnessName(comp->getMethodHotness())
+         comp->getHotnessName(comp->getMethodHotness()),
+         arrayTranslateTRTO255
          );
       }
 
    TR::Register *inputReg = cg->gprClobberEvaluate(node->getChild(0));
    TR::Register *outputReg = cg->gprClobberEvaluate(node->getChild(1));
+   TR::Register *stopCharReg = arrayTranslateTRTO255 ? NULL : cg->gprClobberEvaluate(node->getChild(3));
    TR::Register *inputLenReg = cg->gprClobberEvaluate(node->getChild(4));
    TR::Register *outputLenReg = cg->allocateRegister();
 
-   int numDeps = 10;
+   int numDeps = arrayTranslateTRTO255 ? 10 : 12;
 
    TR::RegisterDependencyConditions *deps = new (cg->trHeapMemory()) TR::RegisterDependencyConditions(1, numDeps, cg->trMemory());
 
@@ -6461,6 +6473,10 @@ OMR::ARM64::TreeEvaluator::arraytranslateEvaluator(TR::Node *node, TR::CodeGener
    deps->addPostCondition(outputLenReg, TR::RealRegister::x0);
    deps->addPostCondition(outputReg, TR::RealRegister::x1);
    deps->addPostCondition(inputLenReg, TR::RealRegister::x2);
+   if (!arrayTranslateTRTO255)
+      {
+      deps->addPostCondition(stopCharReg, TR::RealRegister::x3);
+      }
 
    // Clobbered by the helper
    TR::Register *clobberedReg;
@@ -6477,9 +6493,14 @@ OMR::ARM64::TreeEvaluator::arraytranslateEvaluator(TR::Node *node, TR::CodeGener
    cg->stopUsingRegister(clobberedReg);
    deps->addPostCondition(clobberedReg = cg->allocateRegister(TR_VRF), TR::RealRegister::v2);
    cg->stopUsingRegister(clobberedReg);
+   if (!arrayTranslateTRTO255)
+      {
+      deps->addPostCondition(clobberedReg = cg->allocateRegister(TR_VRF), TR::RealRegister::v3);
+      cg->stopUsingRegister(clobberedReg);
+      }
 
    // Array Translate helper call
-   TR_RuntimeHelper helper = TR_ARM64arrayTranslateTRTO255;
+   TR_RuntimeHelper helper = arrayTranslateTRTO255 ? TR_ARM64arrayTranslateTRTO255 : TR_ARM64arrayTranslateTRTO;
    TR::SymbolReference *helperSym = cg->symRefTab()->findOrCreateRuntimeHelper(helper);
    uintptr_t addr = reinterpret_cast<uintptr_t>(helperSym->getMethodAddress());
    generateImmSymInstruction(cg, TR::InstOpCode::bl, node, addr, deps, helperSym, NULL);
@@ -6492,6 +6513,9 @@ OMR::ARM64::TreeEvaluator::arraytranslateEvaluator(TR::Node *node, TR::CodeGener
 
    if (outputReg != node->getChild(1)->getRegister())
       cg->stopUsingRegister(outputReg);
+
+   if (!arrayTranslateTRTO255 && stopCharReg != node->getChild(3)->getRegister())
+      cg->stopUsingRegister(stopCharReg);
 
    if (inputLenReg != node->getChild(4)->getRegister())
       cg->stopUsingRegister(inputLenReg);

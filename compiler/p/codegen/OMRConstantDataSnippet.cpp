@@ -300,8 +300,11 @@ OMR::ConstantDataSnippet::emitAddressConstant(PPCConstant<intptr_t> *acursor, ui
          {
          // Register an unload assumption on the lower 32bit of the class constant.
          // The patching code thinks it's low bit tagging an instruction not a class pointer!!
+         int PICOffset = 0; // For LE or BE 32-bit
+         if (cg()->comp()->target().cpu.isBigEndian() && cg()->comp()->target().is64Bit())
+            PICOffset = 4;
          cg()->
-         jitAddPicToPatchOnClassUnload((void *)acursor->getConstantValue(), (void *)(codeCursor+((cg()->comp()->target().is64Bit())?4:0)) );
+         jitAddPicToPatchOnClassUnload((void *)acursor->getConstantValue(), (void *)(codeCursor+PICOffset));
          }
       }
 

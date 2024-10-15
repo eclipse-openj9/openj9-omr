@@ -1824,10 +1824,10 @@ static void generateMemoryCopyInstructions(TR::Node* node,
    TR_ASSERT_FATAL(supported, "%s: Unsupported tmpReg1 %d tmpReg2 %d regSize %u", __FUNCTION__, tmpReg1->getKind(), tmpReg2->getKind(), regSize);
 
    int32_t index = 0 - regSize;
-   generateRegMemInstruction(loadOpCode, node, tmpReg1, generateX86MemoryReference(srcReg, sizeReg, 0, index, cg), cg);
-   generateRegMemInstruction(loadOpCode, node, tmpReg2, generateX86MemoryReference(srcReg, 0, cg), cg);
-   generateMemRegInstruction(storeOpCode, node, generateX86MemoryReference(dstReg, sizeReg, 0, index, cg), tmpReg1, cg);
-   generateMemRegInstruction(storeOpCode, node, generateX86MemoryReference(dstReg, 0, cg), tmpReg2, cg);
+   generateRegMemInstruction(loadOpCode, node, tmpReg1, generateX86MemoryReference(srcReg, 0, cg), cg);
+   generateRegMemInstruction(loadOpCode, node, tmpReg2, generateX86MemoryReference(srcReg, sizeReg, 0, index, cg), cg);
+   generateMemRegInstruction(storeOpCode, node, generateX86MemoryReference(dstReg, 0, cg), tmpReg1, cg);
+   generateMemRegInstruction(storeOpCode, node, generateX86MemoryReference(dstReg, sizeReg, 0, index, cg), tmpReg2, cg);
    }
 
 void OMR::X86::TreeEvaluator::arrayCopy64BitPrimitiveInlineSmallSizeWithoutREPMOVSImplRoot16(TR::Node *node,

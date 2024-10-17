@@ -73,11 +73,6 @@ The supported language and library features are set by the minimum compiler vers
 * Variadic macros: `#define m(p, ...)`, `__VA_ARGS__`
 * `__func__` macro
 * `long long`
-* Lambda expressions and closures: `[](int i) -> int { return i + 1; }`
-* Generalized attributes: `[[attribute]]`
-* Null pointer constant: `nullptr`
-* Alignment support: `alignas`, `alignof`
-* Explicit conversion operators
 
 ## Unsupported C++11 Features
 
@@ -104,3 +99,8 @@ The supported language and library features are set by the minimum compiler vers
 * New character types: `char16_t`, `char32_t` (MSVC 2010)
 * Extended sizeof (sizeof nested structures) (XLC 12.1)
 * ref qualifiers on member functions: `int my_member() &&;` (MSVC 2010)
+* Lambda expressions and closures: `[](int i) -> int { return i + 1; }` (XLC v2r1)
+* Generalized attributes: `[[attribute]]` (XLC v2r1)
+* Null pointer constant: `nullptr` (XLC v2r1)
+* Alignment support: `alignas`, `alignof` (XLC v2r1)
+* Explicit conversion operators (XLC v2r1)

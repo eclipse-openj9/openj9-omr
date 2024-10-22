@@ -295,7 +295,13 @@ OMR::CodeGenerator::whichChildToEvaluate(TR::Node * node)
          }
       }
 
-   node->setEvaluationPriority(nodePriority);
+   // Do not set the evaluation priority of a treetop node, since evaluation priority
+   // is only meaningful for nodes yielding values, and treetops do not yield values.
+   if (!node->getOpCode().isTreeTop())
+      {
+      node->setEvaluationPriority(nodePriority);
+      }
+
    return bestChild;
    }
 

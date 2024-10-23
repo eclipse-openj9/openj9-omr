@@ -894,8 +894,14 @@ MM_VerboseHandlerOutput::printAllocationStats(MM_EnvironmentBase* env)
 
 	if (_extensions->isVLHGC()) {
 #if defined(OMR_GC_VLHGC)
-		writer->formatAndOutput(env, 1, "<allocated-bytes non-tlh=\"%zu\" tlh=\"%zu\" arrayletleaf=\"%zu\"/>",
+		if (_extensions->isVirtualLargeObjectHeapEnabled) {
+			writer->formatAndOutput(env, 1, "<allocated-bytes non-tlh=\"%zu\" tlh=\"%zu\" offheap=\"%zu\"/>",
 				systemStats->nontlhBytesAllocated(), systemStats->tlhBytesAllocated(), systemStats->_arrayletLeafAllocationBytes);
+
+		} else {
+			writer->formatAndOutput(env, 1, "<allocated-bytes non-tlh=\"%zu\" tlh=\"%zu\" arrayletleaf=\"%zu\"/>",
+				systemStats->nontlhBytesAllocated(), systemStats->tlhBytesAllocated(), systemStats->_arrayletLeafAllocationBytes);
+		}
 #endif /* OMR_GC_VLHGC */
 	} else if (_extensions->isStandardGC()) {
 #if defined(OMR_GC_MODRON_STANDARD)

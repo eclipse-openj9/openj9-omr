@@ -358,6 +358,7 @@ xmlns:vgc="http://www.ibm.com/j9/verbosegc">
 		<attribute name="non-tlh" type="integer" use="required" />
 		<attribute name="tlh" type="integer" use="optional" />
 		<attribute name="arrayletleaf" type="integer" use="optional" />
+		<attribute name="offheap" type="integer" use="optional" />
 	</complexType>
 
 	<complexType name="largest-consumer">

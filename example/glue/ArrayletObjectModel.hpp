@@ -57,14 +57,6 @@ public:
 	{
 		/* No-op */
 	}
-
-	MMINLINE void
-	fixupDataAddr(MM_ForwardedHeader *forwardedHeader, omrobjectptr_t arrayPtr)
-	{
-#if defined(OMR_ENV_DATA64)
-		Assert_MM_unreachable();
-#endif /* defined(OMR_ENV_DATA64) */
-	}
 	
 	/**
 	 * Returns the size of an indexable object, in bytes, including the header.

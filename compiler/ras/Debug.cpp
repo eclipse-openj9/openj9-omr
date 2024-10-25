@@ -1626,53 +1626,57 @@ TR_Debug::getName(TR::SymbolReference * symRef)
          case TR::SymbolReferenceTable::synchronizedFieldLoadSymbol:
             return "<synchronizedFieldLoad>";
          case TR::SymbolReferenceTable::atomicAddSymbol:
-             return "<atomicAdd>";
+            return "<atomicAdd>";
          case TR::SymbolReferenceTable::atomicFetchAndAddSymbol:
-             return "<atomicFetchAndAdd>";
+            return "<atomicFetchAndAdd>";
          case TR::SymbolReferenceTable::atomicFetchAndAdd32BitSymbol:
-             return "<atomicFetchAndAdd32Bit>";
+            return "<atomicFetchAndAdd32Bit>";
          case TR::SymbolReferenceTable::atomicFetchAndAdd64BitSymbol:
-             return "<atomicFetchAndAdd64Bit>";
+            return "<atomicFetchAndAdd64Bit>";
          case TR::SymbolReferenceTable::atomicSwapSymbol:
-             return "<atomicSwap>";
+            return "<atomicSwap>";
          case TR::SymbolReferenceTable::atomicSwap32BitSymbol:
-             return "<atomicSwap32Bit>";
+            return "<atomicSwap32Bit>";
          case TR::SymbolReferenceTable::atomicSwap64BitSymbol:
-             return "<atomicSwap64Bit>";
+            return "<atomicSwap64Bit>";
          case TR::SymbolReferenceTable::atomicCompareAndSwapReturnStatusSymbol:
-             return "<atomicCompareAndSwapReturnStatus>";
+            return "<atomicCompareAndSwapReturnStatus>";
          case TR::SymbolReferenceTable::atomicCompareAndSwapReturnValueSymbol:
-             return "<atomicCompareAndSwapReturnValue>";
+            return "<atomicCompareAndSwapReturnValue>";
          case TR::SymbolReferenceTable::potentialOSRPointHelperSymbol:
-             return "<potentialOSRPointHelper>";
+            return "<potentialOSRPointHelper>";
          case TR::SymbolReferenceTable::osrFearPointHelperSymbol:
-             return "<osrFearPointHelper>";
+            return "<osrFearPointHelper>";
          case TR::SymbolReferenceTable::eaEscapeHelperSymbol:
-             return "<eaEscapeHelper>";
+            return "<eaEscapeHelper>";
          case TR::SymbolReferenceTable::j9VMThreadTempSlotFieldSymbol:
-             return "<j9VMThreadTempSlotFieldSymbol>";
+            return "<j9VMThreadTempSlotFieldSymbol>";
          case TR::SymbolReferenceTable::computedStaticCallSymbol:
-             return "<computedStaticCallSymbol>";
+            return "<computedStaticCall>";
          case TR::SymbolReferenceTable::j9VMThreadFloatTemp1Symbol:
-             return "<j9VMThreadFloatTemp1Symbol>";
+            return "<j9VMThreadFloatTemp1>";
          case TR::SymbolReferenceTable::objectEqualityComparisonSymbol:
-             return "<objectEqualityComparison>";
+            return "<objectEqualityComparison>";
          case TR::SymbolReferenceTable::objectInequalityComparisonSymbol:
-             return "<objectInequalityComparison>";
+            return "<objectInequalityComparison>";
          case TR::SymbolReferenceTable::nonNullableArrayNullStoreCheckSymbol:
-             return "<nonNullableArrayNullStoreCheck>";
+            return "<nonNullableArrayNullStoreCheck>";
          case TR::SymbolReferenceTable::loadFlattenableArrayElementNonHelperSymbol:
-             return "<loadFlattenableArrayElementNonHelper>";
+            return "<loadFlattenableArrayElementNonHelper>";
          case TR::SymbolReferenceTable::storeFlattenableArrayElementNonHelperSymbol:
-             return "<storeFlattenableArrayElementNonHelper>";
+            return "<storeFlattenableArrayElementNonHelper>";
          case TR::SymbolReferenceTable::J9JNIMethodIDvTableIndexFieldSymbol:
-             return "<J9JNIMethodIDvTableIndexFieldSymbol>";
+            return "<J9JNIMethodIDvTableIndexField>";
          case TR::SymbolReferenceTable::contiguousArrayDataAddrFieldSymbol:
-             return "<contiguousArrayDataAddrFieldSymbol>";
+            return "<contiguousArrayDataAddrField>";
          case TR::SymbolReferenceTable::defaultValueSymbol:
-             return "<defaultValue>";
+            return "<defaultValue>";
          case TR::SymbolReferenceTable::jitDispatchJ9MethodSymbol:
-             return "<jitDispatchJ9Method>";
+            return "<jitDispatchJ9Method>";
+         case TR::SymbolReferenceTable::jProfileValueSymbol:
+            return "<jProfileValue>";
+         case TR::SymbolReferenceTable::jProfileValueWithNullCHKSymbol:
+            return "<jProfileValueWithNullCHK>";
          }
       }
 

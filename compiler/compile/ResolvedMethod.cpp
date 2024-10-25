@@ -330,7 +330,6 @@ bool         TR_ResolvedMethod::isSameMethod(TR_ResolvedMethod *)          { TR_
 bool         TR_ResolvedMethod::isNewInstanceImplThunk()                   { TR_UNIMPLEMENTED(); return false; }
 bool         TR_ResolvedMethod::isJNINative()                              { TR_UNIMPLEMENTED(); return false; }
 bool         TR_ResolvedMethod::isJITInternalNative()                      { TR_UNIMPLEMENTED(); return false; }
-//bool         TR_ResolvedMethod::isUnsafeWithObjectArg(TR::Compilation *)    { TR_UNIMPLEMENTED(); return false; }
 void *       TR_ResolvedMethod::resolvedMethodAddress()                    { TR_UNIMPLEMENTED(); return 0; }
 void *       TR_ResolvedMethod::startAddressForJittedMethod()              { TR_UNIMPLEMENTED(); return 0; }
 void *       TR_ResolvedMethod::startAddressForJNIMethod(TR::Compilation *) { TR_UNIMPLEMENTED(); return 0; }

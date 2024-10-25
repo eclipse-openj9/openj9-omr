@@ -168,14 +168,14 @@ OMR::Method::getParameterIterator(TR::Compilation&, TR_ResolvedMethod *)
    }
 
 bool
-OMR::Method::isUnsafeCAS(TR::Compilation *comp)
+OMR::Method::isUnsafeCAS()
    {
    TR_UNIMPLEMENTED();
    return false;
    }
 
 bool
-OMR::Method::isUnsafeWithObjectArg(TR::Compilation *comp)
+OMR::Method::isUnsafeWithObjectArg()
    {
    TR_UNIMPLEMENTED();
    return false;

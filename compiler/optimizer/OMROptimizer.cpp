@@ -80,6 +80,7 @@
 #include "optimizer/CFGSimplifier.hpp"
 #include "optimizer/CompactLocals.hpp"
 #include "optimizer/ConstRefPrivatization.hpp"
+#include "optimizer/ConstRefRematerialization.hpp"
 #include "optimizer/CopyPropagation.hpp"
 #include "optimizer/ExpressionsSimplification.hpp"
 #include "optimizer/GeneralLoopUnroller.hpp"
@@ -481,6 +482,7 @@ static const OptimizationStrategy tacticalGlobalRegisterAllocatorOpts[] = {
     { OMR::redundantGotoElimination, OMR::IfNotJitProfiling }, // need to be run before global register allocator
     { OMR::treeSimplification, OMR::MarkLastRun }, // Cleanup the trees after redundantGotoElimination
     { OMR::tacticalGlobalRegisterAllocator, OMR::IfEnabled },
+    { OMR::constRefRematerialization, OMR::IfEnabled },
     { OMR::localCSE },
     // { isolatedStoreGroup,                    IfEnabled                    }, // if global register allocator created
     // stores from registers
@@ -898,6 +900,8 @@ OMR::Optimizer::Optimizer(TR::Compilation *comp, TR::ResolvedMethodSymbol *metho
         = new (comp->allocator()) TR::OptimizationManager(self(), TR::SwitchAnalyzer::create, OMR::switchAnalyzer);
     _opts[OMR::constRefPrivatization] = new (comp->allocator())
         TR::OptimizationManager(self(), TR::ConstRefPrivatization::create, OMR::constRefPrivatization);
+    _opts[OMR::constRefRematerialization] = new (comp->allocator())
+        TR::OptimizationManager(self(), TR::ConstRefRematerialization::create, OMR::constRefRematerialization);
     // NOTE: Please add new OMR optimizations here!
 
     // initialize OMR optimization groups

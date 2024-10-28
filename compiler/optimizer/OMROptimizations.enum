@@ -121,3 +121,4 @@
    OPTIMIZATION(catchBlockProfiler)
    OPTIMIZATION(constRefPrivatization)
    OPTIMIZATION(constRefRematerialization)
+   OPTIMIZATION(trivialDeadStoreElimination)

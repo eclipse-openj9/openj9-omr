@@ -3502,6 +3502,7 @@ retrieveLinuxCgroupMemoryStats(struct OMRPortLibrary *portLibrary, struct OMRCgr
 	cgroupMemInfo->memoryUsage = OMRPORT_MEMINFO_NOT_AVAILABLE;
 	cgroupMemInfo->memoryAndSwapLimit = OMRPORT_MEMINFO_NOT_AVAILABLE;
 	cgroupMemInfo->memoryAndSwapUsage = OMRPORT_MEMINFO_NOT_AVAILABLE;
+	cgroupMemInfo->swappiness = OMRPORT_MEMINFO_NOT_AVAILABLE;
 	cgroupMemInfo->cached = OMRPORT_MEMINFO_NOT_AVAILABLE;
 
 	if (OMR_ARE_ANY_BITS_SET(PPG_sysinfoControlFlags, OMRPORT_SYSINFO_CGROUP_V1_AVAILABLE)) {
@@ -3563,7 +3564,11 @@ retrieveLinuxCgroupMemoryStats(struct OMRPortLibrary *portLibrary, struct OMRCgr
 
 	rc = readCgroupSubsystemFile(portLibrary, OMR_CGROUP_SUBSYSTEM_MEMORY, CGROUP_MEMORY_SWAPPINESS, numItemsToRead, "%" SCNu64, &cgroupMemInfo->swappiness);
 	if (0 != rc) {
-		goto _exit;
+		cgroupMemInfo->swappiness = OMRPORT_MEMINFO_NOT_AVAILABLE;
+		/* Cgroup swappiness may not always be available (e.g. Cgroup v2),
+		 * so do not treat this condition as an error
+		 */
+		rc = 0;
 	}
 
 	/* Read value of page cache memory from memory.stat file */

@@ -542,6 +542,7 @@ TR::OptionTable OMR::Options::_jitOptions[] = {
    {"disableSequentialStoreSimplification","O\tdisable sequential store simplification phase", TR::Options::disableOptimization, sequentialStoreSimplification, 0, "P"},
 #endif
    {"disableShareableMethodHandleThunks",  "R\tdisable creation of shareable invokeExact thunks for MethodHandles", SET_OPTION_BIT(TR_DisableShareableMethodHandleThunks), "F", NOT_IN_SUBSET},
+   {"disableSharedCacheDisclaiming",       "M\tdisable memory disclaiming for shared class cache memory segments (linux specific).", RESET_OPTION_BIT(TR_EnableSharedCacheDisclaiming),"F", NOT_IN_SUBSET},
    {"disableSharedCacheHints",             "R\tdisable storing and loading hints from shared cache", SET_OPTION_BIT(TR_DisableSharedCacheHints), "F"},
    {"disableSIMD",                         "O\tdisable SIMD exploitation and infrastructure on platforms supporting vector register and instructions", SET_OPTION_BIT(TR_DisableSIMD), "F"},
    {"disableSIMDArrayCompare",            "O\tDisable vectorized array comparison using SIMD instruction", SET_OPTION_BIT(TR_DisableSIMDArrayCompare), "F"},
@@ -789,6 +790,7 @@ TR::OptionTable OMR::Options::_jitOptions[] = {
    {"enableSeparateInitFromAlloc",        "O\tenable separating init from alloc",            RESET_OPTION_BIT(TR_DisableSeparateInitFromAlloc), "F"},
    {"enableSequentialLoadStoreCold",      "O\tenable sequential store/load opt at cold level", SET_OPTION_BIT(TR_EnableSequentialLoadStoreCold), "F"},
    {"enableSequentialLoadStoreWarm",      "O\tenable sequential store/load opt at warm level", SET_OPTION_BIT(TR_EnableSequentialLoadStoreWarm), "F"},
+   {"enableSharedCacheDisclaiming",       "M\tenable memory disclaiming for shared class cache memory segments (linux specific).", SET_OPTION_BIT(TR_EnableSharedCacheDisclaiming),"F", NOT_IN_SUBSET},
    {"enableSharedCacheTiming",            "M\tenable timing stats for accessing the shared cache", SET_OPTION_BIT(TR_EnableSharedCacheTiming), "F"},
    {"enableSIMDLibrary",                  "M\tEnable recognized methods for SIMD library", SET_OPTION_BIT(TR_EnableSIMDLibrary), "F"},
    {"enableSnapshotBlockOpts",            "O\tenable block ordering/redirecting optimizations in the presences of snapshot nodes", SET_OPTION_BIT(TR_EnableSnapshotBlockOpts), "F"},

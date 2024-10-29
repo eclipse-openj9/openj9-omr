@@ -1226,13 +1226,22 @@ omrsysinfo_get_load_average(struct OMRPortLibrary *portLibrary, struct J9PortSys
 intptr_t
 omrsysinfo_get_CPU_utilization(struct OMRPortLibrary *portLibrary, struct J9SysinfoCPUTime *cpuTime)
 {
-
 	FILETIME lpIdleTime;
+	ULARGE_INTEGER lpIdleTimeU64;
 	FILETIME lpKernelTime;
+	ULARGE_INTEGER lpKernelTimeU64;
 	FILETIME lpUserTime;
+	ULARGE_INTEGER lpUserTimeU64;
 	uint64_t idleTime = 0;
 	uint64_t kernelActiveTime = 0;
 	uint64_t userTime = 0;
+
+	memset(&lpIdleTime, 0, sizeof(lpIdleTime));
+	memset(&lpIdleTimeU64, 0, sizeof(lpIdleTimeU64));
+	memset(&lpKernelTime, 0, sizeof(lpKernelTime));
+	memset(&lpKernelTimeU64, 0, sizeof(lpKernelTimeU64));
+	memset(&lpUserTime, 0, sizeof(lpUserTime));
+	memset(&lpUserTimeU64, 0, sizeof(lpUserTimeU64));
 
 	/*
 	 * GetSystemTimes returns the sum of CPU times across all CPUs
@@ -1242,11 +1251,20 @@ omrsysinfo_get_CPU_utilization(struct OMRPortLibrary *portLibrary, struct J9Sysi
 		Trc_PRT_sysinfo_get_CPU_utilization_GetSystemTimesFailed(GetLastError());
 		return OMRPORT_ERROR_SYSINFO_GET_STATS_FAILED;
 	}
-	idleTime = (lpIdleTime.dwLowDateTime + (((uint64_t) lpIdleTime.dwHighDateTime) << 32)) * 100; /* FILETIME resolution is 100 ns */
-	kernelActiveTime = (lpKernelTime.dwLowDateTime + (((uint64_t) lpKernelTime.dwHighDateTime) << 32)) * 100
-					   - idleTime; /* kernel time includes idle time */
+
+	lpIdleTimeU64.LowPart = lpIdleTime.dwLowDateTime;
+	lpIdleTimeU64.HighPart = lpIdleTime.dwHighDateTime;
+
+	lpKernelTimeU64.LowPart = lpKernelTime.dwLowDateTime;
+	lpKernelTimeU64.HighPart = lpKernelTime.dwHighDateTime;
+
+	lpUserTimeU64.LowPart = lpUserTime.dwLowDateTime;
+	lpUserTimeU64.HighPart = lpUserTime.dwHighDateTime;
+
+	idleTime = lpIdleTimeU64.QuadPart * 100; /* FILETIME resolution is 100 ns */
+	kernelActiveTime = (lpKernelTimeU64.QuadPart * 100) - idleTime; /* kernel time includes idle time */
 	Trc_PRT_sysinfo_get_CPU_utilization_GST_result("kernel active", kernelActiveTime);
-	userTime = (lpUserTime.dwLowDateTime + (((uint64_t) lpUserTime.dwHighDateTime) << 32)) * 100;
+	userTime = lpUserTimeU64.QuadPart * 100;
 	Trc_PRT_sysinfo_get_CPU_utilization_GST_result("user", userTime);
 	cpuTime->cpuTime = kernelActiveTime + userTime;
 	cpuTime->timestamp = portLibrary->time_nano_time(portLibrary);
@@ -2002,8 +2020,19 @@ omrsysinfo_get_process_start_time(struct OMRPortLibrary *portLibrary, uintptr_t 
 	Trc_PRT_sysinfo_get_process_start_time_enter(pid);
 	if (0 != omrsysinfo_process_exists(portLibrary, pid)) {
 		double seconds = 0;
-		FILETIME createTime, exitTime, kernelTime, userTime;
+		FILETIME createTime;
+		ULARGE_INTEGER createTimeU64;
+		FILETIME exitTime;
+		FILETIME kernelTime;
+		FILETIME userTime;
 		HANDLE process = OpenProcess(PROCESS_QUERY_INFORMATION, FALSE, (DWORD)pid);
+
+		memset(&createTime, 0, sizeof(createTime));
+		memset(&createTimeU64, 0, sizeof(createTimeU64));
+		memset(&exitTime, 0, sizeof(exitTime));
+		memset(&kernelTime, 0, sizeof(kernelTime));
+		memset(&userTime, 0, sizeof(userTime));
+
 		if (NULL == process) {
 			rc = OMRPORT_ERROR_SYSINFO_NONEXISTING_PROCESS;
 			goto done;
@@ -2012,7 +2041,9 @@ omrsysinfo_get_process_start_time(struct OMRPortLibrary *portLibrary, uintptr_t 
 			rc = OMRPORT_ERROR_SYSINFO_ERROR_GETTING_PROCESS_START_TIME;
 			goto cleanup;
 		}
-		seconds = (double)(*(LONGLONG *)&(createTime)) / OMRPORT_SYSINFO_WINDOWS_TICK;
+		createTimeU64.LowPart = createTime.dwLowDateTime;
+		createTimeU64.HighPart = createTime.dwHighDateTime;
+		seconds = ((double)createTimeU64.QuadPart) / OMRPORT_SYSINFO_WINDOWS_TICK;
 		computedProcessStartTimeInNanoseconds = (uint64_t)((seconds - OMRPORT_SYSINFO_SEC_TO_UNIX_EPOCH) * OMRPORT_SYSINFO_NS100_PER_SEC);
 		computedProcessStartTimeInNanoseconds *= 100;
 cleanup:

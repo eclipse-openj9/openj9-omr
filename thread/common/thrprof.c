@@ -121,14 +121,33 @@ omrthread_get_cpu_time_ex(omrthread_t thread, int64_t *cpuTime)
 #if defined(OMR_OS_WINDOWS) && !defined(BREW)
 	{
 		intptr_t ret = 0;
-		FILETIME creationTime, exitTime, kernelTime, userTime;
-		int64_t totalTime;
+		FILETIME creationTime;
+		FILETIME exitTime;
+		FILETIME kernelTime;
+		FILETIME userTime;
+		int64_t totalTime = 0;
+
+		memset(&creationTime, 0, sizeof(creationTime));
+		memset(&exitTime, 0, sizeof(exitTime));
+		memset(&kernelTime, 0, sizeof(kernelTime));
+		memset(&userTime, 0, sizeof(userTime));
 
 		/* WARNING! Not supported on Win95!  Need to test to ensure this fails gracefully */
 
 		if (GetThreadTimes(thread->handle, &creationTime, &exitTime, &kernelTime, &userTime)) {
-			totalTime = ((int64_t)kernelTime.dwLowDateTime | ((int64_t)kernelTime.dwHighDateTime << 32))
-						+ ((int64_t)userTime.dwLowDateTime | ((int64_t)userTime.dwHighDateTime << 32));
+			ULARGE_INTEGER kernelTimeU64;
+			ULARGE_INTEGER userTimeU64;
+
+			memset(&kernelTimeU64, 0, sizeof(kernelTimeU64));
+			memset(&userTimeU64, 0, sizeof(userTimeU64));
+
+			kernelTimeU64.LowPart = kernelTime.dwLowDateTime;
+			kernelTimeU64.HighPart = kernelTime.dwHighDateTime;
+
+			userTimeU64.LowPart = userTime.dwLowDateTime;
+			userTimeU64.HighPart = userTime.dwHighDateTime;
+
+			totalTime = (int64_t)(kernelTimeU64.QuadPart + userTimeU64.QuadPart);
 
 			/* totalTime is in 100's of nanos.  Convert to nanos */
 			*cpuTime = totalTime * 100;
@@ -409,13 +428,27 @@ omrthread_get_user_time(omrthread_t thread)
 	 *
 	 */
 
-	FILETIME creationTime, exitTime, kernelTime, userTime;
-	int64_t totalTime;
+	FILETIME creationTime;
+	FILETIME exitTime;
+	FILETIME kernelTime;
+	FILETIME userTime;
+	int64_t totalTime = 0;
+
+	memset(&creationTime, 0, sizeof(creationTime));
+	memset(&exitTime, 0, sizeof(exitTime));
+	memset(&kernelTime, 0, sizeof(kernelTime));
+	memset(&userTime, 0, sizeof(userTime));
 
 	/* WARNING! Not supported on Win95!  Need to test to ensure this fails gracefully */
 
 	if (GetThreadTimes(thread->handle, &creationTime, &exitTime, &kernelTime, &userTime)) {
-		totalTime = ((int64_t)userTime.dwLowDateTime | ((int64_t)userTime.dwHighDateTime << 32));
+		ULARGE_INTEGER userTimeU64;
+
+		memset(&userTimeU64, 0, sizeof(userTimeU64));
+
+		userTimeU64.LowPart = userTime.dwLowDateTime;
+		userTimeU64.HighPart = userTime.dwHighDateTime;
+		totalTime = (int64_t)userTimeU64.QuadPart;
 
 		/* totalTime is in 100's of nanos.  Convert to nanos */
 		return totalTime * 100;
@@ -673,12 +706,31 @@ int64_t
 omrthread_get_process_cpu_time(void)
 {
 #if defined(OMR_OS_WINDOWS) && !defined(BREW)
-	FILETIME creationTime, exitTime, kernelTime, userTime;
-	int64_t totalTime;
+	FILETIME creationTime;
+	FILETIME exitTime;
+	FILETIME kernelTime;
+	FILETIME userTime;
+	int64_t totalTime = 0;
+
+	memset(&creationTime, 0, sizeof(creationTime));
+	memset(&exitTime, 0, sizeof(exitTime));
+	memset(&kernelTime, 0, sizeof(kernelTime));
+	memset(&userTime, 0, sizeof(userTime));
 
 	if (GetProcessTimes(GetCurrentProcess(), &creationTime, &exitTime, &kernelTime, &userTime)) {
-		totalTime = ((int64_t)kernelTime.dwLowDateTime | ((int64_t)kernelTime.dwHighDateTime << 32))
-					+ ((int64_t)userTime.dwLowDateTime | ((int64_t)userTime.dwHighDateTime << 32));
+		ULARGE_INTEGER kernelTimeU64;
+		ULARGE_INTEGER userTimeU64;
+
+		memset(&kernelTimeU64, 0, sizeof(kernelTimeU64));
+		memset(&userTimeU64, 0, sizeof(userTimeU64));
+
+		kernelTimeU64.LowPart = kernelTime.dwLowDateTime;
+		kernelTimeU64.HighPart = kernelTime.dwHighDateTime;
+
+		userTimeU64.LowPart = userTime.dwLowDateTime;
+		userTimeU64.HighPart = userTime.dwHighDateTime;
+
+		totalTime = (int64_t)(kernelTimeU64.QuadPart + userTimeU64.QuadPart);
 
 		/* totalTime is in 100's of nanos.  Convert to nanos */
 		return totalTime * GET_PROCESS_TIMES_IN_NANO;
@@ -715,10 +767,20 @@ omrthread_get_process_times(omrthread_process_time_t *processTime)
 		 * WARNING: GetProcessTimes does not exist on pre-Win 98
 		 */
 		if (GetProcessTimes(GetCurrentProcess(), &creationTime, &exitTime, &systemTime, &userTime)) {
-			processTime->_userTime = GET_PROCESS_TIMES_IN_NANO *
-									 ((int64_t)userTime.dwLowDateTime | ((int64_t)userTime.dwHighDateTime << 32));
-			processTime->_systemTime = GET_PROCESS_TIMES_IN_NANO *
-									   ((int64_t)systemTime.dwLowDateTime | ((int64_t)systemTime.dwHighDateTime << 32));
+			ULARGE_INTEGER systemTimeU64;
+			ULARGE_INTEGER userTimeU64;
+
+			memset(&systemTimeU64, 0, sizeof(systemTimeU64));
+			memset(&userTimeU64, 0, sizeof(userTimeU64));
+
+			systemTimeU64.LowPart = systemTime.dwLowDateTime;
+			systemTimeU64.HighPart = systemTime.dwHighDateTime;
+
+			userTimeU64.LowPart = userTime.dwLowDateTime;
+			userTimeU64.HighPart = userTime.dwHighDateTime;
+
+			processTime->_userTime = (int64_t)(GET_PROCESS_TIMES_IN_NANO * userTimeU64.QuadPart);
+			processTime->_systemTime = (int64_t)(GET_PROCESS_TIMES_IN_NANO * systemTimeU64.QuadPart);
 			return 0;
 		} else {
 			/* GetLastError() indicates reason for failure in GetProcessTimes(). */
@@ -1060,9 +1122,21 @@ omrthread_get_thread_times(omrthread_thread_time_t *threadTime)
 	memset(&userTime, 0, sizeof(userTime));
 
 	if (GetThreadTimes(self->handle, &creationTime, &exitTime, &kernelTime, &userTime)) {
+		ULARGE_INTEGER kernelTimeU64;
+		ULARGE_INTEGER userTimeU64;
+
+		memset(&kernelTimeU64, 0, sizeof(kernelTimeU64));
+		memset(&userTimeU64, 0, sizeof(userTimeU64));
+
+		kernelTimeU64.LowPart = kernelTime.dwLowDateTime;
+		kernelTimeU64.HighPart = kernelTime.dwHighDateTime;
+
+		userTimeU64.LowPart = userTime.dwLowDateTime;
+		userTimeU64.HighPart = userTime.dwHighDateTime;
+
 		/* Time is in 100's of nanos. Convert to nanos. */
-		threadTime->sysTime = ((int64_t)kernelTime.dwLowDateTime | ((int64_t)kernelTime.dwHighDateTime << 32)) * 100;
-		threadTime->userTime = ((int64_t)userTime.dwLowDateTime | ((int64_t)userTime.dwHighDateTime << 32)) * 100;
+		threadTime->sysTime = (int64_t)(kernelTimeU64.QuadPart * 100);
+		threadTime->userTime = (int64_t)(userTimeU64.QuadPart * 100);
 
 		return 0;
 	}

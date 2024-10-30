@@ -258,10 +258,15 @@ MM_Collector::preCollect(MM_EnvironmentBase* env, MM_MemorySubSpace* subSpace, M
 		}
 	}
 
-	/* If this is a global collection then set the globalgc flag.  This will allow us to
-	 * trigger excessiveGC checks from a local collection that has recursed into a global gc .
+	/* If this is a global collection then set the didGlobalGC flag.  This will allow us to
+	 * trigger excessiveGC checks from a local collection that has recursed into a global GC.
+	 * Only include GCs that collect the whole heap to correctly evaluate the reclaimed
+	 * memory criteria.
+	 * There may be collectors that have global domain (any part of heap may be collected),
+	 * but not necessarily all the heap is collected, so all possible global GC criteria
+	 * are included.
 	 */
-	if (_globalCollector) {
+	if (_globalCollector && (MM_CycleState::CT_GLOBAL_GARBAGE_COLLECTION == env->_cycleState->_collectionType)) {
 		extensions->didGlobalGC = true;
 	}
 }

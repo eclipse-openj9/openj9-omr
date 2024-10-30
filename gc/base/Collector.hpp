@@ -56,7 +56,7 @@ protected:
 
 	uintptr_t _bytesRequested;
 
-	bool _globalCollector;
+	bool _globalCollector; /**< True for collectors that may GC any subset of the whole heap, but not necessarily always the whole heap */
 	bool _gcCompleted;
 	bool _isRecursiveGC;
 	bool _disableGC;

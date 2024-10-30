@@ -571,8 +571,8 @@ public:
 
 	/* global variables for excessiveGC functionality */
 	MM_UserSpecifiedParameterBool excessiveGCEnabled; /**< should we check for excessiveGC? (set through -XdisableExcessiveGC and -XenableExcessiveGC) */
-	bool isRecursiveGC; /**< is the current executing gc a result of another gc (ie: scavenger triggering a global collect) */
-	bool didGlobalGC; /**< has a global gc occurred in the current gc (possibly as a result of a recursive gc) */
+	bool isRecursiveGC; /**< is the current executing GC a result of another GC (ie: scavenger triggering a global collect) */
+	bool didGlobalGC; /**< has a global GC (all heap GCed) occurred in the current GC (possibly as a result of a recursive GC) */
 	ExcessiveLevel excessiveGCLevel;
 	float excessiveGCnewRatioWeight;
 	uintptr_t excessiveGCratio;

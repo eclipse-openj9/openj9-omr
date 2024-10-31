@@ -213,7 +213,7 @@ static const char* const OMR_FEATURE_X86_NAME[] = {
 	"null",             /* 2 * 32 + 28 */
 	"null",             /* 2 * 32 + 29 */
 	"null",             /* 2 * 32 + 30 */
-	"null"              /* 2 * 32 + 31 */
+	"null",             /* 2 * 32 + 31 */
 	"fsgsbase",         /* 3 * 32 + 0 */
 	"ia32_tsc_adjust",  /* 3 * 32 + 1 */
 	"sgx",              /* 3 * 32 + 2 */

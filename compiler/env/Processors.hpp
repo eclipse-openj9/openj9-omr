@@ -148,7 +148,8 @@ enum TR_Processor
    TR_PPCp8,
    TR_PPCp9,
    TR_PPCp10,
-   TR_LastPPCProcessor = TR_PPCp10,
+   TR_PPCp11,
+   TR_LastPPCProcessor = TR_PPCp11,
 
    // X86 Processors
    TR_FirstX86Processor,

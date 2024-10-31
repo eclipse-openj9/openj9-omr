@@ -253,6 +253,19 @@ static intptr_t omrsysinfo_get_aix_ppc_description(struct OMRPortLibrary *portLi
 #define __power_10() (_system_configuration.implementation == POWER_10)
 #endif /* !defined(__power_10) */
 
+#if !defined(__power_11)
+#define POWER_11 0x80000 /* Power 11 class CPU */
+#define __power_11() (_system_configuration.implementation == POWER_11)
+#endif /* !defined(__power_11) */
+
+/*
+ * Please update the macro below to stay in sync with the latest POWER processor known to OMR,
+ * ensuring CPU recognition is more robust than in the past. As the macro currently stands, any
+ * later processors are recognized as at least POWER11.
+ */
+#define POWER11_OR_ABOVE (0xFFFFFFFF << 19)
+#define __power_latestKnownAndUp() OMR_ARE_ANY_BITS_SET(_system_configuration.implementation, POWER11_OR_ABOVE)
+
 #if defined(J9OS_I5_V6R1) /* vmx_version id only available since TL4 */
 #define __power_vsx() (_system_configuration.vmx_version > 1)
 #endif
@@ -1182,6 +1195,8 @@ omrsysinfo_get_aix_ppc_description(struct OMRPortLibrary *portLibrary, OMRProces
 		desc->processor = OMR_PROCESSOR_PPC_P9;
 	} else if (__power_10()) {
 		desc->processor = OMR_PROCESSOR_PPC_P10;
+	} else if (__power_latestKnownAndUp()) {
+		desc->processor = OMR_PROCESSOR_PPC_P11;
 	} else {
 		desc->processor = OMR_PROCESSOR_PPC_UNKNOWN;
 	}

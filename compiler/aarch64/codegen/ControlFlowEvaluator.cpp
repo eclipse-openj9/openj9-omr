@@ -158,7 +158,7 @@ static TR::Instruction *ificmpHelper(TR::Node *node, TR::ARM64ConditionCode cc, 
    TR_ResolvedMethod *method = comp->getCurrentMethod();
    bool secondChildNeedsPicSite = (secondChild->getOpCodeValue() == TR::aconst) &&
                                     ((secondChild->isClassPointerConstant() && cg->fe()->isUnloadAssumptionRequired(reinterpret_cast<TR_OpaqueClassBlock *>(secondChild->getAddress()), method)) ||
-                                     (node->isMethodPointerConstant() && cg->fe()->isUnloadAssumptionRequired(
+                                     (secondChild->isMethodPointerConstant() && cg->fe()->isUnloadAssumptionRequired(
                                       cg->fe()->createResolvedMethod(cg->trMemory(), reinterpret_cast<TR_OpaqueMethodBlock *>(secondChild->getAddress()), method)->classOfMethod(), method)));
 
 #ifdef J9_PROJECT_SPECIFIC

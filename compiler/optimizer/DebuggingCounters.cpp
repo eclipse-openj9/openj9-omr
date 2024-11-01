@@ -254,8 +254,7 @@ void TR_DebuggingCounters::report()
 	       }
       }
 
-   fprintf(output, "Compilation sum %d Dynamic sum %" OMR_PRIu64 " \n", (int32_t) compilationSum, dynamicSum);
-   fprintf(output, "\n");
+   fprintf(output, "Compilation sum %d Dynamic sum %" OMR_PRIu64 " \n\n", (int32_t) compilationSum, dynamicSum);
 
    if (output != stdout)
       fclose(output);

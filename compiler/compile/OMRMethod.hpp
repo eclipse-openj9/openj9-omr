@@ -149,8 +149,8 @@ class Method
    virtual uint32_t numberOfExplicitParameters();
    virtual bool isArchetypeSpecimen(){ return false; }
    virtual void setArchetypeSpecimen(bool b = true);
-   virtual bool isUnsafeWithObjectArg(TR::Compilation * = NULL);
-   virtual bool isUnsafeCAS(TR::Compilation * = NULL);
+   virtual bool isUnsafeWithObjectArg();
+   virtual bool isUnsafeCAS();
    virtual bool isFinalInObject();
 
 

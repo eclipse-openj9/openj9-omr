@@ -67,7 +67,7 @@ TR::Node *constrainFload(OMR::ValuePropagation *vp, TR::Node *node);
 TR::Node *constrainFloatCmp(OMR::ValuePropagation *vp, TR::Node *node);
 TR::Node *constrainGoto(OMR::ValuePropagation *vp, TR::Node *node);
 TR::Node *constrainI2l(OMR::ValuePropagation *vp, TR::Node *node);
-TR::Node *constrainIaload(OMR::ValuePropagation *vp, TR::Node *node);
+TR::Node *constrainAloadi(OMR::ValuePropagation *vp, TR::Node *node);
 TR::Node *constrainIand(OMR::ValuePropagation *vp, TR::Node *node);
 TR::Node *constrainIdiv(OMR::ValuePropagation *vp, TR::Node *node);
 TR::Node *constrainIfcmpeq(OMR::ValuePropagation *vp, TR::Node *node);
@@ -76,7 +76,7 @@ TR::Node *constrainIfcmpgt(OMR::ValuePropagation *vp, TR::Node *node);
 TR::Node *constrainIfcmple(OMR::ValuePropagation *vp, TR::Node *node);
 TR::Node *constrainIfcmplt(OMR::ValuePropagation *vp, TR::Node *node);
 TR::Node *constrainIfcmpne(OMR::ValuePropagation *vp, TR::Node *node);
-TR::Node *constrainIiload(OMR::ValuePropagation *vp, TR::Node *node);
+TR::Node *constrainIloadi(OMR::ValuePropagation *vp, TR::Node *node);
 TR::Node *constrainImul(OMR::ValuePropagation *vp, TR::Node *node);
 TR::Node *constrainIneg(OMR::ValuePropagation *vp, TR::Node *node);
 TR::Node *constrainIabs(OMR::ValuePropagation *vp, TR::Node *node);
@@ -187,17 +187,17 @@ TR::Node * constrainLongBitCount(OMR::ValuePropagation *vp, TR::Node *node);
 #define brdbarVPHandler constrainIntLoad
 #define srdbarVPHandler constrainShortLoad
 #define lrdbarVPHandler constrainLload
-#define iloadiVPHandler constrainIiload
+#define iloadiVPHandler constrainIloadi
 #define floadiVPHandler constrainFload
 #define dloadiVPHandler constrainDload
-#define aloadiVPHandler constrainIaload
+#define aloadiVPHandler constrainAloadi
 #define bloadiVPHandler constrainIntLoad
 #define sloadiVPHandler constrainShortLoad
 #define lloadiVPHandler constrainLload
-#define irdbariVPHandler constrainIiload
+#define irdbariVPHandler constrainIloadi
 #define frdbariVPHandler constrainFload
 #define drdbariVPHandler constrainDload
-#define ardbariVPHandler constrainIaload
+#define ardbariVPHandler constrainAloadi
 #define brdbariVPHandler constrainIntLoad
 #define srdbariVPHandler constrainShortLoad
 #define lrdbariVPHandler constrainLload

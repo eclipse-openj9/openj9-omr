@@ -457,7 +457,7 @@ void tryForceFolding(TR::Node * rootLoadOrStore, TR::CodeGenerator * cg, TR_Stor
                      List<TR::Node>& nodesAlreadyEvaluatedBeforeFoldingList) {}
 
 TR::UnresolvedDataSnippet * createUnresolvedDataSnippet(TR::Node * node, TR::CodeGenerator * cg, TR::SymbolReference * symRef, TR::Register * tempReg, bool isStore) {return NULL;}
-TR::UnresolvedDataSnippet * createUnresolvedDataSnippetForiaload(TR::Node * node, TR::CodeGenerator * cg, TR::SymbolReference * symRef, TR::Register * tempReg, bool & isStore) {return NULL;}
+TR::UnresolvedDataSnippet * createUnresolvedDataSnippetForAloadi(TR::Node * node, TR::CodeGenerator * cg, TR::SymbolReference * symRef, TR::Register * tempReg, bool & isStore) {return NULL;}
 void createUnresolvedSnippetWithNodeRegister(TR::Node * node, TR::CodeGenerator * cg, TR::SymbolReference * symRef, TR::Register *& writableLiteralPoolRegister) {}
 void createUnresolvedDataSnippetForBaseNode(TR::CodeGenerator * cg, TR::Register * writableLiteralPoolRegister) {}
 

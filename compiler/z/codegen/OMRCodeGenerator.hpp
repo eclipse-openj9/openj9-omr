@@ -243,7 +243,7 @@ public:
    void beginInstructionSelection();
    void endInstructionSelection();
 
-   void checkIsUnneededIALoad(TR::Node *parent, TR::Node* node, TR::TreeTop *tt);
+   void checkIsUnneededAloadi(TR::Node *parent, TR::Node* node, TR::TreeTop *tt);
    void lowerTreesWalk(TR::Node * parent, TR::TreeTop * treeTop, vcount_t visitCount);
 
 
@@ -767,7 +767,7 @@ public:
 protected:
    TR::list<TR::S390ConstantDataSnippet*>  _constantList;
    TR::list<TR::S390ConstantDataSnippet*>  _snippetDataList;
-   List<TR_Pair<TR::Node, int32_t> > _ialoadUnneeded;
+   List<TR_Pair<TR::Node, int32_t> > _aloadiUnneeded;
 
 private:
 

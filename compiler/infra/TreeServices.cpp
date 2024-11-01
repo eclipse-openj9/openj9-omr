@@ -27,7 +27,7 @@
 #include "il/Node.hpp"
 
 bool
-TR_AddressTree::isILLoad(TR::Node * node)
+TR_AddressTree::isLloadi(TR::Node * node)
    {
    if (node->getOpCodeValue() != TR::iload  && node->getOpCodeValue() != TR::lload &&
        node->getOpCodeValue() != TR::iloadi && node->getOpCodeValue() != TR::lloadi)
@@ -47,7 +47,7 @@ TR_AddressTree::findComplexAddressGenerationTree(TR::Node *node, vcount_t visitC
       return false;
    node->setVisitCount(visitCount);
 
-   if (isILLoad(node))
+   if (isLloadi(node))
       {
       int32_t childNumber;
       for (childNumber = 0; childNumber < parent->getNumChildren(); childNumber++)
@@ -68,16 +68,16 @@ TR_AddressTree::processBaseAndIndex(TR::Node* parent)
    TR::Node * lhs = parent->getFirstChild();
    TR::Node * rhs = parent->getSecondChild();
    bool isValid = true;
-   if (isILLoad(lhs) && isILLoad(rhs))
+   if (isLloadi(lhs) && isLloadi(rhs))
       {
       isValid = false; // exactly one child should be a variable
       }
-   else if (isILLoad(lhs))
+   else if (isLloadi(lhs))
       {
       _indexBaseNode.setParentAndChildNumber(lhs, 0);
       _indVarNode.setParentAndChildNumber(parent, 0);
       }
-   else if (isILLoad(rhs))
+   else if (isLloadi(rhs))
       {
       _indexBaseNode.setParentAndChildNumber(rhs, 0);
       _indVarNode.setParentAndChildNumber(parent, 1);
@@ -135,7 +135,7 @@ TR_AddressTree::processMultiplyNode(TR::Node * multiplyNode)
          return false;
          }
       }
-   else if (isILLoad(firstMulChild))
+   else if (isLloadi(firstMulChild))
       {
       _indexBaseNode.setParentAndChildNumber(firstMulChild, 0);
       _indVarNode.setParentAndChildNumber(multiplyNode, 0);
@@ -262,7 +262,7 @@ TR_AddressTree::process(TR::Node * aiaddNode, bool onlyConsiderConstAiaddSecondC
                      }
                   }
                }
-            else if (isILLoad(isubFirstChild))
+            else if (isLloadi(isubFirstChild))
                {
                _multiplyNode.setParentAndChildNumber(aiaddSecondChild, 0);
                _indVarNode.setParentAndChildNumber(aiaddSecondChild, 0);

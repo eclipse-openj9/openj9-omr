@@ -242,7 +242,7 @@ omrdump_create(struct OMRPortLibrary *portLibrary, char *filename, char *dumpTyp
 						"insufficient free buffer space to write the core file";
 				break;
 			default:
-				sprintf((const char *)workspace,
+				snprintf((const char *)workspace, sizeof(workspace),
 						"unantipated err flag value (0x%X). errno=%x.",
 						s->argv.flags, s->argv.rc);
 				errMsg = (char *)workspace;

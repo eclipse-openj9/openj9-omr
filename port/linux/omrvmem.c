@@ -1188,8 +1188,9 @@ reserve_memory_with_mmap(struct OMRPortLibrary *portLibrary, void *address, uint
 				int ft = -1;
 				uintptr_t fdFlags = 0;
 				char filename[FILE_NAME_SIZE + 1];
-				sprintf(
+				snprintf(
 						filename,
+						sizeof(filename),
 						"omrvmem_temp_%" OMR_PRId64 "_%09d_%" OMR_PRIuSIZE,
 						omrtime_current_time_millis(portLibrary),
 						getpid(),

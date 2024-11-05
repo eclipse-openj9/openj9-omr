@@ -483,9 +483,9 @@ reserveMemory(struct OMRPortLibrary *portLibrary, void *address, uintptr_t byteA
 		char omrtime_current_time_str[FILE_NAME_SIZE];
 		char pthread_self_str[FILE_NAME_SIZE];
 		char filename[FILE_NAME_SIZE];
-		sprintf(omrtime_current_time_str, "%zu", (uintptr_t)omrtime_current_time_millis(portLibrary) % (uintptr_t)TRUCANTE_TIME_CONST);
-		sprintf(pthread_self_str, "%zu", (uintptr_t)pthread_self() % (uintptr_t)TRUNCATE_THREAD_CONST);
-		sprintf(filename, "omrvmem_%.12s_%.9s", omrtime_current_time_str, pthread_self_str);
+		snprintf(omrtime_current_time_str, sizeof(omrtime_current_time_str), "%zu", (uintptr_t)omrtime_current_time_millis(portLibrary) % (uintptr_t)TRUCANTE_TIME_CONST);
+		snprintf(pthread_self_str, sizeof(pthread_self_str), "%zu", (uintptr_t)pthread_self() % (uintptr_t)TRUNCATE_THREAD_CONST);
+		snprintf(filename, sizeof(filename), "omrvmem_%.12s_%.9s", omrtime_current_time_str, pthread_self_str);
 
 		fd = shm_open(filename, O_RDWR | O_CREAT, 0600);
 		shm_unlink(filename);

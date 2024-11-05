@@ -57,7 +57,7 @@ typedef iconv_t charconvState_t;
 typedef void *charconvState_t; /*dummy type */
 #endif /* defined(LINUX) || defined(AIXPPC) || defined(J9ZOS390) || defined(OSX) */
 
-/* for sprintf, which is used for printing floats */
+/* for snprintf, which is used for printing floats */
 #include <stdio.h>
 
 #include "omrutil.h"
@@ -1084,7 +1084,7 @@ writeDoubleToBuffer(char *buf, uintptr_t bufLen, uint64_t width, uint64_t precis
 	*formatCursor++ = type;
 	*formatCursor = '\0';
 
-	sprintf(tempBuf, format, value);
+	snprintf(tempBuf, sizeof(tempBuf), format, value);
 
 	if (buf) {
 		strncpy(buf, tempBuf, bufLen);

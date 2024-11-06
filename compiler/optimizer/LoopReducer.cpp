@@ -531,10 +531,10 @@ TR_CharToByteArraycopy::checkArrayStores(TR::Node * origHighStoreNode, TR::Node 
    if (!iand) return false;
    TR::Node * c2i = testBinaryIConst(comp(), iand, TR::iand, TR::su2i, 0xFF00, "checkArrayStores: high store child is not iand of su2i and 0xFF00\n");
    if (!c2i) return false;
-   TR::Node * isload = testUnary(comp(), c2i->getFirstChild(), TR::sloadi, "checkArrayStores: high store child is not isload\n");
-   if (!isload) return false;
+   TR::Node * sloadi = testUnary(comp(), c2i->getFirstChild(), TR::sloadi, "checkArrayStores: high store child is not sloadi\n");
+   if (!sloadi) return false;
 
-   bool checkLoad = getLoadAddress()->checkAiadd(isload->getFirstChild(), 2);
+   bool checkLoad = getLoadAddress()->checkAiadd(sloadi->getFirstChild(), 2);
    if (!checkLoad)
       {
       return false;
@@ -544,12 +544,12 @@ TR_CharToByteArraycopy::checkArrayStores(TR::Node * origHighStoreNode, TR::Node 
    if (!iand) return false;
    c2i = testBinaryIConst(comp(), iand, TR::iand, TR::su2i, 0xFF, "checkArrayStores: low store child is not iand of su2i and 0xFF\n");
    if (!c2i) return false;
-   TR::Node * isloadDup = testUnary(comp(), c2i->getFirstChild(), TR::sloadi, "checkArrayStores: low store child is not isload\n");
-   if (!isloadDup) return false;
+   TR::Node * sloadiDup = testUnary(comp(), c2i->getFirstChild(), TR::sloadi, "checkArrayStores: low store child is not sloadi\n");
+   if (!sloadiDup) return false;
 
-   if (isloadDup != isload)
+   if (sloadiDup != sloadi)
       {
-      dumpOptDetails(comp(), "checkArrayStores: two isload addresses are not the same\n");
+      dumpOptDetails(comp(), "checkArrayStores: two sloadi addresses are not the same\n");
       return false;
       }
 
@@ -1519,13 +1519,13 @@ static void swapIfNecessary(TR::Node *&aiaddFirstChild, TR::Node *&aiaddSecondCh
 //
 //istore #transchar (store translated character)
 //  s2i
-//    isload <translate-char> (load character)
+//    sloadi <translate-char> (load character)
 //      aiadd
 //        aload #table (translation table)
 //        isub (add displacement to get to start of array with index into translation table)
 //          imul (multiply by stride of target - may not be present if byte-to-byte)
 //            bu2i (widen byte (unsigned) to int - could be
-//              bloadi #byte (load the byte - could also be isload)
+//              bloadi #byte (load the byte - could also be sloadi)
 //                aiadd
 //                  aload #base (load base pointer)
 //                  isub (add displacement to get to relative index)
@@ -1540,7 +1540,7 @@ static void swapIfNecessary(TR::Node *&aiaddFirstChild, TR::Node *&aiaddSecondCh
 //    bloadi <translate-char> (load character)
 //      iadd
 //       c2i (widen byte (unsigned) to int - could be
-//         isload #byte (load the byte - could also be isload)
+//         sloadi #byte (load the byte - could also be sloadi)
 //            aiadd
 //              aload #base (load base pointer)
 //                isub (add displacement to get to relative index)
@@ -1680,7 +1680,7 @@ TR_Arraytranslate::checkLoad(TR::Node * loadNode)
 //
 //Store tree should look as follows:
 //
-//isstore #reschar (result char stored into output array)
+//sstorei #reschar (result char stored into output array)
 //   aiadd
 //     aload #outbase (load output base ptr)
 //     isub (add displacement to get to relative index
@@ -1696,7 +1696,7 @@ TR_Arraytranslate::checkStore(TR::Node * storeNode)
    {
    if (storeNode->getOpCodeValue() != TR::sstorei && storeNode->getOpCodeValue() != TR::bstorei)
       {
-      dumpOptDetails(comp(), "...store tree does not have isstore/bstorei - no arraytranslate reduction\n");
+      dumpOptDetails(comp(), "...store tree does not have sstorei/bstorei - no arraytranslate reduction\n");
       return false;
       }
 
@@ -1766,11 +1766,11 @@ TR_Arraytranslate::checkStore(TR::Node * storeNode)
 //Break tree should look as follows:
 //
 //ifscmpeq --> block <no-stop>
-//  ==>isload at <translate-char>
+//  ==>sloadi at <translate-char>
 //  sconst <termination char>
 //-or-
 //ifXcmpYY --> block <no-stop>
-//  ==>isload at <translate-char>
+//  ==>sloadi at <translate-char>
 //  iconst <termination char>
 //
 bool
@@ -2447,13 +2447,13 @@ TR_LoopReducer::generateArraytranslate(TR_RegionStructure * whileLoop, TR_Induct
    //BBStart <load-char>
    //istore #transchar (store translated character)
    //  c2i
-   //    isload <translate-char> (load character)
+   //    sloadi <translate-char> (load character)
    //      aiadd
    //        aload #table (translation table)
    //        isub (add displacement to get to start of array with index into translation table)
    //          imul (multiply by stride of target - may not be present if byte-to-byte)
    //            bu2i (widen byte (unsigned) to int - could be
-   //              bloadi #byte (load the byte - could also be isload)
+   //              bloadi #byte (load the byte - could also be sloadi)
    //                aiadd
    //                  aload #base (load base pointer)
    //                  isub (add displacement to get to relative index)
@@ -2462,7 +2462,7 @@ TR_LoopReducer::generateArraytranslate(TR_RegionStructure * whileLoop, TR_Induct
    //            iconst 2
    //          iconst -16
    //ifscmpne --> block <no-stop>
-   //  ==>isload at <translate-char>
+   //  ==>sloadi at <translate-char>
    //  sconst <termination char>
    //BBEnd <load-char>
    //BBStart <escape>
@@ -2470,7 +2470,7 @@ TR_LoopReducer::generateArraytranslate(TR_RegionStructure * whileLoop, TR_Induct
    //BBEnd <escape>
    //
    //BBStart <store-char>
-   //isstore #reschar (result char stored into output array)
+   //sstorei #reschar (result char stored into output array)
    //   aiadd
    //     aload #outbase (load output base ptr)
    //     isub (add displacement to get to relative index
@@ -2497,13 +2497,13 @@ TR_LoopReducer::generateArraytranslate(TR_RegionStructure * whileLoop, TR_Induct
    //BBStart <load-char>
    //istore #transchar (store translated character)
    //  c2i
-   //    isload <translate-char> (load character)
+   //    sloadi <translate-char> (load character)
    //      aiadd
    //        aload #table (translation table)
    //        isub (add displacement to get to start of array with index into translation table)
    //          imul (multiply by stride of target - may not be present if byte-to-byte)
    //            bu2i (widen byte (unsigned) to int - could be
-   //              bloadi #byte (load the byte - could also be isload)
+   //              bloadi #byte (load the byte - could also be sloadi)
    //                aiadd
    //                  aload #base (load base pointer)
    //                  isub (add displacement to get to relative index)
@@ -2512,12 +2512,12 @@ TR_LoopReducer::generateArraytranslate(TR_RegionStructure * whileLoop, TR_Induct
    //            iconst 2
    //          iconst -16
    //ifscmpeq --> block <escape-block>
-   //  ==>isload at <translate-char>
+   //  ==>sloadi at <translate-char>
    //  sconst <termination char>
    //BBEnd <load-char>
    //
    //BBStart <store-char>
-   //isstore #reschar (result char stored into output array)
+   //sstorei #reschar (result char stored into output array)
    //   aiadd
    //     aload #outbase (load output base ptr)
    //     isub (add displacement to get to relative index
@@ -2565,7 +2565,7 @@ TR_LoopReducer::generateArraytranslate(TR_RegionStructure * whileLoop, TR_Induct
    //BBEnd <escape>
    //
    //BBStart <store-char>
-   //isstore #reschar (result char stored into output array)
+   //sstorei #reschar (result char stored into output array)
    //   aiadd
    //     aload #outbase (load output base ptr)
    //     isub (add displacement to get to relative index
@@ -2587,7 +2587,7 @@ TR_LoopReducer::generateArraytranslate(TR_RegionStructure * whileLoop, TR_Induct
    //
    //Simplest form of the loop is:
    //BBStart <load/store-char>
-   // isstore #reschar (result char stored into output array)
+   // sstorei #reschar (result char stored into output array)
    //   aiadd
    //     aload #outbase (load output base ptr)
    //     isub (add displacement to get to relative index
@@ -2950,10 +2950,10 @@ TR_LoopReducer::generateArraytranslate(TR_RegionStructure * whileLoop, TR_Induct
    //     <aiadd input tree>
    //     <aiadd output tree>
    //     <aload translation table>
-   //     <isload translate char>
+   //     <sloadi translate char>
    //     <termination value>
    //
-   //isstore #reschar (result char stored into output array)
+   //sstorei #reschar (result char stored into output array)
    //   <original aiadd input tree>
    //
    //goto <escape-block>
@@ -3702,7 +3702,7 @@ TR_LoopReducer::generateArraytranslateAndTest(TR_RegionStructure * whileLoop, TR
 //The following is the type of loop that needs to be reduced to an arraycopy (byte to char arraycopy)
 //
 //BBStart (block 22) (frequency 840) (is in loop 22)
-//isstore #134[0x005f227c] Shadow[<array-shadow>]
+//sstorei #134[0x005f227c] Shadow[<array-shadow>]
 //  aiadd
 //    aload #219[0x00703ac8] Auto[<temp slot 9>]
 //    isub
@@ -3947,7 +3947,7 @@ TR_LoopReducer::generateByteToCharArraycopy(TR_InductionVariable * byteIndVar, T
 //     ishr
 //       iand
 //         c2i
-//           isload #156[0x019D0EC0] Shadow[<array-shadow>]
+//           sloadi #156[0x019D0EC0] Shadow[<array-shadow>]
 //             aiadd
 //              aload #241[0x015D9DA4] Auto[<temp slot 8>]
 //               isub

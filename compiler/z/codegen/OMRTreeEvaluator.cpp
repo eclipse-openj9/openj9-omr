@@ -5161,9 +5161,9 @@ generateS390CompareAndBranchOpsHelper(TR::Node * node, TR::CodeGenerator * cg, T
 
    // ificmpyy
    //   s2i        ; refcnt-1, unevaluated
-   //     isload   ; evaluated
+   //     sloadi   ; evaluated
    //   s2i        ; refcnt-1, unevaluated
-   //     isload   ; evaluated
+   //     sloadi   ; evaluated
    //
    // Try to generate a CR.
    // FIXME: can't the binary commutative analyser handle this? that's where this should be done
@@ -7920,7 +7920,7 @@ OMR::Z::TreeEvaluator::axaddEvaluator(TR::Node * node, TR::CodeGenerator * cg)
  *   lloadi handled by lloadEvaluator
  *   aloadiEvaluator handled by aloadEvaluator
  *   bloadiEvaluator handled by bloadEvaluator
- *   isloadEvaluator handled by sloadEvaluator
+ *   sloadiEvaluator handled by sloadEvaluator
  *
  * iload Evaluator: load integer
  *   - also handles iloadi
@@ -7944,7 +7944,7 @@ OMR::Z::TreeEvaluator::lloadEvaluator(TR::Node * node, TR::CodeGenerator * cg)
 
 /**
  * sload Evaluator: load short integer
- *   - also handles isload
+ *   - also handles sloadi
  */
 TR::Register *
 OMR::Z::TreeEvaluator::sloadEvaluator(TR::Node * node, TR::CodeGenerator * cg)
@@ -7980,7 +7980,7 @@ OMR::Z::TreeEvaluator::bloadEvaluator(TR::Node * node, TR::CodeGenerator * cg)
  *  istorei handled by istoreEvaluator
  *  astoreiEvaluator handled by istoreEvaluator
  *  bstoreiEvaluator handled by bstoreEvaluator
- *  isstoreEvaluator handled by sstoreEvaluator
+ *  sstoreiEvaluator handled by sstoreEvaluator
  */
 /**
  * istoreEvaluator - store integer
@@ -8014,7 +8014,7 @@ OMR::Z::TreeEvaluator::lstoreEvaluator(TR::Node * node, TR::CodeGenerator * cg)
 
 /**
  * sstoreEvaluator - store short integer
- *  - also handles isstore
+ *  - also handles sstorei
  */
 TR::Register *
 OMR::Z::TreeEvaluator::sstoreEvaluator(TR::Node * node, TR::CodeGenerator * cg)

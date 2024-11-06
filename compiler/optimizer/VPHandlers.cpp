@@ -1613,7 +1613,7 @@ TR::Node *constrainLload(OMR::ValuePropagation *vp, TR::Node *node)
    return node;
    }
 
-// Also handles ifload
+// Also handles floadi
 //
 TR::Node *constrainFload(OMR::ValuePropagation *vp, TR::Node *node)
    {
@@ -1633,7 +1633,7 @@ TR::Node *constrainFload(OMR::ValuePropagation *vp, TR::Node *node)
    return node;
    }
 
-// Also handles idload
+// Also handles dloadi
 //
 TR::Node *constrainDload(OMR::ValuePropagation *vp, TR::Node *node)
    {

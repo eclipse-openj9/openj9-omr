@@ -1385,7 +1385,7 @@ TR::Register *OMR::ARM::TreeEvaluator::dstoreEvaluator(TR::Node *node, TR::CodeG
    return NULL;
    }
 
-TR::Register *OMR::ARM::TreeEvaluator::ifstoreEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+TR::Register *OMR::ARM::TreeEvaluator::fstoreiEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    TR::Node *secondChild = node->getSecondChild();
    TR::Register *sourceReg = cg->evaluate(secondChild);
@@ -1440,7 +1440,7 @@ TR::Register *OMR::ARM::TreeEvaluator::ifstoreEvaluator(TR::Node *node, TR::Code
    return NULL;
    }
 
-TR::Register *OMR::ARM::TreeEvaluator::idstoreEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+TR::Register *OMR::ARM::TreeEvaluator::dstoreiEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    TR::Node *secondChild = node->getSecondChild();
    TR::Register *sourceReg = cg->evaluate(secondChild);
@@ -2811,12 +2811,12 @@ TR::Register *OMR::ARM::TreeEvaluator::dstoreEvaluator(TR::Node *node, TR::CodeG
    return NULL;
    }
 
-TR::Register *OMR::ARM::TreeEvaluator::ifstoreEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+TR::Register *OMR::ARM::TreeEvaluator::fstoreiEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    return NULL;
    }
 
-TR::Register *OMR::ARM::TreeEvaluator::idstoreEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+TR::Register *OMR::ARM::TreeEvaluator::dstoreiEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    return NULL;
    }

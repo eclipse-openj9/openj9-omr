@@ -7727,3 +7727,26 @@ OMR::Node::isEAEscapeHelperCall()
 
    return false;
    }
+
+
+TR::Node *
+OMR::Node::storeToAddressField(TR::Compilation *comp, TR::Node *obj, TR::SymbolReference *symRef, TR::Node *value)
+   {
+   TR::Node * node;
+
+   if (TR::Compiler->om.writeBarrierType() != gc_modron_wrtbar_none)
+      {
+      node = TR::Node::createWithSymRef(TR::awrtbari, 3, 3, obj, value, obj, symRef);
+      }
+   else
+      {
+      node = TR::Node::createWithSymRef(TR::astorei, 2, 2, obj, value, symRef);
+      }
+
+   if (comp->useCompressedPointers())
+      {
+      node = TR::Node::createCompressedRefsAnchor(node);
+      }
+
+   return node;
+   }

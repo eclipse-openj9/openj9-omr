@@ -1142,6 +1142,8 @@ omrsysinfo_map_ppc_processor(const char *processorName)
 		rc = OMR_PROCESSOR_PPC_P9;
 	} else if (0 == strncasecmp(processorName, "power10", 7)) {
 		rc = OMR_PROCESSOR_PPC_P10;
+	} else if (0 == strncasecmp(processorName, "power11", 7)) {
+		rc = OMR_PROCESSOR_PPC_P11;
 	}
 
 	return rc;

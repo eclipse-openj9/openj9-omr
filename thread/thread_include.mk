@@ -246,6 +246,7 @@ define WRITE_COMMON_THREAD_EXPORTS
 @echo omrthread_get_cpu_time_ex >>$@
 @echo omrthread_get_self_cpu_time >>$@
 @echo omrthread_get_process_times >>$@
+@echo omrthread_get_thread_times >>$@
 
 @echo omrthread_get_handle >>$@
 @echo omrthread_get_stack_size >>$@

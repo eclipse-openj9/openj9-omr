@@ -6813,15 +6813,15 @@
    },
 
    {
-   /* .mnemonic    = */   OMR::InstOpCode::vclzlsbb,
-   /* .name        = */   "vclzlsbb",
-   /* .description =    "vector count leading zero least-significant bits byte", */
-   /* .prefix      = */   0x00000000,
-   /* .opcode      = */   0x10000602,
-   /* .format      = */   FORMAT_RT_VRB,
+   /* .mnemonic    = */  OMR::InstOpCode::vclzlsbb,
+   /* .name        = */  "vclzlsbb",
+   /* .description =     "vector count leading zero least-significant bits byte", */
+   /* .prefix      = */  0x00000000,
+   /* .opcode      = */  0x10000602,
+   /* .format      = */  FORMAT_RT_VRB,
    /* .minimumALS  = */  OMR_PROCESSOR_PPC_P9,
-   /* .properties  = */   PPCOpProp_IsVMX |
-                          PPCOpProp_SyncSideEffectFree,
+   /* .properties  = */  PPCOpProp_IsVMX |
+                         PPCOpProp_SyncSideEffectFree,
    },
 
    {

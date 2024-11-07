@@ -7462,17 +7462,17 @@
                         PPCOpProp_SyncSideEffectFree,
    },
 
-  /* { */
-   /* .mnemonic    =    OMR::InstOpCode::vextractbm, */
-   /* .name        =    "vextractbm", */
+   {
+   /* .mnemonic    = */ OMR::InstOpCode::vextractbm,
+   /* .name        = */ "vextractbm",
    /* .description =    "Vector Extract Byte Mask", */
-   /* .prefix      =    0x00000000, */
-   /* .opcode      =    0x10080642, */
-   /* .format      =    FORMAT_RT_VRB, */
-   /* .minimumALS  =    OMR_PROCESSOR_PPC_P10, */
-   /* .properties  =    PPCOpProp_IsVMX |  */
-   /*                   PPCOpProp_SyncSideEffectFree, */
-   /* }, */
+   /* .prefix      = */ 0x00000000,
+   /* .opcode      = */ 0x10080642,
+   /* .format      = */ FORMAT_RT_VRB,
+   /* .minimumALS  = */ OMR_PROCESSOR_PPC_P10,
+   /* .properties  = */ PPCOpProp_IsVMX |
+                        PPCOpProp_SyncSideEffectFree,
+   },
 
    {
    /* .mnemonic    = */ OMR::InstOpCode::vrld,
@@ -11494,17 +11494,17 @@
    /*                   PPCOpProp_SyncSideEffectFree, */
    /* }, */
 
-   /* { */
-   /* .mnemonic    =    OMR::InstOpCode::xxbrq, */
-   /* .name        =    "xxbrq", */
+   {
+   /* .mnemonic    = */ OMR::InstOpCode::xxbrq,
+   /*  .name       = */ "xxbrq",
    /* .description =    "VSX Vector Byte-Reverse Qword", */
-   /* .prefix      =    0x00000000, */
-   /* .opcode      =    0xF01F076C, */
-   /* .format      =    FORMAT_UNKNOWN, */
-   /* .minimumALS  =    OMR_PROCESSOR_PPC_P9, */
-   /* .properties  =    PPCOpProp_IsVSX | */
-   /*                   PPCOpProp_SyncSideEffectFree, */
-   /* }, */
+   /* .prefix      = */ 0x00000000,
+   /* .opcode      = */ 0xF01F076C,
+   /* .format      = */ FORMAT_XT_XB,
+   /* .minimumALS  = */ OMR_PROCESSOR_PPC_P9,
+   /* .properties  = */ PPCOpProp_IsVSX |
+                        PPCOpProp_SyncSideEffectFree,
+   },
 
    {
    /* .mnemonic    = */ OMR::InstOpCode::fmrgew,

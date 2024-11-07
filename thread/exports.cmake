@@ -147,6 +147,7 @@ omr_add_exports(j9thr_obj
 	omrthread_get_cpu_time_ex
 	omrthread_get_self_cpu_time
 	omrthread_get_process_times
+	omrthread_get_thread_times
 
 	omrthread_get_handle
 	omrthread_get_stack_size

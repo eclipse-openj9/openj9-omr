@@ -43,6 +43,7 @@
 	/* System */
 		dsb,                                                    	/* 0xD503309F	DSB       	 */
 		dmb,                                                    	/* 0xD50330BF	DMB       	 */
+		yield,                                                  	/* 0xD503203F	YIELD     	 */
 	/* Unconditional branch (register) */
 		br,                                                     	/* 0xD61F0000	BR        	 */
 		blr,                                                    	/* 0xD63F0000	BLR       	 */

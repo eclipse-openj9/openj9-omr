@@ -49,6 +49,7 @@ const OMR::ARM64::InstOpCode::OpCodeBinaryEntry OMR::ARM64::InstOpCode::binaryEn
 	/* System */
 		0xD503309F,	/* DSB       	dsb	 */
 		0xD50330BF,	/* DMB       	dmb	 */
+		0xD503203F,	/* YIELD     	yield	 */
 	/* Unconditional branch (register) */
 		0xD61F0000,	/* BR        	br	 */
 		0xD63F0000,	/* BLR       	blr	 */

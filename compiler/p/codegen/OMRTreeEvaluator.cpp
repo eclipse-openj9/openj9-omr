@@ -925,16 +925,14 @@ OMR::Power::TreeEvaluator::mFirstTrueEvaluator(TR::Node *node, TR::CodeGenerator
                              "Only 128-bit vectors are supported %s", node->getDataType().toString());
 
    TR_ASSERT_FATAL_WITH_NODE(node, firstChild->getDataType().getVectorNumLanes() == 16,
-                             "Unsupported vector type %s for mToLongBits\n", firstChild->getDataType().toString());
+                             "Unsupported vector type %s for mFirstTrue\n", firstChild->getDataType().toString());
 
 
    TR::Register *srcReg = cg->evaluate(firstChild);
-   TR::Register *tmpReg = cg->allocateRegister(TR_VRF);
-   TR::Register *resReg = cg->allocateRegister();
+   TR::Register *resReg = cg->allocateRegister(TR_GPR);
 
    generateTrg1Src1Instruction(cg, OMR::InstOpCode::vclzlsbb, node, resReg, srcReg);
 
-   cg->stopUsingRegister(tmpReg);
    node->setRegister(resReg);
    cg->decReferenceCount(firstChild);
 

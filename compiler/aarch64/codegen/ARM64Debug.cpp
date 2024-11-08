@@ -111,6 +111,7 @@ static const char *opCodeToNameMap[] =
    "brkarm64",
    "dsb",
    "dmb",
+   "yield",
    "br",
    "blr",
    "ret",

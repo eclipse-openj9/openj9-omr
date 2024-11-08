@@ -931,7 +931,26 @@ OMR::Power::TreeEvaluator::mLastTrueEvaluator(TR::Node *node, TR::CodeGenerator 
 TR::Register*
 OMR::Power::TreeEvaluator::mToLongBitsEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   return TR::TreeEvaluator::unImpOpEvaluator(node, cg);
+   TR::Node *firstChild = node->getFirstChild();
+
+   TR_ASSERT_FATAL_WITH_NODE(node, firstChild->getDataType().getVectorLength() == TR::VectorLength128,
+                             "Only 128-bit vectors are supported %s", node->getDataType().toString());
+
+   TR_ASSERT_FATAL_WITH_NODE(node, firstChild->getDataType().getVectorNumLanes() == 16,
+                             "Unsupported vector type %s for mToLongBits\n", firstChild->getDataType().toString());
+
+   TR::Register *srcReg = cg->evaluate(firstChild);
+   TR::Register *tmpReg = cg->allocateRegister(TR_VRF);
+   TR::Register *resReg = cg->allocateRegister(TR_GPR);
+
+   generateTrg1Src1Instruction(cg, OMR::InstOpCode::xxbrq, node, tmpReg, srcReg);
+   generateTrg1Src1Instruction(cg, OMR::InstOpCode::vextractbm, node, resReg, tmpReg);
+
+   cg->stopUsingRegister(tmpReg);
+   node->setRegister(resReg);
+   cg->decReferenceCount(firstChild);
+
+   return resReg;
    }
 
 TR::Register*

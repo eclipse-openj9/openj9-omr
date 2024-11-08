@@ -637,7 +637,7 @@
 // vpermr,           // vector permute right-indexed
 // vbpermd,          // vector bit permute DWord
    vbpermq,          // Vector Bit Permute Qword
-// vextractbm,       // Vector Extract Byte Mask
+   vextractbm,       // Vector Extract Byte Mask
    vrld,             // Vector Rotate Left Dword
 // vsbox,            // Vector AES SubBytes
    vsel,             // vector conditional select
@@ -962,7 +962,7 @@
 // xxbrd,            // VSX Vector Byte-Reverse Dword
 // xxbrh,            // VSX Vector Byte-Reverse Hword
 // xxbrw,            // VSX Vector Byte-Reverse Word
-// xxbrq,            // VSX Vector Byte-Reverse Qword
+   xxbrq,            // VSX Vector Byte-Reverse Qword
    fmrgew,           // Merge Even Word
    fmrgow,           // Merge Odd Word
    lxsiwax,          // VSX Scalar as Integer Word Algebraic Indexed

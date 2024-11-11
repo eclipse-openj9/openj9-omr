@@ -396,7 +396,7 @@ enum TR_CompilationOptions
    TR_RequestJITServerCachedMethods       = 0x00001000 + 10,
    TR_DisableNewMethodOverride            = 0x00002000 + 10,
    TR_EnableSharedCacheDisclaiming        = 0x00004000 + 10,
-   // Available                           = 0x00008000 + 10,
+   TR_DisableDependencyTracking           = 0x00008000 + 10,
    // Available                           = 0x00010000 + 10,
    TR_EnableSequentialLoadStoreWarm       = 0x00020000 + 10,
    TR_EnableSequentialLoadStoreCold       = 0x00040000 + 10,

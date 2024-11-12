@@ -516,7 +516,7 @@ int32_t TR_GeneralSinkStores::perform()
 
 int32_t TR_SinkStores::performStoreSinking()
    {
-   if (0 && trace())
+   if (trace())
       {
       comp()->dumpMethodTrees("Before Store Sinking");
       }
@@ -659,7 +659,7 @@ int32_t TR_SinkStores::performStoreSinking()
    // if we found any, transform the code now
    doSinking();
 
-   if (0 && trace())
+   if (trace())
       {
       comp()->dumpMethodTrees("After Store Sinking");
       }

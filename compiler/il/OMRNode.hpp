@@ -546,6 +546,28 @@ public:
     */
    bool                   isEAEscapeHelperCall();
 
+   /**
+    * \brief
+    *    Creates a node for storing into an address field of an object
+    *
+    * \parm comp
+    *    Compilation object
+    *
+    * \parm obj
+    *    Node containing object reference
+    *
+    * \parm symRef
+    *    Symbol reference of the address field
+    *
+    * \parm value
+    *    Value to store
+    *
+    * \return
+    *    Created node
+    *
+    */
+   static TR::Node *      storeToAddressField(TR::Compilation *comp, TR::Node *obj, TR::SymbolReference *symRef, TR::Node *value);
+
    TR_YesNoMaybe          hasBeenRun();
 
    /// Given a monenter node, return the persistent class identifer that's being synchronized

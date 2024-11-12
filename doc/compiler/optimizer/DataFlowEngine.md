@@ -1,3 +1,24 @@
+<!--
+Copyright IBM Corp. and others 2020
+
+This program and the accompanying materials are made available under
+the terms of the Eclipse Public License 2.0 which accompanies this
+distribution and is available at https://www.eclipse.org/legal/epl-2.0/
+or the Apache License, Version 2.0 which accompanies this distribution
+and is available at https://www.apache.org/licenses/LICENSE-2.0.
+
+This Source Code may also be made available under the following Secondary
+Licenses when the conditions for such availability set forth in the
+Eclipse Public License, v. 2.0 are satisfied: GNU General Public License,
+version 2 with the GNU Classpath Exception [1] and GNU General Public
+License, version 2 with the OpenJDK Assembly Exception [2].
+
+[1] https://www.gnu.org/software/classpath/license.html
+[2] https://openjdk.org/legal/assembly-exception.html
+
+SPDX-License-Identifier: EPL-2.0 OR Apache-2.0 OR GPL-2.0-only WITH Classpath-exception-2.0 OR GPL-2.0-only WITH OpenJDK-assembly-exception-1.0
+-->
+
 # Data-Flow Engine
 
 To perform global optimizations on a compilation unit one of the primary utilities the OMR optimizer will make use of is the data-flow engine, which is the backbone for a variety of data-flow analyses that we support. The data-flow engine in OMR is not front and center to most developers. It is a piece of technology that has been battle tested for years and developers can expect it to _just work_. This document will walk us through some of the key concepts of the data-flow engine which will empower you, as a developer, to understand the inner workings of existing analyses and be able to write your own data-flow analyses with minimal effort.

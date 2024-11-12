@@ -1,6 +1,6 @@
 {
     "$schema": "http://json-schema.org/draft-07/schema#",
-    "$id":  "https://raw.githubusercontent.com/eclipse/omr/master/jitbuilder/apigen/schema/api.schema.json",
+    "$id":  "https://raw.githubusercontent.com/eclipse-omr/omr/master/jitbuilder/apigen/schema/api.schema.json",
     "title": "API Description Format",
     "description": "Format for describing framework and library APIs in a way that allows simple generation of language bindings",
     "$comment": "Copyright IBM Corp. and others 2018 (see LICENSE.md)",

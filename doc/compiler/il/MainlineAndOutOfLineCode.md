@@ -71,5 +71,5 @@ or `hot`, blocks are kept close.
 
 The `OOL` code section is used by codegen to emit slow path instructions so that the register allocator could
 allocate the registers first for the fast path to minimize the impact of register shuffling or register spilling
-on the fast path. More details can be found in [omr/compiler/codegen/OutOfLineCodeSection.hpp](https://github.com/eclipse/omr/blob/2ccbf5e8ce2cc1f7b0888e562ca9ee11e712f5d9/compiler/codegen/OutOfLineCodeSection.hpp#L36-L106)
+on the fast path. More details can be found in [omr/compiler/codegen/OutOfLineCodeSection.hpp](https://github.com/eclipse-omr/omr/blob/2ccbf5e8ce2cc1f7b0888e562ca9ee11e712f5d9/compiler/codegen/OutOfLineCodeSection.hpp#L36-L106)
 

@@ -55,7 +55,7 @@ def refresh() {
     dir("${HOME}/gitcache") {
         sh '''
             git init --bare
-            git config remote.omr.url https://github.com/eclipse/omr.git
+            git config remote.omr.url https://github.com/eclipse-omr/omr.git
             git config remote.omr.fetch +refs/heads/*:refs/remotes/omr/*
             git fetch omr
         '''

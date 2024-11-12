@@ -25,7 +25,7 @@
 # each git commit message against OMR contributing guidelines. The script
 # needs to be executable and it will be invoked when a 'git commit' command
 # is issued. OMR contributing guidelines can be found at:
-# https://github.com/eclipse/omr/blob/master/CONTRIBUTING.md#commit-guidelines
+# https://github.com/eclipse-omr/omr/blob/master/CONTRIBUTING.md#commit-guidelines
 
 message_file = ARGV[0]
 message = File.read(message_file)
@@ -103,7 +103,7 @@ end
 # display results
 if (state == "failure")
   puts "FAILED: #{description}"
-  puts "Please see guidelines: https://github.com/eclipse/omr/blob/master/CONTRIBUTING.md#commit-guidelines\n"
+  puts "Please see guidelines: https://github.com/eclipse-omr/omr/blob/master/CONTRIBUTING.md#commit-guidelines\n"
   exit 1
 end
 

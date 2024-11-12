@@ -216,10 +216,10 @@ compilation altogether, using the `exclude=method` parameter:
 ### Identifying the failing Optimization.
 
 Most transformations that can be elided are guarded in the source code by a special
-check called [performTransformation](https://github.com/eclipse/omr/blob/f5a790b68037be3a48b6e5c4f7e8ae6ad3e30f00/compiler/compile/OMRCompilation.hpp#L271-L274)
-([more details](https://github.com/eclipse/omr/blob/8f5212d52b533cdf9d6de9c2bd8a3e01e83e8b9d/compiler/compile/OMRCompilation.hpp#L170-L226)).
+check called [performTransformation](https://github.com/eclipse-omr/omr/blob/f5a790b68037be3a48b6e5c4f7e8ae6ad3e30f00/compiler/compile/OMRCompilation.hpp#L271-L274)
+([more details](https://github.com/eclipse-omr/omr/blob/8f5212d52b533cdf9d6de9c2bd8a3e01e83e8b9d/compiler/compile/OMRCompilation.hpp#L170-L226)).
 
-`performTransformation` is [enabled by option](https://github.com/eclipse/omr/blob/8f5212d52b533cdf9d6de9c2bd8a3e01e83e8b9d/compiler/compile/OMRCompilation.hpp#L242)
+`performTransformation` is [enabled by option](https://github.com/eclipse-omr/omr/blob/8f5212d52b533cdf9d6de9c2bd8a3e01e83e8b9d/compiler/compile/OMRCompilation.hpp#L242)
 `TR_TraceOptDetails` or `TR_CountOptTransformations`. `TR_TraceOptDetails` is enabled
 if the `optDetails` option is specified or if `TR_TraceAll` (`traceFull`) is set.
 `TR_CountOptTransformations` is enabled normally when the verbose log is enabled or
@@ -231,8 +231,8 @@ compilations to avoid overhead in the overwhelmingly common non-tracing case.
 
 `performTransformation` is controlled by comparing
 the current `optIndex` with `firstOptIndex` and  `lastOptIndex` options, either when
-[it is invoked](https://github.com/eclipse/omr/blob/f5a790b68037be3a48b6e5c4f7e8ae6ad3e30f00/compiler/ras/Debug.cpp#L477)
-or in the higher level [performOptimization](https://github.com/eclipse/omr/blob/8f5212d52b533cdf9d6de9c2bd8a3e01e83e8b9d/compiler/optimizer/OMROptimizer.cpp#L1670-L1671)
+[it is invoked](https://github.com/eclipse-omr/omr/blob/f5a790b68037be3a48b6e5c4f7e8ae6ad3e30f00/compiler/ras/Debug.cpp#L477)
+or in the higher level [performOptimization](https://github.com/eclipse-omr/omr/blob/8f5212d52b533cdf9d6de9c2bd8a3e01e83e8b9d/compiler/optimizer/OMROptimizer.cpp#L1670-L1671)
 if the optimization is not set as `MustBeDone`.
 
 `lastOptIndex` - the index of the last optimization - can be used to narrow things
@@ -405,7 +405,7 @@ table below lists a few commonly used ones:
 | traceOptTrees | Dump trees after each optimization. |
 | traceTrees | Dump trees after each compilation phase. |
 
-To see the complete set of trace options, see the [logging options listed in OMROptions.cpp](https://github.com/eclipse/omr/blob/e2f65411e67d21ef04e2062a8945e604d82cb19e/compiler/control/OMROptions.cpp#L1118).
+To see the complete set of trace options, see the [logging options listed in OMROptions.cpp](https://github.com/eclipse-omr/omr/blob/e2f65411e67d21ef04e2062a8945e604d82cb19e/compiler/control/OMROptions.cpp#L1118).
 
 ### Filtering methods
 

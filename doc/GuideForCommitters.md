@@ -55,17 +55,17 @@ prior to merging.
 explanation in the pull request from the author of the rationale along with a
 description of the problem if the commit is not reverted.
 
-* If a pull request modifies the [Contribution Guidelines](https://github.com/eclipse/omr/blob/master/CONTRIBUTING.md),
+* If a pull request modifies the [Contribution Guidelines](https://github.com/eclipse-omr/omr/blob/master/CONTRIBUTING.md),
 request the author to post a detailed summary of the changes on the
 `omr-dev@eclipse.org` mailing list after the pull request is merged.
 
 
 ### Pre-Merge Checklist
 
-* Ensure the pull request adheres to all the Eclipse OMR [Contribution Guidelines](https://github.com/eclipse/omr/blob/master/CONTRIBUTING.md)
+* Ensure the pull request adheres to all the Eclipse OMR [Contribution Guidelines](https://github.com/eclipse-omr/omr/blob/master/CONTRIBUTING.md)
 
 * Ensure pull requests and issues are annotated with descriptive metadata by
-attaching GitHub labels.  The current set of labels can be found [here](https://github.com/eclipse/omr/labels).
+attaching GitHub labels.  The current set of labels can be found [here](https://github.com/eclipse-omr/omr/labels).
 
 * If you will be the primary committer, change the Assignee of the pull request
 to yourself.  Being the primary committer does not necessarily mean you have to
@@ -181,7 +181,7 @@ committer status:
 * Review and merge at least one pull request, or
 * Author and contribute at least one pull request, or
 * Participate in at least 25% of
-[OMR Architecture Meetings](https://github.com/eclipse/omr/issues/2316), or
+[OMR Architecture Meetings](https://github.com/eclipse-omr/omr/issues/2316), or
 * Other documented contributions not reflected in the above may be considered
 on a case-by-case basis by Eclipse OMR project leadership.  For example, significant
 contributions to the design of a feature, or assistance resolving a defect,

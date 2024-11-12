@@ -10,7 +10,7 @@ is available at https://www.apache.org/licenses/LICENSE-2.0.
 This Source Code may also be made available under the following
 Secondary Licenses when the conditions for such availability set
 forth in the Eclipse Public License, v. 2.0 are satisfied: GNU
-General Public License, version 2 with the GNU Classpath 
+General Public License, version 2 with the GNU Classpath
 Exception [1] and GNU General Public License, version 2 with the
 OpenJDK Assembly Exception [2].
 
@@ -59,7 +59,7 @@ Let's consider how to use each toolchain to configure and build `OMR` with `CMak
 #### Common prerequisite
 
 *Perl* must be installed to configure the project. [Strawberry Perl](http://strawberryperl.com/) is absolutely
-suitable for `CMake` on Windows, please do not forget to add the path to `perl.exe` (for example 
+suitable for `CMake` on Windows, please do not forget to add the path to `perl.exe` (for example
 `C:\StrawberryPerl\perl\bin`) to the `PATH` environment variable.
 
 #### Configuring the build for using MSYS2/MinGW
@@ -79,8 +79,8 @@ The following components of the build tools are recommended to be installed:
  * Windows 10 SDK (>= 10.0.16299.0) for Desktop C++
  * Visual C++ tools for CMake
 
-**Note:** 
-To use the `NMake` or `Ninja` generator with *Visual C++*, `cmake` must be run from a shell that can use 
+**Note:**
+To use the `NMake` or `Ninja` generator with *Visual C++*, `cmake` must be run from a shell that can use
 the compiler `cl` from the command line as it described in the document
 [Build C/C++ code on the command line](https://docs.microsoft.com/en-us/cpp/build/building-on-the-command-line).
 To enable the shell, please run
@@ -208,13 +208,13 @@ Cross compiling OMR is done in two steps:
 
 *  OMR_SANITIZER={address,thread,undefined} turns on one: [Address Sanitizer
    (ASan)][asan], [Undefined Behaviour Sanitizer (UBSan)][ubsan] or [Thread
-   Sanitizer (TSan)][tsan]. This only has an effect with GCC or Clang. 
+   Sanitizer (TSan)][tsan]. This only has an effect with GCC or Clang.
 
 [ubsan]: https://clang.llvm.org/docs/UndefinedBehaviorSanitizer.html
 [asan]: https://github.com/google/sanitizers/wiki/AddressSanitizer
-[tsan]: https://clang.llvm.org/docs/ThreadSanitizer.html 
+[tsan]: https://clang.llvm.org/docs/ThreadSanitizer.html
 
 ## What's next?
 
 The work here is ongoing. We are tracking development with github issue
-[#993](https://github.com/eclipse/omr/issues/933).
+[#993](https://github.com/eclipse-omr/omr/issues/933).

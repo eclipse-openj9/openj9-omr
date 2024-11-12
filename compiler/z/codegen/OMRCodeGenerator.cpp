@@ -290,7 +290,7 @@ OMR::Z::CodeGenerator::lowerTreeIfNeeded(
       TR::Node* index = NULL;
       TR::ILOpCodes addOp, subOp, constOp;
       // Need to track if lowered trees are internal pointers
-      // For context: https://github.com/eclipse/omr/issues/4929
+      // For context: https://github.com/eclipse-omr/omr/issues/4929
       bool isInternalPointer = false;
       TR::AutomaticSymbol *pinningArrayPointer = NULL;
 

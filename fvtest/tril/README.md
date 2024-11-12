@@ -10,7 +10,7 @@ is available at https://www.apache.org/licenses/LICENSE-2.0.
 This Source Code may also be made available under the following
 Secondary Licenses when the conditions for such availability set
 forth in the Eclipse Public License, v. 2.0 are satisfied: GNU
-General Public License, version 2 with the GNU Classpath 
+General Public License, version 2 with the GNU Classpath
 Exception [1] and GNU General Public License, version 2 with the
 OpenJDK Assembly Exception [2].
 
@@ -45,7 +45,7 @@ The `test/` directory contains some GTest-based test cases for Tril.
 2. Clone the Eclipse OMR repo:
 
     ```sh
-    git clone https://github.com/eclipse/omr.git
+    git clone https://github.com/eclipse-omr/omr.git
     ```
 
 3. Build tril using `cmake`. To ensure OMR gets built in a compatible
@@ -59,7 +59,7 @@ The `test/` directory contains some GTest-based test cases for Tril.
     ```
 
     At this point you can use whatever generated build system to build
-    tril: 
+    tril:
 
     ```
     make tril
@@ -68,7 +68,7 @@ The `test/` directory contains some GTest-based test cases for Tril.
 5. You should now have a static archive called `libtril.a`
 
 6. You can build the tests by building `triltest`, or the compiler tests built
-   using tril by by building `comptest`. There's also the `mandelbrot` and `incordec` 
+   using tril by by building `comptest`. There's also the `mandelbrot` and `incordec`
    examples.
 
 4. Enjoy the view!

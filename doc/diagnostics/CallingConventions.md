@@ -317,4 +317,4 @@ Scratch registers are not preserved across calls, while non-volatile registers a
 Useful links:
 
  * [RISC-V ELF psABI specification](https://github.com/riscv/riscv-elf-psabi-doc/blob/master/riscv-elf.md#register-convention)
- * [RVSystemLinkage.cpp](https://github.com/eclipse/omr/blob/master/compiler/riscv/codegen/RVSystemLinkage.cpp)
+ * [RVSystemLinkage.cpp](https://github.com/eclipse-omr/omr/blob/master/compiler/riscv/codegen/RVSystemLinkage.cpp)

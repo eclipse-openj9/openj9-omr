@@ -3961,7 +3961,7 @@ const char* transformedTargetName (TR::RecognizedMethod rm)
 #ifdef J9_PROJECT_SPECIFIC
 /**
  * Can be called from doDelayedTransformations when nodes may have been removed from the tree. Issue 6623
- * https://github.com/eclipse/omr/issues/6623
+ * https://github.com/eclipse-omr/omr/issues/6623
  */
 void OMR::ValuePropagation::transformObjectCloneCall(TR::TreeTop *callTree, OMR::ValuePropagation::ObjCloneInfo *cloneInfo)
    {
@@ -4069,7 +4069,7 @@ void OMR::ValuePropagation::transformObjectCloneCall(TR::TreeTop *callTree, OMR:
 
 /**
  * Can be called from doDelayedTransformations when nodes may have been removed from the tree. Issue 6623
- * https://github.com/eclipse/omr/issues/6623
+ * https://github.com/eclipse-omr/omr/issues/6623
  */
 void OMR::ValuePropagation::transformArrayCloneCall(TR::TreeTop *callTree, OMR::ValuePropagation::ArrayCloneInfo *cloneInfo)
    {

@@ -497,7 +497,7 @@ bool TR_FieldPrivatizer::containsEscapePoints(TR_Structure *structure, bool &con
          // privatized must be of the expected type in the loop, and that
          // ensures any conditional access in the original loop is handled
          // correctly.  This follow on work will be performed under OMR issue
-         // <https://github.com/eclipse/omr/issues/6199>
+         // <https://github.com/eclipse-omr/omr/issues/6199>
          //
          if (currentNode->exceptionsRaised()
              || currentNode->isTheVirtualGuardForAGuardedInlinedCall()

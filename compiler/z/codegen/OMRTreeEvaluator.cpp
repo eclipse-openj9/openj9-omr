@@ -14022,9 +14022,9 @@ OMR::Z::TreeEvaluator::bitpermuteEvaluator(TR::Node *node, TR::CodeGenerator *cg
    //    suited for BigEndian architectures) then the Vector implementation is on par or better than the loop
    //    unrolling technique for all array sizes.
    //
-   // More info on the measurements is available here: https://github.com/eclipse/omr/pull/2330#issuecomment-378380538
+   // More info on the measurements is available here: https://github.com/eclipse-omr/omr/pull/2330#issuecomment-378380538
    // The differences between the generated code for the different
-   // implementations can be seen here: https://github.com/eclipse/omr/pull/2330#issuecomment-378387516
+   // implementations can be seen here: https://github.com/eclipse-omr/omr/pull/2330#issuecomment-378387516
    static const int8_t bitPermuteConstantUnrollThreshold = 4;
 
    bool isLoadConst = length->getOpCode().isLoadConst();
@@ -16777,7 +16777,7 @@ OMR::Z::TreeEvaluator::vsetelemEvaluator(TR::Node *node, TR::CodeGenerator *cg)
             {
             // This path used to contain a call to an API which would have returned a garbage result. Rather than 100% of the
             // time generating an invalid sequence here which is guaranteed to crash if executed, we fail the compilation.
-            cg->comp()->failCompilation<TR::CompilationException>("Existing code relied on an unimplemented API and is thus not safe. See eclipse/omr#5937.");
+            cg->comp()->failCompilation<TR::CompilationException>("Existing code relied on an unimplemented API and is thus not safe. See eclipse-omr/omr#5937.");
             }
          else
             memRef = TR::MemoryReference::create(cg, valueNode);

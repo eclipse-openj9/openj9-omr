@@ -597,8 +597,6 @@ OMR::Z::CodeGenerator::initialize()
       comp->setOption(TR_DisableAutoSIMD);
       comp->setOption(TR_DisableSIMDArrayCompare);
       comp->setOption(TR_DisableSIMDArrayTranslate);
-      comp->setOption(TR_DisableSIMDUTF16BEEncoder);
-      comp->setOption(TR_DisableSIMDUTF16LEEncoder);
       comp->setOption(TR_DisableSIMDStringHashCode);
       comp->setOption(TR_DisableVectorRegGRA);
       }
@@ -1932,18 +1930,6 @@ OMR::Z::CodeGenerator::anyLitPoolSnippets()
          }
       }
       return false;
-   }
-
-bool
-OMR::Z::CodeGenerator::getSupportsEncodeUtf16BigWithSurrogateTest()
-   {
-   if (self()->comp()->target().cpu.isAtLeast(OMR_PROCESSOR_S390_Z196))
-      {
-      return (!self()->comp()->getOption(TR_DisableUTF16BEEncoder) ||
-               (self()->getSupportsVectorRegisters() && !self()->comp()->getOption(TR_DisableSIMDUTF16BEEncoder)));
-      }
-
-   return false;
    }
 
 TR_S390ScratchRegisterManager*

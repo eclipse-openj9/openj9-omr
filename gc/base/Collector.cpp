@@ -489,6 +489,8 @@ MM_Collector::garbageCollect(MM_EnvironmentBase* env, MM_MemorySubSpace* calling
 {
 	Assert_MM_mustHaveExclusiveVMAccess(env->getOmrVMThread());
 
+	uintptr_t vmState = env->pushVMstate(getVMStateID());
+
 	Assert_MM_true(NULL == env->_cycleState);
 	preCollect(env, callingSubSpace, allocateDescription, gcCode);
 	Assert_MM_true(NULL != env->_cycleState);
@@ -496,15 +498,11 @@ MM_Collector::garbageCollect(MM_EnvironmentBase* env, MM_MemorySubSpace* calling
 	/* ensure that we aren't trying to collect while in a NoGC allocation */
 	Assert_MM_false(env->_isInNoGCAllocationCall);
 
-	uintptr_t vmState = env->pushVMstate(getVMStateID());
-
 	/* First do any pre-collection initialization of the collector*/
 	setupForGC(env);
 
 	/* perform the collection */
 	_gcCompleted = internalGarbageCollect(env, callingSubSpace, allocateDescription);
-
-	env->popVMstate(vmState);
 
 	/* now, see if we need to resume an allocation or replenishment attempt */
 	void* postCollectAllocationResult = NULL;
@@ -526,6 +524,8 @@ MM_Collector::garbageCollect(MM_EnvironmentBase* env, MM_MemorySubSpace* calling
 	postCollect(env, callingSubSpace);
 	Assert_MM_true(NULL != env->_cycleState);
 	env->_cycleState = NULL;
+
+	env->popVMstate(vmState);
 
 	return postCollectAllocationResult;
 }

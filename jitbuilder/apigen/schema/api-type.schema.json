@@ -1,6 +1,6 @@
 {
     "$schema": "http://json-schema.org/draft-07/schema#",
-    "$id":  "https://raw.githubusercontent.com/eclipse/omr/master/jitbuilder/apigen/schema/api-type.schema.json",
+    "$id":  "https://raw.githubusercontent.com/eclipse-omr/omr/master/jitbuilder/apigen/schema/api-type.schema.json",
     "title": "API Datatype Description Format",
     "description": "Format for specifying API datatypes",
     "$comment": "Copyright IBM Corp. and others 2018 (see LICENSE.md)",

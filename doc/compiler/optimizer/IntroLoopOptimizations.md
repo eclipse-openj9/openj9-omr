@@ -100,7 +100,7 @@ if (i< 15) {
 }
 ```
 If it is a while-do loop, we hoist the first “if” test that controls whether we enter the loop outside the loop. If it is
-true, we fall into the loop preheader block and then execute the body of the loop. We will [clone that condition](https://github.com/eclipse/omr/blob/ef9fafc24998865bc4041ad56cc17b2b4c1f210c/compiler/optimizer/LoopCanonicalizer.cpp#L817-L845)
+true, we fall into the loop preheader block and then execute the body of the loop. We will [clone that condition](https://github.com/eclipse-omr/omr/blob/ef9fafc24998865bc4041ad56cc17b2b4c1f210c/compiler/optimizer/LoopCanonicalizer.cpp#L817-L845)
 so that we check it at the end of the loop as well. This is how a while-do loop is converted into a do-while loop by
 checking the condition outside the loop.
 
@@ -311,7 +311,7 @@ the slow loop is likely not executed based on the assumption that the original g
 
 ## 4. Loop Specializer
 
-[Loop Specializer](https://github.com/eclipse/omr/blob/e3a15a993c8aba80582aa1d6f3071e122acbd4c4/compiler/optimizer/LoopVersioner.hpp#L1061-L1071)
+[Loop Specializer](https://github.com/eclipse-omr/omr/blob/e3a15a993c8aba80582aa1d6f3071e122acbd4c4/compiler/optimizer/LoopVersioner.hpp#L1061-L1071)
 subclasses Loop Versioner and shares about 90% of the code with Loop Versioner. The reason that Loop Specializer shares
 so much code with Loop Versioner is that the transformation it performs is quite like what Loop Versioner does.
 
@@ -323,7 +323,7 @@ In the following example, `n` is loop invariant. It would be great if we know wh
 a small value like `10` or `4`, rather than testing if the value is between `0` and `n`, we could test if the value is
 between `0` and `10`, or whatever the value is profiled as. The loop could be unrolled completely and would be eliminated.
 Even if the loop cannot be unrolled completely, knowing the precise bounds of the constant allows subsequent optimizations
-such as [Value Propagation](https://github.com/eclipse/omr/blob/6cc32df405cd1dd688470e0b5b13fcc5938e2921/doc/compiler/optimizer/ValuePropagation.md)
+such as [Value Propagation](https://github.com/eclipse-omr/omr/blob/6cc32df405cd1dd688470e0b5b13fcc5938e2921/doc/compiler/optimizer/ValuePropagation.md)
 to further constrain expressions within the loop, which may enable further optimization.
 
 ```

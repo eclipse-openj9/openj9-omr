@@ -179,7 +179,7 @@ and such source code may be obtained at http://www.eclipse.org.
 ## Source Code
 This project maintains the following source code repository:
 
-https://github.com/eclipse/omr.git
+https://github.com/eclipse-omr/omr.git
 
 ## Third-party Content
 

@@ -1289,7 +1289,7 @@ void TR_RedundantAsyncCheckRemoval::getNearestAncestors(TR_StructureSubGraphNode
 
 void TR_RedundantAsyncCheckRemoval::markAncestors(TR_StructureSubGraphNode *node, TR_StructureSubGraphNode *entry)
    {
-   return;  // Disable it for performance. For more details, refer to https://github.com/eclipse/omr/pull/1138
+   return;  // Disable it for performance. For more details, refer to https://github.com/eclipse-omr/omr/pull/1138
 
    if (node == entry)
       return;

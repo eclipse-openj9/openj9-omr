@@ -10,7 +10,7 @@ is available at https://www.apache.org/licenses/LICENSE-2.0.
 This Source Code may also be made available under the following
 Secondary Licenses when the conditions for such availability set
 forth in the Eclipse Public License, v. 2.0 are satisfied: GNU
-General Public License, version 2 with the GNU Classpath 
+General Public License, version 2 with the GNU Classpath
 Exception [1] and GNU General Public License, version 2 with the
 OpenJDK Assembly Exception [2].
 
@@ -25,7 +25,7 @@ SPDX-License-Identifier: EPL-2.0 OR Apache-2.0 OR GPL-2.0-only WITH Classpath-ex
 A library for dynamically generating efficient native code and,
 in particular, for building JIT compilers using the Eclipse OMR
 JIT compiler component
-(see [Eclipse OMR Project](https://github.com/eclipse/omr)).
+(see [Eclipse OMR Project](https://github.com/eclipse-omr/omr)).
 
 To use JitBuilder, you create `IlBuilder` objects to represent
 the various control flow paths in a function you're trying to create
@@ -66,7 +66,7 @@ run the many available code samples from the C++ language.
 First, clone the Eclipse OMR repository:
 
 ```
-$ git clone https://github.com/eclipse/omr
+$ git clone https://github.com/eclipse-omr/omr
 ```
 
 Change directory into the OMR project, create a `build` directory, and

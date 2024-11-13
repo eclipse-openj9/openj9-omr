@@ -44,7 +44,7 @@ Wildcard expressions can be used to log multiple methods. For example, `{java/ut
 method that is compiled in `java/util/hashMap`.
 
 `traceFull` turns on all important trace types (i.e. `traceBC`, `traceTrees`, `traceCG`, `traceOptTrees`, and `optDetails`).
-Tracing options are defined in [OMROptions.cpp](https://github.com/eclipse/omr/blob/1d8fb435675f022855948c08f08f6db66cbe38d8/compiler/control/OMROptions.cpp#L1136).
+Tracing options are defined in [OMROptions.cpp](https://github.com/eclipse-omr/omr/blob/1d8fb435675f022855948c08f08f6db66cbe38d8/compiler/control/OMROptions.cpp#L1136).
 
 ## 2. Bytecodes And Trees
 
@@ -104,7 +104,7 @@ Another eye catcher is `“This method is”` that indicates the hotness level.
        16, JBifne                  13,   29,
 ```
 
-JIT takes bytecodes as an input and generates [IL trees](https://github.com/eclipse/omr/blob/dd1373f8fbe46759cc02c3c6386dbee9ce30ce5e/doc/compiler/il/IntroToTrees.md). The first section is the bytecodes that are received from VM.
+JIT takes bytecodes as an input and generates [IL trees](https://github.com/eclipse-omr/omr/blob/dd1373f8fbe46759cc02c3c6386dbee9ce30ce5e/doc/compiler/il/IntroToTrees.md). The first section is the bytecodes that are received from VM.
 
 - Bytecode `#1` `getfield` shows the constant pool index `38` of the field.
 - Bytecode `#5` `astore` stores the address to the stack slot number `6`.
@@ -112,7 +112,7 @@ JIT takes bytecodes as an input and generates [IL trees](https://github.com/ecli
 
 
 The IL generator generated the following IL which showed up in the section `"Pre IlGenOpt Trees"`.
-The IL consists of a doubly linked list of trees of nodes ([TR::Nodes](https://github.com/eclipse/omr/blob/master/compiler/il/OMRNode.hpp)).
+The IL consists of a doubly linked list of trees of nodes ([TR::Nodes](https://github.com/eclipse-omr/omr/blob/master/compiler/il/OMRNode.hpp)).
 
 ```
 n284n     BBStart <block_32>                                                                  [0x7eff0a557880] bci=[-1,0,628] rc=0 vc=0 vn=- li=- udi=- nc=0
@@ -125,7 +125,7 @@ n289n     BBStart <block_33> (freq 0) (cold)                                    
 ...
 ```
 
- - `n284n`: nodeID, or [the GlobalIndex of an TR::Node](https://github.com/eclipse/omr/blob/e4c209ac149ef8db3cc9834a962b689a2e3c0fd7/compiler/il/OMRNode.hpp#L754)
+ - `n284n`: nodeID, or [the GlobalIndex of an TR::Node](https://github.com/eclipse-omr/omr/blob/e4c209ac149ef8db3cc9834a962b689a2e3c0fd7/compiler/il/OMRNode.hpp#L754)
 that uniquely identifies a node. The node's global index can sometimes be used as an index into a bit vector or an array
 to get some piece of information associated with that specific node. i.e. it serves a purpose that cannot be served using
 just the node's address.
@@ -134,8 +134,8 @@ just the node's address.
 - `n284n BBStart` has no children in this example.
  `n288n ificmpne` has two children. It compares `n286n` with `n287n`. If they are not equal, it branches to `block_2`,
 otherwise it will fall through to `block_33`.
-- We can find the [IL opcode properties](https://github.com/eclipse/omr/blob/1d0a329e26b096dacba6f31fef33236ed419428a/compiler/il/OMROpcodes.enum#L4502-L4517)
-in [OMROpcodes.enum](https://github.com/eclipse/omr/blob/1d0a329e26b096dacba6f31fef33236ed419428a/compiler/il/OMROpcodes.enum)
+- We can find the [IL opcode properties](https://github.com/eclipse-omr/omr/blob/1d0a329e26b096dacba6f31fef33236ed419428a/compiler/il/OMROpcodes.enum#L4502-L4517)
+in [OMROpcodes.enum](https://github.com/eclipse-omr/omr/blob/1d0a329e26b096dacba6f31fef33236ed419428a/compiler/il/OMROpcodes.enum)
 to figure out the number of children an IL opcode has and the types of the children.
 
 ```
@@ -346,7 +346,7 @@ this pointer is non-NULL. If this pointer is `NULL`, this method will not even h
 `n45n ificmpne`: Tests if `arrayLength` equals to `0`. If yes, it branches to `block_5`. If no, it falls through to the
 next block.
 
-The reason that we have separate trees or treetops is because we want to order [side effects](https://github.com/eclipse/omr/blob/master/doc/compiler/il/IntroToTrees.md#side-effects) in a program.
+The reason that we have separate trees or treetops is because we want to order [side effects](https://github.com/eclipse-omr/omr/blob/master/doc/compiler/il/IntroToTrees.md#side-effects) in a program.
 The inexplicit order of treetop indicates the order of side effects. They happen one after another.
 
 Side effects mean that the result of an operation will have an effect even after the trees are executed. Throwing an
@@ -359,7 +359,7 @@ Only one side effect exits in each treetop. We do not want one tree to have a `N
 
 ## 3. Optimization: globalValuePropagation
 
-[Global Value Propagation](https://github.com/eclipse/omr/blob/master/doc/compiler/optimizer/ValuePropagation.md) is important because it is one place where it has the most knowledge of what the semantics
+[Global Value Propagation](https://github.com/eclipse-omr/omr/blob/master/doc/compiler/optimizer/ValuePropagation.md) is important because it is one place where it has the most knowledge of what the semantics
 are for different opcodes.
 
 ```
@@ -411,8 +411,8 @@ but it has a different opcode now.
 ```
 [  4830] O^O VALUE PROPAGATION: Constant folding lload [00007F00A30046D0]          to lconst 0
 ```
-[performTransformation](https://github.com/eclipse/omr/blob/6eec759cd2d446f74d2b8a7ee3348d98ce6bfa79/compiler/ras/Debug.cpp#L489) prints out the message on the above and guards whether or not the transformation performs.
-`[  4830]` indicates the number of transformations that have occurred so far. To [narrow down the transformation](https://github.com/eclipse/omr/blob/master/doc/compiler/ProblemDetermination.md#identifying-the-failing-optimization) that
+[performTransformation](https://github.com/eclipse-omr/omr/blob/6eec759cd2d446f74d2b8a7ee3348d98ce6bfa79/compiler/ras/Debug.cpp#L489) prints out the message on the above and guards whether or not the transformation performs.
+`[  4830]` indicates the number of transformations that have occurred so far. To [narrow down the transformation](https://github.com/eclipse-omr/omr/blob/master/doc/compiler/ProblemDetermination.md#identifying-the-failing-optimization) that
 causes a problem, we can do a binary search on these numbers by using `lastOptIndex`. If `lastOptIndex=4830`, none of
 the transformations after `4830` will take place.
 
@@ -736,7 +736,7 @@ n4n       BBEnd </block_2>
 `n1104n lload` in `block_109` is replaced with `n4811n ==>lRegLoad`.  `lRegLoad` is long register load. The value is
 now picked up from the register that is associated with `n4811n lRegLoad`. Looking at the earlier references of `n4811n`
 in `block_53`, `n4811n` takes the value `parm 1` and associates it with the real register `esi`. `n4811n` is also the
-first child of [GlRegDeps](https://github.com/eclipse/omr/blob/6eec759cd2d446f74d2b8a7ee3348d98ce6bfa79/doc/compiler/il/GlRegDeps.md) which is the first child of `BBStart` in `block_53`. `GlRegDeps` is a request to the code
+first child of [GlRegDeps](https://github.com/eclipse-omr/omr/blob/6eec759cd2d446f74d2b8a7ee3348d98ce6bfa79/doc/compiler/il/GlRegDeps.md) which is the first child of `BBStart` in `block_53`. `GlRegDeps` is a request to the code
 generator that the value must be in the register `esi` when coming into the `block_53`.
 
 The third child of `n642n ificmpeq` is `n4813n GlRegDeps`. When `ificmpeq` branches to `block_2`, the values that are
@@ -1093,7 +1093,7 @@ checkcast exception will not be thrown.
 Instructions at `0x7fef12c4e570` and `0x7fef12c4e600` check if the value is `NULL`. If it is not `NULL`, it will get the
 class pointer and mask out the lower `8` bits and does a comparison to the class (`0x000a4100`) that is casting to. If
 it is equal, the checkcast succeeds. If it is not equal, it fails and throw the exception. Throwing the exception is
-not handled here. We jump out of [mainline to the out-of-line](https://github.com/eclipse/omr/blob/6eec759cd2d446f74d2b8a7ee3348d98ce6bfa79/doc/compiler/il/MainlineAndOutOfLineCode.md) `Label L2066`. We do not pollute the code in the
+not handled here. We jump out of [mainline to the out-of-line](https://github.com/eclipse-omr/omr/blob/6eec759cd2d446f74d2b8a7ee3348d98ce6bfa79/doc/compiler/il/MainlineAndOutOfLineCode.md) `Label L2066`. We do not pollute the code in the
 mainline which is executed more often.
 
 ```

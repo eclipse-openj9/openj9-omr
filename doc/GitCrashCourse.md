@@ -83,7 +83,7 @@ wizard.
 Before you can make any code contributions to the Eclipse OMR GitHub repository
 you must sign the Eclipse Contributor Agreement (ECA).  This is a simple process
 outlined in the [Contribution Guidelines](../CONTRIBUTING.md#legal-considerations).
-This step is important because the email of the author of each commit 
+This step is important because the email of the author of each commit
 must match the email you used to sign the ECA.
 
 ---
@@ -172,7 +172,7 @@ Git being a distributed version control system means that there are
 multiple copies of the repository that can exist, but only one main
 repository that contributors use to submit changes, as well as for
 updating their own copies. For OMR, the main repository is
-[`eclipse/omr`](https://github.com/eclipse/omr).
+[`eclipse-omr/omr`](https://github.com/eclipse-omr/omr).
 Every contributor to the OMR project needs to have their own **fork** on
 GitHub.
 
@@ -190,10 +190,10 @@ outlines the process.
 *Figure 2: OMR development workflow*
 
 In the diagram above, there are 3 copies of the repository. The `yourgithub/omr`
-repository is forked from the main `eclipse/omr` repository, which you clone to
+repository is forked from the main `eclipse-omr/omr` repository, which you clone to
 your machine as `~/omr`. On your machine, git aliases `yourgithub/omr` as `origin`.
 However, git does not know whether the repository you cloned is actually a fork.
-In order to keep up with updates made to `eclipse/omr`, you will need to track
+In order to keep up with updates made to `eclipse-omr/omr`, you will need to track
 changes in that repository, and call it `upstream`. Notice how there is no arrow
 going from `upstream` to `origin`, which means keeping your fork up to date is
 your responsibility. This is done by performing **fetch** from `upstream` to
@@ -206,7 +206,7 @@ process.
 ### Issues
 
 Issues on GitHub are a great way for project contributors to collaborate.
-The Eclipse OMR project makes use of [Issues](https://github.com/eclipse/omr/issues)
+The Eclipse OMR project makes use of [Issues](https://github.com/eclipse-omr/omr/issues)
 mainly for keeping track of tasks, bugs, and discussions out in the open.
 
 Issues can be categorized using coloured labels (eg, `compiler`,
@@ -380,7 +380,7 @@ right beside that to navigate to the pull request creation page.
 Alternatively, if you recently pushed your branch, you may see a prompt to
 open a Pull Request using that branch right away.
 
-In the pull request creation page, you can see what branch of eclipse/omr
+In the pull request creation page, you can see what branch of `eclipse-omr/omr`
 you are going to merge the commit(s) in your branch into. Your Pull
 Request title should describe what is being done, and the body of the Pull
 Request can be used to add further details about what you are doing, as
@@ -445,8 +445,8 @@ commits `b1` and `b2` to `new-branch`. It would look something like this:
 *Figure 7: Commits added in your `new-branch`*
 
 Given the number of contributors to the Eclipse OMR project, it is likely that
-more commits have been added to `eclipse/omr` resulting your base (local `master`
-you created `new-branch` off of) branch being out of sync with `eclipse/omr`'s
+more commits have been added to `eclipse-omr/omr` resulting your base (local `master`
+you created `new-branch` off of) branch being out of sync with `eclipse-omr/omr`'s
 master branch that you are trying to merge your changes into.
 
 
@@ -455,24 +455,24 @@ master branch that you are trying to merge your changes into.
 
 The goal of rebasing is to apply your commits on top of the current version of the
 branch you are trying to merge your changes into (in this case, `master` branch of
-`eclipse/omr`).
+`eclipse-omr/omr`).
 
 ![](./images/rebase3.svg)
 *Figure 9: Resulting chain of commits after rebase*
 
 Rebasing is also useful when you are trying to resolve **merge conflicts**.
 Merge conflicts arise when some other developer gets their commits merged into
-`master` in `eclipse/omr` after the point where your branch is based on if your
+`master` in `eclipse-omr/omr` after the point where your branch is based on if your
 commits modify/delete the lines that are affected by their commits. Git cannot
 automatically determine what to keep and what to discard. You will have to
 manually make edits to those conflicting regions in the source files.
 
 Suppose that you have a merge conflict that needs to be resolved. The first
-step would be to add `eclipse/omr` repository as a remote to fetch updates
-from. Let's alias the URL of `eclipse/omr` as `upstream`.
+step would be to add `eclipse-omr/omr` repository as a remote to fetch updates
+from. Let's alias the URL of `eclipse-omr/omr` as `upstream`.
 
 ```
-git remote add upstream https://github.com/eclipse/omr
+git remote add upstream https://github.com/eclipse-omr/omr
 ```
 
 Next, fetch the history from `upstream`. Performing fetch of a remote repository

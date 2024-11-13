@@ -37,7 +37,7 @@ This project uses GitHub Issues to track ongoing development, discuss project
 plans, and keep track of bugs.  Be sure to search for existing issues before
 you create another one.
 
-Visit [our Issues page on GitHub to search and submit](https://github.com/eclipse/omr/issues)
+Visit [our Issues page on GitHub to search and submit](https://github.com/eclipse-omr/omr/issues)
 
 ### Labelling
 
@@ -47,62 +47,62 @@ may have multiple labels, as many as needed to provide adequate categorization.
 
 A subset of the labels are documented below.
 
-* [**`good first issue`**](https://github.com/eclipse/omr/labels/good%20first%20issue) generally
+* [**`good first issue`**](https://github.com/eclipse-omr/omr/labels/good%20first%20issue) generally
   refers to a task that would be suitable for someone new to the project with
   little experience with either the technology or even open-source projects and
   processes. They are intended for anyone who wants to gently get their feet
   wet on building, testing, or familiarizing themselves with part of the code
   base.
 
-* [**`bug`**](https://github.com/eclipse/omr/labels/bug) issues are functional
+* [**`bug`**](https://github.com/eclipse-omr/omr/labels/bug) issues are functional
   problems, errors or unexpected behaviour.
 
-* [**`build/configure`**](https://github.com/eclipse/omr/labels/build%20%2F%20configure)
+* [**`build/configure`**](https://github.com/eclipse-omr/omr/labels/build%20%2F%20configure)
   labels are used to describe issues with the build and configure system (e.g.,
   makefiles, autotools configure).
 
-* [**`ci`**](https://github.com/eclipse/omr/labels/ci) labels are used for
+* [**`ci`**](https://github.com/eclipse-omr/omr/labels/ci) labels are used for
   issues and enhancements with the continuous integration system for pull
   request testing (e.g., Jenkins, Azure, etc.)
 
-* [**`cmake`**](https://github.com/eclipse/omr/labels/cmake) labels are similar
+* [**`cmake`**](https://github.com/eclipse-omr/omr/labels/cmake) labels are similar
   to build/configure but they apply specifically to the CMake configuration.
 
-* [**`compiler arch review`**](https://github.com/eclipse/omr/labels/compiler%20arch%20review)
+* [**`compiler arch review`**](https://github.com/eclipse-omr/omr/labels/compiler%20arch%20review)
   labels are used to indicate a review of this issue or pull request at the
-  [OMR Compiler Architecture meeting](https://github.com/eclipse/omr/issues/2316)
+  [OMR Compiler Architecture meeting](https://github.com/eclipse-omr/omr/issues/2316)
   is requested prior to committing.
 
-* [**`documentation`**](https://github.com/eclipse/omr/labels/documentation)
+* [**`documentation`**](https://github.com/eclipse-omr/omr/labels/documentation)
   labels are used for issues or enhancements to the documentation (either in
   the source code itself or stand-alone documentation files).
 
-* [**`epic`**](https://github.com/eclipse/omr/labels/epic) issues are used to
+* [**`epic`**](https://github.com/eclipse-omr/omr/labels/epic) issues are used to
   group together related issues and to track larger goals in the project across
   issues.
 
-* [**`GSoC Project`**](https://github.com/eclipse/omr/labels/GSoC%20project)
+* [**`GSoC Project`**](https://github.com/eclipse-omr/omr/labels/GSoC%20project)
   labels are for potential ideas for Google Summer Of Code projects.
 
-* [**`help wanted`**](https://github.com/eclipse/omr/labels/help%20wanted)
+* [**`help wanted`**](https://github.com/eclipse-omr/omr/labels/help%20wanted)
   issues have value to the project but no immediate human resources to
   undertake it. Those that are looking to complete a task that someone isn't
   already working on can consider these.
 
-* [**`license`**](https://github.com/eclipse/omr/labels/license) labels are
+* [**`license`**](https://github.com/eclipse-omr/omr/labels/license) labels are
   used to annotate issues concerning the source code license.
 
-* [**`meeting`**](https://github.com/eclipse/omr/labels/meeting) labels are
+* [**`meeting`**](https://github.com/eclipse-omr/omr/labels/meeting) labels are
   used to annotate issues pertaining to project meeting agendas or minutes.
 
-* [**`toolchain bug`**](https://github.com/eclipse/omr/labels/toolchain%20bug)
+* [**`toolchain bug`**](https://github.com/eclipse-omr/omr/labels/toolchain%20bug)
   labels are used to document issues or pull requests that describe or implement
   a workaround to a bug in the development toolchain (such as the compiler) used
   to build OMR.  Toolchain workarounds should be temporary in nature, and the
   intention of this label is to make such workarounds easy to discover in the
   future lest they be lost in the code.
 
-* [**`tooling`**](https://github.com/eclipse/omr/labels/tooling) labels are for
+* [**`tooling`**](https://github.com/eclipse-omr/omr/labels/tooling) labels are for
   issues concerning support tooling needed to support any of the code or
   processes within the project.
 
@@ -111,39 +111,39 @@ Eclipse OMR technology component they affect.  For instance,
 
 | Label | Component | Principal Directories |
 | :---- | :---- | :---- |
-[**`comp:compiler`**](https://github.com/eclipse/omr/labels/comp%3Acompiler) | Compiler | `compiler`
-[**`comp:core`**](https://github.com/eclipse/omr/labels/comp%3Acore) | Core OMR functionality | `include_code`, `omr`
-[**`comp:diagnostic`**](https://github.com/eclipse/omr/labels/comp%3Adiagnostic) | Diagnostic services | `ddr`
-[**`comp:doc`**](https://github.com/eclipse/omr/labels/comp%3Adoc) | OMR documentation | `doc`
-[**`comp:gc`**](https://github.com/eclipse/omr/labels/comp%3Agc) | Garbage collector | `gc`
-[**`comp:glue`**](https://github.com/eclipse/omr/labels/comp%3Aglue) | Glue code | `glue`
-[**`comp:jitbuilder`**](https://github.com/eclipse/omr/labels/comp%3Ajitbuilder) | JitBuilder | `jitbuilder`
-[**`comp:port`**](https://github.com/eclipse/omr/labels/comp%3Aport) | Port library | `port`
-[**`comp:test`**](https://github.com/eclipse/omr/labels/comp%3Atest) | Unit tests and testing framework | `fvtest`
-[**`comp:thread`**](https://github.com/eclipse/omr/labels/comp%3Athread) | Thread library | `thread`
-[**`comp:tril`**](https://github.com/eclipse/omr/labels/comp%3Atril) | Tril infrastructure and tests | `fvtest/tril`
-[**`comp:utilities`**](https://github.com/eclipse/omr/labels/comp%3Autil) | OMR utilities | `util`
+[**`comp:compiler`**](https://github.com/eclipse-omr/omr/labels/comp%3Acompiler) | Compiler | `compiler`
+[**`comp:core`**](https://github.com/eclipse-omr/omr/labels/comp%3Acore) | Core OMR functionality | `include_code`, `omr`
+[**`comp:diagnostic`**](https://github.com/eclipse-omr/omr/labels/comp%3Adiagnostic) | Diagnostic services | `ddr`
+[**`comp:doc`**](https://github.com/eclipse-omr/omr/labels/comp%3Adoc) | OMR documentation | `doc`
+[**`comp:gc`**](https://github.com/eclipse-omr/omr/labels/comp%3Agc) | Garbage collector | `gc`
+[**`comp:glue`**](https://github.com/eclipse-omr/omr/labels/comp%3Aglue) | Glue code | `glue`
+[**`comp:jitbuilder`**](https://github.com/eclipse-omr/omr/labels/comp%3Ajitbuilder) | JitBuilder | `jitbuilder`
+[**`comp:port`**](https://github.com/eclipse-omr/omr/labels/comp%3Aport) | Port library | `port`
+[**`comp:test`**](https://github.com/eclipse-omr/omr/labels/comp%3Atest) | Unit tests and testing framework | `fvtest`
+[**`comp:thread`**](https://github.com/eclipse-omr/omr/labels/comp%3Athread) | Thread library | `thread`
+[**`comp:tril`**](https://github.com/eclipse-omr/omr/labels/comp%3Atril) | Tril infrastructure and tests | `fvtest/tril`
+[**`comp:utilities`**](https://github.com/eclipse-omr/omr/labels/comp%3Autil) | OMR utilities | `util`
 
 Further classification by processor architecture, operating system, and bitness
 can be achieved with the following labels:
 
-* [**`arch:aarch32`**](https://github.com/eclipse/omr/labels/arch%3Aaarch32)
-* [**`arch:aarch64`**](https://github.com/eclipse/omr/labels/arch%3Aaarch64)
-* [**`arch:power`**](https://github.com/eclipse/omr/labels/arch%3Apower)
-* [**`arch:riscv`**](https://github.com/eclipse/omr/labels/arch%3Ariscv)
-* [**`arch:x86`**](https://github.com/eclipse/omr/labels/arch%3Ax86)
-* [**`arch:z`**](https://github.com/eclipse/omr/labels/arch%3Az)
+* [**`arch:aarch32`**](https://github.com/eclipse-omr/omr/labels/arch%3Aaarch32)
+* [**`arch:aarch64`**](https://github.com/eclipse-omr/omr/labels/arch%3Aaarch64)
+* [**`arch:power`**](https://github.com/eclipse-omr/omr/labels/arch%3Apower)
+* [**`arch:riscv`**](https://github.com/eclipse-omr/omr/labels/arch%3Ariscv)
+* [**`arch:x86`**](https://github.com/eclipse-omr/omr/labels/arch%3Ax86)
+* [**`arch:z`**](https://github.com/eclipse-omr/omr/labels/arch%3Az)
 <br/>
 
-* [**`os:aix`**](https://github.com/eclipse/omr/labels/os%3Aaix)
-* [**`os:linux`**](https://github.com/eclipse/omr/labels/os%3Alinux)
-* [**`os:macos`**](https://github.com/eclipse/omr/labels/os%3Amacos)
-* [**`os:windows`**](https://github.com/eclipse/omr/labels/os%3Awindows)
-* [**`os:zos`**](https://github.com/eclipse/omr/labels/os%3Azos)
+* [**`os:aix`**](https://github.com/eclipse-omr/omr/labels/os%3Aaix)
+* [**`os:linux`**](https://github.com/eclipse-omr/omr/labels/os%3Alinux)
+* [**`os:macos`**](https://github.com/eclipse-omr/omr/labels/os%3Amacos)
+* [**`os:windows`**](https://github.com/eclipse-omr/omr/labels/os%3Awindows)
+* [**`os:zos`**](https://github.com/eclipse-omr/omr/labels/os%3Azos)
 <br/>
 
-* [**`bits:32`**](https://github.com/eclipse/omr/labels/bits%3A32)
-* [**`bits:64`**](https://github.com/eclipse/omr/labels/bits%3A64)
+* [**`bits:32`**](https://github.com/eclipse-omr/omr/labels/bits%3A32)
+* [**`bits:64`**](https://github.com/eclipse-omr/omr/labels/bits%3A64)
 
 ## Submitting a contribution
 
@@ -189,7 +189,7 @@ Following these guidelines will help us to merge your pull requests smoothly:
    or, in the opinion of a committer,
    a fundamental element of compiler infrastructure, a committer will request that this
    pull request be presented at an upcoming
-   [OMR Compiler Architecture meeting](https://github.com/eclipse/omr/issues/2316)
+   [OMR Compiler Architecture meeting](https://github.com/eclipse-omr/omr/issues/2316)
    to invite community discussion prior to merging.  Issues of the same nature may
    also be asked to be discussed before the same architecture meeting prior to
    producing a pull request.

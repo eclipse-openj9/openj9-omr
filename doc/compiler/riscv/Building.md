@@ -37,7 +37,7 @@ can get them using (the image created using [debian-riscv][1] contains them):
 ### Building
 
 ```
-git clone https://github.com/eclipse/omr
+git clone https://github.com/eclipse-omr/omr
 cd omr
 mkdir build
 cd build

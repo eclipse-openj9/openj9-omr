@@ -39,7 +39,7 @@ In addition, if assumptions that the compiler made while compiling a method are 
 
 A VM event can be detected at certain points during execution of compiled code. These points are called **OSR yield points**. The JIT and the VM agree on the set of OSR yield points.
 
-Usually, we would like the VM event to be discovered relatively soon after it took place. [Garbage Collection (GC) points](https://github.com/eclipse/omr/blob/81b79405da6c7c960e611a8b2b12fd5861543330/compiler/il/OMRNode.cpp#L2298) meet such criteria.
+Usually, we would like the VM event to be discovered relatively soon after it took place. [Garbage Collection (GC) points](https://github.com/eclipse-omr/omr/blob/81b79405da6c7c960e611a8b2b12fd5861543330/compiler/il/OMRNode.cpp#L2298) meet such criteria.
 Therefore, depending on the event, OSR yield points usually include all or a subset of GC points.
 The reason why we would like to limit the set of OSR yield points, if possible, is the cost of the bookkeeping associated with each such point as well as the restrictions that they impose on the optimizer.
 

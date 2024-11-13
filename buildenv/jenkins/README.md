@@ -32,14 +32,14 @@ From the [Builds view](https://ci.eclipse.org/omr/view/Builds/), on the left men
 
 1. General
 	1. Discard old builds -> Max # of builds to keep: `25`
-	1. GitHub project -> Project url: `https://github.com/eclipse/omr/`
+	1. GitHub project -> Project url: `https://github.com/eclipse-omr/omr/`
 	1. This project is parameterized -> Choice Parameter -> Name: `BUILDSPEC` -> Choices: `<SPEC>` (The matching SPEC name)
 1. Build Triggers
 	1. Generic Webhook Trigger (defaults should be fine)
 1. Pipeline
 	1. Definition: Pipeline script from SCM
 	1. SCM: Git
-		1. Repositories -> Repository URL: `https://github.com/eclipse/omr.git`
+		1. Repositories -> Repository URL: `https://github.com/eclipse-omr/omr.git`
 		1. Branches to build: `/refs/heads/master`
 	1. Script Path: `buildenv/jenkins/omrbuild.groovy`
 	1. Lightweight checkout: `true`
@@ -49,7 +49,7 @@ From the [Builds view](https://ci.eclipse.org/omr/view/Builds/), on the left men
 From the [Pull Requests view](https://ci.eclipse.org/omr/view/Pull%20Requests/), on the left menu select [New Item](https://ci.eclipse.org/omr/view/Pull%20Requests/newJob). Name the job based on the following convention `PullRequest-<SPEC>` (eg. `PullRequest-linux_x86-64`. See [omrbuild.groovy](./omrbuild.groovy) for full `SPEC` list). Select `Pipeline` as the job type and then click `OK`. Setup the following in the job config.
 
 1. General
-	1. GitHub project -> Project url: `https://github.com/eclipse/omr/`
+	1. GitHub project -> Project url: `https://github.com/eclipse-omr/omr/`
 	1. This project is parameterized -> Choice Parameter -> Name: `BUILDSPEC` -> Choices: `<SPEC>` (The matching SPEC name)
 1. Build Triggers
 	1. GitHub Pull Request Builder
@@ -64,7 +64,7 @@ From the [Pull Requests view](https://ci.eclipse.org/omr/view/Pull%20Requests/),
 	1. Definition: Pipeline script from SCM
 	1. SCM: Git
 		1. Repositories
-			1. Repository URL: `https://github.com/eclipse/omr.git`
+			1. Repository URL: `https://github.com/eclipse-omr/omr.git`
 			1. Advanced -> Refspec: `+refs/pull/${ghprbPullId}/merge:refs/remotes/origin/pr/${ghprbPullId}/merge`
 		1. Branches to build: `${sha1}`
 		1. Additional Behaviours
@@ -101,7 +101,7 @@ Configuring Jenkins to pull the pipeline scripts from Git on z/OS is a non-trivi
 Fetching changes from the remote Git repository
 Cleaning workspace
 ERROR: Error fetching remote repo 'origin'
-hudson.plugins.git.GitException: Failed to fetch from https://github.com/eclipse/omr.git
+hudson.plugins.git.GitException: Failed to fetch from https://github.com/eclipse-omr/omr.git
 	at hudson.plugins.git.GitSCM.fetchFrom(GitSCM.java:894)
 	at hudson.plugins.git.GitSCM.retrieveChanges(GitSCM.java:1161)
 	at hudson.plugins.git.GitSCM.checkout(GitSCM.java:1192)
@@ -114,7 +114,7 @@ hudson.plugins.git.GitException: Failed to fetch from https://github.com/eclipse
 	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1149)
 	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:624)
 	at java.lang.Thread.run(Thread.java:748)
-Caused by: hudson.plugins.git.GitException: Command "git fetch --tags --progress https://github.com/eclipse/omr.git +refs/heads/*:refs/remotes/origin/*" returned status code 128:
+Caused by: hudson.plugins.git.GitException: Command "git fetch --tags --progress https://github.com/eclipse-omr/omr.git +refs/heads/*:refs/remotes/origin/*" returned status code 128:
 stdout:
 stderr: fatal: Unable to find remote helper for 'https'
 ```

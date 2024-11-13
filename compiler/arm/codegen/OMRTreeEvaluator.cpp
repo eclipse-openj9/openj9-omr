@@ -230,18 +230,6 @@ OMR::ARM::TreeEvaluator::lstoreiEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    }
 
 TR::Register*
-OMR::ARM::TreeEvaluator::fstoreiEvaluator(TR::Node *node, TR::CodeGenerator *cg)
-   {
-   return TR::TreeEvaluator::ifstoreEvaluator(node, cg);
-   }
-
-TR::Register*
-OMR::ARM::TreeEvaluator::dstoreiEvaluator(TR::Node *node, TR::CodeGenerator *cg)
-   {
-   return TR::TreeEvaluator::idstoreEvaluator(node, cg);
-   }
-
-TR::Register*
 OMR::ARM::TreeEvaluator::astoreiEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    return TR::TreeEvaluator::istoreEvaluator(node, cg);
@@ -3376,7 +3364,7 @@ TR::Register *OMR::ARM::TreeEvaluator::bloadEvaluator(TR::Node *node, TR::CodeGe
    return commonLoadEvaluator(node, TR::InstOpCode::ldrsb, 1, cg);
    }
 
-// also handles isload
+// also handles sloadi
 TR::Register *OMR::ARM::TreeEvaluator::sloadEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    return commonLoadEvaluator(node, TR::InstOpCode::ldrsh, 2, cg);
@@ -3561,7 +3549,7 @@ TR::Register *OMR::ARM::TreeEvaluator::bstoreEvaluator(TR::Node *node, TR::CodeG
    return commonStoreEvaluator(node, TR::InstOpCode::strb, 1, cg);
    }
 
-// also handles isstore,isstore
+// also handles sstorei
 TR::Register *OMR::ARM::TreeEvaluator::sstoreEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    return commonStoreEvaluator(node, TR::InstOpCode::strh, 2, cg);

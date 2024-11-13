@@ -105,7 +105,7 @@ or their categories. To see all of the available options to control the compiler
 please see the options listed in
 [`<omr-root-dir>/compiler/control/OMROptions.cpp`](https://github.com/eclipse-omr/omr/blob/e2f65411e67d21ef04e2062a8945e604d82cb19e/compiler/control/OMROptions.cpp#L98)
 and
-[`<omr-root-dir>/compiler/env/FEBase.cpp`](https://github.com/eclipse-omr/omr/blob/e2f65411e67d21ef04e2062a8945e604d82cb19e/compiler/env/FEBase.cpp#L235)
+[`<omr-root-dir>/compiler/env/OMRFrontEnd.cpp`](https://github.com/eclipse-omr/omr/blob/8b39ee4620900920d736ef26031f10a1a7ca7bca/compiler/env/OMRFrontEnd.cpp#L198)
 
 The purpose of listing the options in this document is to give you an insight
 into the level of control you have over the compiler through the options rather

@@ -83,7 +83,7 @@ public:
       return _rootNode;
       }
 
-   bool static isILLoad(TR::Node * node);
+   bool static isLloadi(TR::Node * node);
 
 protected:
    int64_t _offset;

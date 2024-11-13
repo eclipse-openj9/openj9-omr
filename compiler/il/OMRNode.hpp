@@ -1404,8 +1404,8 @@ public:
    void setIsMethodPointerConstant(bool b);
    bool chkMethodPointerConstant();
 
-   bool isUnneededIALoad();
-   void setUnneededIALoad(bool v);
+   bool isUnneededAloadi();
+   void setUnneededAloadi(bool v);
 
    // Flags used by TR::monent, TR::monexit, ad TR::tstart
    bool canSkipSync();
@@ -1964,7 +1964,7 @@ protected:
       //
       classPointerConstant                  = 0x00010000,
       methodPointerConstant                 = 0x00002000,
-      unneededIALoad                        = 0x00001000,
+      unneededAloadi                        = 0x00001000,
 
       // Flags used by TR::monent, TR::monexit, and TR::tstart
       //

@@ -172,18 +172,18 @@ TR_LRAddressTree::processBaseAndIndex(TR::Node* parent)
    TR::Node * rhs = parent->getSecondChild();
 
    TR::RegisterMappedSymbol * indSym = _indVar->getLocal();
-   if (isILLoad(lhs) && (lhs->getSymbol()->getRegisterMappedSymbol() == indSym))
+   if (isLloadi(lhs) && (lhs->getSymbol()->getRegisterMappedSymbol() == indSym))
       {
       _indVarNode.setParentAndChildNumber(parent, 0);
-      if (isILLoad(rhs))
+      if (isLloadi(rhs))
          {
          _baseVarNode.setParentAndChildNumber(parent, 1);
          }
       }
-   else if (isILLoad(rhs) && (rhs->getSymbol()->getRegisterMappedSymbol() == indSym))
+   else if (isLloadi(rhs) && (rhs->getSymbol()->getRegisterMappedSymbol() == indSym))
       {
       _indVarNode.setParentAndChildNumber(parent, 1);
-      if (isILLoad(lhs))
+      if (isLloadi(lhs))
          {
          _baseVarNode.setParentAndChildNumber(parent, 0);
          }

@@ -7062,7 +7062,7 @@ aloadHelper(TR::Node * node, TR::CodeGenerator * cg, TR::MemoryReference * tempM
    // Evaluation of aloadi cannot be skipped if any unevaluated node in its subtree contains a symbol reference
    // TODO: Currently we exclude aloadi nodes from the skipping list conservatively. The logic should be modified
    // to skip evaluation of unneeded aloadi nodes which do not contain any symbol reference.
-   if (node->isUnneededIALoad() &&
+   if (node->isUnneededAloadi() &&
            (node->getFirstChild()->getNumChildren() == 0 || node->getFirstChild()->getRegister() != NULL))
       {
       traceMsg (comp, "This aloadi is not needed: %p\n", node);

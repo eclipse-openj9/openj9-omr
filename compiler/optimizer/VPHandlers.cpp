@@ -2046,7 +2046,7 @@ TR::Node *constrainAddressRef(OMR::ValuePropagation *vp, TR::Node *node)
    }
 
 
-TR::Node *constrainIiload(OMR::ValuePropagation *vp, TR::Node *node)
+TR::Node *constrainIloadi(OMR::ValuePropagation *vp, TR::Node *node)
    {
    if (findConstant(vp, node))
       return node;
@@ -2116,7 +2116,7 @@ TR::Node *constrainIiload(OMR::ValuePropagation *vp, TR::Node *node)
    return node;
    }
 
-TR::Node *constrainIaload(OMR::ValuePropagation *vp, TR::Node *node)
+TR::Node *constrainAloadi(OMR::ValuePropagation *vp, TR::Node *node)
    {
    if (findConstant(vp, node))
       return node;
@@ -2237,9 +2237,9 @@ TR::Node *constrainIaload(OMR::ValuePropagation *vp, TR::Node *node)
          // Base is known object, and field is recognized known object shadow,
          // hence can be treated as known object.
          {
-         TR::VMAccessCriticalSection constrainIaloadCriticalSection(vp->comp(),
+         TR::VMAccessCriticalSection constrainAloadiCriticalSection(vp->comp(),
                TR::VMAccessCriticalSection::tryToAcquireVMAccess);
-         if (constrainIaloadCriticalSection.hasVMAccess())
+         if (constrainAloadiCriticalSection.hasVMAccess())
             {
             TR::KnownObjectTable *knot = vp->comp()->getOrCreateKnownObjectTable();
             uintptr_t baseObject = knot->getPointer(base->getKnownObject()->getIndex());
@@ -2296,10 +2296,10 @@ TR::Node *constrainIaload(OMR::ValuePropagation *vp, TR::Node *node)
             TR_ASSERT(knot, "Can not have a TR::VPKnownObject without a known-object table");
 
                {
-               TR::VMAccessCriticalSection constrainIaloadCriticalSection(vp->comp(),
+               TR::VMAccessCriticalSection constrainAloadiCriticalSection(vp->comp(),
                                                                            TR::VMAccessCriticalSection::tryToAcquireVMAccess);
 
-               if (constrainIaloadCriticalSection.hasVMAccess())
+               if (constrainAloadiCriticalSection.hasVMAccess())
                   {
                   uintptr_t jlclazz = knot->getPointer(base->getKnownObject()->getIndex());
                   TR_OpaqueClassBlock *clazz = TR::Compiler->cls.classFromJavaLangClass(vp->comp(), jlclazz);
@@ -2445,9 +2445,9 @@ TR::Node *constrainIaload(OMR::ValuePropagation *vp, TR::Node *node)
                      uintptr_t *bypassLocation = NULL;
 
                         {
-                        TR::VMAccessCriticalSection constrainIaloadCriticalSection(vp->comp(),
+                        TR::VMAccessCriticalSection constrainAloadiCriticalSection(vp->comp(),
                                                                                     TR::VMAccessCriticalSection::tryToAcquireVMAccess);
-                        if (constrainIaloadCriticalSection.hasVMAccess())
+                        if (constrainAloadiCriticalSection.hasVMAccess())
                            {
                            uintptr_t *siteLocation = vp->comp()->getKnownObjectTable()->getPointerLocation(callSiteKOI);
                            bypassLocation = vp->comp()->fej9()->mutableCallSite_bypassLocation(*siteLocation);

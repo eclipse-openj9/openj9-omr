@@ -146,7 +146,7 @@ OMR::Z::CodeGenerator::preLowerTrees()
    {
    OMR::CodeGenerator::preLowerTrees();
 
-   _ialoadUnneeded.init();
+   _aloadiUnneeded.init();
 
    }
 
@@ -173,7 +173,7 @@ OMR::Z::CodeGenerator::lowerTreesWalk(TR::Node * parent, TR::TreeTop * treeTop, 
          self()->lowerTreeIfNeeded(child, childCount, parent, treeTop);
          }
 
-      self()->checkIsUnneededIALoad(parent, child, treeTop);
+      self()->checkIsUnneededAloadi(parent, child, treeTop);
       }
 
    self()->lowerTreesPostChildrenVisit(parent, treeTop, visitCount);
@@ -181,10 +181,10 @@ OMR::Z::CodeGenerator::lowerTreesWalk(TR::Node * parent, TR::TreeTop * treeTop, 
    }
 
 void
-OMR::Z::CodeGenerator::checkIsUnneededIALoad(TR::Node *parent, TR::Node *node, TR::TreeTop *tt)
+OMR::Z::CodeGenerator::checkIsUnneededAloadi(TR::Node *parent, TR::Node *node, TR::TreeTop *tt)
    {
 
-   ListIterator<TR_Pair<TR::Node, int32_t> > listIter(&_ialoadUnneeded);
+   ListIterator<TR_Pair<TR::Node, int32_t> > listIter(&_aloadiUnneeded);
    bool inList = false;
 
    if (node->getOpCodeValue() == TR::aloadi)
@@ -211,13 +211,13 @@ OMR::Z::CodeGenerator::checkIsUnneededIALoad(TR::Node *parent, TR::Node *node, T
             {
             uint32_t *temp ;
             TR_Pair<TR::Node, int32_t> *newEntry = new (self()->trStackMemory()) TR_Pair<TR::Node, int32_t> (node, (int32_t *)1);
-            _ialoadUnneeded.add(newEntry);
+            _aloadiUnneeded.add(newEntry);
             }
-         node->setUnneededIALoad (true);
+         node->setUnneededAloadi (true);
          }
       }
 
-   if (node->isUnneededIALoad())
+   if (node->isUnneededAloadi())
       {
       if (parent->getOpCodeValue() == TR::ifacmpne
          || parent->getOpCodeValue() == TR::ificmpeq
@@ -226,7 +226,7 @@ OMR::Z::CodeGenerator::checkIsUnneededIALoad(TR::Node *parent, TR::Node *node, T
          {
          if (!parent->isNopableInlineGuard() || !self()->getSupportsVirtualGuardNOPing())
             {
-            node->setUnneededIALoad(false);
+            node->setUnneededAloadi(false);
             }
          else
             {
@@ -235,7 +235,7 @@ OMR::Z::CodeGenerator::checkIsUnneededIALoad(TR::Node *parent, TR::Node *node, T
                      && self()->comp()->isVirtualGuardNOPingRequired(virtualGuard))
                && virtualGuard->canBeRemoved())
                {
-               node->setUnneededIALoad(false);
+               node->setUnneededAloadi(false);
                }
             }
          }
@@ -245,11 +245,11 @@ OMR::Z::CodeGenerator::checkIsUnneededIALoad(TR::Node *parent, TR::Node *node, T
          }
       else if (node->getOpCodeValue() == TR::aloadi && !(node->isClassPointerConstant() || node->isMethodPointerConstant()) || parent->getOpCode().isNullCheck())
          {
-         node->setUnneededIALoad(false);
+         node->setUnneededAloadi(false);
          }
       else if ((parent->getOpCodeValue() != TR::ifacmpne || tt->getNode()->getOpCodeValue() != TR::ifacmpne))
          {
-         node->setUnneededIALoad(false);
+         node->setUnneededAloadi(false);
          }
       }
    }
@@ -447,7 +447,7 @@ OMR::Z::CodeGenerator::CodeGenerator(TR::Compilation *comp)
      _previouslyAssignedTo(comp->allocator("LocalRA")),
      _methodBegin(NULL),
      _methodEnd(NULL),
-     _ialoadUnneeded(comp->trMemory())
+     _aloadiUnneeded(comp->trMemory())
    {
    }
 

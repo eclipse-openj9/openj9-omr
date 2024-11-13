@@ -550,7 +550,7 @@ OMR::Z::MemoryReference::MemoryReference(TR::Node * rootLoadOrStore, TR::CodeGen
 
          if (symRef->isUnresolved())
             {
-            self()->createUnresolvedDataSnippetForiaload(rootLoadOrStore, cg, symRef, tempReg, isStore);
+            self()->createUnresolvedDataSnippetForAloadi(rootLoadOrStore, cg, symRef, tempReg, isStore);
             }
          else
             {

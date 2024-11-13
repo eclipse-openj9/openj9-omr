@@ -7059,18 +7059,18 @@ OMR::Node::chkMethodPointerConstant()
    }
 
 bool
-OMR::Node::isUnneededIALoad()
+OMR::Node::isUnneededAloadi()
    {
-   return (self()->getOpCodeValue() == TR::aloadi && _flags.testAny(unneededIALoad));
+   return (self()->getOpCodeValue() == TR::aloadi && _flags.testAny(unneededAloadi));
    }
 
 void
-OMR::Node::setUnneededIALoad(bool v)
+OMR::Node::setUnneededAloadi(bool v)
    {
    TR::Compilation * c = TR::comp();
    TR_ASSERT(self()->getOpCodeValue() == TR::aloadi, "Can only call this for aloadi");
-   if (performNodeTransformation2(c, "O^O NODE FLAGS: Setting unneededIALoad flag on node %p to %d\n", self(), v))
-      _flags.set(unneededIALoad, v);
+   if (performNodeTransformation2(c, "O^O NODE FLAGS: Setting unneededAloadi flag on node %p to %d\n", self(), v))
+      _flags.set(unneededAloadi, v);
    }
 
 

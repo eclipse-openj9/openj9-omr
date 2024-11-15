@@ -23,10 +23,122 @@
 
 #include "aarch64/runtime/arm64asmdefs.inc"
 
+	.globl	FUNC_LABEL(__arrayTranslateTRTO)
 	.globl	FUNC_LABEL(__arrayTranslateTRTO255)
 
 	.text
 	.align	2
+
+// ----
+// arrayTranslateTRTO
+// ----
+// TO stands for Two bytes to One byte
+//
+// uint16 input[];
+// uint8  output[];
+// int32  len;
+// uint16 mask; // 0xff00ff00 (ISO8859) or 0xff80ff80 (ASCII)
+//
+// int32 i = 0;
+// while (i < len) {
+//     uint16 ch = input[i];
+//     if ((ch & mask) != 0) break;
+//     output[i] = ch & 0xFF;
+//     i++;
+// }
+// return i;
+//
+// in:  x0: input
+//      x1: output
+//      x2: len
+//      x3: mask
+// out: x0: num of translated elements
+// trash: x4-x6, v0-v3
+
+FUNC_LABEL(__arrayTranslateTRTO):
+	// preserve output address
+	mov	x6, x1
+	// load mask to a SIMD register
+	dup	v3.8h, w3
+	cmp	w2, #16
+	b.cc	atTRTO_15
+	lsr	w4, w2, #4
+atTRTO_16Loop:
+	// load 16 elements
+	ldp	q0, q1, [x0]
+	// mask first 8 elements
+	and	v2.16b, v0.16b, v3.16b
+	// fail when any one of them is non-zero
+	umaxp	v2.4s, v2.4s, v2.4s
+	mov	x5, v2.D[0]
+	cbnz	x5, atTRTO_Fail
+	// mask next 8 elements
+	and	v2.16b, v1.16b, v3.16b
+	// fail when any one of them is non-zero
+	umaxp	v2.4s, v2.4s, v2.4s
+	mov	x5, v2.D[0]
+	cbnz	x5, atTRTO_Fail
+	// collect lower 8 bits
+	uzp1	v2.16b, v0.16b, v1.16b
+	add	x0, x0, #32
+	subs	w4, w4, #1
+	// store 16 elements
+	str	q2, [x1], #16
+	b.ne	atTRTO_16Loop
+atTRTO_15:
+	// 15 elements or less remaining
+	tst	w2, #8
+	b.eq	atTRTO_7
+	// load 8 elements
+	ldr	q0, [x0]
+	// mask 8 elements
+	and	v2.16b, v0.16b, v3.16b
+	// fail when any one of them is non-zero
+	umaxp	v2.4s, v2.4s, v2.4s
+	mov	x5, v2.D[0]
+	cbnz	x5, atTRTO_Fail
+	// collect lower 8 bits
+	xtn	v2.8b, v0.8h
+	add	x0, x0, #16
+	// store 8 elements
+	str	d2, [x1], #8
+atTRTO_7:
+	// 7 elements or less remaining
+	tst	w2, #4
+	b.eq	atTRTO_3
+	// load 4 elements
+	ldr	d0, [x0]
+	// mask 4 elements
+	and	v2.8b, v0.8b, v3.8b
+	// fail when any one of them is non-zero
+	mov	x5, v2.D[0]
+	cbnz	x5, atTRTO_Fail
+	// collect lower 8 bits
+	xtn	v2.8b, v0.8h
+	add	x0, x0, #8
+	// store 4 elements
+	str	s2, [x1], #4
+atTRTO_3:
+	// 3 elements or less remaining
+	ands	w4, w2, #3
+atTRTO_1Loop:
+	b.eq	atTRTO_Done
+	ldrh	w5, [x0], #2
+	tst	w5, w3
+	b.ne	atTRTO_Done
+	subs	w4, w4, #1
+	strb	w5, [x1], #1
+	b	atTRTO_1Loop
+atTRTO_Fail:
+	ldrh	w5, [x0], #2
+	tst	w5, w3
+	b.ne	atTRTO_Done
+	strb	w5, [x1], #1
+	b	atTRTO_Fail
+atTRTO_Done:
+	// number of translated elements
+	sub	x0, x1, x6
+	ret
 
 // ----
 // arrayTranslateTRTO255

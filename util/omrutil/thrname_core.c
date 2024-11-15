@@ -33,7 +33,7 @@ getOMRVMThreadNameNoLock(OMR_VMThread *vmThread)
 	name = (char *)vmThread->threadName;
 
 	if (name == NULL) {
-		name = OMR_Glue_GetThreadNameForUnamedThread(vmThread);
+		name = OMR_Glue_GetThreadNameForUnnamedThread(vmThread);
 	}
 	return name;
 }

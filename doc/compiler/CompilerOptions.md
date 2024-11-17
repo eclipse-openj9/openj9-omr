@@ -194,7 +194,6 @@ options, etc).
 | debugOnEntry                               | invoke the debugger at the entry of a method                                                                                              |
 | exclude=<em>xxx</em>                       | do not compile methods beginning with <em>xxx</em>                                                                                        |
 | limit=<em>xxx</em>                         | only compile methods beginning with <em>xxx</em>                                                                                          |
-| maskAddresses                              | remove addresses from trace file                                                                                                          |
 | noRecompile                                | do not recompile even when counts allow it                                                                                                |
 | stopOnFailure                              | stop compilation if exceed memory threshold                                                                                               |
 | tlhPrefetch                                | enable software prefetch on allocation for X86                                                                                            |

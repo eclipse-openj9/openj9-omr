@@ -965,7 +965,6 @@ TR::OptionTable OMR::Options::_jitOptions[] = {
    {"lowerCountsForAotCold", "M\tLower counts for cold aot runs", SET_OPTION_BIT(TR_LowerCountsForAotCold), "F", NOT_IN_SUBSET},
    {"lowOpt",             "O\tdeprecated; equivalent to optLevel=cold",
         TR::Options::set32BitValue, offsetof(OMR::Options, _optLevel), cold},
-   {"maskAddresses",       "D\tremove addresses from trace file",                   SET_OPTION_BIT(TR_MaskAddresses), "F" },
    {"maxBytesToLeaveAllocatedInSharedPool=","R<nnn>\tnumber of memory segments to leave allocated",
                                          TR::Options::setStaticNumeric, (intptr_t)&OMR::Options::_maxBytesToLeaveAllocatedInSharedPool, 0, "F%d", NOT_IN_SUBSET},
    {"maxInlinedCalls=",    "O<nnn>\tmaximum number of calls to be inlined",

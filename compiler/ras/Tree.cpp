@@ -243,8 +243,6 @@ TR_Debug::printLoadConst(TR::Node *node, TR_PrettyPrinterString& output)
       case TR::Address:
          if (node->getAddress() == 0)
             output.appends(" NULL");
-         else if (_comp->getOption(TR_MaskAddresses))
-            output.appends(" *Masked*");
          else
             output.appendf(" " UINT64_PRINTF_FORMAT_HEX, node->getAddress());
          if (node->isClassPointerConstant())
@@ -1571,11 +1569,9 @@ TR_Debug::printNodeInfo(TR::Node * node, TR_PrettyPrinterString& output, bool pr
          else
             output.appends(" Relative [");
 
-         if (!_comp->getOption(TR_MaskAddresses))
-            {
-            for (auto i = 0U; i < node->getNumRelocations(); ++i)
-               output.appendf(" " POINTER_PRINTF_FORMAT, node->getRelocationDestination(i));
-            }
+         for (auto i = 0U; i < node->getNumRelocations(); ++i)
+            output.appendf(" " POINTER_PRINTF_FORMAT, node->getRelocationDestination(i));
+
          output.appends(" ]");
          }
       }

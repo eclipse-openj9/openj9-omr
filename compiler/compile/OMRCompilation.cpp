@@ -2499,8 +2499,7 @@ void OMR::Compilation::diagnosticImplVA(const char *s, va_list ap)
       va_list copy;
       va_copy(copy, ap);
       char buffer[256];
-      TR::IO::vfprintf(self()->getOutFile(), self()->getDebug()->getDiagnosticFormat(s, buffer, sizeof(buffer)/sizeof(char)),
-                 copy);
+      TR::IO::vfprintf(self()->getOutFile(), s, copy);
       trfflush(self()->getOutFile());
       va_end(copy);
       }

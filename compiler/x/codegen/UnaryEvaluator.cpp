@@ -455,3 +455,15 @@ TR::Register *OMR::X86::TreeEvaluator::c2iEvaluator(TR::Node *node, TR::CodeGene
    {
    return TR::TreeEvaluator::conversionAnalyser(node, TR::InstOpCode::MOVZXReg4Mem2, TR::InstOpCode::MOVZXReg4Reg2, cg);
    }
+
+TR::Register *OMR::X86::TreeEvaluator::ipopcntEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+   {
+   TR::Node *child = node->getFirstChild();
+   TR::Register *inputReg = cg->intClobberEvaluate(child);
+
+   generateRegRegInstruction(TR::InstOpCode::POPCNT4RegReg, node, inputReg, inputReg, cg);
+
+   node->setRegister(inputReg);
+   cg->decReferenceCount(child);
+   return inputReg;
+   }

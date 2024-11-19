@@ -392,7 +392,6 @@ class OMR_EXTENSIBLE TreeEvaluator: public OMR::X86::TreeEvaluator
    static TR::Register *ilbitEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *inolzEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *inotzEvaluator(TR::Node *node, TR::CodeGenerator *cg);
-   static TR::Register *ipopcntEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *lhbitEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *llbitEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *lnolzEvaluator(TR::Node *node, TR::CodeGenerator *cg);

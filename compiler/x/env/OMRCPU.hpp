@@ -71,6 +71,12 @@ public:
 
    bool getSupportsHardwareSQRT();
 
+   /** @brief Determines whether the popcnt instruction is available on the current processor.
+    *
+    *  @return true if popcnt is available, false otherwise.
+    */
+   bool hasPopulationCountInstruction();
+
    /** @brief Determines whether the Transactional Memory (TM) facility is available on the current processor.
     *
     *  @return true if TM is available, false otherwise.

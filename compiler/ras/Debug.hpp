@@ -594,8 +594,6 @@ public:
 
    virtual void         printInstruction(TR::Instruction*);
 
-   virtual const char * getDiagnosticFormat(const char *, char *, int32_t);
-
    virtual void         dumpGlobalRegisterTable();
    virtual void         dumpSimulatedNode(TR::Node *node, char tagChar);
 

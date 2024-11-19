@@ -400,70 +400,6 @@ TR_Debug::addInstructionComment(TR::Instruction *instr, char * comment, ...)
       }
    }
 
-const char *
-TR_Debug::getDiagnosticFormat(const char *format, char *buffer, int32_t length)
-   {
-   if (!_comp->getOption(TR_MaskAddresses))
-      return format;
-
-   bool allowedToWrite = true;
-   bool sawPercentP = false;
-
-   int32_t j = 0;
-   const char *c = format;
-   for (; *c; c++, j++)
-      {
-      if (j >= length)
-         allowedToWrite = false;
-      if (allowedToWrite)
-         buffer[j] = *c;
-
-      if (*c == '%')
-         {
-         ++c; ++j;
-         const char *base = c;
-         while (*c == '*' || (*c >= '0' && *c <= '9'))
-            c++;
-
-         if (*c == 'p')
-            {
-            char s[] = ".0s*Masked*";
-            int32_t slen = sizeof(s)/sizeof(char);
-            if (j+slen >= length)
-               allowedToWrite = false;
-            if (allowedToWrite)
-               memcpy(&buffer[j], s, slen);
-            j+=slen-2;
-            sawPercentP = true;
-            }
-         else
-            {
-            if (j+c-base+1 >= length)
-               allowedToWrite = false;
-            if (allowedToWrite)
-               memcpy(&buffer[j], base, c-base+1);
-            j+=static_cast<int32_t>(c-base);
-            }
-         }
-      }
-
-   if (j >= length)
-      allowedToWrite = false;
-   if (allowedToWrite)
-      buffer[j] = 0; // null terminate
-   j++;
-
-
-   if (!sawPercentP)
-      return format;
-   if (allowedToWrite)
-      return buffer;
-
-   // allocate a jitMalloc buffer of the correct size
-   buffer = (char *) _comp->trMemory()->allocateHeapMemory(j);
-   return getDiagnosticFormat(format, buffer, j);
-   }
-
 bool
 TR_Debug::performTransformationImpl(bool canOmitTransformation, const char * format, ...)
    {
@@ -563,13 +499,10 @@ TR_Debug::performTransformationImpl(bool canOmitTransformation, const char * for
    else
       trfprintf(_file, "         ");
 
-
-   char buffer[200];
-
    va_list args;
    va_start(args,format);
 
-   TR::IO::vfprintf(_file, getDiagnosticFormat(format, buffer, sizeof(buffer)/sizeof(char)), args);
+   TR::IO::vfprintf(_file, format, args);
    va_end(args);
    trfflush(_file);
 
@@ -595,14 +528,13 @@ TR_Debug::vtrace(const char * format, va_list args)
    {
    if (_file != NULL)
       {
-      char buffer[256];
       if ((0 != TR::Options::_traceFileLength) &&
           (static_cast<int64_t>(TR::IO::ftell(_file)) > (static_cast<int64_t>(TR::Options::_traceFileLength) << 20)))
          {
          TR::IO::fseek(_file, 0, SEEK_SET); // rewind the trace file
          TR::IO::fprintf(_file, "Rewind trace file ...\n\n\n");
          }
-      TR::IO::vfprintf(_file, getDiagnosticFormat(format, buffer, sizeof(buffer)), args);
+      TR::IO::vfprintf(_file, format, args);
       trfflush(_file);
       }
    }
@@ -717,20 +649,10 @@ TR_Debug::printPrefix(TR::FILE *pOutFile, TR::Instruction *instr, uint8_t *curso
       int codeByteColumnWidth = TR::Compiler->debug.codeByteColumnWidth();
       int prefixWidth         = addressFieldWidth * 2 + codeByteColumnWidth + 12; // 8 bytes of offsets, 2 spaces, and opening and closing brackets
 
-      if (_comp->getOption(TR_MaskAddresses))
-         {
-         if (instr)
-            sprintf(prefix, "%*s %08x [%s]", addressFieldWidth, "*Masked*", offset, getName(instr));
-         else
-            sprintf(prefix, "%*s %08x %*s", addressFieldWidth, "*Masked*", offset, addressFieldWidth + 2, " ");
-         }
+      if (instr)
+         sprintf(prefix, POINTER_PRINTF_FORMAT " %08x [%s]", cursor, offset, getName(instr));
       else
-         {
-         if (instr)
-            sprintf(prefix, POINTER_PRINTF_FORMAT " %08x [%s]", cursor, offset, getName(instr));
-         else
-            sprintf(prefix, POINTER_PRINTF_FORMAT " %08x %*s", cursor, offset, addressFieldWidth + 2, " ");
-         }
+         sprintf(prefix, POINTER_PRINTF_FORMAT " %08x %*s", cursor, offset, addressFieldWidth + 2, " ");
 
       char *p0 = prefix;
       char *p1 = prefix + strlen(prefix);
@@ -796,14 +718,8 @@ TR_Debug::printSnippetLabel(TR::FILE *pOutFile, TR::LabelSymbol *label, uint8_t 
 
    uint32_t offset = static_cast<uint32_t>(cursor - _comp->cg()->getCodeStart());
 
-   if (_comp->getOption(TR_MaskAddresses))
-      {
-      trfprintf(pOutFile, "\n\n%*s %08x %*s", TR::Compiler->debug.hexAddressFieldWidthInChars(), "*Masked*", offset, addressFieldWidth + codeByteColumnWidth + 2, " ");
-      }
-   else
-      {
-      trfprintf(pOutFile, "\n\n" POINTER_PRINTF_FORMAT " %08x %*s", cursor, offset, addressFieldWidth + codeByteColumnWidth + 2, " ");
-      }
+   trfprintf(pOutFile, "\n\n" POINTER_PRINTF_FORMAT " %08x %*s", cursor, offset, addressFieldWidth + codeByteColumnWidth + 2, " ");
+
    print(pOutFile, label);
    trfprintf(pOutFile, ":");
    if (comment1)
@@ -1357,19 +1273,13 @@ TR_Debug::getName(void * address, const char * prefix, uint32_t nextNumber, bool
       }
 
    char *buf = (char *)_comp->trMemory()->allocateHeapMemory(20 + TR::Compiler->debug.pointerPrintfMaxLenInChars());
-   if (_comp->getOption(TR_MaskAddresses))
-      {
-      sprintf(buf, "%*s", TR::Compiler->debug.hexAddressFieldWidthInChars(), "*Masked*");
-      return buf;
-      }
+
+   if (address)
+      sprintf(buf, POINTER_PRINTF_FORMAT, address);
    else
-      {
-      if (address)
-         sprintf(buf, POINTER_PRINTF_FORMAT, address);
-      else
-         sprintf(buf, "%0*d", TR::Compiler->debug.hexAddressWidthInChars(), 0);
-      return buf;
-      }
+      sprintf(buf, "%0*d", TR::Compiler->debug.hexAddressWidthInChars(), 0);
+   return buf;
+
    }
 
 const char *
@@ -1447,10 +1357,6 @@ TR_Debug::getName(TR::CFGNode * node)
       {
       sprintf(buf, "block_%d", node->getNumber());
       }
-   else if (_comp->getOption(TR_MaskAddresses))
-      {
-      sprintf(buf, "%*s", TR::Compiler->debug.hexAddressWidthInChars(), "*Masked*");
-      }
    else
       {
       sprintf(buf, POINTER_PRINTF_FORMAT, node);
@@ -1502,15 +1408,9 @@ TR_Debug::getName(TR::LabelSymbol *labelSymbol)
       char *buf = (char *)_comp->trMemory()->allocateHeapMemory(20+TR::Compiler->debug.pointerPrintfMaxLenInChars());
 
       if (labelSymbol->getSnippet())
-         if (_comp->getOption(TR_MaskAddresses))
-            sprintf(buf, "Snippet Label [*Masked*]");
-         else
-            sprintf(buf, "Snippet Label [" POINTER_PRINTF_FORMAT "]", labelSymbol);
+         sprintf(buf, "Snippet Label [" POINTER_PRINTF_FORMAT "]", labelSymbol);
       else
-         if (_comp->getOption(TR_MaskAddresses))
-            sprintf(buf, "Label [*Masked*]");
-         else
-            sprintf(buf, "Label [" POINTER_PRINTF_FORMAT "]", labelSymbol);
+         sprintf(buf, "Label [" POINTER_PRINTF_FORMAT "]", labelSymbol);
 
       _comp->getToStringMap().Add((void *)labelSymbol, buf);
       return buf;
@@ -1791,10 +1691,7 @@ TR_Debug::getAutoName(TR::SymbolReference * symRef)
       else
          sprintf(symName, "#SPILL%zu_%d", symRef->getSymbol()->getSize(), symRef->getReferenceNumber());
 
-      if (_comp->getOption(TR_MaskAddresses))
-         sprintf(name, "<%s *Masked*>", symName);
-      else
-         sprintf(name, "<%s " POINTER_PRINTF_FORMAT ">", symName, symRef->getSymbol());
+      sprintf(name, "<%s " POINTER_PRINTF_FORMAT ">", symName, symRef->getSymbol());
       }
    else if (symRef->isTempVariableSizeSymRef())
       {
@@ -2019,9 +1916,6 @@ TR_Debug::getStaticName(TR::SymbolReference * symRef)
       // Value Type default value instance slot address
       if (sym->isStaticDefaultValueInstance() && staticAddress)
          {
-         if (_comp->getOption(TR_MaskAddresses))
-            return "*Masked*";
-
          const uint8_t EXTRA_SPACE = 5;
          char * name = (char *)_comp->trMemory()->allocateHeapMemory(TR::Compiler->debug.pointerPrintfMaxLenInChars()+EXTRA_SPACE);
          sprintf(name, POINTER_PRINTF_FORMAT, staticAddress);
@@ -2058,10 +1952,7 @@ TR_Debug::getStaticName(TR::SymbolReference * symRef)
    if (staticAddress)
       {
       char * name = (char *)_comp->trMemory()->allocateHeapMemory(TR::Compiler->debug.pointerPrintfMaxLenInChars()+5);
-      if (_comp->getOption(TR_MaskAddresses))
-         sprintf(name, "*Masked*");
-      else
-         sprintf(name, POINTER_PRINTF_FORMAT, staticAddress);
+      sprintf(name, POINTER_PRINTF_FORMAT, staticAddress);
       return name;
       }
 
@@ -3039,10 +2930,7 @@ TR_Debug::getName(TR::Register *reg, TR_RegisterSizes size)
    else
       {
       char *buf = (char *)_comp->trMemory()->allocateHeapMemory(maxPrefixSize + 6 + TR::Compiler->debug.pointerPrintfMaxLenInChars() + 1);
-      if (_comp->getOption(TR_MaskAddresses))
-         sprintf(buf, "%s%s_*Masked*", prefix, getRegisterKindName(reg->getKind()));
-      else
-         sprintf(buf, "%s%s_" POINTER_PRINTF_FORMAT, prefix, getRegisterKindName(reg->getKind()), reg);
+      sprintf(buf, "%s%s_" POINTER_PRINTF_FORMAT, prefix, getRegisterKindName(reg->getKind()), reg);
       _comp->getToStringMap().Add((void *)reg, buf);
       return buf;
       }

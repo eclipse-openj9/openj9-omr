@@ -901,8 +901,7 @@ TR_Debug::print(TR::FILE *pOutFile, TR::S390PseudoInstruction * instr)
             }
          for (int32_t i = 0; i < instr->getFenceNode()->getNumRelocations(); ++i)
             {
-            if (!_comp->getOption(TR_MaskAddresses))
-               trfprintf(pOutFile, " %p", instr->getFenceNode()->getRelocationDestination(i));
+            trfprintf(pOutFile, " %p", instr->getFenceNode()->getRelocationDestination(i));
             }
          trfprintf(pOutFile, " ]");
 

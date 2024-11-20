@@ -397,7 +397,7 @@ enum TR_CompilationOptions
    TR_DisableNewMethodOverride            = 0x00002000 + 10,
    TR_EnableSharedCacheDisclaiming        = 0x00004000 + 10,
    TR_DisableDependencyTracking           = 0x00008000 + 10,
-   // Available                           = 0x00010000 + 10,
+   TR_EnableVectorAPIBoxing               = 0x00010000 + 10,
    TR_EnableSequentialLoadStoreWarm       = 0x00020000 + 10,
    TR_EnableSequentialLoadStoreCold       = 0x00040000 + 10,
    // Available                           = 0x00080000 + 10,

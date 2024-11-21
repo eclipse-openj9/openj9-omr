@@ -778,7 +778,7 @@ public:
    void printVCGEdges(TR::FILE *, TR_StructureSubGraphNode * node);
    void printVCG(TR::FILE *, TR::Block * block, int32_t vorder = -1, int32_t horder = -1);
 
-   void printByteCodeStack(int32_t parentStackIndex, uint16_t byteCodeIndex, char * indent);
+   void printByteCodeStack(int32_t parentStackIndex, uint16_t byteCodeIndex, size_t *indentLen);
    void print(TR::FILE *, TR::GCRegisterMap *);
 
    void verifyTreesPass1(TR::Node *node);

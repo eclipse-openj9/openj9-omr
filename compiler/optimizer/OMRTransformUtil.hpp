@@ -219,6 +219,9 @@ class OMR_EXTENSIBLE TransformUtil
     * \param offsetNode
     *    The offset node (in bytes)
     *
+    * \param originatingByteCodeNode
+    *    The originating byte code node
+    *
     * \return
     *    IL to access array element at offset provided by offsetNode or
     *    first array element if no offset node is provided

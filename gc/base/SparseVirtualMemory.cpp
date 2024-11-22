@@ -42,11 +42,11 @@
  */
 
 MM_SparseVirtualMemory *
-MM_SparseVirtualMemory::newInstance(MM_EnvironmentBase* env, uint32_t memoryCategory, MM_Heap *in_heap)
+MM_SparseVirtualMemory::newInstance(MM_EnvironmentBase *env, uint32_t memoryCategory, MM_Heap *in_heap)
 {
 	MM_GCExtensionsBase *extensions = env->getExtensions();
-	MM_SparseVirtualMemory* vmem = NULL;
-	vmem = (MM_SparseVirtualMemory*)env->getForge()->allocate(sizeof(MM_SparseVirtualMemory), OMR::GC::AllocationCategory::FIXED, OMR_GET_CALLSITE());
+	MM_SparseVirtualMemory *vmem = NULL;
+	vmem = (MM_SparseVirtualMemory *)env->getForge()->allocate(sizeof(MM_SparseVirtualMemory), OMR::GC::AllocationCategory::FIXED, OMR_GET_CALLSITE());
 
 	if (vmem) {
 		new (vmem) MM_SparseVirtualMemory(env, extensions->sparseHeapPageSize, extensions->sparseHeapPageFlags, in_heap);
@@ -60,7 +60,7 @@ MM_SparseVirtualMemory::newInstance(MM_EnvironmentBase* env, uint32_t memoryCate
 }
 
 bool
-MM_SparseVirtualMemory::initialize(MM_EnvironmentBase* env, uint32_t memoryCategory)
+MM_SparseVirtualMemory::initialize(MM_EnvironmentBase *env, uint32_t memoryCategory)
 {
 	uintptr_t in_heap_size = (uintptr_t)_heap->getHeapTop() - (uintptr_t)_heap->getHeapBase();
 	uintptr_t maxHeapSize = _heap->getMaximumMemorySize();
@@ -82,9 +82,9 @@ MM_SparseVirtualMemory::initialize(MM_EnvironmentBase* env, uint32_t memoryCateg
 	}
 
 	if (success) {
-		Trc_MM_SparseVirtualMemory_createSparseVirtualMemory_success((void*)_heap->getHeapTop(), (void*)_heap->getHeapBase(), (void *)in_heap_size, (void *)maxHeapSize, (void *)regionSize, regionCount, (void *)off_heap_size, _sparseDataPool);
+		Trc_MM_SparseVirtualMemory_createSparseVirtualMemory_success((void *)_heap->getHeapTop(), (void *)_heap->getHeapBase(), (void *)in_heap_size, (void *)maxHeapSize, (void *)regionSize, regionCount, (void *)off_heap_size, _sparseDataPool);
 	} else {
-		Trc_MM_SparseVirtualMemory_createSparseVirtualMemory_failure((void*)_heap->getHeapTop(), (void*)_heap->getHeapBase(), (void *)in_heap_size, (void *)maxHeapSize, (void *)regionSize, regionCount, (void *)off_heap_size, _sparseDataPool);
+		Trc_MM_SparseVirtualMemory_createSparseVirtualMemory_failure((void *)_heap->getHeapTop(), (void *)_heap->getHeapBase(), (void *)in_heap_size, (void *)maxHeapSize, (void *)regionSize, regionCount, (void *)off_heap_size, _sparseDataPool);
 	}
 
 	return success;
@@ -125,17 +125,12 @@ MM_SparseVirtualMemory::updateSparseDataEntryAfterObjectHasMoved(void *dataPtr, 
 void *
 MM_SparseVirtualMemory::allocateSparseFreeEntryAndMapToHeapObject(void *proxyObjPtr, uintptr_t size)
 {
-	/* Commiting and decommiting memory sizes must be multiple of pagesize */
+	/* Committing and de-committing memory sizes must be multiple of pagesize */
 	uintptr_t adjustedSize = MM_Math::roundToCeiling(_pageSize, size);
 
 	omrthread_monitor_enter(_largeObjectVirtualMemoryMutex);
 	void *sparseHeapAddr = _sparseDataPool->findFreeListEntry(adjustedSize);
 	bool success = MM_VirtualMemory::commitMemory(sparseHeapAddr, adjustedSize);
-
-	/* We can likely significantly reduce the list of platforms requiring zeroing after commit - however initially we will take an ultra safe approach */
-#if !(defined(LINUX) && defined(J9VM_ARCH_X86))
-	OMRZeroMemory(sparseHeapAddr, adjustedSize);
-#endif /* !(defined(LINUX) && defined(J9VM_ARCH_X86)) */
 
 	if (NULL != sparseHeapAddr) {
 		_sparseDataPool->mapSparseDataPtrToHeapProxyObjectPtr(sparseHeapAddr, proxyObjPtr, adjustedSize);
@@ -147,9 +142,9 @@ MM_SparseVirtualMemory::allocateSparseFreeEntryAndMapToHeapObject(void *proxyObj
 	omrthread_monitor_exit(_largeObjectVirtualMemoryMutex);
 
 	if (success) {
-		Trc_MM_SparseVirtualMemory_commitMemory_success(sparseHeapAddr, (void*)adjustedSize, proxyObjPtr);
+		Trc_MM_SparseVirtualMemory_commitMemory_success(sparseHeapAddr, (void *)adjustedSize, proxyObjPtr);
 	} else {
-		Trc_MM_SparseVirtualMemory_commitMemory_failure(sparseHeapAddr, (void*)adjustedSize, proxyObjPtr);
+		Trc_MM_SparseVirtualMemory_commitMemory_failure(sparseHeapAddr, (void *)adjustedSize, proxyObjPtr);
 		sparseHeapAddr = NULL;
 	}
 
@@ -157,7 +152,7 @@ MM_SparseVirtualMemory::allocateSparseFreeEntryAndMapToHeapObject(void *proxyObj
 }
 
 bool
-MM_SparseVirtualMemory::freeSparseRegionAndUnmapFromHeapObject(MM_EnvironmentBase* env, void *dataPtr)
+MM_SparseVirtualMemory::freeSparseRegionAndUnmapFromHeapObject(MM_EnvironmentBase *env, void *dataPtr)
 {
 	uintptr_t dataSize = _sparseDataPool->findObjectDataSizeForSparseDataPtr(dataPtr);
 	bool ret = true;
@@ -169,9 +164,9 @@ MM_SparseVirtualMemory::freeSparseRegionAndUnmapFromHeapObject(MM_EnvironmentBas
 			omrthread_monitor_enter(_largeObjectVirtualMemoryMutex);
 			ret = (_sparseDataPool->returnFreeListEntry(dataPtr, dataSize) && _sparseDataPool->unmapSparseDataPtrFromHeapProxyObjectPtr(dataPtr));
 			omrthread_monitor_exit(_largeObjectVirtualMemoryMutex);
-			Trc_MM_SparseVirtualMemory_decommitMemory_success(dataPtr, (void*)dataSize);
+			Trc_MM_SparseVirtualMemory_decommitMemory_success(dataPtr, (void *)dataSize);
 		} else {
-			Trc_MM_SparseVirtualMemory_decommitMemory_failure(dataPtr, (void*)dataSize);
+			Trc_MM_SparseVirtualMemory_decommitMemory_failure(dataPtr, (void *)dataSize);
 			/* TODO: Assert Fatal in case of failure? */
 			Assert_MM_true(false);
 		}
@@ -180,7 +175,7 @@ MM_SparseVirtualMemory::freeSparseRegionAndUnmapFromHeapObject(MM_EnvironmentBas
 	return ret;
 }
 bool
-MM_SparseVirtualMemory::decommitMemory(MM_EnvironmentBase* env, void* address, uintptr_t size)
+MM_SparseVirtualMemory::decommitMemory(MM_EnvironmentBase *env, void *address, uintptr_t size)
 {
 	bool ret = false;
 	void *highValidAddress = (void *)((uintptr_t)address + size);

@@ -35,8 +35,12 @@ class MM_ClassUnloadStats : public MM_Base {
 public:
 	uintptr_t _classLoaderUnloadedCount; /**< number of unloaded class loaders */
 	uintptr_t _classLoaderCandidates; /**< number of class loaders visited */
-	uintptr_t _classesUnloadedCount; /**< number of unloaded classes */
+	uintptr_t _classesUnloadedCount; /**< number of unloaded classes (including anonymous) */
 	uintptr_t _anonymousClassesUnloadedCount; /**< number of anonymous classes unloaded */
+
+	uintptr_t _classLoaderUnloadedCountCumulative; /**< number of unloaded class loaders since JVM start */
+	uintptr_t _classesUnloadedCountCumulative; /**< number of unloaded classes since JVM start */
+	uintptr_t _anonymousClassesUnloadedCountCumulative; /**< number of anonymous classes unloaded since JVM start */
 
 	uint64_t _startTime; /**< Class unloading start time */
 	uint64_t _endTime; /**< Class unloading end time */
@@ -52,7 +56,26 @@ public:
 
 	uint64_t _classUnloadMutexQuiesceTime; /**< Time the GC spends waiting on the classUnloadMutex */
 
+	/**
+	 * Set counters/times to zero at the beginning of cycle
+	 */
 	void clear();
+
+	/**
+	 * Update unloaded counters for cycle as well as cumulative counters
+	 * @param[out] anonymous unloaded anonymous classes counter value
+	 * @param[out] classes unloaded classes counter value (including anonymous)
+	 * @param[out] classloaders unloaded classesloaders counter value
+	 */
+	void updateUnloadedCounters(uintptr_t anonymous, uintptr_t classes, uintptr_t classloaders);
+
+	/**
+	 * Returns cumulative counters
+	 * @param[out] anonymous cumulative value pointer for unloaded anonymous classes
+	 * @param[out] classes cumulative value pointer for unloaded classes (including anonymous)
+	 * @param[out] classloaders cumulative value pointer for unloaded classesloaders
+	 */
+	void getUnloadedCountersCumulative(uintptr_t *anonymous, uintptr_t *classes, uintptr_t *classloaders);
 
 	MM_ClassUnloadStats()
 		: MM_Base()
@@ -60,6 +83,9 @@ public:
 		, _classLoaderCandidates(0)
 		, _classesUnloadedCount(0)
 		, _anonymousClassesUnloadedCount(0)
+		, _classLoaderUnloadedCountCumulative(0)
+		, _classesUnloadedCountCumulative(0)
+		, _anonymousClassesUnloadedCountCumulative(0)
 		, _startTime(0)
 		, _endTime(0)
 		, _startSetupTime(0)

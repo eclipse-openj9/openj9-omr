@@ -2742,25 +2742,6 @@ TR_Debug::print(TR::FILE *pOutFile, TR::list<TR::Snippet*> & snippetList)
       _comp->cg()->dumpDataSnippets(pOutFile);
    }
 
-
-void
-TR_Debug::print(TR::FILE *pOutFile, List<TR::Snippet> & snippetList)
-   {
-   if (pOutFile == NULL)
-      return;
-
-   ListIterator<TR::Snippet> snippets(&snippetList);
-   for (TR::Snippet * snippet = snippets.getFirst(); snippet; snippet = snippets.getNext())
-      {
-      print(pOutFile, snippet);
-      }
-
-   if (_comp->cg()->hasDataSnippets())
-      _comp->cg()->dumpDataSnippets(pOutFile);
-
-   trfprintf(pOutFile, "\n");
-   }
-
 const char *
 TR_Debug::getName(TR::Snippet *snippet)
    {

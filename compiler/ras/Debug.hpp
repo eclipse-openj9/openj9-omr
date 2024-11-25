@@ -567,7 +567,6 @@ public:
    virtual void         dumpInstructionComments(TR::FILE *, TR::Instruction *, bool needsStartComment = true );
    virtual void         print(TR::FILE *, TR::Instruction *);
    virtual void         print(TR::FILE *, TR::Instruction *, const char *);
-   virtual void         print(TR::FILE *, List<TR::Snippet> &);
    virtual void         print(TR::FILE *, TR::list<TR::Snippet*> &);
    virtual void         print(TR::FILE *, TR::Snippet *);
 

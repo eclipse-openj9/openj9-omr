@@ -983,7 +983,12 @@ int32_t TR_LoopStrider::detectCanonicalizedPredictableLoops(TR_Structure *loopSt
                      {
                      TR::Node *constantNode  = TR::Node::create(byteCodeInfoNode, TR::lconst);
                      constantNode->setLongInt((int64_t)index);
-                     arrayRefNode = TR::Node::create(TR::aladd, 2, TR::Node::createWithSymRef(byteCodeInfoNode, TR::aload, 0, origAuto), constantNode);
+                     arrayRefNode = TR::Node::createWithSymRef(byteCodeInfoNode, TR::aload, 0, origAuto);
+#if defined(OMR_GC_SPARSE_HEAP_ALLOCATION)
+                     if (TR::Compiler->om.isOffHeapAllocationEnabled())
+                        arrayRefNode = TR::TransformUtil::generateDataAddrLoadTrees(comp(), arrayRefNode);
+#endif /* OMR_GC_SPARSE_HEAP_ALLOCATION */
+                     arrayRefNode = TR::Node::create(TR::aladd, 2, arrayRefNode, constantNode);
                      }
                   else
                      arrayRefNode = TR::Node::create(TR::aiadd, 2, TR::Node::createWithSymRef(byteCodeInfoNode, TR::aload, 0, origAuto), TR::Node::create(byteCodeInfoNode, TR::iconst, 0, index));
@@ -992,7 +997,14 @@ int32_t TR_LoopStrider::detectCanonicalizedPredictableLoops(TR_Structure *loopSt
                   {
                   TR::SymbolReference *indexSymRef = symRefPair->_indexSymRef;
                   if (usingAladd)
-                     arrayRefNode = TR::Node::create(TR::aladd, 2, TR::Node::createWithSymRef(byteCodeInfoNode, TR::aload, 0, origAuto), TR::Node::createWithSymRef(byteCodeInfoNode, TR::lload, 0, indexSymRef));
+                     {
+                     arrayRefNode = TR::Node::createWithSymRef(byteCodeInfoNode, TR::aload, 0, origAuto);
+#if defined(OMR_GC_SPARSE_HEAP_ALLOCATION)
+                     if (TR::Compiler->om.isOffHeapAllocationEnabled())
+                        arrayRefNode = TR::TransformUtil::generateDataAddrLoadTrees(comp(), arrayRefNode);
+#endif /* OMR_GC_SPARSE_HEAP_ALLOCATION */
+                     arrayRefNode = TR::Node::create(TR::aladd, 2, arrayRefNode, TR::Node::createWithSymRef(byteCodeInfoNode, TR::lload, 0, indexSymRef));
+                     }
                   else
                      arrayRefNode = TR::Node::create(TR::aiadd, 2, TR::Node::createWithSymRef(byteCodeInfoNode, TR::aload, 0, origAuto), TR::Node::createWithSymRef(byteCodeInfoNode, TR::iload, 0, indexSymRef));
                   }

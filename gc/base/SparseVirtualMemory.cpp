@@ -132,6 +132,11 @@ MM_SparseVirtualMemory::allocateSparseFreeEntryAndMapToHeapObject(void *proxyObj
 	void *sparseHeapAddr = _sparseDataPool->findFreeListEntry(adjustedSize);
 	bool success = MM_VirtualMemory::commitMemory(sparseHeapAddr, adjustedSize);
 
+#if defined(OSX) || defined(OMRZTPF)
+	/* Most platforms will perform an implicit zero through the preceding commit. */
+	OMRZeroMemory(sparseHeapAddr, adjustedSize);
+#endif /* defined(OSX) || defined(OMRZTPF)) */
+
 	if (NULL != sparseHeapAddr) {
 		_sparseDataPool->mapSparseDataPtrToHeapProxyObjectPtr(sparseHeapAddr, proxyObjPtr, adjustedSize);
 	} else {

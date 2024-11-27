@@ -2568,8 +2568,8 @@ TR_Debug::dumpMixedModeDisassembly()
          n = inst->getNode();
 
          trfprintf(pOutFile, "\n\n");
-         char * indent = (char *)_comp->trMemory()->allocateHeapMemory(6 + 3*(_comp->getMaxInlineDepth()+1));
-         printByteCodeStack(n->getInlinedSiteIndex(), n->getByteCodeIndex(), indent);
+         size_t indentLen = 0;
+         printByteCodeStack(n->getInlinedSiteIndex(), n->getByteCodeIndex(), &indentLen);
          }
 
       print(pOutFile, inst);

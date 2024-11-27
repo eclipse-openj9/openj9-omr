@@ -1698,17 +1698,11 @@ static const char *getFieldSignature(OMR::ValuePropagation *vp, TR::Node *node, 
  */
 static bool addKnownObjectConstraints(OMR::ValuePropagation *vp, TR::Node *node)
    {
-   // Access to VM for multiple operations including KnownObjectTable::getOrCreateIndex()
-   // is not supported at the server for OMR.
-   if (vp->comp()->isOutOfProcessCompilation())
-      return false;
-
-   TR::KnownObjectTable *knot = vp->comp()->getKnownObjectTable();
-   if (!knot)
-      return false;
-
    TR::SymbolReference *symRef = node->getSymbolReference();
    if (symRef->isUnresolved())
+      return false;
+   
+   if (!vp->comp()->getKnownObjectTable())
       return false;
 
    uintptr_t *objectReferenceLocation = NULL;
@@ -1720,30 +1714,11 @@ static bool addKnownObjectConstraints(OMR::ValuePropagation *vp, TR::Node *node)
 #ifdef J9_PROJECT_SPECIFIC
    if (objectReferenceLocation)
       {
-      bool isString;
-      bool isFixedJavaLangClass;
-      TR::KnownObjectTable::Index knownObjectIndex;
-      TR_OpaqueClassBlock *clazz, *jlClass;
+      TR_J9VMBase::ObjectClassInfo ci =
+         vp->comp()->fej9()->getObjectClassInfoFromObjectReferenceLocation(vp->comp(),
+                                                         (uintptr_t)objectReferenceLocation);
 
-         {
-         TR::VMAccessCriticalSection getObjectReferenceLocation(vp->comp());
-         uintptr_t objectReference = vp->comp()->fej9()->getStaticReferenceFieldAtAddress((uintptr_t)objectReferenceLocation);
-         clazz   = TR::Compiler->cls.objectClass(vp->comp(), objectReference);
-         isString = TR::Compiler->cls.isString(vp->comp(), clazz);
-         jlClass = vp->fe()->getClassClassPointer(clazz);
-         isFixedJavaLangClass = (jlClass == clazz);
-         if (isFixedJavaLangClass)
-            {
-            // A FixedClass constraint means something different when the class happens to be java/lang/Class.
-            // Must add constraints pertaining to the class that the java/lang/Class object represents.
-            //
-            clazz = TR::Compiler->cls.classFromJavaLangClass(vp->comp(), objectReference);
-            }
-         knownObjectIndex = knot->getOrCreateIndex(objectReference);
-         }
-
-
-      if (isString && symRef->getSymbol()->isStatic())
+      if (ci.isString && symRef->getSymbol()->isStatic())
          {
          // There's a lot of machinery around optimizing const strings.  Even
          // though we lose object identity info this way, it's likely better to
@@ -1754,16 +1729,16 @@ static bool addKnownObjectConstraints(OMR::ValuePropagation *vp, TR::Node *node)
             TR::VPNonNullObject::create(vp), NULL, NULL,
             TR::VPObjectLocation::create(vp, TR::VPObjectLocation::HeapObject)));
          }
-      else if (jlClass) // without a jlClass, we can't tell what kind of constraint to add
+      else if (ci.jlClass) // without a jlClass, we can't tell what kind of constraint to add
          {
          TR::VPConstraint *constraint = NULL;
-         const char *classSig = TR::Compiler->cls.classSignature(vp->comp(), clazz, vp->trMemory());
-         if (isFixedJavaLangClass)
+         const char *classSig = TR::Compiler->cls.classSignature(vp->comp(), ci.clazz, vp->trMemory());
+         if (ci.isFixedJavaLangClass)
             {
-            if (performTransformation(vp->comp(), "%sAdd ClassObject constraint to %p based on known java/lang/Class %s =obj%d\n", OPT_DETAILS, node, classSig, knownObjectIndex))
+            if (performTransformation(vp->comp(), "%sAdd ClassObject constraint to %p based on known java/lang/Class %s =obj%d\n", OPT_DETAILS, node, classSig, ci.knownObjectIndex))
                {
                constraint = TR::VPClass::create(vp,
-                  TR::VPKnownObject::createForJavaLangClass(vp, knownObjectIndex),
+                  TR::VPKnownObject::createForJavaLangClass(vp, ci.knownObjectIndex),
                   TR::VPNonNullObject::create(vp), NULL, NULL,
                   TR::VPObjectLocation::create(vp, TR::VPObjectLocation::JavaLangClassObject));
                vp->addGlobalConstraint(node, constraint);
@@ -1771,10 +1746,10 @@ static bool addKnownObjectConstraints(OMR::ValuePropagation *vp, TR::Node *node)
             }
          else
             {
-            if (performTransformation(vp->comp(), "%sAdd known-object constraint to %p based on known object obj%d of class %s\n", OPT_DETAILS, node, knownObjectIndex, classSig))
+            if (performTransformation(vp->comp(), "%sAdd known-object constraint to %p based on known object obj%d of class %s\n", OPT_DETAILS, node, ci.knownObjectIndex, classSig))
                {
                constraint = TR::VPClass::create(vp,
-                  TR::VPKnownObject::create(vp, knownObjectIndex),
+                  TR::VPKnownObject::create(vp, ci.knownObjectIndex),
                   TR::VPNonNullObject::create(vp), NULL, NULL,
                   TR::VPObjectLocation::create(vp, TR::VPObjectLocation::HeapObject));
                vp->addBlockConstraint(node, constraint);

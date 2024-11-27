@@ -1353,28 +1353,18 @@ TR::VPKnownObject *TR::VPKnownObject::create(OMR::ValuePropagation *vp, TR::Know
    //
    constraint = NULL;
 #ifdef J9_PROJECT_SPECIFIC
-      {
-      TR::VMAccessCriticalSection vpKnownObjectCriticalSection(vp->comp(),
-                                                                TR::VMAccessCriticalSection::tryToAcquireVMAccess);
 
-      if (vpKnownObjectCriticalSection.hasVMAccess())
-         {
-         TR_OpaqueClassBlock *clazz = TR::Compiler->cls.objectClass(vp->comp(), knot->getPointer(index));
-         TR_OpaqueClassBlock *jlClass = vp->fe()->getClassClassPointer(clazz);
-         if (isJavaLangClass)
-            {
-            TR_ASSERT(clazz == jlClass, "Use createForJavaLangClass only for instances of java/lang/Class");
-            clazz = TR::Compiler->cls.classFromJavaLangClass(vp->comp(), knot->getPointer(index));
-            }
-         else
-            {
-            // clazz is already right
-            TR_ASSERT(clazz != jlClass, "For java/lang/Class instances, caller needs to use createForJavaLangClass.");
-            }
-         constraint = new (vp->trStackMemory()) TR::VPKnownObject(clazz, vp->comp(), index, isJavaLangClass);
-         vp->addConstraint(constraint, hash);
-         }
-      }
+   bool matchJavaLangClass;
+   TR_OpaqueClassBlock *clazz = vp->comp()->fej9()->getObjectClassFromKnownObjectIndex
+      (vp->comp(), index, &matchJavaLangClass);
+   TR_ASSERT_FATAL(matchJavaLangClass == isJavaLangClass,
+      "Use createForJavaLangClass if and only if the object is an instance of java/lang/Class");
+
+   constraint = new (vp->trStackMemory()) TR::VPKnownObject(clazz,
+                                                            vp->comp(),
+                                                            index,
+                                                            isJavaLangClass);
+   vp->addConstraint(constraint, hash);
 #endif
    return constraint;
    }

@@ -240,10 +240,12 @@ updateEnvvar(char *name, char *value)
 	} else {
 		/* Add a new entry to the list */
 		prev->next = (envvar_t *)malloc(sizeof(envvar_t));
-		envvar = prev->next;
-		envvar->next = NULL;
-		envvar->name = strdup(name);
-		envvar->value = strdup(value);
+		if (NULL != prev->next) {
+			envvar = prev->next;
+			envvar->next = NULL;
+			envvar->name = strdup(name);
+			envvar->value = strdup(value);
+		}
 	}
 
 	/* Release the lock */
@@ -1679,18 +1681,22 @@ atoe_system(char *cmd)
 char *
 atoe_setlocale(int category, const char *locale)
 {
-	char *eb, *result;
+	char *result = NULL;
 
 	Log(1, "Entry: atoe_setlocale\n");
 
-	/* CMVC 143879: a2e_string converts a NULL pointer to an empty string */
-	eb = (NULL == locale) ? NULL : a2e_string((char *)locale);
+	if (NULL == locale) {
+		result = setlocale(category, NULL);
+	} else {
+		/* CMVC 143879: a2e_string converts a NULL pointer to an empty string */
+		char *eb = a2e_string(locale);
+		if (NULL != eb) {
+			result = setlocale(category, eb);
+			free(eb);
+		}
+	}
 
-	result = setlocale(category, eb) ;
-
-	free(eb);
-
-	return e2a_string(result);
+	return (NULL == result) ? NULL : e2a_string(result);
 }
 
 /**************************************************************************

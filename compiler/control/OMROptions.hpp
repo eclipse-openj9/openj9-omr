@@ -1495,11 +1495,11 @@ public:
       _edoRecompSizeThreshold = 0;
       _edoRecompSizeThresholdInStartupMode = 0;
       _catchBlockCounterThreshold = 0;
-      _arraycopyRepMovsByteArrayThreshold = 0;
-      _arraycopyRepMovsCharArrayThreshold = 0;
-      _arraycopyRepMovsIntArrayThreshold = 0;
-      _arraycopyRepMovsLongArrayThreshold = 0;
-      _arraycopyRepMovsReferenceArrayThreshold = 0;
+      _arraycopyRepMovsByteArrayThreshold = 32;
+      _arraycopyRepMovsCharArrayThreshold = 32;
+      _arraycopyRepMovsIntArrayThreshold = 32;
+      _arraycopyRepMovsLongArrayThreshold = 32;
+      _arraycopyRepMovsReferenceArrayThreshold = 32;
 
       memset(_options, 0, sizeof(_options));
       memset(_disabledOptimizations, false, sizeof(_disabledOptimizations));

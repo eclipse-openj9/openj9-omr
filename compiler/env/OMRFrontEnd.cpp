@@ -55,12 +55,6 @@ OMR::FrontEnd::FrontEnd() :
    ::trPersistentMemory = &_persistentMemory;
    }
 
-TR::FrontEnd &
-OMR::FrontEnd::singleton()
-   {
-   return *_instance;
-   }
-
 TR::FrontEnd *
 OMR::FrontEnd::instance()
    {

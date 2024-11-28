@@ -273,8 +273,8 @@ compileMethodFromDetails(
       int32_t &rc)
    {
    uint64_t translationStartTime = TR::Compiler->vm.getUSecClock();
-   TR::FrontEnd &fe = TR::FrontEnd::singleton();
-   auto jitConfig = fe.jitConfig();
+   TR::FrontEnd *fe = TR::FrontEnd::instance();
+   auto jitConfig = fe->jitConfig();
    TR::RawAllocator rawAllocator;
    TR::SystemSegmentProvider defaultSegmentProvider(1 << 16, rawAllocator);
    TR::DebugSegmentProvider debugSegmentProvider(1 << 16, rawAllocator);
@@ -283,7 +283,7 @@ compileMethodFromDetails(
          static_cast<TR::SegmentAllocator &>(debugSegmentProvider) :
          static_cast<TR::SegmentAllocator &>(defaultSegmentProvider);
    TR::Region dispatchRegion(scratchSegmentProvider, rawAllocator);
-   TR_Memory trMemory(*fe.persistentMemory(), dispatchRegion);
+   TR_Memory trMemory(*(fe->persistentMemory()), dispatchRegion);
    TR_ResolvedMethod & compilee = *((TR_ResolvedMethod *)details.getMethod());
 
    TR::CompileIlGenRequest request(details);
@@ -295,7 +295,7 @@ compileMethodFromDetails(
 
    TR_FilterBST *filterInfo = 0;
    TR_OptimizationPlan *plan = 0;
-   if (!methodCanBeCompiled(&fe, compilee, filterInfo, &trMemory))
+   if (!methodCanBeCompiled(fe, compilee, filterInfo, &trMemory))
       {
       if (TR::Options::getCmdLineOptions()->getVerboseOption(TR_VerboseCompileExclude))
          TR_VerboseLog::writeLineLocked(TR_Vlog_INFO, "%s cannot be translated", compilee.signature(&trMemory));
@@ -328,7 +328,7 @@ compileMethodFromDetails(
    // FIXME: perhaps use stack memory instead
 
    TR_ASSERT(TR::comp() == NULL, "there seems to be a current TLS TR::Compilation object %p for this thread. At this point there should be no current TR::Compilation object", TR::comp());
-   TR::Compilation compiler(0, omrVMThread, &fe, &compilee, request, options, dispatchRegion, &trMemory, plan);
+   TR::Compilation compiler(0, omrVMThread, fe, &compilee, request, options, dispatchRegion, &trMemory, plan);
    TR_ASSERT(TR::comp() == &compiler, "the TLS TR::Compilation object %p for this thread does not match the one %p just created.", TR::comp(), &compiler);
 
    try
@@ -369,7 +369,7 @@ compileMethodFromDetails(
          {
 
          // not ready yet...
-         //OMR::MethodMetaDataPOD *metaData = fe.createMethodMetaData(&compiler);
+         //OMR::MethodMetaDataPOD *metaData = fe->createMethodMetaData(&compiler);
 
          startPC = (uint8_t*)compiler.getMethodSymbol()->getMethodAddress();
          uint64_t translationTime = TR::Compiler->vm.getUSecClock() - translationStartTime;
@@ -403,7 +403,7 @@ compileMethodFromDetails(
             || compiler.getOption(TR_EmitRelocatableELFFile)
             )
             {
-            TR::CodeCacheManager &codeCacheManager(fe.codeCacheManager());
+            TR::CodeCacheManager &codeCacheManager(fe->codeCacheManager());
             TR::CodeGenerator &codeGenerator(*compiler.cg());
             codeCacheManager.registerCompiledMethod(compiler.externalName(), startPC, codeGenerator.getCodeLength());
             if (compiler.getOption(TR_EmitRelocatableELFFile))

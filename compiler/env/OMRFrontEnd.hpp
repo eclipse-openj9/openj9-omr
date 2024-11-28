@@ -53,8 +53,6 @@ public:
 
    FrontEnd();
 
-   static TR::FrontEnd &singleton();
-
    static TR::FrontEnd *instance();
 
    virtual TR_Debug *createDebug(TR::Compilation *comp = NULL);

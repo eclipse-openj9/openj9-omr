@@ -38,5 +38,5 @@ OMR::JitConfig::JitConfig()
 TR::JitConfig *
 OMR::JitConfig::instance()
    {
-   return TR::FrontEnd::singleton().jitConfig();
+   return TR::FrontEnd::instance()->jitConfig();
    }

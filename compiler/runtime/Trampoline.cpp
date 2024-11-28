@@ -73,7 +73,7 @@ extern void registerTrampoline(uint8_t *start, uint32_t size, const char *name);
 void
 ppcCreateHelperTrampolines(uint8_t *trampPtr, int32_t numHelpers)
    {
-   TR::CodeCacheManager &manager = TR::FrontEnd::singleton().codeCacheManager();
+   TR::CodeCacheManager &manager = TR::FrontEnd::instance()->codeCacheManager();
    TR::CodeCacheConfig &config = manager.codeCacheConfig();
    char name[256];
 

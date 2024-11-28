@@ -614,25 +614,32 @@ OMR::Z::TreeEvaluator::lmaxEvaluator(TR::Node* node, TR::CodeGenerator* cg)
    }
 
 TR::Register*
-OMR::Z::TreeEvaluator::fmaxEvaluator(TR::Node* node, TR::CodeGenerator* cg)
+OMR::Z::TreeEvaluator::fmaxHelper(TR::Node* node, TR::CodeGenerator* cg)
    {
    TR::Register * result = NULL;
-   if (cg->getSupportsVectorRegisters())
+   if (cg->getSupportsVectorRegisters() && cg->comp()->target().cpu.supportsFeature(OMR_FEATURE_S390_VECTOR_FACILITY_ENHANCEMENT_1))
       {
-      cg->generateDebugCounter("z13/simd/floatMax", 1, TR::DebugCounter::Free);
+      cg->generateDebugCounter("z14/simd/floatMax", 1, TR::DebugCounter::Free);
       result = OMR::Z::TreeEvaluator::fpMinMaxVectorHelper(node, cg);
       }
    else
       {
       result = OMR::Z::TreeEvaluator::xmaxxminHelper(node, cg);
       }
+   return result;
+   }
+
+TR::Register*
+OMR::Z::TreeEvaluator::fmaxEvaluator(TR::Node* node, TR::CodeGenerator* cg)
+   {
+   TR::Register * result = fmaxHelper(node, cg);
    // load and test (result <- result) - sets quiet bit on NaN
    generateRREInstruction(cg, TR::InstOpCode::LTEBR, node, result, result);
    return result;
    }
 
 TR::Register*
-OMR::Z::TreeEvaluator::dmaxEvaluator(TR::Node* node, TR::CodeGenerator* cg)
+OMR::Z::TreeEvaluator::dmaxHelper(TR::Node* node, TR::CodeGenerator* cg)
    {
    TR::Register * result = NULL;
    if (cg->getSupportsVectorRegisters())
@@ -644,6 +651,13 @@ OMR::Z::TreeEvaluator::dmaxEvaluator(TR::Node* node, TR::CodeGenerator* cg)
       {
       result = OMR::Z::TreeEvaluator::xmaxxminHelper(node, cg);
       }
+   return result;
+   }
+
+TR::Register*
+OMR::Z::TreeEvaluator::dmaxEvaluator(TR::Node* node, TR::CodeGenerator* cg)
+   {
+   TR::Register * result = dmaxHelper(node, cg);
    // load and test (result <- result) - sets quiet bit on NaN
    generateRREInstruction(cg, TR::InstOpCode::LTDBR, node, result, result);
    return result;
@@ -662,26 +676,32 @@ OMR::Z::TreeEvaluator::lminEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    }
 
 TR::Register*
-OMR::Z::TreeEvaluator::fminEvaluator(TR::Node* node, TR::CodeGenerator* cg)
+OMR::Z::TreeEvaluator::fminHelper(TR::Node* node, TR::CodeGenerator* cg)
    {
-   TR::Register * reg = NULL;
    TR::Register * result = NULL;
-   if (cg->getSupportsVectorRegisters())
+   if (cg->getSupportsVectorRegisters() && cg->comp()->target().cpu.supportsFeature(OMR_FEATURE_S390_VECTOR_FACILITY_ENHANCEMENT_1))
       {
-      cg->generateDebugCounter("z13/simd/floatMin", 1, TR::DebugCounter::Free);
+      cg->generateDebugCounter("z14/simd/floatMin", 1, TR::DebugCounter::Free);
       result = OMR::Z::TreeEvaluator::fpMinMaxVectorHelper(node, cg);
       }
    else
       {
       result = OMR::Z::TreeEvaluator::xmaxxminHelper(node, cg);
       }
+   return result;
+   }
+
+TR::Register*
+OMR::Z::TreeEvaluator::fminEvaluator(TR::Node* node, TR::CodeGenerator* cg)
+   {
+   TR::Register * result = fminHelper(node, cg);
    // load and test (result <- result) - sets quiet bit on NaN
    generateRREInstruction(cg, TR::InstOpCode::LTEBR, node, result, result);
    return result;
    }
 
 TR::Register*
-OMR::Z::TreeEvaluator::dminEvaluator(TR::Node* node, TR::CodeGenerator* cg)
+OMR::Z::TreeEvaluator::dminHelper(TR::Node* node, TR::CodeGenerator *cg)
    {
    TR::Register * result = NULL;
    if (cg->getSupportsVectorRegisters())
@@ -693,6 +713,13 @@ OMR::Z::TreeEvaluator::dminEvaluator(TR::Node* node, TR::CodeGenerator* cg)
       {
       result = OMR::Z::TreeEvaluator::xmaxxminHelper(node, cg);
       }
+   return result;
+   }
+
+TR::Register*
+OMR::Z::TreeEvaluator::dminEvaluator(TR::Node* node, TR::CodeGenerator* cg)
+   {
+   TR::Register * result = dminHelper(node, cg);
    // load and test (result <- result) - sets quiet bit on NaN
    generateRREInstruction(cg, TR::InstOpCode::LTDBR, node, result, result);
    return result;

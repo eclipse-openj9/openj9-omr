@@ -1115,6 +1115,10 @@ class OMR_EXTENSIBLE TreeEvaluator: public OMR::TreeEvaluator
    static TR::Register *lmaxEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *fmaxEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *dmaxEvaluator(TR::Node *node, TR::CodeGenerator *cg);
+   static TR::Register *fmaxHelper(TR::Node *node, TR::CodeGenerator *cg);
+   static TR::Register *fminHelper(TR::Node *node, TR::CodeGenerator *cg);
+   static TR::Register *dmaxHelper(TR::Node *node, TR::CodeGenerator *cg);
+   static TR::Register *dminHelper(TR::Node *node, TR::CodeGenerator *cg);
 
    static TR::Register *evaluateNULLCHKWithPossibleResolve(TR::Node * node, bool needsResolve, TR::CodeGenerator * cg);
 

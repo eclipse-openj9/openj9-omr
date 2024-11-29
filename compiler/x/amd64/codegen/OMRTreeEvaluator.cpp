@@ -2196,12 +2196,6 @@ OMR::X86::AMD64::TreeEvaluator::inotzEvaluator(TR::Node *node, TR::CodeGenerator
    }
 
 TR::Register*
-OMR::X86::AMD64::TreeEvaluator::ipopcntEvaluator(TR::Node *node, TR::CodeGenerator *cg)
-   {
-   return TR::TreeEvaluator::badILOpEvaluator(node, cg);
-   }
-
-TR::Register*
 OMR::X86::AMD64::TreeEvaluator::lhbitEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    return TR::TreeEvaluator::badILOpEvaluator(node, cg);
@@ -2228,7 +2222,14 @@ OMR::X86::AMD64::TreeEvaluator::lnotzEvaluator(TR::Node *node, TR::CodeGenerator
 TR::Register*
 OMR::X86::AMD64::TreeEvaluator::lpopcntEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   return TR::TreeEvaluator::badILOpEvaluator(node, cg);
+   TR::Node *child = node->getFirstChild();
+   TR::Register *inputReg = cg->longClobberEvaluate(child);
+
+   generateRegRegInstruction(TR::InstOpCode::POPCNT8RegReg, node, inputReg, inputReg, cg);
+
+   node->setRegister(inputReg);
+   cg->decReferenceCount(child);
+   return inputReg;
    }
 
 TR::Register*

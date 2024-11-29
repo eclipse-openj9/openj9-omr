@@ -2275,12 +2275,6 @@ OMR::X86::I386::TreeEvaluator::inotzEvaluator(TR::Node *node, TR::CodeGenerator 
    }
 
 TR::Register*
-OMR::X86::I386::TreeEvaluator::ipopcntEvaluator(TR::Node *node, TR::CodeGenerator *cg)
-   {
-   return TR::TreeEvaluator::badILOpEvaluator(node, cg);
-   }
-
-TR::Register*
 OMR::X86::I386::TreeEvaluator::lhbitEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    return TR::TreeEvaluator::badILOpEvaluator(node, cg);
@@ -2307,7 +2301,21 @@ OMR::X86::I386::TreeEvaluator::lnotzEvaluator(TR::Node *node, TR::CodeGenerator 
 TR::Register*
 OMR::X86::I386::TreeEvaluator::lpopcntEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   return TR::TreeEvaluator::badILOpEvaluator(node, cg);
+   TR::Node *child = node->getFirstChild();
+   TR::Register *inputReg = cg->longClobberEvaluate(child);
+   TR::Register *inputHigh = inputReg->getHighOrder();
+   TR::Register *inputLow = inputReg->getLowOrder();
+   TR::Register *resultReg = inputLow;
+
+   //add low result and high result together
+   generateRegRegInstruction(TR::InstOpCode::POPCNT4RegReg, node, inputLow, inputLow, cg);
+   generateRegRegInstruction(TR::InstOpCode::POPCNT4RegReg, node, inputHigh, inputHigh, cg);
+   generateRegRegInstruction(TR::InstOpCode::ADD4RegReg, node, inputLow, inputHigh, cg);
+
+   cg->stopUsingRegister(inputHigh);
+   node->setRegister(resultReg);
+   cg->decReferenceCount(child);
+   return resultReg;
    }
 
 TR::Register*

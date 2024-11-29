@@ -159,6 +159,15 @@ OMR::X86::CPU::getSupportsHardwareSQRT()
    }
 
 bool
+OMR::X86::CPU::hasPopulationCountInstruction()
+   {
+   if ((self()->getX86ProcessorFeatureFlags2() & TR_POPCNT) != 0x00000000)
+      return true;
+   else
+     return false;
+   }
+
+bool
 OMR::X86::CPU::supportsTransactionalMemoryInstructions()
    {
    return self()->supportsFeature(OMR_FEATURE_X86_RTM);

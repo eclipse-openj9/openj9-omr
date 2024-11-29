@@ -264,8 +264,6 @@ public:
    bool anyNonConstantSnippets();
    bool anyLitPoolSnippets();
 
-   bool getSupportsEncodeUtf16BigWithSurrogateTest();
-
    TR_S390ScratchRegisterManager* generateScratchRegisterManager(int32_t capacity = 8);
 
    bool canTransformUnsafeCopyToArrayCopy();

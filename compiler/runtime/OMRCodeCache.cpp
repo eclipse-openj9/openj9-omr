@@ -682,7 +682,15 @@ OMR::CodeCache::syncTempTrampolines()
             {
             void *newPC = (void *) TR::Compiler->mtd.startPC(entry->_info._resolved._method);
             void *trampoline = entry->_info._resolved._currentTrampoline;
-            if (trampoline && entry->_info._resolved._currentStartPC != newPC)
+            bool forceCreateTrampoline = false;
+
+            if (reinterpret_cast<intptr_t>(newPC) == 0)
+               {
+               newPC = entry->_info._resolved._currentStartPC;
+               forceCreateTrampoline = true;
+               }
+
+            if (trampoline && (forceCreateTrampoline || (entry->_info._resolved._currentStartPC != newPC)))
                {
                self()->createTrampoline(trampoline,
                                         newPC,
@@ -709,6 +717,11 @@ OMR::CodeCache::syncTempTrampolines()
             {
             CodeCacheHashEntry *entry = syncBlock->_hashEntryArray[entryIdx];
             void *newPC = (void *) TR::Compiler->mtd.startPC(entry->_info._resolved._method);
+
+            if (reinterpret_cast<intptr_t>(newPC) == 0)
+               {
+               newPC = entry->_info._resolved._currentStartPC;
+               }
 
             // call the codegen to perform the trampoline code modification
             self()->createTrampoline(entry->_info._resolved._currentTrampoline,

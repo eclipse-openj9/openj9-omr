@@ -27,13 +27,13 @@
 #include "env/CompilerEnv.hpp"
 #include "env/FrontEnd.hpp"
 #include "env/IO.hpp"
+#include "env/JitConfig.hpp"
 #include "compile/ResolvedMethod.hpp"
 #include "env/RawAllocator.hpp"
 #include "ilgen/IlGeneratorMethodDetails_inlines.hpp"
 #include "ilgen/MethodBuilder.hpp"
 #include "runtime/CodeCache.hpp"
 #include "runtime/Runtime.hpp"
-#include "runtime/TestJitConfig.hpp"
 #include "control/CompilationController.hpp"
 
 extern TR_RuntimeHelperTable runtimeHelpers;
@@ -54,7 +54,7 @@ initHelper(void *helper, TR_RuntimeHelper id)
    }
 
 static void
-initializeAllHelpers(TestCompiler::JitConfig *jitConfig, TR_RuntimeHelper *helperIDs, void **helperAddresses, int32_t numHelpers)
+initializeAllHelpers(TR::JitConfig *jitConfig, TR_RuntimeHelper *helperIDs, void **helperAddresses, int32_t numHelpers)
    {
    initializeJitRuntimeHelperTable(false);
 
@@ -165,7 +165,7 @@ initializeTestJit(TR_RuntimeHelper *helperIDs, void **helperAddresses, int32_t n
    TR::Compiler->initialize();
 
    // --------------------------------------------------------------------------
-   static TestCompiler::FrontEnd fe;
+   static TR::FrontEnd fe;
    auto jitConfig = fe.jitConfig();
 
    initializeAllHelpers(jitConfig, helperIDs, helperAddresses, numHelpers);
@@ -196,7 +196,7 @@ extern "C"
 void
 shutdownJit()
    {
-   auto fe = TestCompiler::FrontEnd::instance();
+   auto fe = TR::FrontEnd::instance();
 
    TR::CodeCacheManager &codeCacheManager = fe->codeCacheManager();
    codeCacheManager.destroy();

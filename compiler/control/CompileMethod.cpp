@@ -41,7 +41,6 @@
 #include "control/Options_inlines.hpp"
 #include "env/CPU.hpp"
 #include "env/CompilerEnv.hpp"
-#include "env/ConcreteFE.hpp"
 #include "env/IO.hpp"
 #include "env/JitConfig.hpp"
 #include "env/PersistentInfo.hpp"
@@ -133,7 +132,7 @@ generatePerfToolEntry(uint8_t *startPC, uint8_t *endPC, const char *sig, const c
 #include "p/codegen/PPCTableOfConstants.hpp"
 #endif
 
-int32_t commonJitInit(OMR::FrontEnd &fe, char *cmdLineOptions)
+int32_t commonJitInit(TR::FrontEnd &fe, char *cmdLineOptions)
    {
    auto jitConfig = fe.jitConfig();
 
@@ -180,7 +179,7 @@ int32_t commonJitInit(OMR::FrontEnd &fe, char *cmdLineOptions)
 
 int32_t init_options(TR::JitConfig *jitConfig, char *cmdLineOptions)
    {
-   OMR::FrontEnd *fe = OMR::FrontEnd::instance();
+   TR::FrontEnd *fe = TR::FrontEnd::instance();
 
    if (cmdLineOptions)
       {
@@ -212,7 +211,7 @@ int32_t init_options(TR::JitConfig *jitConfig, char *cmdLineOptions)
    return 0;
    }
 
-static bool methodCanBeCompiled(OMR::FrontEnd *fe, TR_ResolvedMethod &method, TR_FilterBST *&filter, TR_Memory *trMemory)
+static bool methodCanBeCompiled(TR::FrontEnd *fe, TR_ResolvedMethod &method, TR_FilterBST *&filter, TR_Memory *trMemory)
    {
    if (!method.isCompilable(trMemory))
       return false;
@@ -274,8 +273,8 @@ compileMethodFromDetails(
       int32_t &rc)
    {
    uint64_t translationStartTime = TR::Compiler->vm.getUSecClock();
-   OMR::FrontEnd &fe = OMR::FrontEnd::singleton();
-   auto jitConfig = fe.jitConfig();
+   TR::FrontEnd *fe = TR::FrontEnd::instance();
+   auto jitConfig = fe->jitConfig();
    TR::RawAllocator rawAllocator;
    TR::SystemSegmentProvider defaultSegmentProvider(1 << 16, rawAllocator);
    TR::DebugSegmentProvider debugSegmentProvider(1 << 16, rawAllocator);
@@ -284,7 +283,7 @@ compileMethodFromDetails(
          static_cast<TR::SegmentAllocator &>(debugSegmentProvider) :
          static_cast<TR::SegmentAllocator &>(defaultSegmentProvider);
    TR::Region dispatchRegion(scratchSegmentProvider, rawAllocator);
-   TR_Memory trMemory(*fe.persistentMemory(), dispatchRegion);
+   TR_Memory trMemory(*(fe->persistentMemory()), dispatchRegion);
    TR_ResolvedMethod & compilee = *((TR_ResolvedMethod *)details.getMethod());
 
    TR::CompileIlGenRequest request(details);
@@ -296,7 +295,7 @@ compileMethodFromDetails(
 
    TR_FilterBST *filterInfo = 0;
    TR_OptimizationPlan *plan = 0;
-   if (!methodCanBeCompiled(&fe, compilee, filterInfo, &trMemory))
+   if (!methodCanBeCompiled(fe, compilee, filterInfo, &trMemory))
       {
       if (TR::Options::getCmdLineOptions()->getVerboseOption(TR_VerboseCompileExclude))
          TR_VerboseLog::writeLineLocked(TR_Vlog_INFO, "%s cannot be translated", compilee.signature(&trMemory));
@@ -329,7 +328,7 @@ compileMethodFromDetails(
    // FIXME: perhaps use stack memory instead
 
    TR_ASSERT(TR::comp() == NULL, "there seems to be a current TLS TR::Compilation object %p for this thread. At this point there should be no current TR::Compilation object", TR::comp());
-   TR::Compilation compiler(0, omrVMThread, &fe, &compilee, request, options, dispatchRegion, &trMemory, plan);
+   TR::Compilation compiler(0, omrVMThread, fe, &compilee, request, options, dispatchRegion, &trMemory, plan);
    TR_ASSERT(TR::comp() == &compiler, "the TLS TR::Compilation object %p for this thread does not match the one %p just created.", TR::comp(), &compiler);
 
    try
@@ -370,7 +369,7 @@ compileMethodFromDetails(
          {
 
          // not ready yet...
-         //OMR::MethodMetaDataPOD *metaData = fe.createMethodMetaData(&compiler);
+         //OMR::MethodMetaDataPOD *metaData = fe->createMethodMetaData(&compiler);
 
          startPC = (uint8_t*)compiler.getMethodSymbol()->getMethodAddress();
          uint64_t translationTime = TR::Compiler->vm.getUSecClock() - translationStartTime;
@@ -404,7 +403,7 @@ compileMethodFromDetails(
             || compiler.getOption(TR_EmitRelocatableELFFile)
             )
             {
-            TR::CodeCacheManager &codeCacheManager(fe.codeCacheManager());
+            TR::CodeCacheManager &codeCacheManager(fe->codeCacheManager());
             TR::CodeGenerator &codeGenerator(*compiler.cg());
             codeCacheManager.registerCompiledMethod(compiler.externalName(), startPC, codeGenerator.getCodeLength());
             if (compiler.getOption(TR_EmitRelocatableELFFile))

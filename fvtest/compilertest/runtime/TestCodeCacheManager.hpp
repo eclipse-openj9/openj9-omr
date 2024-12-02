@@ -39,7 +39,6 @@ namespace TR { class CodeCacheManager; }
 namespace TestCompiler
 {
 
-class JitConfig;
 class FrontEnd;
 
 class OMR_EXTENSIBLE CodeCacheManager : public OMR::CodeCacheManagerConnector

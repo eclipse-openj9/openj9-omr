@@ -21,16 +21,22 @@
 
 #include "env/JitConfig.hpp"
 #include <string.h>
-#include "env/ConcreteFE.hpp"
+#include "env/FrontEnd.hpp"
 
-TR::JitConfig::JitConfig()
+TR::JitConfig *
+OMR::JitConfig::self()
+   {
+   return static_cast<TR::JitConfig *>(this);
+   }
+
+OMR::JitConfig::JitConfig()
    : _processorInfo(0), _interpreterTOC(0), _pseudoTOC(0)
    {
    memcpy(_eyecatcher, "JITCONF" /* 7 bytes + null */, sizeof(this->_eyecatcher));
    }
 
 TR::JitConfig *
-TR::JitConfig::instance()
+OMR::JitConfig::instance()
    {
-   return OMR::FrontEnd::singleton().jitConfig();
+   return TR::FrontEnd::instance()->jitConfig();
    }

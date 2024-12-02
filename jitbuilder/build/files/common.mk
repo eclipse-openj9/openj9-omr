@@ -84,6 +84,8 @@ JIT_PRODUCT_BACKEND_SOURCES+=\
     $(JIT_OMR_DIRTY_DIR)/env/TRPersistentMemory.cpp \
     $(JIT_OMR_DIRTY_DIR)/env/VerboseLog.cpp \
     $(JIT_OMR_DIRTY_DIR)/env/FrontEnd.cpp \
+    $(JIT_OMR_DIRTY_DIR)/env/OMRFrontEnd.cpp \
+    $(JIT_OMR_DIRTY_DIR)/env/OMRJitConfig.cpp \
     $(JIT_OMR_DIRTY_DIR)/il/OMRDataTypes.cpp \
     $(JIT_OMR_DIRTY_DIR)/il/OMRTreeTop.cpp \
     $(JIT_OMR_DIRTY_DIR)/il/OMRILOps.cpp \
@@ -213,8 +215,6 @@ JIT_PRODUCT_BACKEND_SOURCES+=\
     $(JIT_OMR_DIRTY_DIR)/codegen/OMRInstruction.cpp \
     $(JIT_OMR_DIRTY_DIR)/codegen/ELFGenerator.cpp \
     $(JIT_OMR_DIRTY_DIR)/codegen/OMRELFRelocationResolver.cpp \
-    $(JIT_OMR_DIRTY_DIR)/env/FEBase.cpp \
-    $(JIT_OMR_DIRTY_DIR)/env/JitConfig.cpp \
     $(JIT_OMR_DIRTY_DIR)/control/CompilationController.cpp \
     $(JIT_OMR_DIRTY_DIR)/control/OMRCompilationStrategy.cpp \
     $(JIT_OMR_DIRTY_DIR)/optimizer/FEInliner.cpp \
@@ -251,11 +251,9 @@ JIT_PRODUCT_BACKEND_SOURCES+=\
     $(JIT_OMR_DIRTY_DIR)/env/PersistentAllocator.cpp \
     $(JIT_PRODUCT_DIR)/compile/ResolvedMethod.cpp \
     $(JIT_PRODUCT_DIR)/control/Jit.cpp \
-    $(JIT_PRODUCT_DIR)/env/FrontEnd.cpp \
     $(JIT_PRODUCT_DIR)/ilgen/JBIlGeneratorMethodDetails.cpp \
     $(JIT_PRODUCT_DIR)/optimizer/JBOptimizer.cpp \
     $(JIT_PRODUCT_DIR)/runtime/JBCodeCacheManager.cpp \
-    $(JIT_PRODUCT_DIR)/runtime/JBJitConfig.cpp \
 
 CPP_GENERATED_SOURCE_DIR=$(JIT_PRODUCT_DIR)/client/cpp
 CPP_GENERATED_API_SOURCES+=\

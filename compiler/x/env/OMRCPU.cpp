@@ -23,7 +23,6 @@
 #include <string.h>
 #include "env/CPU.hpp"
 #include "env/CompilerEnv.hpp"
-#include "env/JitConfig.hpp"
 #include "env/ProcessorInfo.hpp"
 #include "infra/Flags.hpp"
 #include "x/runtime/X86Runtime.hpp"

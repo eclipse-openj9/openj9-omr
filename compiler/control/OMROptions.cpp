@@ -4987,7 +4987,9 @@ const char *OMR::Options::_verboseOptionNames[TR_NumVerboseOptions] =
    "CheckpointRestore",
    "CheckpointRestoreDetails",
    "RSSReport",
-   "RSSReportDetailed"
+   "RSSReportDetailed",
+   "dependencyTracking",
+   "dependencyTrackingDetails"
    };
 
 

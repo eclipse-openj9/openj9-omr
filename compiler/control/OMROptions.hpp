@@ -1074,6 +1074,8 @@ enum TR_VerboseFlags
    TR_VerboseCheckpointRestoreDetails,
    TR_VerboseRSSReport,
    TR_VerboseRSSReportDetailed,
+   TR_VerboseDependencyTracking,
+   TR_VerboseDependencyTrackingDetails,
    //If adding new options add an entry to _verboseOptionNames as well
    TR_NumVerboseOptions        // Must be the last one;
    };

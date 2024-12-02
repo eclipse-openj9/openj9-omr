@@ -28,6 +28,16 @@ import unittest
 import genutils
 import cppgen
 
+# Method assertRegexpMatches has been deprecated in Python 3.2 and compatibility
+# alias was apparently removed in Python 3.12.
+#
+# However not all CI build agents have been upgraded to Python 3.2 while some
+# only have Python 3.12+ and cannot be easily downgraded (e.g., RISC-V agents).
+#
+# The code belows provides compatibility for Python < 3.2
+if not hasattr(unittest.TestCase, "assertRegex") and hasattr(unittest.TestCase, "assertRegexpMatches"):
+    setattr(unittest.TestCase, "assertRegex", unittest.TestCase.assertRegexpMatches)
+
 class CppGeneratorTest(unittest.TestCase):
     """Tests for CppGenerator class"""
 

@@ -907,7 +907,7 @@ enum TR_CompilationOptions
    TR_DisableInvariantCodeMotion                      = 0x00008000 + 28,
    TR_EnableSelfTuningScratchMemoryUsageBeforeCompile = 0x00010000 + 28,
    TR_EnableSelfTuningScratchMemoryUsageInTrMemory    = 0x00020000 + 28,
-   // Available                                       = 0x00040000 + 28,
+   TR_DisableUTF16BEEncoder                           = 0x00040000 + 28,
    // Available                                       = 0x00080000 + 28,
    TR_DisableDAATrailingZero                          = 0x00100000 + 28,
    TR_DisableDynamicRIBufferProcessing                = 0x00200000 + 28,

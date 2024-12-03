@@ -1685,6 +1685,9 @@ public:
    bool getSupportsArrayTranslateTROT() {return _flags4.testAny(SupportsArrayTranslateTROT);}
    void setSupportsArrayTranslateTROT() {_flags4.set(SupportsArrayTranslateTROT);}
 
+   bool getSupportsEncodeUtf16LittleWithSurrogateTest() { return false; }
+   bool getSupportsEncodeUtf16BigWithSurrogateTest() { return false; }
+
    bool getSupportsArraySet() {return _flags1.testAny(SupportsArraySet);}
    void setSupportsArraySet() {_flags1.set(SupportsArraySet);}
 

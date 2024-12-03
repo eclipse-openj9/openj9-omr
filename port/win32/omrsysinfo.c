@@ -542,11 +542,13 @@ WIN32_WINNT version constants :
 								}
 							}
 							else if (isServerMajorVersion10) {
-								/* Windows Server 2022 build number cutoff is 20348, Server 2019 cutoff is 17763
-								 * and Server 2016 cutoff is 14393. These versions are currently ones with major
-								 * version 10.
+								/* Windows Server 2025 build number cutoff is 26100, Server 2022 build number cutoff is 20348,
+								 * Server 2019 cutoff is 17763 and Server 2016 cutoff is 14393. These versions are currently
+								 * ones with major version 10.
 								 */
-								if (currentBuildNumber >= 20348) {
+								if (currentBuildNumber >= 26100) {
+									PPG_si_osType = "Windows Server 2025";
+								} else if (currentBuildNumber >= 20348) {
 									PPG_si_osType = "Windows Server 2022";
 								} else if (currentBuildNumber >= 17763) {
 									PPG_si_osType = "Windows Server 2019";

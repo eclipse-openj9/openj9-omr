@@ -3404,6 +3404,8 @@ bool TR_LoopStrider::reassociateAndHoistComputations(TR::Block *loopInvariantBlo
                index
                header_size/-header_size
 
+      OffHeap reassociation and hoisting is temporarily disabled
+      TODO enable storing dataAddrPtr in temps
       off-heap mode:
          aladd (internal pointer)
             contiguousArrayDataAddrFieldSymbol (dataAddrPointer, internal pointer)
@@ -3462,6 +3464,7 @@ bool TR_LoopStrider::reassociateAndHoistComputations(TR::Block *loopInvariantBlo
             //node->getSymbolReference()->getSymbol()->isAuto() &&
             node->getSymbolReference()->getSymbol()->isAutoOrParm() &&
             _neverWritten->get(node->getSymbolReference()->getReferenceNumber()))) &&
+           !originalNode->getFirstChild()->isDataAddrPointer() && // TODO enable storing dataAddrPtr in temps
            (!_registersScarce || (originalNode->getReferenceCount() > 1)) &&
            (comp()->getSymRefTab()->getNumInternalPointers() < maxInternalPointers()) &&
            (!comp()->cg()->canBeAffectedByStoreTagStalls() ||
@@ -3672,7 +3675,8 @@ bool TR_LoopStrider::reassociateAndHoistComputations(TR::Block *loopInvariantBlo
     * If first child of originalNode is not dataAddr pointer we have already
     * hoisted the array aload, no need to do it again.
     */
-   if (TR::Compiler->om.isOffHeapAllocationEnabled() && originalNode && originalNode->getFirstChild()->isDataAddrPointer())
+   if (false && // TODO enable storing dataAddrPtr in temps
+      TR::Compiler->om.isOffHeapAllocationEnabled() && originalNode && originalNode->getFirstChild()->isDataAddrPointer())
       {
       if ((isInternalPointer &&
             (comp()->getSymRefTab()->getNumInternalPointers() < maxInternalPointers())) &&

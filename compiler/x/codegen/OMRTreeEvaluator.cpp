@@ -2822,7 +2822,7 @@ static bool enablePrimitiveArrayCopyInlineSmallSizeWithoutREPMOVS(uint8_t elemen
  *     The code generator
  *
  */
-static void generateArrayElementStore(TR::Node* node, TR::Register* addressReg, int32_t index, TR::Register* valueReg, uint8_t size,  TR::CodeGenerator* cg)
+static void generateArrayElementStore(TR::Node* node, TR::Register* addressReg, int32_t index, TR::Register* valueReg, uint8_t size, TR::CodeGenerator* cg)
    {
    TR::InstOpCode::Mnemonic storeOpcode;
    if (valueReg->getKind() == TR_VRF)
@@ -2852,9 +2852,6 @@ static void generateArrayElementStore(TR::Node* node, TR::Register* addressReg, 
             break;
          case 8:
             storeOpcode = TR::InstOpCode::MOVQMemReg;
-            break;
-         case 16:
-            storeOpcode = TR::InstOpCode::MOVDQUMemReg;
             break;
          default:
             TR_ASSERT_FATAL(0, "%s: Unsupported size: %u for TR_FPR registers\n", __FUNCTION__, size);
@@ -2941,9 +2938,6 @@ static void generateArrayElementLoad(TR::Node* node, TR::Register* valueReg, uin
             break;
          case 8:
             loadOpCode  = TR::InstOpCode::MOVQRegMem;
-            break;
-         case 16:
-            loadOpCode  = TR::InstOpCode::MOVDQURegMem;
             break;
          default:
             TR_ASSERT_FATAL(0, "%s: Unsupported size %u for TR_FPR registers\n", __FUNCTION__, size);
@@ -3199,7 +3193,7 @@ static void arraycopyForShortConstArrayWithDirection(TR::Node* node, TR::Registe
          {
          if (xmmReg == NULL && regSize[i] == 16)
             {
-            xmmReg = cg->allocateRegister(TR_FPR);
+            xmmReg = cg->allocateRegister(TR_VRF);
             }
          else if (gprReg == NULL && regSize[i] < 16)
             {
@@ -3256,7 +3250,7 @@ static void arraycopyForShortConstArrayWithoutDirection(TR::Node* node, TR::Regi
    // First load as many bytes as possible into XMM
    for (uint32_t i=0; i<moves[0]; i++)
       {
-      TR::Register* xmmReg = cg->allocateRegister(TR_FPR);
+      TR::Register* xmmReg = cg->allocateRegister(TR_VRF);
       generateArrayElementLoad(node, xmmReg, 16, srcReg, i*16, cg);
       xmmUsed[i] = xmmReg;
       }
@@ -3283,7 +3277,7 @@ static void arraycopyForShortConstArrayWithoutDirection(TR::Node* node, TR::Regi
       }
    else if (totalSize > 16 && residue > 0) // shift 1 xmm
       {
-      reg1 = cg->allocateRegister(TR_FPR);
+      reg1 = cg->allocateRegister(TR_VRF);
       generateArrayElementLoad(node, reg1, 16, srcReg, totalSize - 16, cg);
       residueCase = 2;
       }
@@ -3297,7 +3291,7 @@ static void arraycopyForShortConstArrayWithoutDirection(TR::Node* node, TR::Regi
       }
    else if (residue != 0) // 1 gpr + 1 xmm
       {
-      reg1 = cg->allocateRegister(TR_FPR);
+      reg1 = cg->allocateRegister(TR_VRF);
       reg2 = srcReg;
       firstLoadSizeForCase4  = residue>8? 8:4;
       secondLoadSizeForCase4 = (residue - firstLoadSizeForCase4);
@@ -3632,7 +3626,7 @@ static void arraySetToZeroForShortConstantArrays(TR::Node* node, TR::Register* a
       }
    else
       {
-      tempReg = cg->allocateRegister(TR_FPR);
+      tempReg = cg->allocateRegister(TR_VRF);
       generateRegRegInstruction(TR::InstOpCode::XORPDRegReg, node, tempReg, tempReg, cg);
       int32_t moves = static_cast<int32_t>(size/16);
       for (int32_t i=0; i<moves; i++)
@@ -3731,7 +3725,7 @@ static void arraySetForShortConstantArrays(TR::Node* node, uint8_t elementSize, 
          }
       else
          {
-         TR::Register* XMM = cg->allocateRegister(TR_FPR);
+         TR::Register* XMM = cg->allocateRegister(TR_VRF);
          packXMMWithMultipleValues(node, XMM, valueReg, elementSize, cg);
 
          for (int32_t i=0; i<moves[0]; i++)

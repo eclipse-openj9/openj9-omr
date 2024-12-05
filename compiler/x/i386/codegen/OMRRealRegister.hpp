@@ -216,11 +216,11 @@ class OMR_EXTENSIBLE RealRegister : public OMR::X86::RealRegister
       *evex = (*evex & 0xf8) | (0x7 & regNum) | (zero ? 0x80 : 0);
       }
 
-   void setSourceRegisterFieldInEVEX(uint8_t *opcodeByte)
+   void setSourceRegisterFieldInEVEX(uint8_t *evexP0)
       {
       uint8_t regNum = ((_fullRegisterBinaryEncodings[_registerNumber].needsRexPlusRXB << 3) | _fullRegisterBinaryEncodings[_registerNumber].id);
       uint8_t bits = 0;
-      *opcodeByte &= 0x9F;
+      *evexP0 &= 0x9F;
 
       if (regNum & 0x10)
          {
@@ -232,29 +232,29 @@ class OMR_EXTENSIBLE RealRegister : public OMR::X86::RealRegister
          bits |= 0x2;
          }
 
-      *opcodeByte |= (~bits & 0x6) << 4;
+      *evexP0 |= (~bits & 0x6) << 4;
       }
 
-   void setSource2ndRegisterFieldInEVEX(uint8_t *opcodeByte)
+   void setSource2ndRegisterFieldInEVEX(uint8_t *evexP1)
       {
       uint8_t regNum = ((_fullRegisterBinaryEncodings[_registerNumber].needsRexPlusRXB << 3) | _fullRegisterBinaryEncodings[_registerNumber].id);
 
-      *opcodeByte &= 0x87; // zero out vvvv bits
-      *opcodeByte |= (~(regNum << 3)) & 0x78;
-      uint8_t *evexP1 = opcodeByte + 1;
-      *evexP1 &= 0xf7;
+      *evexP1 &= 0x87; // zero out vvvv bits
+      *evexP1 |= (~(regNum << 3)) & 0x78;
+      uint8_t *evexP2 = evexP1 + 1;
+      *evexP2 &= 0xf7;
 
       if (!(regNum & 0x10))
          {
-         *evexP1 |= 0x8;
+         *evexP2 |= 0x8;
          }
       }
 
-   void setTargetRegisterFieldInEVEX(uint8_t *opcodeByte)
+   void setTargetRegisterFieldInEVEX(uint8_t *evexP0)
       {
       uint8_t regNum = ((_fullRegisterBinaryEncodings[_registerNumber].needsRexPlusRXB << 3) | _fullRegisterBinaryEncodings[_registerNumber].id);
       uint8_t bits = 0;
-      *opcodeByte &= 0x6F;
+      *evexP0 &= 0x6F;
 
       if (regNum & 0x10)
          {
@@ -266,7 +266,7 @@ class OMR_EXTENSIBLE RealRegister : public OMR::X86::RealRegister
          bits |= 0x8;
          }
 
-      *opcodeByte |= (~bits & 0x9) << 4;
+      *evexP0 |= (~bits & 0x9) << 4;
       }
 
    /** \brief

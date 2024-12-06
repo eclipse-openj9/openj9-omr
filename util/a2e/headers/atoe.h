@@ -57,11 +57,11 @@ extern "C" {
         extern char e2a_tab[CONV_TABLE_SIZE];
     #endif
 
-      #define a2e(str, len) sysTranslate(str, abs(len), a2e_tab, (char *)malloc(abs(len)+1)) /*ibm@41269*/
-      #define e2a(str, len) sysTranslate(str, abs(len), e2a_tab, (char *)malloc(abs(len)+1)) /*ibm@41269*/
+      #define a2e(str, len) sysTranslate(str, abs(len), a2e_tab, (char *)malloc(abs(len) + 1)) /*ibm@41269*/
+      #define e2a(str, len) sysTranslate(str, abs(len), e2a_tab, (char *)malloc(abs(len) + 1)) /*ibm@41269*/
 
-      #define a2e_string(str) sysTranslate(str, strlen(str), a2e_tab, (char *)malloc(strlen(str)+1)) /*ibm@41269*/
-      #define e2a_string(str) sysTranslate(str, strlen(str), e2a_tab, (char *)malloc(strlen(str)+1)) /*ibm@41269*/
+      #define a2e_string(str) ((NULL == str) ? NULL : sysTranslate(str, strlen(str), a2e_tab, (char *)malloc(strlen(str) + 1))) /*ibm@41269*/
+      #define e2a_string(str) ((NULL == str) ? NULL : sysTranslate(str, strlen(str), e2a_tab, (char *)malloc(strlen(str) + 1))) /*ibm@41269*/
 
     char *a2e_func(char *str, int len);    /*ibm@1423*/
     char *e2a_func(char *str, int len);    /*ibm@3218*/

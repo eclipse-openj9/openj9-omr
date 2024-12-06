@@ -26,7 +26,6 @@ set(COMPILERTEST_FILES
 	control/TestJit.cpp
 	ilgen/IlInjector.cpp
 	ilgen/TestIlGeneratorMethodDetails.cpp
-	runtime/TestCodeCacheManager.cpp
 )
 
 if(OMR_ARCH_X86)

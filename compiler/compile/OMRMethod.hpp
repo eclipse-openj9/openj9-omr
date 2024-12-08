@@ -133,8 +133,7 @@ public:
 
     enum Type {
         J9,
-        Test,
-        JitBuilder
+        NotJ9
     };
 
     virtual TR::DataType parmType(uint32_t parmNumber); // returns the type of the parmNumber'th parameter (0-based)

@@ -22,7 +22,6 @@
 include(OmrCompilerSupport)
 
 set(COMPILERTEST_FILES
-	compile/ResolvedMethod.cpp
 	control/TestJit.cpp
 	ilgen/IlInjector.cpp
 	ilgen/TestIlGeneratorMethodDetails.cpp

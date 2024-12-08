@@ -33,7 +33,6 @@ endif()
 
 # JitBuilder Files
 set(JITBUILDER_OBJECTS
-	compile/ResolvedMethod.cpp
 	control/Jit.cpp
 	ilgen/JBIlGeneratorMethodDetails.cpp
 	optimizer/JBOptimizer.hpp

@@ -3064,6 +3064,9 @@ TR::Register *OMR::Power::TreeEvaluator::vloadEvaluator(TR::Node *node, TR::Code
    TR_ASSERT_FATAL_WITH_NODE(node, node->getDataType().getVectorLength() == TR::VectorLength128,
                    "Only 128-bit vectors are supported %s", node->getDataType().toString());
 
+   TR_ASSERT_FATAL(!node->getDataType().isMask() || node->getDataType().getVectorElementType() == TR::Int8,
+                   "Only load of Byte masks is currently supported"); // TODO: support other mask types
+
    TR::InstOpCode::Mnemonic opcode;
    TR_RegisterKinds kind;
 
@@ -3097,6 +3100,19 @@ TR::Register *OMR::Power::TreeEvaluator::vloadEvaluator(TR::Node *node, TR::Code
    TR::Register *dstReg = cg->allocateRegister(kind);
 
    TR::LoadStoreHandler::generateLoadNodeSequence(cg, dstReg, node, opcode, 16, true);
+
+   if (node->getDataType().isMask() &&
+       node->getDataType().getVectorElementType() == TR::Int8)
+      {
+      // Lowest mask bit needs to be expanded to the whole mask element
+      TR::Register *tmpReg = cg->allocateRegister(TR_VRF);
+      generateTrg1ImmInstruction(cg, TR::InstOpCode::vspltisb, node, tmpReg, 15);
+      // move lowest bit to the sign position
+      generateTrg1Src2Instruction(cg, TR::InstOpCode::vslb, node, dstReg, dstReg, tmpReg);
+      // extend sign bit to the right
+      generateTrg1Src2Instruction(cg, TR::InstOpCode::vsrab, node, dstReg, dstReg, tmpReg);
+      cg->stopUsingRegister(tmpReg);
+      }
 
    node->setRegister(dstReg);
    return dstReg;

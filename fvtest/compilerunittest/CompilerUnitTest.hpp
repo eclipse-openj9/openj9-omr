@@ -86,7 +86,8 @@ public:
         , _comp(0, NULL, TR::FrontEnd::instance(), &_method, _ilGenRequest, _options, _dispatchRegion, &_trMemory,
               TR_OptimizationPlan::alloc(warm))
     {
-        _symbol = TR::ResolvedMethodSymbol::create(_comp.trStackMemory(), &_method, &_comp);
+        //_symbol = TR::ResolvedMethodSymbol::create(_comp.trStackMemory(), &_method, &_comp);
+	_symbol = _comp.getJittedMethodSymbol();
         TR::CFG *cfg = new (region()) TR::CFG(&_comp, _symbol, region());
         _symbol->setFlowGraph(cfg);
         _optimizer = new (region()) TR::Optimizer(&_comp, _symbol, false);

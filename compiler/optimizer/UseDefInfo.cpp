@@ -71,7 +71,7 @@
 
 /**
  * Constructs TR_UseDefInfo instance. Note that this should not be called directly.
- * Instead construction is handled by OMR::Optimizer::createUseDefInfo() method.
+ * Instead construction is handled by OMR::SmallOptimizer::createUseDefInfo() method.
  *
  * @param cfg                        The compilation instance
  * @param requiresGlobals

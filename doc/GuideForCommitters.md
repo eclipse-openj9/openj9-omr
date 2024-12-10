@@ -60,14 +60,14 @@ prior to merging.
 explanation in the pull request from the author of the rationale along with a
 description of the problem if the commit is not reverted.
 
-* If a pull request modifies the [Contribution Guidelines](https://github.com/eclipse-omr/omr/blob/master/CONTRIBUTING.md),
+* If a pull request modifies the [Contribution Guidelines](/CONTRIBUTING.md),
 request the author to post a detailed summary of the changes on the
 `omr-dev@eclipse.org` mailing list after the pull request is merged.
 
 
 ### Pre-Merge Checklist
 
-* Ensure the pull request adheres to all the Eclipse OMR [Contribution Guidelines](https://github.com/eclipse-omr/omr/blob/master/CONTRIBUTING.md)
+* Ensure the pull request adheres to all the Eclipse OMR [Contribution Guidelines](/CONTRIBUTING.md)
 
 * Ensure pull requests and issues are annotated with descriptive metadata by
 attaching GitHub labels.  The current set of labels can be found [here](https://github.com/eclipse-omr/omr/labels).

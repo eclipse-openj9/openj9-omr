@@ -30,6 +30,11 @@ ensure are completed prior to merging a pull request.
 It also documents the minimum participation requirements that Eclipse OMR
 committers must meet to maintain their active committer status.
 
+Committers should be aware of the
+[Eclipse Foundation Generative Artificial Intelligence Usage Guidelines](https://www.eclipse.org/projects/guidelines/genai/)
+as well as the
+[Eclipse OMR Generative Artificial Intelligence Usage Guidelines](/CONTRIBUTING.md#Generative-Artificial-Intelligence-Usage-Guidelines).
+
 ## Reviewing and Merging Pull Requests
 
 ### General Guidelines
@@ -55,14 +60,14 @@ prior to merging.
 explanation in the pull request from the author of the rationale along with a
 description of the problem if the commit is not reverted.
 
-* If a pull request modifies the [Contribution Guidelines](https://github.com/eclipse-omr/omr/blob/master/CONTRIBUTING.md),
+* If a pull request modifies the [Contribution Guidelines](/CONTRIBUTING.md),
 request the author to post a detailed summary of the changes on the
 `omr-dev@eclipse.org` mailing list after the pull request is merged.
 
 
 ### Pre-Merge Checklist
 
-* Ensure the pull request adheres to all the Eclipse OMR [Contribution Guidelines](https://github.com/eclipse-omr/omr/blob/master/CONTRIBUTING.md)
+* Ensure the pull request adheres to all the Eclipse OMR [Contribution Guidelines](/CONTRIBUTING.md)
 
 * Ensure pull requests and issues are annotated with descriptive metadata by
 attaching GitHub labels.  The current set of labels can be found [here](https://github.com/eclipse-omr/omr/labels).

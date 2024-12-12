@@ -439,7 +439,7 @@ for removal, including if the tags:
 
 * interfere with the readability or understandability of the code or
   documentation,
-* become difficult or unwieldly to maintain (e.g., through code refactoring or
+* become difficult or unwieldy to maintain (e.g., through code refactoring or
   code sharing),
 * become obsolete (e.g., information within a tagged section is removed
   entirely),

@@ -1693,10 +1693,12 @@ static const char *getFieldSignature(OMR::ValuePropagation *vp, TR::Node *node, 
  * Try to add constraint to known objects or constant strings.
  * @parm vp The VP object.
  * @parm node The node whose value might be a known object or a constant string.
+ * @parm isGlobal True to create a global constraint, or false for a block constraint.
  *
  * @return True if the constraint is created, otherwise false.
  */
-static bool addKnownObjectConstraints(OMR::ValuePropagation *vp, TR::Node *node)
+static bool addKnownObjectConstraints(
+   OMR::ValuePropagation *vp, TR::Node *node, bool isGlobal)
    {
    TR::SymbolReference *symRef = node->getSymbolReference();
    if (symRef->isUnresolved())
@@ -1718,20 +1720,20 @@ static bool addKnownObjectConstraints(OMR::ValuePropagation *vp, TR::Node *node)
          vp->comp()->fej9()->getObjectClassInfoFromObjectReferenceLocation(vp->comp(),
                                                          (uintptr_t)objectReferenceLocation);
 
+      TR::VPConstraint *constraint = NULL;
       if (ci.isString && symRef->getSymbol()->isStatic())
          {
          // There's a lot of machinery around optimizing const strings.  Even
          // though we lose object identity info this way, it's likely better to
          // engage the const string optimizations.
          //
-         vp->addGlobalConstraint(node,
-            TR::VPClass::create(vp, TR::VPConstString::create(vp, symRef),
+         constraint = TR::VPClass::create(vp,
+            TR::VPConstString::create(vp, symRef),
             TR::VPNonNullObject::create(vp), NULL, NULL,
-            TR::VPObjectLocation::create(vp, TR::VPObjectLocation::HeapObject)));
+            TR::VPObjectLocation::create(vp, TR::VPObjectLocation::HeapObject));
          }
       else if (ci.jlClass) // without a jlClass, we can't tell what kind of constraint to add
          {
-         TR::VPConstraint *constraint = NULL;
          const char *classSig = TR::Compiler->cls.classSignature(vp->comp(), ci.clazz, vp->trMemory());
          if (ci.isFixedJavaLangClass)
             {
@@ -1741,7 +1743,6 @@ static bool addKnownObjectConstraints(OMR::ValuePropagation *vp, TR::Node *node)
                   TR::VPKnownObject::createForJavaLangClass(vp, ci.knownObjectIndex),
                   TR::VPNonNullObject::create(vp), NULL, NULL,
                   TR::VPObjectLocation::create(vp, TR::VPObjectLocation::JavaLangClassObject));
-               vp->addGlobalConstraint(node, constraint);
                }
             }
          else
@@ -1752,20 +1753,20 @@ static bool addKnownObjectConstraints(OMR::ValuePropagation *vp, TR::Node *node)
                   TR::VPKnownObject::create(vp, ci.knownObjectIndex),
                   TR::VPNonNullObject::create(vp), NULL, NULL,
                   TR::VPObjectLocation::create(vp, TR::VPObjectLocation::HeapObject));
-               vp->addBlockConstraint(node, constraint);
                }
             }
+         }
 
-         if (constraint)
+      if (constraint != NULL)
+         {
+         vp->addBlockOrGlobalConstraint(node, constraint, isGlobal);
+         if (vp->trace())
             {
-            if (vp->trace())
-               {
-               traceMsg(vp->comp(), "      -> Constraint is ");
-               constraint->print(vp);
-               traceMsg(vp->comp(), "\n");
-               }
-            return true;
+            traceMsg(vp->comp(), "      -> Constraint is ");
+            constraint->print(vp);
+            traceMsg(vp->comp(), "\n");
             }
+         return true;
          }
       }
 #endif
@@ -1800,7 +1801,8 @@ TR::Node *constrainAload(OMR::ValuePropagation *vp, TR::Node *node)
          vp->addGlobalConstraint(node, TR::VPObjectLocation::create(vp, TR::VPObjectLocation::J9ClassObject));
          }
 
-      if (addKnownObjectConstraints(vp, node))
+      // Constraints based on known object info from the symref should be non-global.
+      if (addKnownObjectConstraints(vp, node, false))
          return node;
 
       if (!symRef->getSymbol()->isArrayShadowSymbol())
@@ -2138,7 +2140,8 @@ TR::Node *constrainAloadi(OMR::ValuePropagation *vp, TR::Node *node)
             }
          }
 
-      if (addKnownObjectConstraints(vp, node))
+      // Constraints based on known object info from the symref should be non-global.
+      if (addKnownObjectConstraints(vp, node, false))
          return node;
 
       TR::SymbolReference *symRef = node->getSymbolReference();
@@ -11322,7 +11325,7 @@ void constrainNewlyFoldedConst(OMR::ValuePropagation *vp, TR::Node *node, bool i
              node->getOpCode().hasSymbolReference() &&
              node->getSymbolReference()->hasKnownObjectIndex())
             {
-            addKnownObjectConstraints(vp, node);
+            addKnownObjectConstraints(vp, node, isGlobal);
             }
          else if (vp->trace())
             {

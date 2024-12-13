@@ -174,11 +174,11 @@ xmlns:vgc="http://www.ibm.com/j9/verbosegc">
 	<complexType name="mem-info">
 		<sequence maxOccurs="1" minOccurs="1">
 			<element ref="vgc:mem" maxOccurs="unbounded" minOccurs="0" />
+			<element ref="vgc:offheap-objects" maxOccurs="1" minOccurs="0" />
 			<element ref="vgc:arraylet-reference" maxOccurs="1" minOccurs="0" />
 			<element ref="vgc:arraylet-primitive" maxOccurs="1" minOccurs="0" />
 			<element ref="vgc:arraylet-unknown" maxOccurs="1" minOccurs="0" />
 			<element ref="vgc:numa" maxOccurs="1" minOccurs="0" />
-			<element ref="vgc:offheap-objects" maxOccurs="1" minOccurs="0" />
 			<element ref="vgc:pending-finalizers" maxOccurs="1" minOccurs="0" />
 			<element ref="vgc:continuation-objects" maxOccurs="1" minOccurs="0" />
 			<element ref="vgc:remembered-set" maxOccurs="1" minOccurs="0" />
@@ -829,10 +829,10 @@ xmlns:vgc="http://www.ibm.com/j9/verbosegc">
 			<element ref="vgc:trace-info" maxOccurs="1" minOccurs="1" />
 			<element ref="vgc:cardclean-info" maxOccurs="1" minOccurs="0" />
 			<element ref="vgc:remembered-set-cleared" maxOccurs="1" minOccurs="0" />
+			<element ref="vgc:offheap" maxOccurs="1" minOccurs="0" />
 			<element ref="vgc:finalization" maxOccurs="1" minOccurs="0" />
 			<element ref="vgc:ownableSynchronizers" maxOccurs="1" minOccurs="0" />
 			<element ref="vgc:continuations" maxOccurs="1" minOccurs="0" />
-			<element ref="vgc:offheap" maxOccurs="1" minOccurs="0" />
 			<element ref="vgc:references" maxOccurs="unbounded" minOccurs="0" />
 			<element ref="vgc:stringconstants" maxOccurs="1" minOccurs="0" />
 			<element ref="vgc:object-monitors" maxOccurs="1" minOccurs="0" />
@@ -893,10 +893,10 @@ xmlns:vgc="http://www.ibm.com/j9/verbosegc">
 			<element ref="vgc:memory-traced" maxOccurs="unbounded" minOccurs="0" />
 			<element ref="vgc:regions" maxOccurs="1" minOccurs="0" />
 			<element ref="vgc:remembered-set-cleared" maxOccurs="1" minOccurs="1" />
+			<element ref="vgc:offheap" maxOccurs="1" minOccurs="0" />
 			<element ref="vgc:finalization" maxOccurs="1" minOccurs="0" />
 			<element ref="vgc:ownableSynchronizers" maxOccurs="1" minOccurs="0" />
 			<element ref="vgc:continuations" maxOccurs="1" minOccurs="0" />
-			<element ref="vgc:offheap" maxOccurs="1" minOccurs="0" />
 			<element ref="vgc:references" maxOccurs="unbounded" minOccurs="0" />
 			<element ref="vgc:stringconstants" maxOccurs="1" minOccurs="0" />
 			<element ref="vgc:object-monitors" maxOccurs="1" minOccurs="0" />

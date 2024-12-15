@@ -43,7 +43,7 @@ public:
       : _offset(-1), _multiplier(1), _rootNode(NULL), _comp(c)
       {}
 
-   bool process(TR::Node* aiaddNode, bool onlyConsiderConstAiaddSecondChild = false);
+   bool process(TR::Node* elementAddrNode, bool onlyConsiderConstAiaddSecondChild = false);
 
    TR::Compilation *          comp()                        { return _comp; }
    TR_Memory *               trMemory()                    { return comp()->trMemory(); }

@@ -3723,11 +3723,23 @@ OMR::Options::processOption(
          }
       }
    else
+      {
       processingMethod = opt->fcn;
+      }
 
    // Process this entry
    //
-   return processingMethod(option + opt->length, base, opt);
+   const char *retVal = processingMethod(option + opt->length, base, opt);
+
+   // Check to see whether the dltOptLevel option is specified in a subset
+   // and remember that information in the global JIT cmdLineOptions
+   if (optionSet)
+      {
+      if (optionSet->getOptions()->getDLTOptLevel() != -1)
+         _jitCmdLineOptions->setAnOptionSetContainsADltOptLevel(true);
+      }
+
+   return retVal;
    }
 
 

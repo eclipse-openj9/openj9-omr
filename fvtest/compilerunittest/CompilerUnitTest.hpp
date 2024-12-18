@@ -25,9 +25,9 @@
 #include <gtest/gtest.h>
 #include <exception>
 
-#include "Jit.hpp"
 #include "codegen/CodeGenerator.hpp"
 #include "compile/Compilation.hpp"
+#include "control/SimpleJit.hpp"
 #include "env/FrontEnd.hpp"
 #include "env/SystemSegmentProvider.hpp"
 #include "ilgen/IlGenRequest.hpp"
@@ -63,9 +63,9 @@ public:
 
 class JitInitializer {
 public:
-    JitInitializer() { initializeJit(); }
+    JitInitializer() { initializeSimpleJit(); }
 
-    ~JitInitializer() { shutdownJit(); }
+    ~JitInitializer() { shutdownSimpleJit(); }
 };
 
 /**

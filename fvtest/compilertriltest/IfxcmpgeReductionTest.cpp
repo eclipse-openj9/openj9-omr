@@ -36,14 +36,14 @@ class IfxcmpgeReductionTest : public TRTest::TestWithPortLib, public ::testing::
       const char *options = "-Xjit:acceptHugeMethods,enableBasicBlockHoisting,omitFramePointer,"
          "useILValidator,paranoidoptcheck,disableGlobalVP,disableLocalCSE";
 
-      auto initSuccess = initializeJitWithOptions(const_cast<char*>(options));
+      auto initSuccess = initializeSimpleJitWithOptions(const_cast<char*>(options));
 
       ASSERT_TRUE(initSuccess) << "Failed to initialize the JIT.";
       }
 
    static void TearDownTestCase()
       {
-      shutdownJit();
+      shutdownSimpleJit();
       }
    };
 

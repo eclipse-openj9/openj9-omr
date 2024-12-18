@@ -24,7 +24,8 @@
 
 #include "env/OMRCompilerEnv.hpp"
 #include "env/RawAllocator.hpp"
-#include "infra/Annotations.hpp"
+
+struct OMRPortLibrary;
 
 namespace TR {
 

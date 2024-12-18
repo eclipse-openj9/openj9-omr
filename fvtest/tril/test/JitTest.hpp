@@ -23,12 +23,8 @@
 #define JITTEST_HPP
 
 #include <gtest/gtest.h>
+#include "control/SimpleJit.hpp"
 #include "ilgen/MethodBuilder.hpp"
-#include "Jit.hpp"
-
-bool initializeJit();
-int32_t compileMethodBuilder(TR::MethodBuilder * methodBuilder, void ** entryPoint);
-void shutdownJit();
 
 namespace Tril {
 namespace Test {
@@ -48,12 +44,12 @@ class JitTest : public ::testing::Test
 
    static void SetUpTestCase()
       {
-      ASSERT_TRUE(initializeJit()) << "Failed to initialize the JIT.";
+      ASSERT_TRUE(initializeSimpleJit()) << "Failed to initialize the JIT.";
       }
 
    static void TearDownTestCase()
       {
-      shutdownJit();
+      shutdownSimpleJit();
       }
    };
 

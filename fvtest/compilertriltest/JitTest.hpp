@@ -28,10 +28,10 @@
 #include <cstring>
 #include <cmath>
 #include "control/Options.hpp"
+#include "control/SimpleJit.hpp"
 #include "optimizer/Optimizer.hpp"
 #include "ilgen/MethodBuilder.hpp"
 #include "omrport.h"
-#include "Jit.hpp"
 
 #define ASSERT_NULL(pointer) ASSERT_EQ(NULL, (pointer))
 #define ASSERT_NOTNULL(pointer) ASSERT_TRUE(NULL != (pointer))
@@ -140,14 +140,14 @@ class JitTest : public TestWithPortLib
 
    JitTest()
       {
-      auto initSuccess = initializeJitWithOptions((char*)"-Xjit:acceptHugeMethods,enableBasicBlockHoisting,omitFramePointer,useILValidator,paranoidoptcheck");
+      auto initSuccess = initializeSimpleJitWithOptions((char*)"-Xjit:acceptHugeMethods,enableBasicBlockHoisting,omitFramePointer,useILValidator,paranoidoptcheck");
       if (!initSuccess)
          throw std::runtime_error("Failed to initialize jit");
       }
 
    ~JitTest()
       {
-      shutdownJit();
+      shutdownSimpleJit();
       }
   };
 
@@ -171,14 +171,14 @@ class JitWithPortTest : public TestWithPortLib
 
    JitWithPortTest()
       {
-      auto initSuccess = initializeJitWithOptionsAndPort((char*)"-Xjit:acceptHugeMethods,enableBasicBlockHoisting,omitFramePointer,useILValidator,paranoidoptcheck", privateOmrPortLibrary);
+      auto initSuccess = initializeSimpleJitWithOptionsAndPort((char*)"-Xjit:acceptHugeMethods,enableBasicBlockHoisting,omitFramePointer,useILValidator,paranoidoptcheck", privateOmrPortLibrary);
       if (!initSuccess)
          throw std::runtime_error("Failed to initialize jit");
       }
 
    ~JitWithPortTest()
       {
-      shutdownJit();
+      shutdownSimpleJit();
       }
   };
 

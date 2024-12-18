@@ -20,7 +20,7 @@
  *******************************************************************************/
 
 #include "default_compiler.hpp"
-#include "Jit.hpp"
+#include "control/SimpleJit.hpp"
 
 #include <cassert>
 #include <cstdio>
@@ -31,7 +31,7 @@ typedef int32_t (IncOrDecFunction)(int32_t*);
 int main(int argc, char const * const * const argv) {
     assert(argc == 2);
 
-   bool initialized = initializeJit();
+   bool initialized = initializeSimpleJit();
    if (!initialized) {
         fprintf(stderr, "FAIL: could not initialize JIT\n");
         exit(-1);
@@ -66,6 +66,6 @@ int main(int argc, char const * const * const argv) {
     value = -2;
     printf("%d -> %d\n", value, incordec(&value));
 
-    shutdownJit();
+    shutdownSimpleJit();
     return 0;
 }

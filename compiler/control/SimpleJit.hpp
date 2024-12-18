@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright IBM Corp. and others 2017
+ * Copyright IBM Corp. and others 2014
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -20,15 +20,31 @@
  * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0 OR GPL-2.0-only WITH Classpath-exception-2.0 OR GPL-2.0-only WITH OpenJDK-assembly-exception-1.0
  *******************************************************************************/
 
-#include <stdint.h>
+#ifndef SIMPLEJIT_INCL
+#define SIMPLEJIT_INCL
+
+#include "stdint.h"
+#include "compile/CompilationTypes.hpp"
+
+// An individual program should link statically against the compiler, then call:
+//     initializeSimpleJit() or initializeSimpleJitWithOptions() to initialize the Jit
+//     compile as many times as needed to create compiled code
+//     run the compiled code as needed
+//     shuwdownJit() when the test is complete (at which time compiled code will be freed)
+//
 
 struct OMRPortLibrary;
+namespace TR { class IlGeneratorMethodDetails; }
 
-namespace TR { class MethodBuilder; }
-class TR_Memory;
+extern "C"
+{
 
-extern "C" bool initializeJit();
-extern "C" bool initializeJitWithOptions(char * options);
-extern "C" bool initializeJitWithOptionsAndPort(char *options, OMRPortLibrary *portLib);
-extern "C" uint32_t compileMethodBuilder(TR::MethodBuilder *m, uint8_t **entry);
-extern "C" void shutdownJit();
+bool initializeSimpleJitWithOptionsAndPort(char *options, OMRPortLibrary *portLib);
+bool initializeSimpleJitWithOptions(char *options);
+bool initializeSimpleJit();
+uint8_t *compileMethod(TR::IlGeneratorMethodDetails & details, TR_Hotness hotness, int32_t &rc);
+void shutdownSimpleJit();
+
+} // extern "C"
+
+#endif // defined(SIMPLEJIT_INCL)

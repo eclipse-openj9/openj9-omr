@@ -34,7 +34,6 @@ endif()
 # JitBuilder Files
 set(JITBUILDER_OBJECTS
 	control/Jit.cpp
-	ilgen/JBIlGeneratorMethodDetails.cpp
 )
 
 # Generated client API files

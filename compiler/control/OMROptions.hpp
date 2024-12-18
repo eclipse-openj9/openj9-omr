@@ -1421,6 +1421,7 @@ public:
       _osVersionString = NULL;
       _allowRecompilation = false;
       _anOptionSetContainsACountValue = false;
+      _anOptionSetContainsADltOptLevel = false;
       _numInterfaceCallCacheSlots = 0;
       _numInterfaceCallStaticSlots = 0;
       _storeSinkingLastOpt = 0;
@@ -1434,9 +1435,9 @@ public:
       _maxStaticPICSlots = 0;
       _hotMaxStaticPICSlots = 0;
       _newAotrtDebugLevel = 0;
-      _disableDLTBytecodeIndex = 0;
-      _enableDLTBytecodeIndex = 0;
-      _dltOptLevel = 0;
+      _disableDLTBytecodeIndex = -1;
+      _enableDLTBytecodeIndex = -1;
+      _dltOptLevel = -1;
       _profilingCount = 0;
       _profilingFrequency = 0;
       _counterBucketGranularity = 0;
@@ -1665,6 +1666,9 @@ public:
 
    bool      anOptionSetContainsACountValue()          {return _anOptionSetContainsACountValue; }
    void      setAnOptionSetContainsACountValue(bool b) { _anOptionSetContainsACountValue = b; }
+
+   bool      anOptionSetContainsADltOptLevel()          {return _anOptionSetContainsADltOptLevel; }
+   void      setAnOptionSetContainsADltOptLevel(bool b) { _anOptionSetContainsADltOptLevel = b; }
    int32_t   getEnableDLTBytecodeIndex()       {return _enableDLTBytecodeIndex;}
    int32_t   getDisableDLTBytecodeIndex()      {return _disableDLTBytecodeIndex;}
    int32_t   getDLTOptLevel()                  {return _dltOptLevel;}
@@ -2440,6 +2444,7 @@ protected:
    char *                      _osVersionString;
    bool                        _allowRecompilation;
    bool                        _anOptionSetContainsACountValue;
+   bool                        _anOptionSetContainsADltOptLevel;
    int32_t                     _numInterfaceCallCacheSlots;
    int32_t                     _numInterfaceCallStaticSlots;
    int32_t                     _storeSinkingLastOpt;

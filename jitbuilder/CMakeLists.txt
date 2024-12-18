@@ -37,24 +37,6 @@ set(JITBUILDER_OBJECTS
 	ilgen/JBIlGeneratorMethodDetails.cpp
 )
 
-if(OMR_ARCH_X86)
-	list(APPEND JITBUILDER_OBJECTS
-		x/codegen/Evaluator.cpp
-	)
-elseif(OMR_ARCH_S390)
-	list(APPEND JITBUILDER_OBJECTS
-		z/codegen/Evaluator.cpp
-	)
-elseif(OMR_ARCH_POWER)
-	list(APPEND JITBUILDER_OBJECTS
-		p/codegen/Evaluator.cpp
-		p/runtime/CodeSync.cpp
-		p/runtime/AsmUtil.spp
-		p/runtime/CodeDispatch.spp
-		${omr_SOURCE_DIR}/compiler/p/env/OMRDebugEnv.cpp
-	)
-endif()
-
 # Generated client API files
 set(CPP_API_GENERATOR ${CMAKE_CURRENT_SOURCE_DIR}/apigen/cppgen.py)
 set(JITBUILDER_CPP_API_HEADER_DIR ${CMAKE_CURRENT_SOURCE_DIR}/release/cpp/include)

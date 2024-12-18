@@ -27,29 +27,6 @@ set(COMPILERTEST_FILES
 	ilgen/TestIlGeneratorMethodDetails.cpp
 )
 
-if(OMR_ARCH_X86)
-	list(APPEND COMPILERTEST_FILES
-		x/codegen/Evaluator.cpp
-	)
-elseif(OMR_ARCH_POWER)
-	list(APPEND COMPILERTEST_FILES
-		#Host
-		p/runtime/AsmUtil.spp
-		p/runtime/CodeDispatch.spp
-		p/runtime/CodeSync.cpp
-		${omr_SOURCE_DIR}/compiler/p/runtime/OMRCodeCacheConfig.cpp
-		#target
-		p/codegen/Evaluator.cpp
-		${omr_SOURCE_DIR}/compiler/p/env/OMRDebugEnv.cpp
-	)
-elseif(OMR_ARCH_S390)
-	list(APPEND COMPILERTEST_FILES
-		z/codegen/Evaluator.cpp
-		${omr_SOURCE_DIR}/compiler/z/env/OMRCPU.cpp
-		${omr_SOURCE_DIR}/compiler/z/env/OMRDebugEnv.cpp
-	)
-endif()
-
 if(OMR_ARCH_X86 OR OMR_ARCH_S390)
 	set(OMR_ENHANCED_WARNINGS OFF)
 else()

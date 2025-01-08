@@ -376,6 +376,11 @@ TR_InlinerBase::setInlineThresholds(TR::ResolvedMethodSymbol *callerSymbol)
          _nodeCountThreshold *= 2;
       }
 
+   static const char *g = feGetEnv("TR_MaxInliningCallSites");
+   if (g)
+      _maxInliningCallSites = atoi(g);
+
+
    //call random functions to allow randomness to change limits
    if (comp()->getOption(TR_Randomize))
       {

@@ -289,12 +289,13 @@ TR::ARM64SystemLinkage::mapStack(TR::ResolvedMethodSymbol *method)
 
    stackIndex = 8; // [sp+0] is for link register
 
-   // map non-long/double, and non-vector automatics
+   // map non-long/double/address, and non-vector automatics
    while (localCursor != NULL)
       {
       if (localCursor->getGCMapIndex() < 0
           && localCursor->getDataType() != TR::Int64
           && localCursor->getDataType() != TR::Double
+          && localCursor->getDataType() != TR::Address
           && !localCursor->getDataType().isVector())
          {
          localCursor->setOffset(stackIndex);
@@ -307,11 +308,12 @@ TR::ARM64SystemLinkage::mapStack(TR::ResolvedMethodSymbol *method)
    automaticIterator.reset();
    localCursor = automaticIterator.getFirst();
 
-   // map long/double automatics
+   // map long/double/address automatics
    while (localCursor != NULL)
       {
       if (localCursor->getDataType() == TR::Int64
-          || localCursor->getDataType() == TR::Double)
+          || localCursor->getDataType() == TR::Double
+          || localCursor->getDataType() == TR::Address)
          {
          localCursor->setOffset(stackIndex);
          stackIndex += (localCursor->getSize() + 7) & (~7);

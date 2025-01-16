@@ -407,11 +407,9 @@ bool TR_LocalReordering::insertEarlierIfPossible(TR::TreeTop *storeTree, TR::Tre
       else
         stopHere = isAnySymInDefinedBy(currentNode, visitCount2);
 
-      if (!stopHere)
-   {
-   if (currentNode->getOpCode().isCheckCast()) // Moving a store earlier than a checkcast usually results in suboptimal type info (because of the way store constraints work, they only pick up the type info when the store was encountered)
-      stopHere = true;
-   }
+      // Moving a node earlier than a check may have unforeseeable consequences as sophisticated optimizations like global vp can perform transformations based on value numbers.
+      if (!stopHere && currentNode->getOpCode().isCheck())
+         stopHere = true;
 
       if (stopHere)
          {
@@ -430,7 +428,7 @@ bool TR_LocalReordering::insertEarlierIfPossible(TR::TreeTop *storeTree, TR::Tre
             storeTree->setPrevTreeTop(currentTree);
             storeTree->setNextTreeTop(nextTree);
             nextTree->setPrevTreeTop(storeTree);
-      }
+            }
          foundInsertionSpot = true;
          break;
          }

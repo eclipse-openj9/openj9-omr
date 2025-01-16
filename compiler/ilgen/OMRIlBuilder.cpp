@@ -1258,6 +1258,13 @@ OMR::IlBuilder::Return()
 void
 OMR::IlBuilder::Return(TR::IlValue *value)
    {
+   TR::DataType retType = value->getDataType();
+   if (value->getDataType() == TR::Int8 || value->getDataType() == TR::Int16 || (Word == Int64 && value->getDataType() == TR::Int32))
+      {
+      retType = Word->getPrimitiveType();
+      value = ConvertTo(Word, value);
+      }
+
    TR::IlBuilder *returnBuilder = _methodBuilder->returnBuilder();
    if (returnBuilder != NULL)
       {
@@ -2144,7 +2151,7 @@ OMR::IlBuilder::Call(TR::MethodBuilder *calleeMB, int32_t numArgs, TR::IlValue *
       return NULL;
 
    // otherwise, return callee's return value
-   TR::IlValue *returnValue = returnBuilder->Load(returnSymbol);
+   TR::IlValue *returnValue = ConvertTo(calleeMB->getReturnType(), returnBuilder->Load(returnSymbol));
    TraceIL("IlBuilder[ %p ]::Call callee return value is %d loaded from %s\n", this, returnValue->getID(), returnSymbol);
    return returnValue;
    }

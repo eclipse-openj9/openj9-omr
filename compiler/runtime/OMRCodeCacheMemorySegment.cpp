@@ -33,15 +33,27 @@ OMR::CodeCacheMemorySegment::self()
 void
 OMR::CodeCacheMemorySegment::adjustAlloc(int64_t adjust)
    {
+   /*
+    * Assuming the code cache memory segment is allocated on the code cache memory,
+    * we need to modify the memory's permission before and after updating members.
+    */
+   omrthread_jit_write_protect_disable();
    self()->setSegmentAlloc(self()->segmentAlloc() + adjust);
+   omrthread_jit_write_protect_enable();
    }
 
 
 void
 OMR::CodeCacheMemorySegment::free(TR::CodeCacheManager *manager)
    {
+   /*
+    * Assuming the code cache memory segment is allocated on the code cache memory,
+    * we need to modify the memory's permission before and after updating members.
+    */
+   omrthread_jit_write_protect_disable();
    manager->freeMemory(_base);
    new (static_cast<TR::CodeCacheMemorySegment *>(this)) TR::CodeCacheMemorySegment();
+   omrthread_jit_write_protect_enable();
    }
 
 void

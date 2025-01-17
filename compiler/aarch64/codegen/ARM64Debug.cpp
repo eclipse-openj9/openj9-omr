@@ -1708,6 +1708,7 @@ TR_Debug::print(TR::FILE *pOutFile, TR::ARM64Trg1Src1ImmInstruction *instr)
                mnemonic = "cmnimmw";
                break;
             default:
+               TR_ASSERT_FATAL( 0, "unexpected operation");
                break;
             }
          trfprintf(pOutFile, "%s \t", mnemonic);

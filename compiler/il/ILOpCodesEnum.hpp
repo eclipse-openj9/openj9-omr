@@ -22,7 +22,7 @@
 #ifndef ILOPCODES_ENUM_INCL
 #define ILOPCODES_ENUM_INCL
 
-#include "compiler/il/OMRILOpCodesEnum.hpp"
+#include "il/OMRILOpCodesEnum.hpp"
 
    FirstTROp = FirstOMROp,
    LastTROp = LastScalarOMROp,

@@ -505,6 +505,9 @@ public:
    bool getCondCodeShouldBePreserved() { return _cgFlags.testAny(S390CG_condCodeShouldBePreserved); }
    void setCondCodeShouldBePreserved(bool b) { _cgFlags.set(S390CG_condCodeShouldBePreserved, b); }
 
+   bool getUseLXAInstructions() { return _cgFlags.testAny(S390CG_useLXAInstructions); }
+   void setUseLXAInstructions(bool b) { _cgFlags.set(S390CG_useLXAInstructions, b); }
+
    uint8_t getFCondMoveBranchOpCond() { return fCondMoveBranchOpCond; }
    void setFCondMoveBranchOpCond(TR::InstOpCode::S390BranchCondition b) { fCondMoveBranchOpCond = (getMaskForBranchCondition(b)) & 0xF; }
 
@@ -727,7 +730,7 @@ public:
     */
    bool yankIndexScalingOp()
       {
-      return false;
+      return !getUseLXAInstructions();
       }
 
    bool excludeInvariantsFromGRAEnabled();
@@ -836,7 +839,7 @@ protected:
       S390CG_condCodeShouldBePreserved   = 0x00004000,
       S390CG_enableBranchPreload         = 0x00008000,
       S390CG_globalStaticBaseRegisterOn  = 0x00010000,
-      // Available                       = 0x00020000,
+      S390CG_useLXAInstructions          = 0x00020000,
       S390CG_canExceptByTrap             = 0x00040000,
       S390CG_enableTLHPrefetching        = 0x00080000,
       S390CG_enableBranchPreloadForCalls = 0x00100000,

@@ -408,17 +408,12 @@ OMR::Z::CodeGenerator::lowerTreeIfNeeded(
          }
       }
 
-   static const bool canEmulateLXA = TR::InstOpCode(TR::InstOpCode::LXAB).canEmulate() &&
-                                     TR::InstOpCode(TR::InstOpCode::LXAH).canEmulate() &&
-                                     TR::InstOpCode(TR::InstOpCode::LXAF).canEmulate() &&
-                                     TR::InstOpCode(TR::InstOpCode::LXAG).canEmulate() &&
-                                     TR::InstOpCode(TR::InstOpCode::LXAQ).canEmulate();
    static bool disableLXAUncommoning = feGetEnv("TR_disableLXAUncommoning") != NULL;
 
    if (!disableLXAUncommoning &&
        (node->getOpCodeValue() == TR::aiadd || node->getOpCodeValue() == TR::aladd) &&
        !parent->getOpCode().isLoad() &&
-       (canEmulateLXA || self()->comp()->target().cpu.isAtLeast(OMR_PROCESSOR_S390_ZNEXT)))
+       self()->getUseLXAInstructions())
       {
       // To enable generating more LXAs, perform uncommoning on trees that look like this:
       // axadd
@@ -650,6 +645,15 @@ OMR::Z::CodeGenerator::initialize()
       comp->setOption(TR_DisableVectorBCD);
       }
 
+   static bool canEmulateLXA = TR::InstOpCode(TR::InstOpCode::LXAB).canEmulate() &&
+                                     TR::InstOpCode(TR::InstOpCode::LXAH).canEmulate() &&
+                                     TR::InstOpCode(TR::InstOpCode::LXAF).canEmulate() &&
+                                     TR::InstOpCode(TR::InstOpCode::LXAG).canEmulate() &&
+                                     TR::InstOpCode(TR::InstOpCode::LXAQ).canEmulate();
+   if (canEmulateLXA || comp->target().cpu.isAtLeast(OMR_PROCESSOR_S390_ZNEXT))
+      {
+      cg->setUseLXAInstructions(true);
+      }
    // Be pessimistic until we can prove we don't exit after doing code-generation
    cg->setExitPointsInMethod(true);
 

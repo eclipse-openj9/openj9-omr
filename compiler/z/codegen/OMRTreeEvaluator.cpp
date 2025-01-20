@@ -7877,13 +7877,8 @@ OMR::Z::TreeEvaluator::axaddEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    TR::MemoryReference * axaddMR = generateS390MemoryReference(cg);
    TR::InstOpCode::Mnemonic loadOp;
    static const bool disableLXAaxaddZNext = feGetEnv("TR_disableLXAaxaddZNext") != NULL;
-   static const bool canEmulateLXA = TR::InstOpCode(TR::InstOpCode::LXAB).canEmulate() &&
-                                     TR::InstOpCode(TR::InstOpCode::LXAH).canEmulate() &&
-                                     TR::InstOpCode(TR::InstOpCode::LXAF).canEmulate() &&
-                                     TR::InstOpCode(TR::InstOpCode::LXAG).canEmulate() &&
-                                     TR::InstOpCode(TR::InstOpCode::LXAQ).canEmulate();
 
-   axaddMR->populateAddTree(node, cg, &loadOp, !disableLXAaxaddZNext && (cg->comp()->target().cpu.isAtLeast(OMR_PROCESSOR_S390_ZNEXT) || canEmulateLXA));
+   axaddMR->populateAddTree(node, cg, &loadOp, !disableLXAaxaddZNext && cg->getUseLXAInstructions());
    axaddMR->eliminateNegativeDisplacement(node, cg);
    axaddMR->enforceDisplacementLimit(node, cg, NULL);
 

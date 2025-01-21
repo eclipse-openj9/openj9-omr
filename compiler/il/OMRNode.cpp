@@ -273,18 +273,7 @@ OMR::Node::Node(TR::Node * from, uint16_t numChildren)
    if(comp->getDebug())
       comp->getDebug()->newNode(self());
 
-   TR_IlGenerator * ilGen = comp->getCurrentIlGenerator();
-   if (ilGen)
-      {
-      _byteCodeInfo.setDoNotProfile(0);
-      }
-   else
-      {
-      _byteCodeInfo.setDoNotProfile(1);
-      }
-
-   if (from->getOpCode().isBranch() || from->getOpCode().isSwitch())
-      _byteCodeInfo.setDoNotProfile(1);
+   self()->getByteCodeInfo().setDoNotProfile(from->getByteCodeInfo().doNotProfile());
 
    if (from->getOpCode().isStoreReg() || from->getOpCode().isLoadReg())
       {

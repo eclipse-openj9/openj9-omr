@@ -3782,7 +3782,7 @@ TR_Debug::getRuntimeHelperName(int32_t index)
          case TR_PPCrevertToInterpreterGlue:                       return "_revertToInterpreterGlue";
          case TR_PPCarrayTranslateTRTO:                            return "__arrayTranslateTRTO (ISO8859_1 & ASCII)";
          case TR_PPCarrayTranslateTRTO255:                         return "__arrayTranslateTRTO255 (ISO8859_1)";
-         case TR_PPCarrayTranslateTROT255:                         return "__arrayTranslateTRTO255 (ISO8859_1)";
+         case TR_PPCarrayTranslateTROT255:                         return "__arrayTranslateTROT255 (ISO8859_1)";
          case TR_PPCarrayTranslateTROT:                            return "__arrayTranslateTROT (ASCII)";
 
          case TR_PPCicallVMprJavaSendVirtual0:                     return "icallVMprJavaSendVirtual0";

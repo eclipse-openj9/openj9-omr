@@ -29,6 +29,7 @@
 #include "omrcfg.h"
 #include "modronbase.h"
 #include "objectdescription.h"
+#include "omrgcconsts.h"
 
 #include "HeapLinkedFreeHeader.hpp"
 
@@ -72,10 +73,16 @@
  * since having too many copies in parallel may be counterproductive */
 #define MAX_OUTSTANDING_COPIES 4
 #define SIZE_ALIGNMENT 0xfffUL
-#define REMAINING_SIZE_MASK ~SIZE_ALIGNMENT
+#define REMAINING_SIZE_MASK (~SIZE_ALIGNMENT)
 #define OUTSTANDING_COPIES_MASK (OUTSTANDING_COPIES_MASK_BASE << OUTSTANDING_COPIES_SHIFT)
 #define COPY_PROGRESS_INFO_MASK (REMAINING_SIZE_MASK | OUTSTANDING_COPIES_MASK)
 #define SIZE_OF_SECTION_TO_COPY(size) ((size) >> 7)
+
+#if !defined(OMR_OBJECT_METADATA_FLAGS_MASK)
+#error "omrgcconsts.h should have defined OMR_OBJECT_METADATA_FLAGS_MASK"
+#elif (0 != (OMR_OBJECT_METADATA_FLAGS_MASK & COPY_PROGRESS_INFO_MASK))
+#error "mask overlap: OMR_OBJECT_METADATA_FLAGS_MASK, COPY_PROGRESS_INFO_MASK"
+#endif
 
 /**
  * Scavenger forwarding header is used to distinguish objects in evacuate space that are being/have been

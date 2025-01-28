@@ -602,10 +602,6 @@ typedef enum {
 #define OMR_OBJECT_METADATA_AGE_MASK		0xF0
 #define OMR_OBJECT_METADATA_AGE_SHIFT		4
 
-#if (0 != (OMR_OBJECT_METADATA_FLAGS_MASK & COPY_PROGRESS_INFO_MASK))
-#error "mask overlap: OMR_OBJECT_METADATA_FLAGS_MASK, COPY_PROGRESS_INFO_MASK"
-#endif
-
 /**
  * Remembered bit states overlay tenured header age flags. These are normalized to low-order byte, as above.
  */

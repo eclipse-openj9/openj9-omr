@@ -158,6 +158,11 @@ OMR::SymbolReference::getUseonlyAliasesBV(TR::SymbolReferenceTable * symRefTab)
             return &symRefTab->aliasBuilder.defaultMethodUseAliases();
             }
 
+         if (symRefTab->isNonHelper(self(), TR::SymbolReferenceTable::isIdentityObjectNonHelperSymbol))
+            {
+            return &symRefTab->aliasBuilder.defaultMethodUseAliases();
+            }
+
          if (!methodSymbol->isHelper())
             {
             return &symRefTab->aliasBuilder.defaultMethodUseAliases();
@@ -197,6 +202,7 @@ OMR::SymbolReference::getUseonlyAliasesBV(TR::SymbolReferenceTable * symRefTab)
             case TR_incompatibleReceiver:
             case TR_IncompatibleClassChangeError:
             case TR_aThrow:
+            case TR_identityException:
             case TR_aNewArray:
             case TR_monitorExit:
             case TR_transactionExit:
@@ -356,7 +362,8 @@ OMR::SymbolReference::getUseDefAliasesBV(bool isDirectCall, bool includeGCSafePo
              symRefTab->isNonHelper(self(), TR::SymbolReferenceTable::nonNullableArrayNullStoreCheckSymbol) ||
              symRefTab->isNonHelper(self(), TR::SymbolReferenceTable::loadFlattenableArrayElementNonHelperSymbol) ||
              symRefTab->isNonHelper(self(), TR::SymbolReferenceTable::storeFlattenableArrayElementNonHelperSymbol) ||
-             symRefTab->isNonHelper(self(), TR::SymbolReferenceTable::jitDispatchJ9MethodSymbol))
+             symRefTab->isNonHelper(self(), TR::SymbolReferenceTable::jitDispatchJ9MethodSymbol) ||
+             symRefTab->isNonHelper(self(), TR::SymbolReferenceTable::isIdentityObjectNonHelperSymbol))
             {
             return &symRefTab->aliasBuilder.defaultMethodDefAliases();
             }
@@ -378,6 +385,7 @@ OMR::SymbolReference::getUseDefAliasesBV(bool isDirectCall, bool includeGCSafePo
             case TR_divCheck:
             case TR_typeCheckArrayStore:
             case TR_arrayStoreException:
+            case TR_identityException:
             case TR_incompatibleReceiver:
             case TR_IncompatibleClassChangeError:
             case TR_reportFinalFieldModified:

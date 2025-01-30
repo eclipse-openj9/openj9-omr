@@ -37,8 +37,8 @@ public:
    typedef typed_allocator<T, Alloc> allocator_type;
    typedef std::vector<T, typed_allocator<T, Alloc> > container_type;
    typedef typename allocator_type::value_type value_type;
-   typedef typename allocator_type::reference reference;
-   typedef typename allocator_type::const_reference const_reference;
+   typedef typename container_type::reference reference;
+   typedef typename container_type::const_reference const_reference;
    /*
     * This would ideally use the parent vector's size_type.  However, such usage
     * runs into two-phase lookup problems when compiling with MSVC++ 2010.

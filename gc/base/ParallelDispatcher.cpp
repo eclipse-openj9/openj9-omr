@@ -478,7 +478,7 @@ MM_ParallelDispatcher::recomputeActiveThreadCountForTask(MM_EnvironmentBase *env
 		/* Bound the recommended thread count. Determine the  upper bound for the thread count,
 		 * This will either be the user specified gcMaxThreadCount (-XgcmaxthreadsN) or else default max
 		 */
-		taskActiveThreadCount = OMR_MIN(_threadCount, task->getRecommendedWorkingThreads());
+		taskActiveThreadCount = OMR_MIN(taskActiveThreadCount, task->getRecommendedWorkingThreads());
 
 		_activeThreadCount = taskActiveThreadCount;
 

@@ -42,6 +42,7 @@
 #include "infra/List.hpp"
 #include "infra/map.hpp"
 #include "infra/TRlist.hpp"
+#include "infra/Uncopyable.hpp"
 #include "optimizer/DeferredOSRAssumption.hpp"
 #include "optimizer/InlinerFailureReason.hpp"
 
@@ -307,7 +308,7 @@ struct TR_CallTarget : public TR_Link<TR_CallTarget>
    TR_CALLSITE_DEFAULT_ALLOC \
    TR_CALLSITE_INHERIT_CONSTRUCTOR_COMMON (EXTENDED,BASE)
 
-class TR_CallSite : public TR_Link<TR_CallSite>
+class TR_CallSite : public TR_Link<TR_CallSite>, private TR::Uncopyable
    {
       public:
 
@@ -330,39 +331,6 @@ class TR_CallSite : public TR_Link<TR_CallSite>
                   TR::Compilation *comp,
                   int32_t depth=-1,
                   bool allConsts = false);
-
-      TR_CallSite(const TR_CallSite& other) :
-         _allConsts (other._allConsts),
-         _bcInfo (other._bcInfo),
-         _byteCodeIndex (other._byteCodeIndex),
-         _callerBlock (other._callerBlock),
-         _callerResolvedMethod (other._callerResolvedMethod),
-         _callNode (other._callNode),
-         _callNodeTreeTop (other._callNodeTreeTop),
-         _cursorTreeTop (other._cursorTreeTop),
-         _comp (other._comp),
-         _cpIndex (other._cpIndex),
-         _depth (other._depth),
-         _ecsPrexArgInfo (other._ecsPrexArgInfo),
-         _failureReason (other._failureReason),
-         _forceInline (other._forceInline),
-         _initialCalleeMethod (other._initialCalleeMethod),
-         _initialCalleeSymbol (other._initialCalleeSymbol),
-         _interfaceMethod (other._interfaceMethod),
-         _isBackEdge (other._isBackEdge),
-         _isIndirectCall (other._isIndirectCall),
-         _isInterface (other._isInterface),
-         _mytargets (0, other._comp->allocator()),
-         _myRemovedTargets(0, other._comp->allocator()),
-         _parent (other._parent),
-         _receiverClass (other._receiverClass),
-         _stmtNo (other._stmtNo),
-         _unavailableTemps (other._comp->trMemory()),
-         _unavailableBlockTemps (other._comp->trMemory()),
-         _vftSlot (other._vftSlot),
-         _visitCount (other._visitCount)
-         {
-         }
 
       TR_InlinerFailureReason getCallSiteFailureReason() { return _failureReason; }
       //Call Site Specific

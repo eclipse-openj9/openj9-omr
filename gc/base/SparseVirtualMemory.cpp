@@ -122,11 +122,19 @@ MM_SparseVirtualMemory::updateSparseDataEntryAfterObjectHasMoved(void *dataPtr, 
 	return ret;
 }
 
+bool
+MM_SparseVirtualMemory::updateSparseDataEntryAfterObjectHasMoved(void *dataPtr, void *oldProxyObjPtr, uintptr_t size, void *newProxyObjPtr)
+{
+	omrthread_monitor_enter(_largeObjectVirtualMemoryMutex);
+	bool ret = _sparseDataPool->updateSparseDataEntryAfterObjectHasMoved(dataPtr, oldProxyObjPtr, size, newProxyObjPtr);
+	omrthread_monitor_exit(_largeObjectVirtualMemoryMutex);
+	return ret;
+}
+
 void *
 MM_SparseVirtualMemory::allocateSparseFreeEntryAndMapToHeapObject(void *proxyObjPtr, uintptr_t size)
 {
-	/* Committing and de-committing memory sizes must be multiple of pagesize */
-	uintptr_t adjustedSize = MM_Math::roundToCeiling(_pageSize, size);
+	uintptr_t adjustedSize = adjustSize(size);
 
 	omrthread_monitor_enter(_largeObjectVirtualMemoryMutex);
 	void *sparseHeapAddr = _sparseDataPool->findFreeListEntry(adjustedSize);
@@ -138,7 +146,10 @@ MM_SparseVirtualMemory::allocateSparseFreeEntryAndMapToHeapObject(void *proxyObj
 #endif /* defined(OSX) || defined(OMRZTPF)) */
 
 	if (NULL != sparseHeapAddr) {
-		_sparseDataPool->mapSparseDataPtrToHeapProxyObjectPtr(sparseHeapAddr, proxyObjPtr, adjustedSize);
+		/* While the allocate and commit will work with _pageSize aligned memory, the map will contain exact size of the object.
+		 * The size will be verified on updates.
+		 */
+		_sparseDataPool->mapSparseDataPtrToHeapProxyObjectPtr(sparseHeapAddr, proxyObjPtr, size);
 	} else {
 		/* Impossible to get here, there should always be free space at sparse heap */
 		Assert_MM_unreachable();
@@ -163,15 +174,15 @@ MM_SparseVirtualMemory::freeSparseRegionAndUnmapFromHeapObject(MM_EnvironmentBas
 	bool ret = true;
 
 	if ((NULL != dataPtr) && (0 != dataSize)) {
-		Assert_MM_true(0 == (dataSize % _pageSize));
-		ret = decommitMemory(env, dataPtr, dataSize);
+		uintptr_t adjustedSize = adjustSize(dataSize);
+		ret = decommitMemory(env, dataPtr, adjustedSize);
 		if (ret) {
 			omrthread_monitor_enter(_largeObjectVirtualMemoryMutex);
-			ret = (_sparseDataPool->returnFreeListEntry(dataPtr, dataSize) && _sparseDataPool->unmapSparseDataPtrFromHeapProxyObjectPtr(dataPtr));
+			ret = (_sparseDataPool->returnFreeListEntry(dataPtr, adjustedSize) && _sparseDataPool->unmapSparseDataPtrFromHeapProxyObjectPtr(dataPtr));
 			omrthread_monitor_exit(_largeObjectVirtualMemoryMutex);
-			Trc_MM_SparseVirtualMemory_decommitMemory_success(dataPtr, (void *)dataSize);
+			Trc_MM_SparseVirtualMemory_decommitMemory_success(dataPtr, (void *)adjustedSize);
 		} else {
-			Trc_MM_SparseVirtualMemory_decommitMemory_failure(dataPtr, (void *)dataSize);
+			Trc_MM_SparseVirtualMemory_decommitMemory_failure(dataPtr, (void *)adjustedSize);
 			/* TODO: Assert Fatal in case of failure? */
 			Assert_MM_true(false);
 		}
@@ -179,6 +190,30 @@ MM_SparseVirtualMemory::freeSparseRegionAndUnmapFromHeapObject(MM_EnvironmentBas
 
 	return ret;
 }
+
+bool
+MM_SparseVirtualMemory::freeSparseRegionAndUnmapFromHeapObject(MM_EnvironmentBase *env, void *dataPtr, void *proxyObjPtr, uintptr_t size)
+{
+	uintptr_t dataSize = _sparseDataPool->findObjectDataSizeForSparseDataPtr(dataPtr);
+	bool ret = true;
+
+	if ((NULL != dataPtr) && (0 != dataSize)) {
+		uintptr_t adjustedSize = adjustSize(dataSize);
+		ret = decommitMemory(env, dataPtr, adjustedSize);
+		if (ret) {
+			omrthread_monitor_enter(_largeObjectVirtualMemoryMutex);
+			ret = (_sparseDataPool->returnFreeListEntry(dataPtr, adjustedSize) && _sparseDataPool->unmapSparseDataPtrFromHeapProxyObjectPtr(dataPtr, proxyObjPtr, size));
+			omrthread_monitor_exit(_largeObjectVirtualMemoryMutex);
+			Trc_MM_SparseVirtualMemory_decommitMemory_success(dataPtr, (void *)adjustedSize);
+		} else {
+			Trc_MM_SparseVirtualMemory_decommitMemory_failure(dataPtr, (void *)adjustedSize);
+			Assert_MM_unreachable();
+		}
+	}
+
+	return ret;
+}
+
 bool
 MM_SparseVirtualMemory::decommitMemory(MM_EnvironmentBase *env, void *address, uintptr_t size)
 {

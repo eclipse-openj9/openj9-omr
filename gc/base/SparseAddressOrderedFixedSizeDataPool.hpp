@@ -141,6 +141,19 @@ public:
 	bool unmapSparseDataPtrFromHeapProxyObjectPtr(void *dataPtr);
 
 	/**
+	 * Remove entry from the hash table that is associated the object data pointer provided.
+	 * Verify if the entry is consistent(the size and associated the object) before removing.
+	 * Assert if no entry is found or the verifying is failed.
+	 *
+	 * @param dataPtr       void*       Data pointer
+	 * @param proxyObjPtr   void*       Proxy object associated with dataPtr
+	 * @param size          uintptr_t   Size of region consumed by dataPtr
+	 *
+	 * @return true if key associated to dataPtr is removed successfully, false otherwise.
+	 */
+	bool unmapSparseDataPtrFromHeapProxyObjectPtr(void *dataPtr, void *proxyObjPtr, uintptr_t size);
+
+	/**
 	 * Get MM_SparseDataTableEntry associated with data pointer
 	 *
 	 * @param dataPtr	void*	Data pointer
@@ -170,6 +183,15 @@ public:
 	 * @return true if data pointer is valid
 	 */
 	bool isValidDataPtr(void *dataPtr);
+	/**
+	 * Check if the given data pointer is valid and consistent(dataPtr, proxyObjPtr and size)
+	 *
+	 * @param dataPtr       void*       Data pointer
+	 * @param proxyObjPtr   void*       Proxy object associated with dataPtr
+	 * @param size          uintptr_t   Size of region consumed by dataPtr
+	 * @return true if data pointer is valid
+	 */
+	bool isValidDataPtr(void *dataPtr, void *proxyObjPtr, uintptr_t size);
 
 	/**
 	 * Get the largest free list entry
@@ -206,12 +228,26 @@ public:
 	/**
 	 * Update the proxyObjPtr after an object has moved for the sparse data entry associated with the given dataPtr.
 	 *
-	 * @param dataPtr		void*	Data pointer
-	 * @param proxyObjPtr	void*	Updated in-heap proxy object pointer for data pointer
+	 * @param dataPtr       void*   Data pointer
+	 * @param proxyObjPtr   void*   Updated in-heap proxy object pointer for data pointer
 	 *
 	 * @return true if the sparse data entry was successfully updated, false otherwise
 	 */
 	bool updateSparseDataEntryAfterObjectHasMoved(void *dataPtr, void *proxyObjPtr);
+
+	/**
+	 * Update the newProxyObjPtr after an object has moved for the sparse data entry associated with the given dataPtr.
+	 * Verify if the entry is consistent(the size and associated the object) before updating.
+	 * Assert if no entry is found or the verifying is failed.
+	 *
+	 * @param dataPtr           void*       Data pointer
+	 * @param oldProxyObjPtr    void*       Proxy object associated with dataPtr
+	 * @param size              uintptr_t   Size of region consumed by dataPtr
+	 * @param newProxyObjPtr    void*       Updated in-heap proxy object pointer for data pointer
+	 *
+	 * @return true if the sparse data entry was successfully updated, false otherwise
+	 */
+	bool updateSparseDataEntryAfterObjectHasMoved(void *dataPtr, void *oldProxyObjPtr, uintptr_t size, void *newProxyObjPtr);
 
 protected:
 	bool initialize(MM_EnvironmentBase *env, void *sparseHeapBase);
@@ -235,6 +271,17 @@ protected:
 	}
 
 private:
+	/**
+	 * Check if the given data pointer is valid and consistent(dataPtr, proxyObjPtr and size)
+	 *
+	 * @param entry	        MM_SparseDataTableEntry*
+	 * @param dataPtr       void*                       Data pointer
+	 * @param proxyObjPtr   void*                       Proxy object associated with dataPtr
+	 * @param size          uintptr_t                   Size of region consumed by dataPtr
+	 * @return true if data pointer is valid.
+	 */
+	MMINLINE bool verifySparseDataEntry(MM_SparseDataTableEntry *entry, void *dataPtr, void *proxyObjPtr, uintptr_t size);
+
 	/**
 	 * Update a sparse heap free list node.
 	 *

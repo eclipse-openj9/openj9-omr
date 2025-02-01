@@ -160,6 +160,25 @@ MM_SparseAddressOrderedFixedSizeDataPool::unmapSparseDataPtrFromHeapProxyObjectP
 	return ret;
 }
 
+bool
+MM_SparseAddressOrderedFixedSizeDataPool::unmapSparseDataPtrFromHeapProxyObjectPtr(void *dataPtr, void *proxyObjPtr, uintptr_t size)
+{
+	bool ret = true;
+	MM_SparseDataTableEntry entryToRemove = MM_SparseDataTableEntry(dataPtr);
+
+	MM_SparseDataTableEntry *entry = (MM_SparseDataTableEntry *)hashTableFind(_objectToSparseDataTable, &entryToRemove);
+	Assert_MM_true((NULL != entry) && verifySparseDataEntry(entry, dataPtr, proxyObjPtr, size));
+
+	if (0 != hashTableRemove(_objectToSparseDataTable, &entryToRemove)) {
+		Trc_MM_SparseAddressOrderedFixedSizeDataPool_removeEntry_failure(dataPtr);
+		ret = false;
+	} else {
+		Trc_MM_SparseAddressOrderedFixedSizeDataPool_removeEntry_success(dataPtr);
+	}
+
+	return ret;
+}
+
 MM_SparseDataTableEntry *
 MM_SparseAddressOrderedFixedSizeDataPool::findSparseDataTableEntryForSparseDataPtr(void *dataPtr) {
 	MM_SparseDataTableEntry lookupEntry = MM_SparseDataTableEntry(dataPtr);
@@ -209,6 +228,13 @@ MM_SparseAddressOrderedFixedSizeDataPool::isValidDataPtr(void *dataPtr)
 	}
 
 	return ret;
+}
+
+bool
+MM_SparseAddressOrderedFixedSizeDataPool::isValidDataPtr(void *dataPtr, void *proxyObjPtr, uintptr_t size)
+{
+	MM_SparseDataTableEntry *entry = findSparseDataTableEntryForSparseDataPtr(dataPtr);
+	return verifySparseDataEntry(entry, dataPtr, proxyObjPtr, size);
 }
 
 MM_SparseHeapLinkedFreeHeader *
@@ -382,6 +408,19 @@ MM_SparseAddressOrderedFixedSizeDataPool::updateSparseDataEntryAfterObjectHasMov
 	return ret;
 }
 
+bool
+MM_SparseAddressOrderedFixedSizeDataPool::updateSparseDataEntryAfterObjectHasMoved(void *dataPtr, void *oldProxyObjPtr, uintptr_t size, void *newProxyObjPtr)
+{
+	MM_SparseDataTableEntry lookupEntry = MM_SparseDataTableEntry(dataPtr);
+	MM_SparseDataTableEntry *entry = (MM_SparseDataTableEntry *)hashTableFind(_objectToSparseDataTable, &lookupEntry);
+
+	Assert_MM_true((NULL != entry) && verifySparseDataEntry(entry, dataPtr, oldProxyObjPtr, size));
+	Trc_MM_SparseAddressOrderedFixedSizeDataPool_updateEntry_success(dataPtr, oldProxyObjPtr, newProxyObjPtr);
+	entry->_proxyObjPtr = newProxyObjPtr;
+
+	return true;
+}
+
 void
 MM_SparseAddressOrderedFixedSizeDataPool::updateSparseHeapFreeListNode(MM_SparseHeapLinkedFreeHeader *node, void *address, uintptr_t size, MM_SparseHeapLinkedFreeHeader *next)
 {
@@ -399,4 +438,22 @@ MM_SparseAddressOrderedFixedSizeDataPool::freeAllSparseHeapFreeListNodes()
 		current = current->_next;
 		pool_removeElement(_freeListPool, temp);
 	}
+}
+
+bool
+MM_SparseAddressOrderedFixedSizeDataPool::verifySparseDataEntry(MM_SparseDataTableEntry *entry, void *dataPtr, void *proxyObjPtr, uintptr_t size)
+{
+	bool ret = false;
+
+	if (NULL != entry) {
+		ret = (entry->_dataPtr == dataPtr);
+	}
+	if (ret) {
+		ret = (entry->_proxyObjPtr == proxyObjPtr);
+	}
+	if (ret) {
+		ret = (entry->_size == size);
+	}
+
+	return ret;
 }

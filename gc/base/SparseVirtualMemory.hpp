@@ -66,6 +66,11 @@ public:
  * Function members
  */
 private:
+	MMINLINE uintptr_t adjustSize(uintptr_t size)
+	{
+		/* Committing and de-committing memory sizes must be a multiple of page size. */
+		return MM_Math::roundToCeiling(_pageSize, size);
+	}
 
 protected:
 	bool initialize(MM_EnvironmentBase* env, uint32_t memoryCategory);
@@ -95,6 +100,19 @@ public:
 	bool updateSparseDataEntryAfterObjectHasMoved(void *dataPtr, void *proxyObjPtr);
 
 	/**
+	 * After the in-heap proxy object pointer has moved, update the proxyObjPtr for the sparse data entry associated with the dataPtr.
+	 * Verify if the entry is consistent(the size and associated the object) before updating.
+	 * Assert if no entry is found or the verifying is failed.
+	 *
+	 * @param dataPtr          void*       Data pointer
+	 * @param oldproxyObjPtr   void*       Proxy object associated with dataPtr
+	 * @param size             uintptr_t   Size of region consumed by dataPtr
+	 * @param newProxyObjPtr   void*       Updated in-heap proxy object pointer for the data pointer
+	 *
+	 * @return true if the table entry was successfully updated, false otherwise
+	 */
+	bool updateSparseDataEntryAfterObjectHasMoved(void *dataPtr, void *oldProxyObjPtr, uintptr_t size, void *newProxyObjPtr);
+	/**
 	 * Find free space at sparse heap address space that satisfies the given size
 	 *
 	 * @param size		uintptr_t	size requested by object pointer to be allocated at sparse heap
@@ -115,6 +133,20 @@ public:
 	 */
 	bool freeSparseRegionAndUnmapFromHeapObject(MM_EnvironmentBase* env, void *dataPtr);
 
+	/**
+	 * Once object is collected by GC, we need to free the sparse region associated
+	 * with the object pointer. Therefore we decommit sparse region and return free
+	 * region to the sparse free region pool.
+	 * Verify if the entry is consistent(the size and associated the object) before freeing.
+	 * Assert if no entry is found or the verifying is failed.
+	 *
+	 * @param dataPtr       void*       Data pointer
+	 * @param proxyObjPtr   void*       Proxy object associated with dataPtr
+	 * @param size          uintptr_t   Size of region consumed by dataPtr
+	 *
+	 * @return true if region associated to object was decommited and freed successfully, false otherwise
+	 */
+	bool freeSparseRegionAndUnmapFromHeapObject(MM_EnvironmentBase *env, void *dataPtr, void *proxyObjPtr, uintptr_t size);
 	/**
 	 * Decommits/Releases memory, returning the associated pages to the OS
 	 *

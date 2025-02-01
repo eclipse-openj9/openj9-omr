@@ -728,7 +728,8 @@ void TR_LocalTransparency::updateInfoForSupportedNodes(TR::Node *node, Container
             }
          else
             {
-            if (child->getOpCode().isLoad() || child->getOpCodeValue() == TR::loadaddr)
+            if ((child->getOpCode().isLoad() || child->getOpCodeValue() == TR::loadaddr) &&
+                !child->isDataAddrPointer())
                {
                if (child->getOpCode().hasSymbolReference() &&
                    (loadaddrAsLoad() || child->getOpCodeValue() != TR::loadaddr))
@@ -753,7 +754,7 @@ void TR_LocalTransparency::updateInfoForSupportedNodes(TR::Node *node, Container
 
                         }
 
-                if (trace())
+                  if (trace())
                         traceMsg(comp(), "Expression %d (n%dn) killed by symRef #%d (loaded in child)\n", node->getLocalIndex(), node->getGlobalIndex(), childSymRefNum);
                      }
                   }
@@ -767,6 +768,8 @@ void TR_LocalTransparency::updateInfoForSupportedNodes(TR::Node *node, Container
                   adjustInfoForAddressAdd(node, firstGrandChild, seenDefinedSymbolReferences, seenStoredSymRefs);
                   adjustInfoForAddressAdd(node, secondGrandChild, seenDefinedSymbolReferences, seenStoredSymRefs);
                   }
+               else if (child->isDataAddrPointer())
+                  adjustInfoForAddressAdd(node, child->getFirstChild(), seenDefinedSymbolReferences, seenStoredSymRefs);
                else
                   {
                   _supportedNodes->reset(node->getLocalIndex());
@@ -897,7 +900,8 @@ void TR_LocalTransparency::adjustInfoForAddressAdd(TR::Node *node, TR::Node *chi
       }
    else
       {
-      if (child->getOpCode().isLoad() || child->getOpCodeValue() == TR::loadaddr)
+      if ((child->getOpCode().isLoad() || child->getOpCodeValue() == TR::loadaddr) &&
+          !child->isDataAddrPointer())
          {
          if (child->getOpCode().hasSymbolReference() &&
              (loadaddrAsLoad() || child->getOpCodeValue() != TR::loadaddr))

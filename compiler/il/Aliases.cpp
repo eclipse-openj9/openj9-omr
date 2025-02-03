@@ -362,7 +362,9 @@ OMR::SymbolReference::getUseDefAliasesBV(bool isDirectCall, bool includeGCSafePo
             }
 
          if (symRefTab->isNonHelper(self(), TR::SymbolReferenceTable::arrayCmpSymbol) ||
-             symRefTab->isNonHelper(self(), TR::SymbolReferenceTable::arrayCmpLenSymbol))
+             symRefTab->isNonHelper(self(), TR::SymbolReferenceTable::arrayCmpLenSymbol) ||
+	     symRefTab->isNonHelper(self(), TR::SymbolReferenceTable::jProfileValueSymbol) ||
+             symRefTab->isNonHelper(self(), TR::SymbolReferenceTable::jProfileValueWithNullCHKSymbol))
             return 0;
 
          switch (self()->getReferenceNumber())
@@ -398,7 +400,8 @@ OMR::SymbolReference::getUseDefAliasesBV(bool isDirectCall, bool includeGCSafePo
             case TR_jitProfileParseBuffer:
             case TR_jitLookupDynamicInterfaceMethod:
             case TR_jitLookupDynamicPublicInterfaceMethod:
-
+            case TR_jProfile32BitValue:
+            case TR_jProfile64BitValue:
                return 0;
 
             case TR_asyncCheck:

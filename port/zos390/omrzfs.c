@@ -65,6 +65,9 @@ fillSyscallParamList(J9ZFSSyscallParamList *syscallParamListPtr, int32_t opcode,
  * @return 0 on success; negative value on failure.
  */
 static int32_t
+#if defined(__open_xl__)
+__attribute__((noinline))
+#endif /* defined(__open_xl__) */
 getZFSClientCacheSize(uint64_t *clientCacheSizePtr)
 {
 	uint64_t clientCacheSize = 0;
@@ -173,6 +176,9 @@ getZFSClientCacheSize(uint64_t *clientCacheSizePtr)
 
 /* Retrieve the amount of used ZFS file system user cache. */
 int32_t
+#if defined(__open_xl__)
+__attribute__((noinline))
+#endif /* defined(__open_xl__) */
 getZFSUserCacheUsed(uint64_t *userCacheUsedPtr)
 {
 

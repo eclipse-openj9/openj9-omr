@@ -363,7 +363,7 @@ OMR::SymbolReference::getUseDefAliasesBV(bool isDirectCall, bool includeGCSafePo
 
          if (symRefTab->isNonHelper(self(), TR::SymbolReferenceTable::arrayCmpSymbol) ||
              symRefTab->isNonHelper(self(), TR::SymbolReferenceTable::arrayCmpLenSymbol) ||
-	     symRefTab->isNonHelper(self(), TR::SymbolReferenceTable::jProfileValueSymbol) ||
+             symRefTab->isNonHelper(self(), TR::SymbolReferenceTable::jProfileValueSymbol) ||
              symRefTab->isNonHelper(self(), TR::SymbolReferenceTable::jProfileValueWithNullCHKSymbol))
             return 0;
 

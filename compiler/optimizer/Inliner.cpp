@@ -1562,6 +1562,30 @@ static bool blocksHaveSameStartingByteCodeInfo(TR::Block *aBlock, TR::Block *bBl
    return (a.getCallerIndex() == b.getCallerIndex()) && (a.getByteCodeIndex() == b.getByteCodeIndex());
    }
 
+static TR::TreeTop *fixRdBarInDuplicatedNode(TR::Node *duplicatedNode, TR::TreeTop *rematPoint, TR::SparseBitVector &visitedNodes, TR::Compilation *comp)
+   {
+   visitedNodes[duplicatedNode->getGlobalIndex()] = true;
+   if (duplicatedNode->getOpCode().isReadBar())
+      {
+      TR::Node *newttNode = TR::Node::create(TR::treetop, 1, duplicatedNode);
+      TR::TreeTop *newtt = TR::TreeTop::create(comp, newttNode);
+      rematPoint->insertAfter(newtt);
+      return newtt;
+      }
+   else
+      {
+      for (int32_t i = 0; i < duplicatedNode->getNumChildren(); i++)
+         {
+         TR::Node* child = duplicatedNode->getChild(i);
+         if (child && !visitedNodes.ValueAt(child->getGlobalIndex()))
+            {
+            rematPoint = fixRdBarInDuplicatedNode(child, rematPoint, visitedNodes, comp);
+            }
+         }
+      }
+   return rematPoint;
+   }
+
 /**
  * Root function for privatized inliner argument rematerialization - this handles calculating remat
  * safety and performing the remat.
@@ -1688,6 +1712,8 @@ void TR_InlinerBase::rematerializeCallArguments(TR_TransformInlinedFunction & ti
             if (rematTree == argStoreTree)
                {
                TR::Node *duplicateStore = argStore->duplicateTree();
+               TR::SparseBitVector visitedNodes(comp()->allocator());
+               rematPoint = fixRdBarInDuplicatedNode(duplicateStore, rematPoint, visitedNodes, comp());
                if (performTransformation(comp(), "O^O GUARDED CALL REMAT: Rematerialize [%p] as [%p]\n", argStore, duplicateStore))
                   {
                   rematPoint = TR::TreeTop::create(comp(), rematPoint, duplicateStore);

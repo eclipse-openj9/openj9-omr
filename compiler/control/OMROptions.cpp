@@ -3895,6 +3895,7 @@ OMR::Options::requiresLogFile()
    // note: enumerators with different word maps can't be or'ed together
    //
    if (self()->getAnyOption(TR_TraceAll) ||
+       self()->getAnyOption(TR_TraceAliases) ||
        self()->getAnyOption(TR_TraceBBVA) ||
        self()->getAnyOption(TR_TraceBVA) ||
        self()->getAnyOption(TR_TraceCG) ||

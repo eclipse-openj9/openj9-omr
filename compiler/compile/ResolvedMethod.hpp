@@ -148,6 +148,18 @@ public:
    virtual void *callSiteTableEntryAddress(int32_t callSiteIndex);
    virtual bool isUnresolvedMethodTypeTableEntry(int32_t cpIndex);
    virtual void *methodTypeTableEntryAddress(int32_t cpIndex);
+
+   /** \brief
+    *    Check the presence of the @Stable annotation for a field
+    *
+    *  \param cpIndex
+    *    The constant pool index corresponding to the desired field
+    *
+    *  \return bool
+    *    Return true if the field at the indicated cpIndex has the @Stable annotation
+    */
+   virtual bool isStable(int32_t cpIndex, TR::Compilation *comp);
+
    /** \brief
     *    Get the number of arguments in the ROM method signature of an invokedynamic call
     *
@@ -158,6 +170,7 @@ public:
     *    The number of arguments of the ROM Method
     */
    virtual uint32_t romMethodArgCountAtCallSiteIndex(int32_t callSiteIndex);
+
    /** \brief
     *    Get the number of arguments in the ROM method signature of an inovokehandle call
     *

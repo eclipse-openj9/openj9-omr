@@ -122,6 +122,7 @@ bool         TR_ResolvedMethod::isUnresolvedCallSiteTableEntry(int32_t callSiteI
 void *       TR_ResolvedMethod::callSiteTableEntryAddress(int32_t callSiteIndex)      { TR_UNIMPLEMENTED(); return 0; }
 bool         TR_ResolvedMethod::isUnresolvedMethodTypeTableEntry(int32_t cpIndex) { TR_UNIMPLEMENTED(); return false; }
 void *       TR_ResolvedMethod::methodTypeTableEntryAddress(int32_t cpIndex)      { TR_UNIMPLEMENTED(); return 0; }
+bool         TR_ResolvedMethod::isStable(int32_t cpIndex, TR::Compilation *comp)  { TR_UNIMPLEMENTED(); return false; }
 uint32_t     TR_ResolvedMethod::romMethodArgCountAtCallSiteIndex(int32_t callSiteIndex) {TR_UNIMPLEMENTED(); return 0;}
 uint32_t     TR_ResolvedMethod::romMethodArgCountAtCPIndex(int32_t cpIndex) {TR_UNIMPLEMENTED(); return 0;}
 

@@ -515,9 +515,10 @@ public:
 	bool concurrentScavengerHWSupport; /**< set to true if CS runs with HW support, complimentary to softwareRangeCheckReadBarrier with CS active */
 	uintptr_t concurrentScavengerBackgroundThreads; /**< number of background GC threads during concurrent phase of Scavenge */
 	bool concurrentScavengerBackgroundThreadsForced; /**< true if concurrentScavengerBackgroundThreads set via command line option */
-	uintptr_t concurrentScavengerSlack; /**< amount of bytes added on top of avearge allocated bytes during concurrent cycle, in calcualtion for survivor size */
-	float concurrentScavengerAllocDeviationBoost; /**< boost factor for allocate rate and its deviation, used for tilt calcuation in Concurrent Scavenger */
-	bool concurrentScavengeExhaustiveTermination; /**< control flag to enable/disable concurrent phase termination optimization using involing async mutator callbacks */
+	uintptr_t concurrentScavengerSlack; /**< amount of bytes added on top of average allocated bytes during concurrent cycle, in calculation for survivor size - increase when sudden but rare spikes in allocation are expected */
+	float concurrentScavengerAllocAverageBoost; /**< boost factor for allocate rate, used for tilt calculation in CS - similar to Slack but expressed in relative rather than absolute terms */
+	float concurrentScavengerAllocDeviationBoost; /**< boost factor for allocate rate deviation, used for tilt calculation in CS - increase when frequent small deviations in allocation are expected */
+	bool concurrentScavengeExhaustiveTermination; /**< control flag to enable/disable concurrent phase termination optimization using involving async mutator callbacks */
 #endif	/* defined(OMR_GC_CONCURRENT_SCAVENGER) */
 	uintptr_t scavengerFailedTenureThreshold;
 	uintptr_t maxScavengeBeforeGlobal;
@@ -1705,7 +1706,8 @@ public:
 		, concurrentScavengerBackgroundThreads(1)
 		, concurrentScavengerBackgroundThreadsForced(false)
 		, concurrentScavengerSlack(0)
-		, concurrentScavengerAllocDeviationBoost(2.0)
+		, concurrentScavengerAllocAverageBoost(1.5)
+		, concurrentScavengerAllocDeviationBoost(5.0)
 		, concurrentScavengeExhaustiveTermination(true)
 #endif /* defined(OMR_GC_CONCURRENT_SCAVENGER) */
 		, scavengerFailedTenureThreshold(0)

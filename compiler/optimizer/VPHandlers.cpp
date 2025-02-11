@@ -1700,10 +1700,16 @@ static const char *getFieldSignature(OMR::ValuePropagation *vp, TR::Node *node, 
 static bool addKnownObjectConstraints(
    OMR::ValuePropagation *vp, TR::Node *node, bool isGlobal)
    {
+   // 'addKnownObjectConstraints` has a large overhead for remote compilations
+   // due to the messages exchanged between client and server. However, constraints
+   // are needed for VectorAPIExpansion optimization in OpenJ9 downstream project.
+   if (vp->comp()->isOutOfProcessCompilation() && !vp->comp()->getOption(TR_EnableVectorAPIExpansion))
+      return false;
+
    TR::SymbolReference *symRef = node->getSymbolReference();
    if (symRef->isUnresolved())
       return false;
-   
+
    if (!vp->comp()->getKnownObjectTable())
       return false;
 

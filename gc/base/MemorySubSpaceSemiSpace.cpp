@@ -777,7 +777,7 @@ MM_MemorySubSpaceSemiSpace::checkSubSpaceMemoryPostCollectTilt(MM_EnvironmentBas
 #if defined(OMR_GC_CONCURRENT_SCAVENGER)
 		if (_extensions->isConcurrentScavengerEnabled()) {
 			/* Account for mutator allocated objects in hybrid survivor/allocated during concurrent phase of Concurrent Scavenger */
-			desiredSurvivorSize += _avgBytesAllocatedDuringConcurrent * 1.1
+			desiredSurvivorSize += extensions->concurrentScavengerAllocAverageBoost * _avgBytesAllocatedDuringConcurrent
 									 + extensions->concurrentScavengerAllocDeviationBoost * (uintptr_t)_avgDeviationBytesAllocatedDuringConcurrent
 									 + extensions->concurrentScavengerSlack;
 			if (debug) {

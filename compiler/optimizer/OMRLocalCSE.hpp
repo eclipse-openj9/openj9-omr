@@ -26,7 +26,6 @@
 #include <stddef.h>
 #include <stdint.h>
 #include "env/TRMemory.hpp"
-#include "cs2/arrayof.h"
 #include "env/TypedAllocator.hpp"
 #include "il/DataTypes.hpp"
 #include "il/Node.hpp"

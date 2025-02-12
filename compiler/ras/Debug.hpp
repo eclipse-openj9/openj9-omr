@@ -40,7 +40,6 @@
 #include "codegen/RegisterConstants.hpp"
 #include "compile/Method.hpp"
 #include "compile/VirtualGuard.hpp"
-#include "cs2/hashtab.h"
 #include "env/RawAllocator.hpp"
 #include "env/TRMemory.hpp"
 #include "env/jittypes.h"

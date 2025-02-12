@@ -33,7 +33,6 @@
 #include "control/Options_inlines.hpp"
 #include "cs2/allocator.h"
 #include "cs2/bitvectr.h"
-#include "cs2/hashtab.h"
 #include "cs2/sparsrbit.h"
 #include "env/TRMemory.hpp"
 #include "il/AliasSetInterface.hpp"

@@ -27,7 +27,6 @@
 #include <limits.h>
 #include <string.h>
 #include "compile/Compilation.hpp"
-#include "cs2/sparsrbit.h"
 #include "env/StackMemoryRegion.hpp"
 #include "env/TRMemory.hpp"
 #include "il/AliasSetInterface.hpp"

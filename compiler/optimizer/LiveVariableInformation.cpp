@@ -26,7 +26,6 @@
 #include "control/Options.hpp"
 #include "control/Options_inlines.hpp"
 #include "cs2/allocator.h"
-#include "cs2/sparsrbit.h"
 #include "env/TRMemory.hpp"
 #include "il/AliasSetInterface.hpp"
 #include "il/AutomaticSymbol.hpp"

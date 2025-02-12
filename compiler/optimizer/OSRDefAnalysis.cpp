@@ -29,8 +29,6 @@
 #include "compile/SymbolReferenceTable.hpp"
 #include "control/Options.hpp"
 #include "control/Options_inlines.hpp"
-#include "cs2/arrayof.h"
-#include "cs2/bitvectr.h"
 #include "env/TRMemory.hpp"
 #include "env/jittypes.h"
 #include "il/AutomaticSymbol.hpp"

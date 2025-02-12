@@ -25,7 +25,6 @@
 #include "compile/Compilation.hpp"
 #include "control/Options.hpp"
 #include "control/Options_inlines.hpp"
-#include "cs2/bitvectr.h"
 #include "env/TRMemory.hpp"
 #include "il/Block.hpp"
 #include "il/ILOpCodes.hpp"

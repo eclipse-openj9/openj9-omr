@@ -25,7 +25,6 @@
 #include <string.h>
 #include "env/StackMemoryRegion.hpp"
 #include "compile/Compilation.hpp"
-#include "cs2/bitvectr.h"
 #include "env/TRMemory.hpp"
 #include "infra/Array.hpp"
 #include "infra/Assert.hpp"
@@ -392,7 +391,6 @@ bool TR_InterferenceGraph::simplify()
       TR_ASSERT(!notColourableDegreeSet->isEmpty(),
              "not colourable set must contain at least one member\n");
 
-      //CS2::ABitVector<TR::Allocator>::Cursor notColourableCursor(notColourableDegreeSet);
       TR_BitVectorIterator bvi;
       if (!notColourableDegreeSet->isEmpty())
          {

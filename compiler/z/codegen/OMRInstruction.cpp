@@ -53,7 +53,6 @@
 #include "control/Options.hpp"
 #include "control/Options_inlines.hpp"
 #include "cs2/arrayof.h"
-#include "cs2/hashtab.h"
 #include "env/CompilerEnv.hpp"
 #include "env/TRMemory.hpp"
 #include "env/jittypes.h"

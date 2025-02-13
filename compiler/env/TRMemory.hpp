@@ -72,9 +72,6 @@
 #include "env/Region.hpp"
 
 #include <stdlib.h>
-#include "cs2/bitmanip.h"
-#include "cs2/hashtab.h"
-#include "cs2/llistof.h"
 #include "env/jittypes.h"
 
 #include "env/TypedAllocator.hpp"

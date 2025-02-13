@@ -35,7 +35,6 @@ namespace OMR { typedef OMR::CFG CFGConnector; }
 #include <stdint.h>
 #include <vector>
 #include "compile/Compilation.hpp"
-#include "cs2/listof.h"
 #include "env/TRMemory.hpp"
 #include "il/Node.hpp"
 #include "infra/Assert.hpp"

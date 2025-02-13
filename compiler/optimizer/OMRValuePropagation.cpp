@@ -38,7 +38,6 @@
 #include "compile/VirtualGuard.hpp"
 #include "control/Options.hpp"
 #include "control/Options_inlines.hpp"
-#include "cs2/bitvectr.h"
 #include "env/CompilerEnv.hpp"
 #include "env/IO.hpp"
 #include "env/PersistentInfo.hpp"

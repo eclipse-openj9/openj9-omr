@@ -27,7 +27,6 @@
 #include "compile/Compilation.hpp"
 #include "control/Options.hpp"
 #include "control/Options_inlines.hpp"
-#include "cs2/bitvectr.h"
 #include "cs2/hashtab.h"
 #include "env/StackMemoryRegion.hpp"
 #include "env/TRMemory.hpp"

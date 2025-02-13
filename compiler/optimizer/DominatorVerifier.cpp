@@ -27,7 +27,6 @@
 #include <stdint.h>
 #include "env/StackMemoryRegion.hpp"
 #include "compile/Compilation.hpp"
-#include "cs2/arrayof.h"
 #include "env/TRMemory.hpp"
 #include "il/Block.hpp"
 #include "il/TreeTop.hpp"

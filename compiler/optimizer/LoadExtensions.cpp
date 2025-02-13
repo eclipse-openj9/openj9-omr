@@ -27,8 +27,6 @@
 #include "compile/Compilation.hpp"
 #include "control/Options.hpp"
 #include "control/Options_inlines.hpp"
-#include "cs2/bitvectr.h"
-#include "cs2/sparsrbit.h"
 #include "env/CompilerEnv.hpp"
 #include "env/StackMemoryRegion.hpp"
 #include "env/TRMemory.hpp"
@@ -118,8 +116,8 @@ const bool TR_LoadExtensions::canSkipConversion(TR::Node* conversion, TR::Node* 
 
    if (trace())
       {
-      traceMsg(comp(), "\t\tExamining conversion %s [%p]\n", 
-         conversion->getOpCode().getName(), 
+      traceMsg(comp(), "\t\tExamining conversion %s [%p]\n",
+         conversion->getOpCode().getName(),
          conversion);
       }
 
@@ -146,10 +144,10 @@ const bool TR_LoadExtensions::canSkipConversion(TR::Node* conversion, TR::Node* 
          {
          if (trace())
             {
-            traceMsg(comp(), "\t\tDetected sign extension pattern on widening conversion %s [%p] and load %s [%p]\n", 
-               conversion->getOpCode().getName(), 
-               conversion, 
-               child->getOpCode().getName(), 
+            traceMsg(comp(), "\t\tDetected sign extension pattern on widening conversion %s [%p] and load %s [%p]\n",
+               conversion->getOpCode().getName(),
+               conversion,
+               child->getOpCode().getName(),
                child);
             }
 
@@ -171,10 +169,10 @@ const bool TR_LoadExtensions::canSkipConversion(TR::Node* conversion, TR::Node* 
                {
                if (trace())
                   {
-                  traceMsg(comp(), "\t\tDetected sign extension pattern on narrowing conversion %s [%p] and load %s [%p]\n", 
-                     conversion->getOpCode().getName(), 
-                     conversion, 
-                     child->getOpCode().getName(), 
+                  traceMsg(comp(), "\t\tDetected sign extension pattern on narrowing conversion %s [%p] and load %s [%p]\n",
+                     conversion->getOpCode().getName(),
+                     conversion,
+                     child->getOpCode().getName(),
                      child);
                   }
 
@@ -249,9 +247,9 @@ void TR_LoadExtensions::findPreferredLoadExtensions(TR::Node* parent)
                   {
                   if (trace())
                      {
-                     traceMsg(comp(), "\t\tPeeking through RegLoad %p for conversion %s [%p]\n", 
-                        useRegLoad, 
-                        parentOpCode.getName(), 
+                     traceMsg(comp(), "\t\tPeeking through RegLoad %p for conversion %s [%p]\n",
+                        useRegLoad,
+                        parentOpCode.getName(),
                         parent);
                      }
 
@@ -288,12 +286,12 @@ void TR_LoadExtensions::findPreferredLoadExtensions(TR::Node* parent)
                            if (trace())
                               {
                               traceMsg(comp(), "\t\tPeeked through use %s [%p] and found def %s [%p] with child %s [%p] - Counting [%p]\n",
-                                 useRegLoad->getOpCode().getName(), 
+                                 useRegLoad->getOpCode().getName(),
                                  useRegLoad,
-                                 defRegLoad->getOpCode().getName(), 
+                                 defRegLoad->getOpCode().getName(),
                                  defRegLoad,
-                                 defRegLoadChild->getOpCode().getName(), 
-                                 defRegLoadChild, 
+                                 defRegLoadChild->getOpCode().getName(),
+                                 defRegLoadChild,
                                  defRegLoadChild);
                               }
 
@@ -304,14 +302,14 @@ void TR_LoadExtensions::findPreferredLoadExtensions(TR::Node* parent)
                            if (trace())
                               {
                               traceMsg(comp(), "\t\tPeeked through use %s [%p] and found def %s [%p] with child %s [%p] - Excluding [%p]\n",
-                                 useRegLoad->getOpCode().getName(), 
+                                 useRegLoad->getOpCode().getName(),
                                  useRegLoad,
-                                 defRegLoad->getOpCode().getName(), 
+                                 defRegLoad->getOpCode().getName(),
                                  defRegLoad,
-                                 defRegLoadChild != NULL ? 
-                                    defRegLoadChild->getOpCode().getName() : 
-                                    "NULL", 
-                                 defRegLoadChild, 
+                                 defRegLoadChild != NULL ?
+                                    defRegLoadChild->getOpCode().getName() :
+                                    "NULL",
+                                 defRegLoadChild,
                                  parent);
                               }
 
@@ -330,7 +328,7 @@ void TR_LoadExtensions::findPreferredLoadExtensions(TR::Node* parent)
       }
 
 
-   // Exclude all loads which feed into global register stores which require sign extensions. This must be done 
+   // Exclude all loads which feed into global register stores which require sign extensions. This must be done
    // because Load Extensions is a local optimization and it must respect global sign extension decisions made
    // by GRA. Excluding such loads prevents a situation where GRA decided that a particular global register
    // should be sign extended at its definitions however Load Extensions has determined that the same load
@@ -415,7 +413,7 @@ void TR_LoadExtensions::flagPreferredLoadExtensions(TR::Node* parent)
                            forceExtensionOnAnyLoads |= forceExtension;
                            forceExtensionOnAllLoads &= forceExtension;
 
-                           // If we have to force extension on any loads which feed a def of this use ensure we must also 
+                           // If we have to force extension on any loads which feed a def of this use ensure we must also
                            // force extension on all such loads. Conversely the conversion can be skipped if none of the
                            // loads feeding the def of this use need to be extended. This ensures either all loads feeding
                            // into defs of this use should be extended or none of them.
@@ -424,13 +422,13 @@ void TR_LoadExtensions::flagPreferredLoadExtensions(TR::Node* parent)
                            if (trace())
                               {
                               traceMsg(comp(), "\t\tPeeked through %s [%p] and found %s [%p] with child %s [%p] - conversion %s be skipped\n",
-                                 useRegLoad->getOpCode().getName(), 
+                                 useRegLoad->getOpCode().getName(),
                                  useRegLoad,
-                                 defRegLoad->getOpCode().getName(), 
+                                 defRegLoad->getOpCode().getName(),
                                  defRegLoad,
-                                 defRegLoadChild->getOpCode().getName(), 
+                                 defRegLoadChild->getOpCode().getName(),
                                  defRegLoadChild,
-                                 canSkipConversion ? 
+                                 canSkipConversion ?
                                     "can" :
                                     "cannot");
                               }
@@ -623,10 +621,10 @@ const int32_t TR_LoadExtensions::setExtensionPreference(TR::Node* load, TR::Node
       {
       if (trace())
          {
-         traceMsg(comp(), "\t\tCounting unsigned load %s [%p] under %s [%p]\n", 
-            load->getOpCode().getName(), 
-            load, 
-            conversion->getOpCode().getName(), 
+         traceMsg(comp(), "\t\tCounting unsigned load %s [%p] under %s [%p]\n",
+            load->getOpCode().getName(),
+            load,
+            conversion->getOpCode().getName(),
             conversion);
          }
 
@@ -637,10 +635,10 @@ const int32_t TR_LoadExtensions::setExtensionPreference(TR::Node* load, TR::Node
       {
       if (trace())
          {
-         traceMsg(comp(), "\t\tCounting signed load %s [%p] under %s [%p]\n", 
-            load->getOpCode().getName(), 
-            load, 
-            conversion->getOpCode().getName(), 
+         traceMsg(comp(), "\t\tCounting signed load %s [%p] under %s [%p]\n",
+            load->getOpCode().getName(),
+            load,
+            conversion->getOpCode().getName(),
             conversion);
          }
 

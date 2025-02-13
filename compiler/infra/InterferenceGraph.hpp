@@ -27,7 +27,6 @@
 #include "env/TRMemory.hpp"
 #include "env/jittypes.h"
 #include "compile/Compilation.hpp"
-#include "cs2/bitvectr.h"
 #include "infra/Array.hpp"
 #include "infra/Assert.hpp"
 #include "infra/BitVector.hpp"

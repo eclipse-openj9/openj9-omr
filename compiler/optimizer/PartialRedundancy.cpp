@@ -33,7 +33,6 @@
 #include "control/Options.hpp"
 #include "control/Options_inlines.hpp"
 #include "control/Recompilation.hpp"
-#include "cs2/bitvectr.h"
 #include "cs2/sparsrbit.h"
 #include "env/CompilerEnv.hpp"
 #include "env/TRMemory.hpp"

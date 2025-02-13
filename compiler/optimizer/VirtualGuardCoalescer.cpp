@@ -28,7 +28,6 @@
 #include "env/FrontEnd.hpp"
 #include "compile/Compilation.hpp"
 #include "compile/VirtualGuard.hpp"
-#include "cs2/sparsrbit.h"
 #include "env/jittypes.h"
 #include "il/AliasSetInterface.hpp"
 #include "il/Block.hpp"

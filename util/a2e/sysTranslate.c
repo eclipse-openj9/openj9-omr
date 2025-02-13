@@ -29,6 +29,10 @@ sysTranslate(const char *source, int length, char *trtable, char *xlate_buf)
 {
 	int i;
 
+	if (NULL == xlate_buf) {
+		return NULL;
+	}
+
 	memcpy(xlate_buf, source, length);  /* copy source to target */
 
 	i = 0;

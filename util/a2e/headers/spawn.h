@@ -48,12 +48,10 @@
             extern "C" {
 		#endif
 
-        pid_t      atoe_spawnp (const char *, const int, const int[],
-						const struct inheritance *, const char *[],
-						const char *[]);
-        pid_t      atoe_spawnpe(const char *, const int, const int[],
-						const struct inheritance *, const char *[],
-						const char *[], int);
+        pid_t      atoe_spawnp (const char *filename, int fd_cnt, const int *fd_map,
+						const struct inheritance *inherit, const char **argv, const char **envp);
+        pid_t      atoe_spawnpe(const char *filename, int fd_cnt, const int *fd_map,
+						const struct inheritance *inherit, const char **argv, const char **envp, int envlen);
 
 		#ifdef __cplusplus
             }

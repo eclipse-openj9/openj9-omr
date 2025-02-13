@@ -183,7 +183,7 @@ tdump_wrapper(struct OMRPortLibrary *portLibrary, char *filename, char *dsnName)
 	BOOLEAN filenameSpecified = TRUE;
 	uint32_t returnCode;
 	uint32_t reasonCode;
-	intptr_t err;
+	intptr_t err = 1;
 
 	if (NULL == filename) {
 		return 1;
@@ -264,8 +264,10 @@ tdump_wrapper(struct OMRPortLibrary *portLibrary, char *filename, char *dsnName)
 #if !defined(OMR_EBCDIC)
 	/* Convert filename into EBCDIC... */
 	dsnName = a2e_func(filename, strlen(filename) + 1);
-	err = tdump(portLibrary, filename, dsnName, &returnCode, &reasonCode);
-	free(dsnName);
+	if (NULL != dsnName) {
+		err = tdump(portLibrary, filename, dsnName, &returnCode, &reasonCode);
+		free(dsnName);
+	}
 #else /* !defined(OMR_EBCDIC) */
 	err = tdump(portLibrary, filename, filename, &returnCode, &reasonCode);
 #endif /* !defined(OMR_EBCDIC) */
@@ -281,8 +283,12 @@ tdump_wrapper(struct OMRPortLibrary *portLibrary, char *filename, char *dsnName)
 #if !defined(OMR_EBCDIC)
 				/* Convert filename into EBCDIC... */
 				dsnName = a2e_func(filename, strlen(filename) + 1);
-				retVal = tdump_wrapper(portLibrary, filename, dsnName);
-				free(dsnName);
+				if (NULL != dsnName) {
+					retVal = tdump_wrapper(portLibrary, filename, dsnName);
+					free(dsnName);
+				} else {
+					retVal = 1;
+				}
 #else /* !defined(OMR_EBCDIC) */
 				retVal = tdump_wrapper(portLibrary, filename, filename);
 #endif /* !defined(OMR_EBCDIC) */

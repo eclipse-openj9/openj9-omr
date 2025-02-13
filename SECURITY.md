@@ -14,6 +14,5 @@ In case of suspected vulnerabilities, we recommend you do not use the public Ecl
 | :--- | :--- |
 | Daryl Maier | @0xdaryl |
 | Mark Stoodley | @mstoodle |
-| Charlie Gracie | @charliegracie |
 
 Alternatively, you may contact the Eclipse Security Team via an email to security@eclipse.org.

@@ -1117,6 +1117,19 @@ void TR_CopyPropagation::commonIndirectLoadsFromAutos()
 
    }
 
+
+static void preserveKnownObjectInfo(TR::Compilation *comp, TR::Node *node, TR::SymbolReference *oldSymRef, TR::SymbolReference *newSymRef)
+   {
+   if (oldSymRef->hasKnownObjectIndex() &&
+      !node->hasKnownObjectIndex() &&
+      !newSymRef->hasKnownObjectIndex())
+     {
+     node->setKnownObjectIndex(oldSymRef->getKnownObjectIndex());
+     dumpOptDetails(comp, "%s   Set known-object obj%d for node : %p\n", OPT_DETAILS, oldSymRef->getKnownObjectIndex(), node);
+     }
+   }
+
+
 /*
    replaceCopySymbolReferenceByOriginalIn uses a slightly different visitCount idiom --
 The visit count for a node is set iff the node has NOT been changed.
@@ -1168,6 +1181,8 @@ void TR_CopyPropagation::replaceCopySymbolReferenceByOriginalIn(TR::SymbolRefere
 
             if (origNode->getOpCode().isLoadIndirect())
                {
+               preserveKnownObjectInfo(comp(), node, symRef, origNode->getSymbolReference());
+
                if(baseAddrAvail && baseAddrNode != NULL)
                   {
                   node->setAndIncChild(0, baseAddrNode);
@@ -1232,7 +1247,10 @@ void TR_CopyPropagation::replaceCopySymbolReferenceByOriginalIn(TR::SymbolRefere
                else
                   {
                   if (origNode->getOpCode().hasSymbolReference() && node->getOpCode().hasSymbolReference())
+                     {
+                     preserveKnownObjectInfo(comp(), node, node->getSymbolReference(), origNode->getSymbolReference());
                      node->setSymbolReference(origNode->getSymbolReference());
+                     }
                   int32_t nodePrecision = node->getDecimalPrecision();
                   int32_t nodeSize = node->getSize();
                   int32_t origSymSize = origNode->getSymbolReference()->getSymbol()->getSize();
@@ -1388,7 +1406,10 @@ void TR_CopyPropagation::replaceCopySymbolReferenceByOriginalIn(TR::SymbolRefere
                   }
 
                if (origNode->getOpCode().hasSymbolReference() && node->getOpCode().hasSymbolReference())
+                  {
+                  preserveKnownObjectInfo(comp(), node, node->getSymbolReference(), origNode->getSymbolReference());
                   node->setSymbolReference(origNode->getSymbolReference());
+                  }
                }
             }
          }

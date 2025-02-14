@@ -188,7 +188,7 @@ pthread_mutex_t env_mutex;
 char *
 sysTranslate(const char *source, int length, char *trtable, char *xlate_buf)
 {
-	return sysTranslateASM(source, length, trtable, xlate_buf);
+	return (NULL == xlate_buf) ? NULL : sysTranslateASM(source, length, trtable, xlate_buf);
 }
 
 /**************************************************************************
@@ -372,7 +372,9 @@ atoe_perror(const char *string)
 	Log(1, "Entry: atoe_perror\n");
 
 	e = a2e_string((char *)string);
-	if (NULL != e) {
+	if (NULL == e) {
+		perror("");
+	} else {
 		perror(e);
 		free(e);
 	}
@@ -1652,7 +1654,6 @@ atoe_setlocale(int category, const char *locale)
 	if (NULL == locale) {
 		result = setlocale(category, NULL);
 	} else {
-		/* CMVC 143879: a2e_string converts a NULL pointer to an empty string */
 		char *eb = a2e_string(locale);
 		if (NULL != eb) {
 			result = setlocale(category, eb);
@@ -2185,7 +2186,7 @@ atoe_getaddrinfo(const char *nodename, const char *servname, const struct addrin
 
 	e = a2e_string((char *)nodename);
 	f = a2e_string((char *)servname);
-	if ((NULL != e) && (NULL != f)) {
+	if (((NULL == nodename) || (NULL != e)) && ((NULL == servname) || (NULL != f))) {
 		rc = getaddrinfo(e, f, hints, result);
 	}
 

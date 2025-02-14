@@ -2145,6 +2145,9 @@ bool TR_CompactNullChecks::replacePassThroughIfPossible(TR::Node *currentNode, T
    if (currentNode->getVisitCount() == initialVisitCount)
       return false;
 
+   if (currentNode->isDataAddrPointer())
+      return false;
+
    currentNode->setVisitCount(visitCount);
 
    if (currentNode->isNopableInlineGuard())

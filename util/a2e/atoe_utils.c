@@ -96,14 +96,14 @@ pchar(InstanceData *this, int c)
 		if (this->buffer < this->end) {
 			*this->buffer = '^';
 		}
-		*this->buffer++;
+		this->buffer += 1;
 	}
 #endif /* 0 */
 
 	if (this->buffer < this->end) {
 		*this->buffer = c;
 	}
-	*this->buffer++;
+	this->buffer += 1;
 }
 
 /**************************************************************************

@@ -78,7 +78,7 @@ static J9HashTable *hashTableNewImpl(OMRPortLibrary *portLibrary, const char *ta
 	uint32_t tableSize, uint32_t entrySize, uint32_t entryAlignment, uint32_t flags, uint32_t memoryCategory, uint32_t listToTreeThreshold,
 	J9HashTableHashFn hashFn, J9HashTableEqualFn hashEqualFn, J9HashTableComparatorFn comparatorFn, J9HashTablePrintFn printFn,
 	void *functionUserData);
-static void **hashTableFindNodeSpaceOpt(J9HashTable *table, void *entry, void **head);
+static void **hashTableFindNodeSpaceOpt(J9HashTable *table, void *entry, void **head, BOOLEAN *found);
 static void **hashTableFindNodeInList(J9HashTable *table, void *entry, void **head);
 static void *hashTableFindNodeInTree(J9HashTable *table, void *entry, void **head);
 static void *hashTableAddNodeSpaceOpt(J9HashTable *table, void *entry, void **head);
@@ -449,8 +449,9 @@ hashTableFind(J9HashTable *table, void *entry)
 	hashTable_printf("hashTableFind <%s>: table=%p entry=%p\n", table->tableName, table, entry);
 
 	if (NULL == table->listNodePool) {
-		void **node = hashTableFindNodeSpaceOpt(table, entry, head);
-		findNode = (NULL != *node) ? node : NULL;
+		BOOLEAN found = FALSE;
+		void **node = hashTableFindNodeSpaceOpt(table, entry, head, &found);
+		findNode = found ? node : NULL;
 	} else if (NULL == *head) {
 		findNode =  NULL;
 	} else if (AVL_TREE_TAGGED(*head)) {
@@ -462,10 +463,16 @@ hashTableFind(J9HashTable *table, void *entry)
 }
 
 static void **
-hashTableFindNodeSpaceOpt(J9HashTable *table, void *entry, void **head)
+hashTableFindNodeSpaceOpt(J9HashTable *table, void *entry, void **head, BOOLEAN *found)
 {
 	void **node = head;
-	while ((NULL != *node) && (0 == table->hashEqualFn(node, entry, table->equalFnUserData))) {
+	while (NULL != *node) {
+		if (0 != table->hashEqualFn(node, entry, table->equalFnUserData)) {
+			if (NULL != found) {
+				*found = TRUE;
+			}
+			break;
+		}
 		node += 1;
 		if (node == &table->nodes[table->tableSize]) {
 			node = &table->nodes[0];
@@ -556,7 +563,7 @@ done:
 static void *
 hashTableAddNodeSpaceOpt(J9HashTable *table, void *entry, void **head)
 {
-	void **where = hashTableFindNodeSpaceOpt(table, entry, head);
+	void **where = hashTableFindNodeSpaceOpt(table, entry, head, NULL);
 	if (NULL == *where) {
 		*(uintptr_t *)where = *(uintptr_t *)entry;
 		table->numberOfNodes += 1;
@@ -725,7 +732,7 @@ hashTableRemove(J9HashTable *table, void *entry)
 static uint32_t
 hashTableRemoveNodeSpaceOpt(J9HashTable *table, void *entry, void **head)
 {
-	void **node = hashTableFindNodeSpaceOpt(table, entry, head);
+	void **node = hashTableFindNodeSpaceOpt(table, entry, head, NULL);
 	void **endNode = &table->nodes[table->tableSize];
 	uint32_t rc = 1;
 

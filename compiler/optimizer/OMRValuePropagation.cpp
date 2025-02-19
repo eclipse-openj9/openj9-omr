@@ -7620,7 +7620,7 @@ void OMR::ValuePropagation::doDelayedTransformations()
                               callUnreachable = false;
 
                            if (trace())
-                              traceMsg(comp(), "typeCompatibleStatus [%p] %d\n", guardNode, typeCompatibleStatus);
+                              traceMsg(comp(), "typeCompatibleStatus [%p] %s\n", guardNode, comp()->getDebug()->getName(typeCompatibleStatus));
                            }
                         else
                            {

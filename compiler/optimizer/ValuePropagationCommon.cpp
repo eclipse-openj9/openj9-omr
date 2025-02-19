@@ -1419,8 +1419,9 @@ void OMR::ValuePropagation::transformArrayCopyCall(TR::Node *node)
          }
 
       if (trace())
-         traceMsg(comp(), "%s: n%dn %p transformTheCall %d isSrcArrayNullRestricted %d isDstArrayNullRestricted %d doRuntimeNullRestrictedTest %d\n", __FUNCTION__,
-         node->getGlobalIndex(), node, transformTheCall, isSrcArrayNullRestricted, isDstArrayNullRestricted, doRuntimeNullRestrictedTest);
+         traceMsg(comp(), "%s: n%dn %p transformTheCall %d isSrcArrayNullRestricted %s isDstArrayNullRestricted %s doRuntimeNullRestrictedTest %d\n", __FUNCTION__,
+            node->getGlobalIndex(), node, transformTheCall, comp()->getDebug()->getName(isSrcArrayNullRestricted),
+            comp()->getDebug()->getName(isDstArrayNullRestricted), doRuntimeNullRestrictedTest);
       }
 #else
    bool isStringCompressedArrayCopy = false;

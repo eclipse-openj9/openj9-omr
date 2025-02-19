@@ -517,6 +517,7 @@ public:
    virtual const char * getName(void *, const char *, uint32_t, bool);
    virtual const char * getName(const char *s) { return s; }
    virtual const char * getName(const char *s, int32_t len) { return s; }
+   virtual const char * getName(TR_YesNoMaybe value);
    virtual const char * getVSSName(TR::AutomaticSymbol *sym);
    virtual const char * getWriteBarrierKindName(int32_t);
    virtual const char * getSpillKindName(uint8_t);

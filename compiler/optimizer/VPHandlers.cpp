@@ -3494,8 +3494,7 @@ TR::Node *constrainThrow(OMR::ValuePropagation *vp, TR::Node *node)
 
          if (debug("traceThrowToGoto"))
             printf("\n\n catch type %s %.*s\n",
-                   (willCatch == TR_yes ? "yes" : (willCatch == TR_no ? "no" : "maybe")),
-                   catchBlock->getExceptionClassNameLength(), catchBlock->getExceptionClassNameChars());
+                   vp->comp()->getDebug()->getName(willCatch), catchBlock->getExceptionClassNameLength(), catchBlock->getExceptionClassNameChars());
          }
       else if (debug("traceThrowToGoto"))
          printf("\n\n catch type maybe unresolved class\n");

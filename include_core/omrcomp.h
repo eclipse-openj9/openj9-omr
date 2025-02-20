@@ -108,6 +108,16 @@ EXE_EXTENSION_CHAR: the executable has a delimiter that we want to stop at as pa
 
 */
 
+/* GCC will respect the always_inline attribute even in unoptimized builds,
+ * where one might expect inlining to be inhibited regardless, so for VMINLINE,
+ * apply the attribute only in optimized builds.
+ */
+#if defined(__GNUC__) && defined(__OPTIMIZE__)
+#define OMR_GNUC_ALWAYS_INLINE_WHEN_OPTIMIZED __attribute__((__always_inline__))
+#else /* defined(__GNUC__) && defined(__OPTIMIZE__) */
+#define OMR_GNUC_ALWAYS_INLINE_WHEN_OPTIMIZED
+#endif /* defined(__GNUC__) && defined(__OPTIMIZE__) */
+
 /* Linux ANSI compiler (gcc) and OSX (clang). */
 #if defined(LINUX) || defined (OSX)
 
@@ -150,12 +160,7 @@ typedef double SYS_FLOAT;
 #endif
 
 #if defined(__GNUC__)
-#define VMINLINE_ALWAYS inline __attribute((always_inline))
-/* If -O0 is in effect, define VMINLINE to be empty */
-#if !defined(__OPTIMIZE__)
-#define VMINLINE
-#endif
-
+#define VMINLINE_ALWAYS inline OMR_GNUC_ALWAYS_INLINE_WHEN_OPTIMIZED
 #elif defined(__xlC__)
 /*
  * xlC11 C++ compiler reportedly supports attributes before function names, but we've only tested xlC12.
@@ -279,11 +284,7 @@ typedef double 					SYS_FLOAT;
 	THREAD_PRIORITY_TIME_CRITICAL			/*11 */}
 
 #if defined(__GNUC__)
-#define VMINLINE_ALWAYS inline __attribute((always_inline))
-/* If -O0 is in effect, define VMINLINE to be empty */
-#if !defined(__OPTIMIZE__)
-#define VMINLINE
-#endif
+#define VMINLINE_ALWAYS inline OMR_GNUC_ALWAYS_INLINE_WHEN_OPTIMIZED
 #define HAS_BUILTIN_EXPECT
 #else /* __GNUC__ */
 /* Only for use on static functions */
@@ -548,13 +549,8 @@ typedef struct U_128 {
 #if !defined(VMINLINE_ALWAYS)
 #define VMINLINE_ALWAYS
 #endif
-#if !defined(VMINLINE)
+
 #define VMINLINE VMINLINE_ALWAYS
-#endif
-#if defined(DEBUG)
-#undef VMINLINE
-#define VMINLINE
-#endif
 
 /* DDR cannot parse __builtin_expect */
 #if defined(TYPESTUBS_H)

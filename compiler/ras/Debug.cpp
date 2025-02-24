@@ -1242,6 +1242,12 @@ TR_Debug::print(TR::LabelSymbol * labelSymbol, TR_PrettyPrinterString& output)
    }
 
 const char *
+TR_Debug::getName(TR_YesNoMaybe value)
+   {
+   return (value == TR_yes) ? "TR_yes" : ((value == TR_no) ?  "TR_no" : "TR_maybe");
+   }
+
+const char *
 TR_Debug::getName(void * address, const char * prefix, uint32_t nextNumber, bool enumerate)
    {
    TR_ASSERT(_comp, "Required compilation object is NULL.\n");

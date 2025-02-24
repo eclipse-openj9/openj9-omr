@@ -85,7 +85,7 @@ TR_YesNoMaybe TR_TrivialDeadBlockRemover::evaluateTakeBranch (TR::Node* ifNode)
 
    if (trace())
       traceMsg(comp(), "ifNode %p folded using a decision table,"
-         "row %d col %d value %d\n", ifNode, row, col, decisionTable[row][col]);
+         "row %d col %d value %s\n", ifNode, row, col, comp()->getDebug()->getName(decisionTable[row][col]));
 
    return decisionTable[row][col];
    }

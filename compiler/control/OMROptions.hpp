@@ -2080,7 +2080,7 @@ private:
 
       public:
       OptionFlagArray(){ memset(_words, 0, sizeof(_words)); }
-      void operator=(const OptionFlagArray &other){ memcpy(_words, other.words, sizeof(_words)); }
+      void operator=(const OptionFlagArray &other){ memcpy(_words, other._words, sizeof(_words)); }
 
       bool isEmpty()
          {

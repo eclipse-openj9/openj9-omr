@@ -591,24 +591,28 @@ OMR::Z::CodeGenerator::initialize()
       {
       cg->setSupportsVirtualGuardNOPing();
       }
-   if (!comp->getOption(TR_DisableArraySetOpts))
-      {
-      cg->setSupportsArraySet();
-      }
+
    if (!TR::Compiler->om.canGenerateArraylets())
       {
+      if (!comp->getOption(TR_DisableArraySetOpts))
+         {
+         cg->setSupportsArraySet();
+         }
+
       static const bool disableArrayCmp = feGetEnv("TR_DisableArrayCmp") != NULL;
       if (!disableArrayCmp)
          {
          cg->setSupportsArrayCmp();
          cg->setSupportsArrayCmpSign();
          }
+
       static const bool disableArrayCmpLen = feGetEnv("TR_DisableArrayCmpLen") != NULL;
       if (!disableArrayCmpLen)
          {
          cg->setSupportsArrayCmpLen();
          }
       }
+
    if (!comp->compileRelocatableCode())
       {
       cg->setSupportsArrayTranslateTRxx();

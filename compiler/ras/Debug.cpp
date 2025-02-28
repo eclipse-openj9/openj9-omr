@@ -1836,100 +1836,99 @@ TR_Debug::getStaticName(TR::SymbolReference * symRef)
       }
    else if (sym->isConstantPoolAddress())
       return "<constant pool address>";
-   else if (symRef->getCPIndex() >= 0)
-      {
-      if (sym->isAddressOfClassObject())
-         return "<address of class object>";
 
-      if (sym->isConstString())
-         {
-         TR::StackMemoryRegion stackMemoryRegion(*comp()->trMemory());
-         char *contents = NULL;
-         intptr_t length = 0, prefixLength = 0, suffixOffset = 0;
-         const char *etc = "";
-         const intptr_t LENGTH_LIMIT=80;
-         const intptr_t PIECE_LIMIT=20;
+   if (sym->isAddressOfClassObject())
+      return "<address of class object>";
+
+   if (sym->isConstString())
+      {
+      TR::StackMemoryRegion stackMemoryRegion(*comp()->trMemory());
+      char *contents = NULL;
+      intptr_t length = 0, prefixLength = 0, suffixOffset = 0;
+      const char *etc = "";
+      const intptr_t LENGTH_LIMIT=80;
+      const intptr_t PIECE_LIMIT=20;
 
 #ifdef J9_PROJECT_SPECIFIC
-         TR::VMAccessCriticalSection getStaticNameCriticalSection(comp(),
-                                                                   TR::VMAccessCriticalSection::tryToAcquireVMAccess);
-         if (!symRef->isUnresolved() && getStaticNameCriticalSection.acquiredVMAccess())
-            {
-            uintptr_t stringLocation = (uintptr_t)sym->castToStaticSymbol()->getStaticAddress();
-            if (stringLocation)
-               {
-               uintptr_t string = comp()->fej9()->getStaticReferenceFieldAtAddress(stringLocation);
-               length = comp()->fej9()->getStringUTF8Length(string);
-               contents = (char*)comp()->trMemory()->allocateMemory(length+1, stackAlloc, TR_MemoryBase::UnknownType);
-               comp()->fej9()->getStringUTF8(string, contents, length+1);
-
-               //
-               // We don't want to mess up the logs too much.  Make sure the
-               // strings aren't too ugly.
-               //
-
-               // Use ellipsis if the string is too long
-               //
-               if (length <= LENGTH_LIMIT)
-                  {
-                  prefixLength = suffixOffset = length;
-                  }
-               else
-                  {
-                  prefixLength = PIECE_LIMIT;
-                  suffixOffset = length - PIECE_LIMIT;
-                  etc = "\"...\"";
-                  }
-
-               // Stop before any non-printable characters (like newlines or UTF8 weirdness)
-               //
-               intptr_t i;
-               for (i=0; i < prefixLength; i++)
-                  if (!isprint(contents[i]))
-                     {
-                     prefixLength = i;
-                     etc = "\"...\"";
-                     break;
-                     }
-               for (i = length-1; i > suffixOffset; i--)
-                  if (!isprint(contents[i]))
-                     {
-                     suffixOffset = i;
-                     etc = "\"...\"";
-                     break;
-                     }
-               }
-            char *result = (char*)_comp->trMemory()->allocateHeapMemory(length+20);
-            sprintf(result, "<string \"%.*s%s%s\">", (int)prefixLength, contents, etc, contents+suffixOffset);
-            return result;
-            }
-#endif
-         return "<string>";
-         }
-
-      if (sym->isConstMethodType())
-         return "<method type>"; // TODO: Print the signature
-
-      if (sym->isConstMethodHandle())
-         return "<method handle>"; // TODO: Print some kind of identification
-
-      if (sym->isConstObjectRef())
-         return "<constant object ref>";
-
-      if (sym->isConst())
-         return "<constant>";
-
-      // Value Type default value instance slot address
-      if (sym->isStaticDefaultValueInstance() && staticAddress)
+      TR::VMAccessCriticalSection getStaticNameCriticalSection(comp(),
+                                                                TR::VMAccessCriticalSection::tryToAcquireVMAccess);
+      if (!symRef->isUnresolved() && getStaticNameCriticalSection.acquiredVMAccess())
          {
-         const uint8_t EXTRA_SPACE = 5;
-         char * name = (char *)_comp->trMemory()->allocateHeapMemory(TR::Compiler->debug.pointerPrintfMaxLenInChars()+EXTRA_SPACE);
-         sprintf(name, POINTER_PRINTF_FORMAT, staticAddress);
-         return name;
-         }
+         uintptr_t stringLocation = (uintptr_t)sym->castToStaticSymbol()->getStaticAddress();
+         if (stringLocation)
+            {
+            uintptr_t string = comp()->fej9()->getStaticReferenceFieldAtAddress(stringLocation);
+            length = comp()->fej9()->getStringUTF8Length(string);
+            contents = (char*)comp()->trMemory()->allocateMemory(length+1, stackAlloc, TR_MemoryBase::UnknownType);
+            comp()->fej9()->getStringUTF8(string, contents, length+1);
 
-      return getOwningMethod(symRef)->staticName(symRef->getCPIndex(), comp()->trMemory());
+            //
+            // We don't want to mess up the logs too much.  Make sure the
+            // strings aren't too ugly.
+            //
+
+            // Use ellipsis if the string is too long
+            //
+            if (length <= LENGTH_LIMIT)
+               {
+               prefixLength = suffixOffset = length;
+               }
+            else
+               {
+               prefixLength = PIECE_LIMIT;
+               suffixOffset = length - PIECE_LIMIT;
+               etc = "\"...\"";
+               }
+
+            // Stop before any non-printable characters (like newlines or UTF8 weirdness)
+            //
+            intptr_t i;
+            for (i=0; i < prefixLength; i++)
+               if (!isprint(contents[i]))
+                  {
+                  prefixLength = i;
+                  etc = "\"...\"";
+                  break;
+                  }
+            for (i = length-1; i > suffixOffset; i--)
+               if (!isprint(contents[i]))
+                  {
+                  suffixOffset = i;
+                  etc = "\"...\"";
+                  break;
+                  }
+            }
+         char *result = (char*)_comp->trMemory()->allocateHeapMemory(length+20);
+         sprintf(result, "<string \"%.*s%s%s\">", (int)prefixLength, contents, etc, contents+suffixOffset);
+         return result;
+         }
+#endif
+      return "<string>";
       }
+
+   if (sym->isConstMethodType())
+      return "<method type>"; // TODO: Print the signature
+
+   if (sym->isConstMethodHandle())
+      return "<method handle>"; // TODO: Print some kind of identification
+
+   if (sym->isConstObjectRef())
+      return "<constant object ref>";
+
+   if (sym->isConst())
+      return "<constant>";
+
+   // Value Type default value instance slot address
+   if (sym->isStaticDefaultValueInstance() && staticAddress)
+      {
+      const uint8_t EXTRA_SPACE = 5;
+      char * name = (char *)_comp->trMemory()->allocateHeapMemory(TR::Compiler->debug.pointerPrintfMaxLenInChars()+EXTRA_SPACE);
+      sprintf(name, POINTER_PRINTF_FORMAT, staticAddress);
+      return name;
+      }
+
+   if (symRef->getCPIndex() >= 0)
+      return getOwningMethod(symRef)->staticName(symRef->getCPIndex(), comp()->trMemory());
 
    if (_comp->getSymRefTab()->isVtableEntrySymbolRef(symRef))
       return "<class_loader>";

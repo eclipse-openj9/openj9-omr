@@ -294,6 +294,7 @@ TR::OptionTable OMR::Options::_jitOptions[] = {
    {"disableClassChainSharing",            "M\tdisable class sharing", RESET_OPTION_BIT(TR_EnableClassChainSharing), "F", NOT_IN_SUBSET},
    {"disableClassChainValidationCaching",  "M\tdisable class chain validation caching", RESET_OPTION_BIT(TR_EnableClassChainValidationCaching), "F", NOT_IN_SUBSET},
    {"disableClearCodeCacheFullFlag",      "I\tdisable the re-enabling of full code cache when a method body is freed.", SET_OPTION_BIT(TR_DisableClearCodeCacheFullFlag),"F", NOT_IN_SUBSET},
+   {"disableCodeAllocationTrimming",      "M\tdisable code cache allocation trimming at end of codegen", SET_OPTION_BIT(TR_DisableCodeAllocationTrimming), "F"},
    {"disableCodeCacheConsolidation",      "M\tdisable code cache consolidation", RESET_OPTION_BIT(TR_EnableCodeCacheConsolidation), "F", NOT_IN_SUBSET},
    {"disableCodeCacheReclamation",        "I\tdisable the freeing of compilations.", SET_OPTION_BIT(TR_DisableCodeCacheReclamation),"F", NOT_IN_SUBSET},
    {"disableCodeCacheSnippets",           "O\tdisable code cache snippets (e.g. allocation prefetch snippet) ", SET_OPTION_BIT(TR_DisableCodeCacheSnippets), "F"},

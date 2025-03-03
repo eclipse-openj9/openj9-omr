@@ -544,9 +544,11 @@ class OMR_EXTENSIBLE TreeEvaluator: public OMR::TreeEvaluator
                                                                               int repMovsThresholdBytes,
                                                                               TR::LabelSymbol *repMovsLabel,
                                                                               TR::LabelSymbol *mainEndLabel);
-   protected:
 
    static TR::Register *performHelperCall(TR::Node *node, TR::SymbolReference *helperSymRef, TR::ILOpCodes helperCallOpCode, bool spillFPRegs, TR::CodeGenerator *cg);
+
+   protected:
+
    static TR::Register *performIload(TR::Node *node, TR::MemoryReference  *sourceMR, TR::CodeGenerator *cg);
    static TR::Register *performFload(TR::Node *node, TR::MemoryReference  *sourceMR, TR::CodeGenerator *cg);
    static TR::Register *performDload(TR::Node *node, TR::MemoryReference  *sourceMR, TR::CodeGenerator *cg);

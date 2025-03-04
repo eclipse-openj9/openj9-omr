@@ -458,7 +458,7 @@ enum TR_CompilationOptions
    TR_AggressiveOpts                          = 0x00010000 + 12,
    TR_DisableMarshallingIntrinsics            = 0x00020000 + 12,
    TR_DisablePackedDecimalIntrinsics          = 0x00040000 + 12,
-   // Available                               = 0x00080000 + 12,
+   TR_DisableCodeAllocationTrimming           = 0x00080000 + 12,
    TR_DisableDememoization                    = 0x00100000 + 12,
    TR_DisableStringBuilderTransformer         = 0x00200000 + 12,
    TR_TraceILGen                              = 0x00400000 + 12,

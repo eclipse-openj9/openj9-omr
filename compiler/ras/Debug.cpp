@@ -1571,6 +1571,8 @@ TR_Debug::getName(TR::SymbolReference * symRef)
             return "<loadFlattenableArrayElementNonHelper>";
          case TR::SymbolReferenceTable::storeFlattenableArrayElementNonHelperSymbol:
             return "<storeFlattenableArrayElementNonHelper>";
+         case TR::SymbolReferenceTable::isIdentityObjectNonHelperSymbol:
+            return "<isIdentityObject>";
          case TR::SymbolReferenceTable::J9JNIMethodIDvTableIndexFieldSymbol:
             return "<J9JNIMethodIDvTableIndexField>";
          case TR::SymbolReferenceTable::contiguousArrayDataAddrFieldSymbol:
@@ -2038,6 +2040,7 @@ static const char *commonNonhelperSymbolNames[] =
    "<nonNullableArrayNullStoreCheck>",
    "<loadFlattenableArrayElementNonHelper>",
    "<storeFlattenableArrayElementNonHelper>",
+   "<isIdentityObject>",
    "<synchronizedFieldLoad>",
    "<atomicAdd>",
    "<atomicFetchAndAdd>",
@@ -3581,6 +3584,7 @@ TR_Debug::getRuntimeHelperName(int32_t index)
          case TR_arrayBoundsCheck:          return "jitThrowArrayIndexOutOfBounds";
          case TR_divCheck:                  return "jitThrowArithmeticException";
          case TR_arrayStoreException:       return "jitThrowArrayStoreException";
+         case TR_identityException:         return "jitThrowIdentityException";
          case TR_typeCheckArrayStore:       return "jitTypeCheckArrayStore";
          case TR_softwareReadBarrier:       return "jitSoftwareReadBarrier";
          case TR_writeBarrierStore:         return "jitWriteBarrierStore";

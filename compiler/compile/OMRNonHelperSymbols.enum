@@ -190,6 +190,13 @@
     */
    storeFlattenableArrayElementNonHelperSymbol,
 
+   /**
+    * \brief Symbol used in testing whether an object is an identity object or a value type object.
+    *        It must be expanded inline prior to code generation, yielding a result of one if the
+    *        operand object reference is an identity object or zero if it is a value type object.
+    */
+   isIdentityObjectNonHelperSymbol,
+
    /** \brief
     *
     *  This symbol is used by the code generator to recognize and inline a call which emulates the following

@@ -6637,9 +6637,24 @@ TR::Block *TR_BlockSplitter::splitBlock(TR::Block *pred, TR_LinkHeadAndTail<Bloc
             {
             if (lastRealNode->getBranchDestination()->getNode()->getBlock()->getNumber() == candidate->getNumber())
                {
-               lastRealNode->reverseBranch(cloneEnd->getExit()->getNextTreeTop());
+               TR::TreeTop *newBranchDestinationTT = cloneEnd->getExit()->getNextTreeTop();
+
+               lastRealNode->reverseBranch(newBranchDestinationTT);
+
+               // There is a case where the candidate block was the original fall-through block of the pred block
+               // and the candidate block was also the pred block's branch destination. In this case, there is
+               // only one edge from the pred block to the candidate block: pred-->candidate.
+               // After branch reverse in this case, the new branch destination is the same as the old branch
+               // destination, but the edge pred-->candidate has been removed previously. We need to check whether
+               // the edge for the new branch destination exists or not. If not, the edge should be added.
+               if (!pred->hasSuccessor(newBranchDestinationTT->getNode()->getBlock()))
+                  {
+                  cfg->addEdge(pred, newBranchDestinationTT->getNode()->getBlock());
+                  }
+
                if (trace())
-                  traceMsg(comp(), "  Reversing branch, node %d now jumps to block_%d\n", pred->getNumber(), lastRealNode->getBranchDestination()->getNode()->getBlock()->getNumber());
+                  traceMsg(comp(), "  Reversing branch, node n%dn in block_%d now jumps to block_%d\n", lastRealNode->getGlobalIndex(), pred->getNumber(), lastRealNode->getBranchDestination()->getNode()->getBlock()->getNumber());
+
                //this check handles splitting through a loop header in a region where we have not detected a valid loop header
                if (bMap->getLast()->_from->getNumber() == pred->getNumber())
                   {

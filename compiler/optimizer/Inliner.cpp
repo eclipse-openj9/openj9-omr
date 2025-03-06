@@ -3073,8 +3073,43 @@ TR_HandleInjectedBasicBlock::collectNodesWithMultipleReferences(TR::TreeTop * tt
       }
 
    if (!found)
+      {
       for (int32_t i = 0; i < node->getNumChildren(); ++i)
-         collectNodesWithMultipleReferences(tt, node, node->getChild(i));
+         {
+         // Ensure there will be no PassThroughs in _multiplyReferencedNodes.
+         // The logic that generates the stores and loads is not prepared to
+         // deal with them. It could be made to do so, but it's simpler and
+         // potentially generates fewer temps to prevent the situation here.
+         TR::Node *child = node->getChild(i);
+         if (child->getReferenceCount() > 1
+             && child->getOpCodeValue() == TR::PassThrough)
+            {
+            // Most of the time we could use grandchild directly, but that's
+            // not possible when node is a NULLCHK, and it would be really hard
+            // to exercise the NULLCHK case (with commoning), so just always
+            // create a new PassThrough.
+            TR::Node *grandchild = child->getChild(0);
+            TR::Node *newChild = TR::Node::create(child, TR::PassThrough, 1, grandchild);
+            dumpOptDetails(
+               comp(),
+               "HIBB: Change n%un [%p] child %d from PassThrough n%un [%p] "
+               "to fresh uncommoned PassThrough n%un [%p]\n",
+               node->getGlobalIndex(),
+               node,
+               i,
+               child->getGlobalIndex(),
+               child,
+               newChild->getGlobalIndex(),
+               newChild);
+
+            node->setAndIncChild(i, newChild);
+            child->recursivelyDecReferenceCount();
+            child = newChild;
+            }
+
+         collectNodesWithMultipleReferences(tt, node, child);
+         }
+      }
    }
 
 void
@@ -3235,6 +3270,9 @@ TR_HandleInjectedBasicBlock::add(TR::TreeTop * tt, TR::Node * node)
 //   ref->_treeTop = tt;
 //   ref->_referencesToBeFound = node->getReferenceCount() - 1;
 //   ref->_symbolCanBeReloaded = node->getOpCode().isLoadVarDirect() && node->getSymbol()->isAutoOrParm();
+
+   TR_ASSERT_FATAL_WITH_NODE(
+      node, node->getOpCodeValue() != TR::PassThrough, "unexpected PassThrough");
 
    _multiplyReferencedNodes.add(ref);
    }
@@ -3516,7 +3554,9 @@ TR::TreeTop * OMR_InlinerUtil::storeValueInATemp(
       tempList.add(tempSymRef);
       }
 
-   TR_ASSERT(comp->il.opCodeForDirectStore(dataType) != TR::BadILOp, "Inlining, unexpected data type for temporary");
+   TR_ASSERT_FATAL(
+      comp->il.opCodeForDirectStore(dataType) != TR::BadILOp,
+      "unexpected data type for temporary");
 
    TR::Node * storeNode = NULL;
    if (isIndirect)

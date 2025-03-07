@@ -128,31 +128,34 @@ MM_SparseVirtualMemory::allocateSparseFreeEntryAndMapToHeapObject(void *proxyObj
 	uintptr_t adjustedSize = adjustSize(size);
 
 	omrthread_monitor_enter(_largeObjectVirtualMemoryMutex);
-	void *sparseHeapAddr = _sparseDataPool->findFreeListEntry(adjustedSize);
-	bool success = MM_VirtualMemory::commitMemory(sparseHeapAddr, adjustedSize);
 
-#if defined(OSX) || defined(OMRZTPF)
-	/* Most platforms will perform an implicit zero through the preceding commit. */
-	OMRZeroMemory(sparseHeapAddr, adjustedSize);
-#endif /* defined(OSX) || defined(OMRZTPF)) */
+	void *sparseHeapAddr = _sparseDataPool->findFreeListEntry(adjustedSize);
 
 	if (NULL != sparseHeapAddr) {
 		/* While the allocate and commit will work with _pageSize aligned memory, the map will contain exact size of the object.
 		 * The size will be verified on updates.
 		 */
 		_sparseDataPool->mapSparseDataPtrToHeapProxyObjectPtr(sparseHeapAddr, proxyObjPtr, size);
-	} else {
-		/* Impossible to get here, there should always be free space at sparse heap */
-		Assert_MM_unreachable();
-	}
 
-	omrthread_monitor_exit(_largeObjectVirtualMemoryMutex);
+		/* Zeroing (if needed at all) is safe to do after monitor release, since object has not been exposed yet. */
+		omrthread_monitor_exit(_largeObjectVirtualMemoryMutex);
 
-	if (success) {
-		Trc_MM_SparseVirtualMemory_commitMemory_success(sparseHeapAddr, (void *)adjustedSize, proxyObjPtr);
+		bool success = MM_VirtualMemory::commitMemory(sparseHeapAddr, adjustedSize);
+
+		if (success) {
+#if defined(OSX) || defined(OMRZTPF)
+			/* Most platforms will perform an implicit zero through the preceding commit. */
+			OMRZeroMemory(sparseHeapAddr, adjustedSize);
+#endif /* defined(OSX) || defined(OMRZTPF) */
+			Trc_MM_SparseVirtualMemory_commitMemory_success(sparseHeapAddr, (void *)adjustedSize, proxyObjPtr);
+		} else {
+			Trc_MM_SparseVirtualMemory_commitMemory_failure(sparseHeapAddr, (void *)adjustedSize, proxyObjPtr);
+		}
 	} else {
-		Trc_MM_SparseVirtualMemory_commitMemory_failure(sparseHeapAddr, (void *)adjustedSize, proxyObjPtr);
-		sparseHeapAddr = NULL;
+		omrthread_monitor_exit(_largeObjectVirtualMemoryMutex);
+
+		/* Although not a commit failure, the NULL value of sparseHeapAddr serves as a distinct trace point. */
+		Trc_MM_SparseVirtualMemory_commitMemory_failure(NULL, (void *)adjustedSize, proxyObjPtr);
 	}
 
 	return sparseHeapAddr;

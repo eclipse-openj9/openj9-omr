@@ -101,14 +101,14 @@ MM_SparseAddressOrderedFixedSizeDataPool::initialize(MM_EnvironmentBase *env, vo
 void
 MM_SparseAddressOrderedFixedSizeDataPool::tearDown(MM_EnvironmentBase *env)
 {
-	if (NULL != _freeListPool) {
-		pool_kill(_freeListPool);
-		_freeListPool = NULL;
-	}
-
 	if (NULL != _heapFreeList) {
 		freeAllSparseHeapFreeListNodes();
 		_heapFreeList = NULL;
+	}
+
+	if (NULL != _freeListPool) {
+		pool_kill(_freeListPool);
+		_freeListPool = NULL;
 	}
 
 	if (NULL != _objectToSparseDataTable) {

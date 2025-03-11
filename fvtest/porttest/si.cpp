@@ -670,7 +670,7 @@ TEST(PortSysinfoTest, sysinfo_test_sysinfo_set_limit_ADDRESS_SPACE)
 	uint64_t originalMaxLimit;
 	uint64_t currentLimit;
 #if defined(OSX)
-	const uint64_t as1 = 420000000000;
+	uint64_t as1 = 420000000000;
 #else /* defined(OSX) */
 	const uint64_t as1 = 300000;
 #endif /* defined(OSX) */
@@ -679,6 +679,12 @@ TEST(PortSysinfoTest, sysinfo_test_sysinfo_set_limit_ADDRESS_SPACE)
 
 	/* save original soft limit */
 	rc = omrsysinfo_get_limit(OMRPORT_RESOURCE_ADDRESS_SPACE, &originalCurLimit);
+#if defined(OSX)
+	if (originalCurLimit > as1) {
+		/* macOS 15 setrlimit() requires a larger value. */
+		as1 = originalCurLimit - 1;
+	}
+#endif /* defined(OSX) */
 
 	rc = omrsysinfo_set_limit(OMRPORT_RESOURCE_ADDRESS_SPACE, as1);
 	if (rc == -1) {
@@ -692,7 +698,7 @@ TEST(PortSysinfoTest, sysinfo_test_sysinfo_set_limit_ADDRESS_SPACE)
 	if (as1 == currentLimit) {
 		portTestEnv->log("omrsysinfo_set_limit set ADDRESS_SPACE soft max successful\n");
 	} else {
-		outputErrorMessage(PORTTEST_ERROR_ARGS, "omrsysinfo_set_limit set ADDRESS_SPACE soft max FAILED\n");
+		outputErrorMessage(PORTTEST_ERROR_ARGS, "omrsysinfo_set_limit set ADDRESS_SPACE soft max FAILED as1 (%llu) != currentLimit (%llu) \n", as1, currentLimit);
 		reportTestExit(OMRPORTLIB, testName);
 		return;
 	}

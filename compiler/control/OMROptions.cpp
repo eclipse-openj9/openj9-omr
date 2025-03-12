@@ -2667,9 +2667,9 @@ OMR::Options::jitPreProcess()
 #elif defined(TR_HOST_S390)
    _bigCalleeThreshold = 600;
 #else
-   _bigCalleeThreshold = 400;
+   _bigCalleeThreshold = 500;
 #endif
-   _bigCalleeThresholdForColdCallsAtWarm = 400;
+   _bigCalleeThresholdForColdCallsAtWarm = 500;
    _bigCalleeThresholdForColdCallsAtHot = 500;
    _bigCalleeFreqCutoffAtWarm = 0;
    _bigCalleeHotOptThreshold = 600;

@@ -72,11 +72,6 @@ private:
 	bool freeMemory();
 
 protected:
-	/*
-	 * use "OMRPORT_VMEM_MEMORY_MODE_READ | OMRPORT_VMEM_MEMORY_MODE_WRITE" for mode
-	 */
-	static MM_VirtualMemory* newInstance(MM_EnvironmentBase* env, uintptr_t heapAlignment, uintptr_t size, uintptr_t pageSize, uintptr_t pageFlags, uintptr_t tailPadding, void* preferredAddress, void* ceiling, uintptr_t mode, uintptr_t options, uint32_t memoryCategory);
-
 	bool initialize(MM_EnvironmentBase* env, uintptr_t size, void* preferredAddress, void* ceiling, uintptr_t options, uint32_t memoryCategory);
 	virtual void tearDown(MM_EnvironmentBase* env);
 
@@ -104,10 +99,6 @@ protected:
 		_typeId = __FUNCTION__;
 	}
 
-	virtual void kill(MM_EnvironmentBase* env);
-
-	virtual bool commitMemory(void* address, uintptr_t size);
-	virtual bool decommitMemory(void* address, uintptr_t size, void* lowValidAddress, void* highValidAddress);
 	void roundDownTop(uintptr_t rounding);
 
 	/*
@@ -122,22 +113,6 @@ protected:
 	virtual bool setNumaAffinity(uintptr_t numaNode, void* address, uintptr_t byteAmount);
 
 	/**
-	 * Return the heap base of the virtual memory object.
-	 */
-	MMINLINE void* getHeapBase()
-	{
-		return _heapBase;
-	};
-
-	/**
-	 * Return the top of the heap of the virtual memory object.
-	 */
-	MMINLINE void* getHeapTop()
-	{
-		return _heapTop;
-	};
-
-	/**
 	 * Return the heap file descriptor.
 	 */
 	MMINLINE int getHeapFileDescriptor()
@@ -145,21 +120,6 @@ protected:
 		return _identifier.fd;
 	}
 
-	/** 
-	 * Return the size of the pages used in the virtual memory object
-	 */
-	MMINLINE uintptr_t getPageSize()
-	{
-		return _pageSize;
-	}
-
-	/** 
-	 * Return the flags describing the pages used in the virtual memory object
-	 */
-	MMINLINE uintptr_t getPageFlags()
-	{
-		return _pageFlags;
-	}
 
 	/**
 	 * Return number of memory consumers attached to this virtual memory object
@@ -195,6 +155,96 @@ protected:
 	}
 
 public:
+	/**
+	 * Create new instance of Virtual Memory
+	 *
+	 * @param env - current thread environment
+	 * @param heapAlignment - virtual memory heap alignment
+	 * @param size - required memory size
+	 * @param pageSize - desired physical page size. If requested page size is not available an allocation can use pages of smaller size
+	 * *param pageFlags - ZOS only: desired physical page property pageable/nonpageable
+	 * @param tailPadding - requested tail padding size
+	 * @param preferredAddress - request allocation from specified address, fail to allocate if not available
+	 * @param ceiling - specify maximum top address for allocated memory
+	 * @param mode - request memory options, for example use "OMRPORT_VMEM_MEMORY_MODE_READ | OMRPORT_VMEM_MEMORY_MODE_WRITE"
+	 * @param options - extra options for memory allocations
+	 * @param memoryCategory - provide memory category
+	 *
+	 * @return pointer to MM_VirtualMemory instance or NULL if attempt fail
+	 *
+	 */
+	static MM_VirtualMemory* newInstance(
+			MM_EnvironmentBase* env, uintptr_t heapAlignment, uintptr_t size, uintptr_t pageSize, uintptr_t pageFlags,
+			uintptr_t tailPadding, void* preferredAddress, void* ceiling, uintptr_t mode, uintptr_t options, uint32_t memoryCategory);
+
+	/**
+	 * Kill virtual memory instance
+	 *
+	 * @param env - current thread environment
+	 */
+	virtual void kill(MM_EnvironmentBase* env);
+
+	/**
+	 * Return the heap base of the virtual memory object
+	 *
+	 * @return base address for allocated virtual memory
+	 */
+	MMINLINE void* getHeapBase()
+	{
+		return _heapBase;
+	};
+
+	/**
+	 * Return the top of the heap of the virtual memory object
+	 *
+	 * @return top address for allocated virtual memory
+	 */
+	MMINLINE void* getHeapTop()
+	{
+		return _heapTop;
+	};
+
+	/**
+	 * Return the size of the pages used in the virtual memory object
+	 *
+	 * @return actual physical page size used for allocation, can be smaller that requested
+	 */
+	MMINLINE uintptr_t getPageSize()
+	{
+		return _pageSize;
+	}
+
+	/**
+	 * Return the flags describing the pages used in the virtual memory object
+	 *
+	 * @return actual physical page flags used for allocation
+	 */
+	MMINLINE uintptr_t getPageFlags()
+	{
+		return _pageFlags;
+	}
+
+	/**
+	 * Commit virtual memory range
+	 *
+	 * @param address - start address of memory to be committed
+	 * @param size - size of memory to be committed
+	 *
+	 * @return true if succeeded
+	 */
+	virtual bool commitMemory(void* address, uintptr_t size);
+
+	/**
+	 * Decommit virtual memory range
+	 *
+	 * @param address the start of the block to be decommitted
+	 * @param size the size of the block to be decommitted
+	 * @param lowValidAddress the end of the previous committed block below address, or NULL if address is the first committed block
+	 * @param highValidAddress the start of the next committed block above address, or NULL if address is the last committed block
+	 * @return true if successful, false otherwise.
+	 */
+	virtual bool decommitMemory(void* address, uintptr_t size, void* lowValidAddress, void* highValidAddress);
+
 /*
  * friends
  */

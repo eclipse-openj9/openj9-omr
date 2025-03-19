@@ -610,11 +610,21 @@ TR_YesNoMaybe TR::VPClassType::isJavaLangClassObject()
    // it would make this look just like Class.class.
    if (_len == 17 && strncmp(_sig, "Ljava/lang/Class;", 17) == 0)
       return TR_maybe;
+
+   // If the type is java/lang/Object or an interface that is implemented
+   // by java/lang/Class, this may be the java/lang/Class object itself.
+   //
+   // java/lang/constant/Constable, java/lang/invoke/TypeDescriptor
+   // and java/lang/invoke/TypeDescriptor$OfField were introduced in JDK 12
+   //
    if ((_len == 18 && strncmp(_sig, "Ljava/lang/Object;", 18) == 0) ||
          (_len == 22 && strncmp(_sig, "Ljava/io/Serializable;", 22) == 0) ||
          (_len == 36 && strncmp(_sig, "Ljava/lang/reflect/AnnotatedElement;", 36) == 0) ||
          (_len == 38 && strncmp(_sig, "Ljava/lang/reflect/GenericDeclaration;", 38) == 0) ||
-         (_len == 24 && strncmp(_sig, "Ljava/lang/reflect/Type;", 24) == 0))
+         (_len == 24 && strncmp(_sig, "Ljava/lang/reflect/Type;", 24) == 0) ||
+         (_len == 30 && strncmp(_sig, "Ljava/lang/constant/Constable;", 30) == 0) ||
+         (_len == 33 && strncmp(_sig, "Ljava/lang/invoke/TypeDescriptor;", 33) == 0) ||
+         (_len == 41 && strncmp(_sig, "Ljava/lang/invoke/TypeDescriptor$OfField;", 41) == 0))
       return TR_maybe;
    return TR_no; // java.lang.Class is final and is the direct subclass of Object.
    }

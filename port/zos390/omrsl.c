@@ -287,6 +287,9 @@ omrsl_lookup_name(struct OMRPortLibrary *portLibrary, uintptr_t descriptor, char
 	{
 		handle = (dllhandle *)descriptor;
 		address = (void *)dllqueryfn(handle, name);
+		if (NULL == address) {
+			address = (void *)dllqueryvar(handle, name);
+		}
 	}
 
 	if (address == NULL) {

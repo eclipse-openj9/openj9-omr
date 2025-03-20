@@ -225,14 +225,6 @@
 #undef OMR_THR_YIELD_ALG
 
 /**
- * Dwarf
- */
-#undef HAVE_DWARF_H
-#undef HAVE_LIBDWARF_DWARF_H
-#undef HAVE_LIBDWARF_H
-#undef HAVE_LIBDWARF_LIBDWARF_H
-
-/**
  * Flag to enable integration of valgrind api.
  */
 #undef OMR_VALGRIND_MEMCHECK

@@ -1526,19 +1526,6 @@ TR::VPArrayInfo *TR::VPArrayInfo::create(OMR::ValuePropagation *vp, int32_t lowB
    return constraint;
    }
 
-TR::VPArrayInfo *TR::VPArrayInfo::create(OMR::ValuePropagation *vp, char *sig)
-   {
-   TR_ASSERT(*sig == '[', "expecting array signature");
-   TR::DataType d = TR::Symbol::convertSigCharToType(sig[1]);
-   int32_t stride;
-   if (d == TR::Address)
-      stride = TR::Compiler->om.sizeofReferenceField();
-   else
-      stride = TR::Symbol::convertTypeToSize(d);
-
-   return TR::VPArrayInfo::create(vp, 0, static_cast<int32_t>(TR::getMaxSigned<TR::Int32>()) / stride, stride);
-   }
-
 TR::VPMergedConstraints *TR::VPMergedConstraints::create(OMR::ValuePropagation *vp, TR::VPConstraint *first, TR::VPConstraint *second)
    {
    // If the constraint does not already exist, create it

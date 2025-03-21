@@ -2564,7 +2564,7 @@ TR::Node *constrainAloadi(OMR::ValuePropagation *vp, TR::Node *node)
                         vp->comp(), classBlock);
 
                   constraint = TR::VPClass::create(vp, (TR::VPClassType*)constraint, NULL, NULL,
-                        TR::VPArrayInfo::create(vp, 0, TR::getMaxSigned<TR::Int32>() / elementSize, elementSize),
+                        TR::VPArrayInfo::create(vp, 0, TR::Compiler->om.maxArraySizeInElements(elementSize, vp->comp()), elementSize),
                         TR::VPObjectLocation::create(vp, TR::VPObjectLocation::NotClassObject));
                   }
                }
@@ -12205,19 +12205,14 @@ TR::Node *constrainBndChkWithSpineChk(OMR::ValuePropagation *vp, TR::Node *node)
    //    2) its high bound must be (maximum array size-1)
    // -------------------------------------------------------------------------
 
-   uint32_t elementSize = 1;
+   int32_t elementSize = 1;
    if (sizeNode->getOpCode().isArrayLength())
       {
       elementSize = sizeNode->getArrayStride();
       }
 
    int32_t low = 0;
-   int32_t high = static_cast<int32_t>(TR::getMaxSigned<TR::Int32>());
-
-   if (elementSize > 0)
-      {
-      high = high/elementSize - 1;
-      }
+   int32_t high = (int32_t)TR::Compiler->om.maxArraySizeInElements(elementSize, vp->comp()) - 1;
 
    // Calculate the new constraint for the index value.  If it is null, we
    // will definitely fail the bndchk
@@ -12260,7 +12255,7 @@ TR::Node *constrainBndChkWithSpineChk(OMR::ValuePropagation *vp, TR::Node *node)
    if (sizeNode->getOpCode().isArrayLength())
       {
       TR::Node *objectRef = sizeNode->getFirstChild();
-      vp->addBlockConstraint(objectRef, TR::VPArrayInfo::create(vp, low, high, 0));
+      vp->addBlockConstraint(objectRef, TR::VPArrayInfo::create(vp, low, high + 1, 0));
       }
 
    return node;
@@ -12303,7 +12298,7 @@ TR::Node *constrainArrayCopyBndChk(OMR::ValuePropagation *vp, TR::Node *node)
    //    3) The lhs low bound >= the rhs low bound
    //    3) The rhs high bound <= the lhs high bound
    //
-   uint32_t elementSize = 1;
+   int32_t elementSize = 1;
    bool isArrayLengthCheck = false;
    if (lhsNode->getOpCode().isArrayLength())
       {
@@ -12312,9 +12307,7 @@ TR::Node *constrainArrayCopyBndChk(OMR::ValuePropagation *vp, TR::Node *node)
       }
 
    int32_t low = 0;
-   int32_t high = static_cast<int32_t>(TR::getMaxSigned<TR::Int32>());
-   if (elementSize > 0)
-      high = high/elementSize-1;
+   int32_t high = (int32_t)TR::Compiler->om.maxArraySizeInElements(elementSize, vp->comp());
 
    if (lhs && lhs->getHighInt() < high)
       high = lhs->getHighInt();

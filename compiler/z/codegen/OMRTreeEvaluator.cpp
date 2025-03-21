@@ -15888,7 +15888,7 @@ OMR::Z::TreeEvaluator::arraycmpSIMDHelper(TR::Node *node,
       {
       if(isArrayCmpLen)
          {
-         generateRRInstruction(cg, TR::InstOpCode::getLoadRegOpCode(), node, resultReg, lastByteIndexReg);
+         generateRRInstruction(cg, TR::InstOpCode::LGR, node, resultReg, lastByteIndexReg);
          }
       else
          {

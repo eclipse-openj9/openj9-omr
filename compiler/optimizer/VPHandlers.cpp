@@ -12205,8 +12205,6 @@ TR::Node *constrainBndChkWithSpineChk(OMR::ValuePropagation *vp, TR::Node *node)
    //    2) its high bound must be (maximum array size-1)
    // -------------------------------------------------------------------------
 
-   bool isSizeContigArrayLength = true; //(sizeNode->getOpCodeValue() == TR::contigarraylength) ? true : false;
-
    uint32_t elementSize = 1;
    if (sizeNode->getOpCode().isArrayLength())
       {
@@ -12216,11 +12214,7 @@ TR::Node *constrainBndChkWithSpineChk(OMR::ValuePropagation *vp, TR::Node *node)
    int32_t low = 0;
    int32_t high = static_cast<int32_t>(TR::getMaxSigned<TR::Int32>());
 
-   if (sizeConstraint && !isSizeContigArrayLength)
-      {
-      high = sizeConstraint->getHighInt() - 1;
-      }
-   else if (elementSize > 0)
+   if (elementSize > 0)
       {
       high = high/elementSize - 1;
       }
@@ -12231,44 +12225,26 @@ TR::Node *constrainBndChkWithSpineChk(OMR::ValuePropagation *vp, TR::Node *node)
    TR::VPConstraint *constraint = NULL;
    bool foundArrayInfo = false;
 
-   if (isSizeContigArrayLength)
+   // See if the underlying array has bound limits
+   //
+   if (objConstraint)
       {
-      // See if the underlying array has bound limits
-      //
-      TR::Node *objectRef = node->getChild(arrayChildNum);
-      bool isGlobal;
-      TR::VPConstraint *objConstraint = vp->getConstraint(objectRef, isGlobal);
-
-      if (objConstraint)
+      TR::VPArrayInfo *arrayInfo = objConstraint->getArrayInfo();
+      if (arrayInfo)
          {
-         TR::VPArrayInfo *arrayInfo = objConstraint->getArrayInfo();
-         if (arrayInfo)
-            {
-            int32_t lowerBoundLimit = arrayInfo->lowBound();
-            int32_t upperBoundLimit = arrayInfo->highBound();
-            constraint = TR::VPIntRange::create(vp, 0, upperBoundLimit-1);
-            foundArrayInfo = true;
-            }
+         int32_t upperBoundLimit = arrayInfo->highBound();
+         constraint = TR::VPIntRange::create(vp, 0, upperBoundLimit-1);
+         foundArrayInfo = true;
          }
-
-      if (!constraint)
-         constraint = TR::VPIntRange::create(vp, low, high);
-
-      if (indexConstraint && constraint)
-         constraint = indexConstraint->intersect(constraint, vp);
       }
-   else if (low <= high)
-      {
+
+   if (!constraint)
       constraint = TR::VPIntRange::create(vp, low, high);
 
-      if (indexConstraint && constraint)
-         constraint = indexConstraint->intersect(constraint, vp);
-      }
-   else
-      constraint = NULL;
+   if (indexConstraint && constraint)
+      constraint = indexConstraint->intersect(constraint, vp);
 
-   if (/* (!isSizeContigArrayLength || foundArrayInfo) && */
-       (!constraint || (indexConstraint && indexConstraint->getLowInt() >= high+1)))
+   if (!constraint || (indexConstraint && indexConstraint->getLowInt() >= high + 1))
       {
       // Everything past this point in the block is dead, since the exception
       // will always be taken.
@@ -12277,57 +12253,7 @@ TR::Node *constrainBndChkWithSpineChk(OMR::ValuePropagation *vp, TR::Node *node)
       return node;
       }
 
-
    vp->addBlockConstraint(indexNode, constraint);
-
-   // -------------------------------------------------------------------------
-   // We can make an assertion about the minimum array size.  It must be at
-   // least as large as the low end of the index range + 1.
-   // -------------------------------------------------------------------------
-
-   if (!isSizeContigArrayLength)
-      {
-      // Contiguous arraylengths with a lower bound of zero imply the array may be
-      // discontiguous and hence the lower bound must remain at zero.
-      //
-      low = constraint->getLowInt();
-      if (!isSizeContigArrayLength || (low > 0))
-         low++;
-
-      high = static_cast<int32_t>(TR::getMaxSigned<TR::Int32>());
-      if (elementSize > 0)
-         {
-         high = high/elementSize;
-         }
-
-      constraint =  TR::VPIntRange::create(vp, low, high);
-
-      if (sizeConstraint)
-         {
-         constraint =  TR::VPIntRange::create(vp, low, high);
-         constraint = sizeConstraint->intersect(constraint, vp);
-         }
-
-      vp->addBlockConstraint(sizeNode, constraint);
-      }
-
-#if 0
-//-----------------------------------------------
-   // We can make an assertion about the minimum array size. It must be at least
-   // as large as the low end of the index range + 1.
-   //
-   low = constraint->getLowInt()+1;
-
-   high = TR::getMaxSigned<TR::Int32>();
-   if (elementSize > 0)
-      high = high/elementSize;
-   constraint =  TR::VPIntRange::create(vp, low, high);
-   if (size)
-     constraint = size->intersect(constraint, vp);
-
-   vp->addBlockConstraint(sizeNode, constraint);
-//----------------------------------------------------------
-#endif
 
    // Propagate the array size down to the underlying array object
    //

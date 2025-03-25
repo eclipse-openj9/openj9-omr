@@ -63,9 +63,14 @@ elseif(OMR_OS_OSX)
 			dwarf/DwarfScanner.cpp
 	)
 elseif(OMR_OS_AIX)
+	if(CMAKE_C_COMPILER_IS_OPENXL)
+		target_sources(omr_ddr_scanner PRIVATE dwarf/DwarfParser.cpp)
+	else()
+		target_sources(omr_ddr_scanner PRIVATE dwarf/AixSymbolTableParser.cpp)
+	endif()
+
 	target_sources(omr_ddr_scanner
 		PRIVATE
-			dwarf/AixSymbolTableParser.cpp
 			dwarf/DwarfFunctions.cpp
 			dwarf/DwarfScanner.cpp
 	)

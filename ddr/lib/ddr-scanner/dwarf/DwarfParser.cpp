@@ -117,8 +117,16 @@ dwarf_init(int fd,
 	 * newer compiler versions, so we prefer the more modern dwarfdump.
 	 */
 	char *toolpath = NULL;
-	if (findTool(&toolpath, "xcrun -f dwarfdump 2>/dev/null")
+
+	if (
+#if defined(AIXPPC)
+		// AIX with OpenXL
+		findTool(&toolpath, "which llvm-dwarfdump 2>/dev/null")
+#else /* defined (AIXPPC) */
+		// macOS
+		findTool(&toolpath, "xcrun -f dwarfdump 2>/dev/null")
 	||  findTool(&toolpath, "xcrun -f dwarfdump-classic 2>/dev/null")
+#endif /* defined (AIXPPC) */
 	) {
 		stringstream command;
 		command << toolpath << " " << DwarfScanner::getScanFileName() << " 2>&1";

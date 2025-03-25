@@ -348,6 +348,16 @@ class TR_InlinerBase: public TR_HasRandomGenerator
       //inlineCallTarget2 methods
       bool tryToInlineTrivialMethod (TR_CallStack* callStack, TR_CallTarget* calltarget);
 
+      /**
+       * \brief Determine whether \p callTarget can be inlined only by
+       * tryToInlineTrivialMethod().
+       *
+       * \param callStack the inlined call stack
+       * \param callTarget the call target
+       * \return true if regular IL gen and inlining must be avoided, false otherwise
+       */
+      bool trivialInliningOnly(TR_CallStack *callStack, TR_CallTarget *callTarget);
+
       bool tryToGenerateILForMethod (TR::ResolvedMethodSymbol* calleeSymbol, TR::ResolvedMethodSymbol* callerSymbol, TR_CallTarget* calltarget);
 
       void inlineFromGraph(TR_CallStack *, TR_CallTarget *calltarget, TR_InnerPreexistenceInfo *);
@@ -661,6 +671,7 @@ class OMR_InlinerPolicy : public TR::OptimizationPolicy, public OMR_InlinerHelpe
 
    protected:
       virtual bool tryToInlineTrivialMethod (TR_CallStack* callStack, TR_CallTarget* calltarget);
+      virtual bool trivialInliningOnly(TR_CallStack* callStack, TR_CallTarget* calltarget);
       virtual bool alwaysWorthInlining(TR_ResolvedMethod * calleeMethod, TR::Node *callNode);
       virtual void determineInliningHeuristic(TR::ResolvedMethodSymbol *callerSymbol);
       bool tryToInlineGeneral(TR_CallTarget *, TR_CallStack *, bool);

@@ -12254,8 +12254,14 @@ TR::Node *constrainBndChkWithSpineChk(OMR::ValuePropagation *vp, TR::Node *node)
    //
    if (sizeNode->getOpCode().isArrayLength())
       {
+      // Get the low bound from the new index constraint. If n is the length
+      // and i is the index, then we know that n > i >= low, so n >= low + 1.
+      // Leave high unchanged because the high bound from indexConstraint is
+      // uninformative.
+      low = constraint->getLowInt();
+
       TR::Node *objectRef = sizeNode->getFirstChild();
-      vp->addBlockConstraint(objectRef, TR::VPArrayInfo::create(vp, low, high + 1, 0));
+      vp->addBlockConstraint(objectRef, TR::VPArrayInfo::create(vp, low + 1, high + 1, 0));
       }
 
    return node;

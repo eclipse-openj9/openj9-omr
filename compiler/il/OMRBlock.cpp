@@ -1418,7 +1418,7 @@ OMR::Block::splitPostGRA(TR::TreeTop * startOfNewBlock, TR::CFG *cfg, bool copyE
                TR::Node *branch = node->getChild(i);
                if (branch->getOpCode().isBranch() && branch->getNumChildren() > 0)
                   {
-                  TR::Node *regDeps = node->getChild(node->getNumChildren() - 1);
+                  TR::Node *regDeps = branch->getChild(branch->getNumChildren() - 1);
                   if (regDeps->getOpCodeValue() == TR::GlRegDeps)
                      {
                      gatherUnavailableRegisters(comp, regDeps, iter, nodeInfo, storeNodeInfo, &storeRegNodePostSplitPoint, unavailableRegisters);

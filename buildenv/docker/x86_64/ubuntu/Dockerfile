@@ -20,9 +20,9 @@
 
 # Create the OMR build environment with Ubuntu 20.04.
 
-FROM nvidia/cuda:9.0-devel-ubuntu16.04 AS cuda-dev
+FROM nvcr.io/nvidia/cuda:12.2.0-devel-ubi8 as cuda
 
-FROM ubuntu:20.04 AS base
+FROM public.ecr.aws/lts/ubuntu:22.04_stable AS base
 
 # Workaround for a hang during docker build.
 ENV TZ=America/Toronto
@@ -39,10 +39,10 @@ RUN apt-get update && apt-get install -y \
         libdwarf-dev \
         gdb \
         vim \
-        gcc-7-multilib \
-        g++-7-multilib \
-        gcc-7 \
-        g++-7 \
+        gcc-11-multilib \
+        g++-11-multilib \
+        gcc-11 \
+        g++-11 \
         ninja-build \
         ccache \
         && rm -rf /var/lib/apt/lists/*
@@ -56,10 +56,10 @@ RUN groupadd -r jenkins \
 
 # Copy header files necessary to build with CUDA support.
 RUN mkdir -p /usr/local/cuda/nvvm
-COPY --from=cuda-dev /usr/local/cuda-9.0/include /usr/local/cuda/include
-COPY --from=cuda-dev /usr/local/cuda-9.0/nvvm/include /usr/local/cuda/nvvm/include
+COPY --from=cuda /usr/local/cuda/include /usr/local/cuda/include
+COPY --from=cuda /usr/local/cuda/nvvm/include /usr/local/cuda/nvvm/include
 
 USER jenkins
 ENV CUDA_HOME=/usr/local/cuda
 
-ENV CC=gcc-7 CXX=g++-7
+ENV CC=gcc-11 CXX=g++-11

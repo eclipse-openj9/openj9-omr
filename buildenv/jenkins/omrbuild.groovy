@@ -35,7 +35,7 @@ dockerImageName = (params.IMAGE_NAME) ? params.IMAGE_NAME : "buildomr"
  * Move the below parameters into SPECS while implementing a generic
  * approach to support Dockerfiles.
  */
-os = (params.OS) ? params.OS : "ubuntu20"
+os = (params.OS) ? params.OS : "ubuntu"
 arch = (params.ARCH) ? params.ARCH : "x86_64"
 
 buildSpec = (params.BUILDSPEC) ? params.BUILDSPEC : error("BUILDSPEC not specified")

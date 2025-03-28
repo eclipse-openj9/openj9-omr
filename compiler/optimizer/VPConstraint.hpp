@@ -783,7 +783,6 @@ class VPArrayInfo : public TR::VPConstraint
       : TR::VPConstraint(ArrayInfoPriority), _lowBound(lowBound), _highBound(highBound), _elementSize(elementSize)
       {}
    static TR::VPArrayInfo *create(OMR::ValuePropagation *vp, int32_t lowBound, int32_t highBound, int32_t elementSize);
-   static TR::VPArrayInfo *create(OMR::ValuePropagation *vp, char *sig);
    virtual TR::VPArrayInfo *asArrayInfo();
 
    virtual TR::VPConstraint *merge1(TR::VPConstraint *other, OMR::ValuePropagation *vp);

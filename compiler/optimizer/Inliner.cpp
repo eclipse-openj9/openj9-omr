@@ -4763,6 +4763,17 @@ bool OMR_InlinerPolicy::tryToInlineTrivialMethod (TR_CallStack* callStack, TR_Ca
    return false;
    }
 
+bool TR_InlinerBase::trivialInliningOnly(
+   TR_CallStack *callStack, TR_CallTarget *callTarget)
+   {
+   return getPolicy()->trivialInliningOnly(callStack, callTarget);
+   }
+
+bool OMR_InlinerPolicy::trivialInliningOnly(TR_CallStack* callStack, TR_CallTarget* calltarget)
+   {
+   return false;
+   }
+
 //returns false when inlining fails
 //TODO: currently this method returns true in some cases when the inlining fails. This needs to be fixed
 bool TR_InlinerBase::inlineCallTarget2(TR_CallStack * callStack, TR_CallTarget *calltarget, TR::TreeTop** cursorTreeTop, bool inlinefromgraph, int32_t)
@@ -4788,6 +4799,11 @@ bool TR_InlinerBase::inlineCallTarget2(TR_CallStack * callStack, TR_CallTarget *
 
    if (tryToInlineTrivialMethod(callStack, calltarget))
       return true;
+
+   if (trivialInliningOnly(callStack, calltarget))
+      {
+      return false;
+      }
 
    if (comp()->getOption(TR_InlineNativeOnly))
       return false;

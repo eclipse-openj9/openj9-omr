@@ -43,6 +43,7 @@ public:
 	 */
 private:
 protected:
+public:
 	/**
 	 * Set _virtualMemory field
 	 * @param virtualMemory virtual memory pointer to set
@@ -97,7 +98,6 @@ protected:
 		return _memoryTop;
 	}
 
-public:
 	MM_MemoryHandle()
 		: _virtualMemory(NULL)
 		, _memoryBase(NULL)

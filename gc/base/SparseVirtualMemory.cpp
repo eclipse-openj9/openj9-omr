@@ -44,12 +44,12 @@
 MM_SparseVirtualMemory *
 MM_SparseVirtualMemory::newInstance(MM_EnvironmentBase *env, uint32_t memoryCategory, MM_Heap *in_heap)
 {
-	MM_GCExtensionsBase *extensions = env->getExtensions();
+	MM_GCExtensionsBase *ext = env->getExtensions();
 	MM_SparseVirtualMemory *vmem = NULL;
 	vmem = (MM_SparseVirtualMemory *)env->getForge()->allocate(sizeof(MM_SparseVirtualMemory), OMR::GC::AllocationCategory::FIXED, OMR_GET_CALLSITE());
 
 	if (vmem) {
-		new (vmem) MM_SparseVirtualMemory(env, extensions->sparseHeapPageSize, extensions->sparseHeapPageFlags, in_heap);
+		new (vmem) MM_SparseVirtualMemory(env, ext->sparseHeapPageSize, ext->sparseHeapPageFlags, in_heap);
 		if (!vmem->initialize(env, memoryCategory)) {
 			vmem->kill(env);
 			vmem = NULL;
@@ -62,6 +62,7 @@ MM_SparseVirtualMemory::newInstance(MM_EnvironmentBase *env, uint32_t memoryCate
 bool
 MM_SparseVirtualMemory::initialize(MM_EnvironmentBase *env, uint32_t memoryCategory)
 {
+	MM_GCExtensionsBase *ext = env->getExtensions();
 	uintptr_t in_heap_size = (uintptr_t)_heap->getHeapTop() - (uintptr_t)_heap->getHeapBase();
 	uintptr_t maxHeapSize = _heap->getMaximumMemorySize();
 	uintptr_t regionSize = _heap->getHeapRegionManager()->getRegionSize();
@@ -71,6 +72,11 @@ MM_SparseVirtualMemory::initialize(MM_EnvironmentBase *env, uint32_t memoryCateg
 	uintptr_t ceilLog2 = MM_Math::floorLog2(regionCount) + 1;
 
 	uintptr_t off_heap_size = (uintptr_t)((ceilLog2 * in_heap_size) / 2);
+
+	if (UDATA_MAX != ext->sparseHeapSizeRatio) {
+		off_heap_size = (ext->sparseHeapSizeRatio / 100) * in_heap_size;
+	}
+
 	bool success = MM_VirtualMemory::initialize(env, off_heap_size, NULL, NULL, 0, memoryCategory);
 
 	if (success) {

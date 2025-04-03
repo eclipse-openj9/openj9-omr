@@ -2220,6 +2220,12 @@ static bool simplifyISelectCompare(TR::Node *compare, TR::Simplifier *s)
       TR::NodeChecklist safetyVisited(s->comp());
       TR_ComparisonTypes compareType = TR::ILOpCode::getCompareType(compare->getOpCodeValue());
       bool isUnsignedCompare = TR::ILOpCode(compare->getOpCode()).isUnsignedCompare();
+
+      // do not try to simplify compare if it will yield a BadILOp with TR_cmpNE as its TR_ComparisonTypes
+      TR::ILOpCodes compareOp = TR::ILOpCode::compareOpCode(compare->getFirstChild()->getDataType(), TR_cmpNE);
+      if (compareOp == TR::BadILOp)
+         return false;
+
       if (canProcessSubTreeLeavesForISelectCompare(safetyVisited, compare->getFirstChild()))
          {
          TR::NodeChecklist visited(s->comp());
@@ -2229,7 +2235,7 @@ static bool simplifyISelectCompare(TR::Node *compare, TR::Simplifier *s)
             {
             compare->setAndIncChild(1, TR::Node::createConstZeroValue(compare->getSecondChild(), compare->getSecondChild()->getDataType()));
             constVal->decReferenceCount();
-            TR::Node::recreate(compare, TR::ILOpCode(TR::ILOpCode::compareOpCode(compare->getFirstChild()->getDataType(), TR_cmpNE, isUnsignedCompare)).convertCmpToIfCmp());
+            TR::Node::recreate(compare, TR::ILOpCode(compareOp).convertCmpToIfCmp());
             return true;
             }
          }

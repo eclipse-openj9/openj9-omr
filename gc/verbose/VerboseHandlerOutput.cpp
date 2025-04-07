@@ -31,6 +31,9 @@
 #include "HeapRegionManager.hpp"
 #include "ObjectAllocationInterface.hpp"
 #include "ParallelDispatcher.hpp"
+#if defined(OMR_GC_SPARSE_HEAP_ALLOCATION)
+#include "SparseVirtualMemory.hpp"
+#endif /* defined(OMR_GC_SPARSE_HEAP_ALLOCATION) */
 #include "VerboseHandlerOutput.hpp"
 #include "VerboseManager.hpp"
 #include "VerboseWriterChain.hpp"
@@ -390,24 +393,25 @@ MM_VerboseHandlerOutput::outputInitializedRegion(MM_EnvironmentBase *env, MM_Ver
 	const char *arrayletDoubleMappingStatus = _extensions->indexableObjectModel.isDoubleMappingEnabled() ? "enabled" : "disabled";
 	const char *arrayletDoubleMappingRequested = isArrayletDoubleMapRequested ? "true" : "false";
 #endif /* OMR_GC_DOUBLE_MAP_ARRAYLETS */
-#if defined(OMR_GC_SPARSE_HEAP_ALLOCATION)
-	bool isVirtualLargeObjectHeapRequested = _extensions->isVirtualLargeObjectHeapRequested;
-	const char *virtualLargeObjectHeapStatus = _extensions->isVirtualLargeObjectHeapEnabled ? "enabled" : "disabled";
-	const char *virtualLargeObjectHeapRequested = isVirtualLargeObjectHeapRequested ? "true" : "false";
-#endif /* OMR_GC_SPARSE_HEAP_ALLOCATION */
 	buffer->formatAndOutput(env, 1, "<region>");
 	buffer->formatAndOutput(env, 2, "<attribute name=\"regionSize\" value=\"%zu\" />", _extensions->getHeap()->getHeapRegionManager()->getRegionSize());
 	buffer->formatAndOutput(env, 2, "<attribute name=\"regionCount\" value=\"%zu\" />", _extensions->getHeap()->getHeapRegionManager()->getTableRegionCount());
-	buffer->formatAndOutput(env, 2, "<attribute name=\"arrayletLeafSize\" value=\"%zu\" />", omrVM->_arrayletLeafSize);
+	if (!_extensions->isVirtualLargeObjectHeapEnabled) {
+		buffer->formatAndOutput(env, 2, "<attribute name=\"arrayletLeafSize\" value=\"%zu\" />", omrVM->_arrayletLeafSize);
+	}
 	if (_extensions->isVLHGC()) {
 #if defined(OMR_GC_DOUBLE_MAP_ARRAYLETS)
-		buffer->formatAndOutput(env, 2, "<attribute name=\"arrayletDoubleMappingRequested\" value=\"%s\"/>", arrayletDoubleMappingRequested);
-		buffer->formatAndOutput(env, 2, "<attribute name=\"arrayletDoubleMapping\" value=\"%s\"/>", arrayletDoubleMappingStatus);
+		if (!_extensions->isVirtualLargeObjectHeapEnabled) {
+			buffer->formatAndOutput(env, 2, "<attribute name=\"arrayletDoubleMappingRequested\" value=\"%s\"/>", arrayletDoubleMappingRequested);
+			buffer->formatAndOutput(env, 2, "<attribute name=\"arrayletDoubleMapping\" value=\"%s\"/>", arrayletDoubleMappingStatus);
+		}
 #endif /* OMR_GC_DOUBLE_MAP_ARRAYLETS */
 #if defined(OMR_GC_SPARSE_HEAP_ALLOCATION)
-		buffer->formatAndOutput(env, 2, "<attribute name=\"virtualLargeObjectHeapRequested\" value=\"%s\"/>", virtualLargeObjectHeapRequested);
-		buffer->formatAndOutput(env, 2, "<attribute name=\"virtualLargeObjectHeapStatus\" value=\"%s\"/>", virtualLargeObjectHeapStatus);
-#endif /* OMR_GC_SPARSE_HEAP_ALLOCATION */
+		if (_extensions->isVirtualLargeObjectHeapEnabled) {
+			MM_SparseVirtualMemory *largeObjectVirtualMemory = _extensions->largeObjectVirtualMemory;
+			buffer->formatAndOutput(env, 2, "<attribute name=\"virtualLargeObjectHeapSize\" value=\"0x%zx\"/>", (uintptr_t)largeObjectVirtualMemory->getHeapTop() - (uintptr_t)largeObjectVirtualMemory->getHeapBase());
+		}
+#endif /* defined(OMR_GC_SPARSE_HEAP_ALLOCATION) */
 	}
 	buffer->formatAndOutput(env, 1, "</region>");
 }

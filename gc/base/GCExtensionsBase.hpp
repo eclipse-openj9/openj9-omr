@@ -280,7 +280,6 @@ public:
 	bool isArrayletDoubleMapRequested;
 	bool isArrayletDoubleMapAvailable;
 #endif /* OMR_GC_DOUBLE_MAP_ARRAYLETS */
-	bool isVirtualLargeObjectHeapRequested;
 	bool isVirtualLargeObjectHeapEnabled;
 
 	uintptr_t requestedPageSize;	/**< Memory page size for Object Heap */
@@ -289,6 +288,7 @@ public:
 	uintptr_t gcmetadataPageFlags;	/**< Memory page flags for GC Meta data */
 	uintptr_t sparseHeapPageSize;	/**< Memory page size for Sparse Object Heap */
 	uintptr_t sparseHeapPageFlags;	/**< Memory page flags for Sparse Object Heap */
+	uintptr_t sparseHeapSizeRatio;	/**< Sparse heap size expressed as percentage of the main max heap size */
 
 #if defined(OMR_GC_MODRON_SCAVENGER)
 	MM_SublistPool rememberedSet;
@@ -580,7 +580,9 @@ public:
 	float excessiveGCFreeSizeRatio;
 
 	MM_Heap* heap;
+#if defined(OMR_GC_SPARSE_HEAP_ALLOCATION)
 	MM_SparseVirtualMemory *largeObjectVirtualMemory; /**< Virtual memory for large objects (objectSize > arrayletLeafSize). Live large objects are committed to this separate virtual memory space when isVirtualLargeObjectHeapEnabled is true */
+#endif /* defined(OMR_GC_SPARSE_HEAP_ALLOCATION) */
 	MM_HeapRegionManager* heapRegionManager; /**< The heap region manager used to view the heap as regions of memory */
 	MM_MemoryManager* memoryManager; /**< memory manager used to access to virtual memory instances */
 	uintptr_t aggressive;
@@ -1518,7 +1520,6 @@ public:
 		, isArrayletDoubleMapRequested(false)
 		, isArrayletDoubleMapAvailable(false)
 #endif /* defined(OMR_GC_DOUBLE_MAP_ARRAYLETS) */
-		, isVirtualLargeObjectHeapRequested(false)
 		, isVirtualLargeObjectHeapEnabled(false)
 		, requestedPageSize(0)
 		, requestedPageFlags(OMRPORT_VMEM_PAGE_FLAG_NOT_USED)
@@ -1526,6 +1527,7 @@ public:
 		, gcmetadataPageFlags(OMRPORT_VMEM_PAGE_FLAG_NOT_USED)
 		, sparseHeapPageSize(0)
 		, sparseHeapPageFlags(OMRPORT_VMEM_PAGE_FLAG_NOT_USED)
+		, sparseHeapSizeRatio(UDATA_MAX)
 #if defined(OMR_GC_MODRON_SCAVENGER)
 		, rememberedSet()
 		, oldHeapSizeOnLastGlobalGC(UDATA_MAX)
@@ -1754,7 +1756,9 @@ public:
 		, excessiveGCratio(95)
 		, excessiveGCFreeSizeRatio((float)0.03)
 		, heap(NULL)
+#if defined(OMR_GC_SPARSE_HEAP_ALLOCATION)
 		, largeObjectVirtualMemory(NULL)
+#endif /* defined(OMR_GC_SPARSE_HEAP_ALLOCATION) */
 		, heapRegionManager(NULL)
 		, memoryManager(NULL)
 		, aggressive(0)

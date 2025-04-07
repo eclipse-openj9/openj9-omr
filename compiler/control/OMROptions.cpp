@@ -5063,7 +5063,9 @@ const char *OMR::Options::_verboseOptionNames[TR_NumVerboseOptions] =
    "RSSReport",
    "RSSReportDetailed",
    "dependencyTracking",
-   "dependencyTrackingDetails"
+   "dependencyTrackingDetails",
+   "JITServerSharedProfile",
+   "JITServerSharedProfileDetails"
    };
 
 

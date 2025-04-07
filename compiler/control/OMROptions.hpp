@@ -1076,6 +1076,8 @@ enum TR_VerboseFlags
    TR_VerboseRSSReportDetailed,
    TR_VerboseDependencyTracking,
    TR_VerboseDependencyTrackingDetails,
+   TR_VerboseJITServerSharedProfile,
+   TR_VerboseJITServerSharedProfileDetails,
    //If adding new options add an entry to _verboseOptionNames as well
    TR_NumVerboseOptions        // Must be the last one;
    };

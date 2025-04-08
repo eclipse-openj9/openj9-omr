@@ -179,14 +179,24 @@ function(_omr_toolchain_process_exports TARGET_NAME)
 
 	set(exp_file "$<TARGET_PROPERTY:${TARGET_NAME},BINARY_DIR>/${TARGET_NAME}.exp")
 
-	omr_process_template(
-		"${omr_SOURCE_DIR}/cmake/modules/platform/toolcfg/gnu_exports.exp.in"
-		"${exp_file}"
-	)
-
-if(NOT CMAKE_C_COMPILER_IS_OPENXL)
-	target_link_libraries(${TARGET_NAME}
-		PRIVATE
-			"-Wl,--version-script,${exp_file}")
-endif()
+	# Currently, OpenXL on AIX uses the GNU configuration. In the future, it should
+	# be switched to the OpenXL-specific configuration (as has already been done with
+	# z/OS), but until then, we need to add this special case for OpenXL.
+	if (CMAKE_C_COMPILER_IS_OPENXL)
+		omr_process_template(
+			"${omr_SOURCE_DIR}/cmake/modules/platform/toolcfg/xlc_exports.exp.in"
+			"${exp_file}"
+		)
+		target_link_libraries(${TARGET_NAME}
+			PRIVATE
+				"-Wl,-bE:${exp_file}")
+	else()
+		omr_process_template(
+			"${omr_SOURCE_DIR}/cmake/modules/platform/toolcfg/gnu_exports.exp.in"
+			"${exp_file}"
+		)
+		target_link_libraries(${TARGET_NAME}
+			PRIVATE
+				"-Wl,--version-script,${exp_file}")
+	endif()
 endfunction()

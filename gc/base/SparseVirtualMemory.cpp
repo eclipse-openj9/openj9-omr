@@ -30,8 +30,6 @@
 #include "Forge.hpp"
 #include "GCExtensionsBase.hpp"
 #include "Math.hpp"
-#include "Heap.hpp"
-#include "HeapRegionManager.hpp"
 #include "ModronAssertions.h"
 #include "SparseVirtualMemory.hpp"
 #include "SparseAddressOrderedFixedSizeDataPool.hpp"

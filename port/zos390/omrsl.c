@@ -355,3 +355,19 @@ getDLError(struct OMRPortLibrary *portLibrary, char *errBuf, uintptr_t bufLen)
 	errBuf[bufLen - 1] = '\0';
 }
 
+/**
+ * Native Libraries
+ *
+ * This function is called to get all the shared libraries loaded by a process.
+ *
+ * @param[in] portLibrary Pointer to the OMR port library.
+ * @param[in] callback Function to be called for each library.
+ * @param[in] userData User-defined data passed to the callback.
+ *
+ * @return 0 if successful, or the first non-zero return value from the callback.
+ */
+uintptr_t
+omrsl_get_libraries(struct OMRPortLibrary *portLibrary, OMRLibraryInfoCallback callback, void *userData)
+{
+	return OMRPORT_ERROR_NOT_SUPPORTED_ON_THIS_PLATFORM;
+}

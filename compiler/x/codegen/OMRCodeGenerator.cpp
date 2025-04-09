@@ -1014,9 +1014,6 @@ bool OMR::X86::CodeGenerator::getSupportsOpCodeForAutoSIMD(TR::CPU *cpu, TR::ILO
 
     // implemented vector opcodes
     switch (opcode.getVectorOperation()) {
-        case TR::mload:
-        case TR::mloadi:
-            return cpu->supportsFeature(OMR_FEATURE_X86_SSE4_1);
         case TR::vcmpgt:
         case TR::vmcmpgt:
         case TR::vcmpge:
@@ -1125,6 +1122,12 @@ bool OMR::X86::CodeGenerator::getSupportsOpCodeForAutoSIMD(TR::CPU *cpu, TR::ILO
                 default:
                     return false;
             }
+        case TR::mload:
+        case TR::mloadi:
+        case TR::mstore:
+        case TR::mstorei:
+            if (!cpu->supportsFeature(OMR_FEATURE_X86_SSE4_1))
+                return false;
         case TR::vload:
         case TR::vloadi:
         case TR::vstore:

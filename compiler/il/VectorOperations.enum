@@ -64,7 +64,7 @@ VECTOR_OPERATION_MACRO(\
    /* .reverseBranchOperation  = */ TR::vBadOperation, \
    /* .booleanCompareOpCode    = */ TR::BadILOp, \
    /* .ifCompareOpCode         = */ TR::BadILOp, \
-   /* .description             =    test if any mask element is true under mask*/ \
+   /* .description             =    test if any mask element is true with mask*/ \
 )
 VECTOR_OPERATION_MACRO(\
    /* .operation               = */ mmAllTrue, \
@@ -80,7 +80,7 @@ VECTOR_OPERATION_MACRO(\
    /* .reverseBranchOperation  = */ TR::vBadOperation, \
    /* .booleanCompareOpCode    = */ TR::BadILOp, \
    /* .ifCompareOpCode         = */ TR::BadILOp, \
-   /* .description             =    test if all mask elements are true under mask*/ \
+   /* .description             =    test if all mask elements are true with mask*/ \
 )
 VECTOR_OPERATION_MACRO(\
    /* .operation               = */ mload, \
@@ -1260,7 +1260,7 @@ VECTOR_OPERATION_MACRO(\
    /* .reverseBranchOperation  = */ TR::vBadOperation, \
    /* .booleanCompareOpCode    = */ TR::BadILOp, \
    /* .ifCompareOpCode         = */ TR::BadILOp, \
-   /* .description             =    vector masked absolute value */ \
+   /* .description             =    vector absolute value with mask */ \
 )
 VECTOR_OPERATION_MACRO(\
    /* .operation               = */ vmadd, \
@@ -1276,7 +1276,7 @@ VECTOR_OPERATION_MACRO(\
    /* .reverseBranchOperation  = */ TR::vBadOperation, \
    /* .booleanCompareOpCode    = */ TR::BadILOp, \
    /* .ifCompareOpCode         = */ TR::BadILOp, \
-   /* .description             =    vector masked add */ \
+   /* .description             =    vector add with mask */ \
 )
 VECTOR_OPERATION_MACRO(\
    /* .operation               = */ vmand, \
@@ -1292,7 +1292,7 @@ VECTOR_OPERATION_MACRO(\
    /* .reverseBranchOperation  = */ TR::vBadOperation, \
    /* .booleanCompareOpCode    = */ TR::BadILOp, \
    /* .ifCompareOpCode         = */ TR::BadILOp, \
-   /* .description             =    vector masked logical AND */ \
+   /* .description             =    vector logical AND with mask */ \
 )
 VECTOR_OPERATION_MACRO(\
    /* .operation               = */ vmdiv, \
@@ -1308,7 +1308,7 @@ VECTOR_OPERATION_MACRO(\
    /* .reverseBranchOperation  = */ TR::vBadOperation, \
    /* .booleanCompareOpCode    = */ TR::BadILOp, \
    /* .ifCompareOpCode         = */ TR::BadILOp, \
-   /* .description             =    vector masked divide */ \
+   /* .description             =    vector divide with mask */ \
 )
 VECTOR_OPERATION_MACRO(\
    /* .operation               = */ vmfma, \
@@ -1324,7 +1324,7 @@ VECTOR_OPERATION_MACRO(\
    /* .reverseBranchOperation  = */ TR::vBadOperation, \
    /* .booleanCompareOpCode    = */ TR::BadILOp, \
    /* .ifCompareOpCode         = */ TR::BadILOp, \
-   /* .description             =    vector masked fused multiply and add */ \
+   /* .description             =    vector fused multiply and add with mask */ \
 )
 VECTOR_OPERATION_MACRO(\
    /* .operation               = */ vmindexVector, \
@@ -1341,7 +1341,7 @@ VECTOR_OPERATION_MACRO(\
    /* .booleanCompareOpCode    = */ TR::BadILOp, \
    /* .ifCompareOpCode         = */ TR::BadILOp, \
    /* .description             =    Add the lanes of this vector to their corresponding lane numbers, \
-                                    scaled by a given constant masked. */ \
+                                    scaled by a given constant with mask. */ \
 )
 VECTOR_OPERATION_MACRO(\
    /* .operation               = */ vmloadi, \
@@ -1357,7 +1357,7 @@ VECTOR_OPERATION_MACRO(\
    /* .reverseBranchOperation  = */ TR::vBadOperation, \
    /* .booleanCompareOpCode    = */ TR::BadILOp, \
    /* .ifCompareOpCode         = */ TR::BadILOp, \
-   /* .description             =    load masked indirect vector */ \
+   /* .description             =    load indirect vector with mask */ \
 )
 VECTOR_OPERATION_MACRO(\
    /* .operation               = */ vmmax, \
@@ -1373,7 +1373,7 @@ VECTOR_OPERATION_MACRO(\
    /* .reverseBranchOperation  = */ TR::vBadOperation, \
    /* .booleanCompareOpCode    = */ TR::BadILOp, \
    /* .ifCompareOpCode         = */ TR::BadILOp, \
-   /* .description             =    vector masked lanewise maximum */ \
+   /* .description             =    vector lanewise maximum with mask */ \
 )
 VECTOR_OPERATION_MACRO(\
    /* .operation               = */ vmmin, \
@@ -1389,7 +1389,7 @@ VECTOR_OPERATION_MACRO(\
    /* .reverseBranchOperatin   = */ TR::vBadOperation, \
    /* .booleanCompareOpCode    = */ TR::BadILOp, \
    /* .ifCompareOpCode         = */ TR::BadILOp, \
-   /* .description             =    vector masked lanewise minimum */ \
+   /* .description             =    vector lanewise minimum with mask */ \
 )
 VECTOR_OPERATION_MACRO(\
    /* .operation               = */ vmmul, \
@@ -1405,7 +1405,7 @@ VECTOR_OPERATION_MACRO(\
    /* .reverseBranchOperation  = */ TR::vBadOperation, \
    /* .booleanCompareOpCode    = */ TR::BadILOp, \
    /* .ifCompareOpCode         = */ TR::BadILOp, \
-   /* .description             =    vector masked multiply */ \
+   /* .description             =    vector multiply with mask */ \
 )
 VECTOR_OPERATION_MACRO(\
    /* .operation               = */ vmneg, \
@@ -1421,7 +1421,7 @@ VECTOR_OPERATION_MACRO(\
    /* .reverseBranchOperation  = */ TR::vBadOperation, \
    /* .booleanCompareOpCode    = */ TR::BadILOp, \
    /* .ifCompareOpCode         = */ TR::BadILOp, \
-   /* .description             =    vector masked negation */ \
+   /* .description             =    vector negation with mask */ \
 )
 VECTOR_OPERATION_MACRO(\
    /* .operation               = */ vmnot, \
@@ -1437,7 +1437,7 @@ VECTOR_OPERATION_MACRO(\
    /* .reverseBranchOperation  = */ TR::vBadOperation, \
    /* .booleanCompareOpCode    = */ TR::BadILOp, \
    /* .ifCompareOpCode         = */ TR::BadILOp, \
-   /* .description             =    vector masked boolean not */ \
+   /* .description             =    vector boolean not with mask */ \
 )
 VECTOR_OPERATION_MACRO(\
    /* .operation               = */ vmor, \
@@ -1453,7 +1453,7 @@ VECTOR_OPERATION_MACRO(\
    /* .reverseBranchOperation  = */ TR::vBadOperation, \
    /* .booleanCompareOpCode    = */ TR::BadILOp, \
    /* .ifCompareOpCode         = */ TR::BadILOp, \
-   /* .description             =    vector masked logical OR */ \
+   /* .description             =    vector logical OR with mask */ \
 )
 VECTOR_OPERATION_MACRO(\
    /* .operation               = */ vmorUnchecked, \
@@ -1469,7 +1469,7 @@ VECTOR_OPERATION_MACRO(\
    /* .reverseBranchOperation  = */ TR::vBadOperation, \
    /* .booleanCompareOpCode    = */ TR::BadILOp, \
    /* .ifCompareOpCode         = */ TR::BadILOp, \
-   /* .description             =    the same as vmor but is valid for FP types as well*/ \
+   /* .description             =    the same as vmor but is valid for FP types as well, with mask */ \
 )
 VECTOR_OPERATION_MACRO(\
    /* .operation               = */ vmreductionAdd, \
@@ -1485,7 +1485,7 @@ VECTOR_OPERATION_MACRO(\
    /* .reverseBranchOperation  = */ TR::vBadOperation, \
    /* .booleanCompareOpCode    = */ TR::BadILOp, \
    /* .ifCompareOpCode         = */ TR::BadILOp, \
-   /* .description             =    vector masked add reduction */ \
+   /* .description             =    vector add reduction with mask */ \
 )
 VECTOR_OPERATION_MACRO(\
    /* .operation               = */ vmreductionAnd, \
@@ -1501,7 +1501,7 @@ VECTOR_OPERATION_MACRO(\
    /* .reverseBranchOperation  = */ TR::vBadOperation, \
    /* .booleanCompareOpCode    = */ TR::BadILOp, \
    /* .ifCompareOpCode         = */ TR::BadILOp, \
-   /* .description             =    vector masked and reduction */ \
+   /* .description             =    vector and reduction with mask */ \
 )
 VECTOR_OPERATION_MACRO(\
    /* .operation               = */ vmreductionFirstNonZero, \
@@ -1517,7 +1517,7 @@ VECTOR_OPERATION_MACRO(\
    /* .reverseBranchOperation  = */ TR::vBadOperation, \
    /* .booleanCompareOpCode    = */ TR::BadILOp, \
    /* .ifCompareOpCode         = */ TR::BadILOp, \
-   /* .description             =    vector masked FirstNonZero reduction */ \
+   /* .description             =    vector FirstNonZero reduction with mask */ \
 )
 VECTOR_OPERATION_MACRO(\
    /* .operation               = */ vmreductionMax, \
@@ -1533,7 +1533,7 @@ VECTOR_OPERATION_MACRO(\
    /* .reverseBranchOperation  = */ TR::vBadOperation, \
    /* .booleanCompareOpCode    = */ TR::BadILOp, \
    /* .ifCompareOpCode         = */ TR::BadILOp, \
-   /* .description             =    vector masked max reduction */ \
+   /* .description             =    vector max reduction with mask */ \
 )
 VECTOR_OPERATION_MACRO(\
    /* .operation               = */ vmreductionMin, \
@@ -1549,7 +1549,7 @@ VECTOR_OPERATION_MACRO(\
    /* .reverseBranchOperation  = */ TR::vBadOperation, \
    /* .booleanCompareOpCode    = */ TR::BadILOp, \
    /* .ifCompareOpCode         = */ TR::BadILOp, \
-   /* .description             =    vector masked min reduction */ \
+   /* .description             =    vector min reduction with mask */ \
 )
 VECTOR_OPERATION_MACRO(\
    /* .operation               = */ vmreductionMul, \
@@ -1565,7 +1565,7 @@ VECTOR_OPERATION_MACRO(\
    /* .reverseBranchOperation  = */ TR::vBadOperation, \
    /* .booleanCompareOpCode    = */ TR::BadILOp, \
    /* .ifCompareOpCode         = */ TR::BadILOp, \
-   /* .description             =    vector masked mul reduction */ \
+   /* .description             =    vector mul reduction with mask */ \
 )
 VECTOR_OPERATION_MACRO(\
    /* .operation               = */ vmreductionOr, \
@@ -1581,7 +1581,7 @@ VECTOR_OPERATION_MACRO(\
    /* .reverseBranchOperation  = */ TR::vBadOperation, \
    /* .booleanCompareOpCode    = */ TR::BadILOp, \
    /* .ifCompareOpCode         = */ TR::BadILOp, \
-   /* .description             =    vector masked or reduction */ \
+   /* .description             =    vector OR reduction with mask */ \
 )
 VECTOR_OPERATION_MACRO(\
    /* .operation               = */ vmreductionOrUnchecked, \
@@ -1597,7 +1597,7 @@ VECTOR_OPERATION_MACRO(\
    /* .reverseBranchOperation  = */ TR::vBadOperation, \
    /* .booleanCompareOpCode    = */ TR::BadILOp, \
    /* .ifCompareOpCode         = */ TR::BadILOp, \
-   /* .description             =    vector masked or unchecked reduction */ \
+   /* .description             =    vector OR unchecked reduction with mask */ \
 )
 VECTOR_OPERATION_MACRO(\
    /* .operation               = */ vmreductionXor, \
@@ -1613,7 +1613,7 @@ VECTOR_OPERATION_MACRO(\
    /* .reverseBranchOperation  = */ TR::vBadOperation, \
    /* .booleanCompareOpCode    = */ TR::BadILOp, \
    /* .ifCompareOpCode         = */ TR::BadILOp, \
-   /* .description             =    vector masked xor reduction */ \
+   /* .description             =    vector XOR reduction with mask */ \
 )
 VECTOR_OPERATION_MACRO(\
    /* .operation               = */ vmsqrt, \
@@ -1629,7 +1629,7 @@ VECTOR_OPERATION_MACRO(\
    /* .reverseBranchOperation  = */ TR::vBadOperation, \
    /* .booleanCompareOpCode    = */ TR::BadILOp, \
    /* .ifCompareOpCode         = */ TR::BadILOp, \
-   /* .description             =    vector masked float/double square root */ \
+   /* .description             =    vector float/double square root with mask */ \
 )
 VECTOR_OPERATION_MACRO(\
    /* .operation               = */ vmstorei, \
@@ -1645,7 +1645,7 @@ VECTOR_OPERATION_MACRO(\
    /* .reverseBranchOperation  = */ TR::vBadOperation, \
    /* .booleanCompareOpCode    = */ TR::BadILOp, \
    /* .ifCompareOpCode         = */ TR::BadILOp, \
-   /* .description             =    store masked indirect vector */ \
+   /* .description             =    store indirect vector with mask */ \
 )
 VECTOR_OPERATION_MACRO(\
    /* .operation               = */ vmsub, \
@@ -1661,7 +1661,7 @@ VECTOR_OPERATION_MACRO(\
    /* .reverseBranchOperation  = */ TR::vBadOperation, \
    /* .booleanCompareOpCode    = */ TR::BadILOp, \
    /* .ifCompareOpCode         = */ TR::BadILOp, \
-   /* .description             =    vector masked subtract */ \
+   /* .description             =    vector subtract with mask */ \
 )
 VECTOR_OPERATION_MACRO(\
    /* .operation               = */ vmxor, \
@@ -1677,7 +1677,7 @@ VECTOR_OPERATION_MACRO(\
    /* .reverseBranchOperation  = */ TR::vBadOperation, \
    /* .booleanCompareOpCode    = */ TR::BadILOp, \
    /* .ifCompareOpCode         = */ TR::BadILOp, \
-   /* .description             =    vector masked exclusive OR integer */ \
+   /* .description             =    vector exclusive OR integer with mask */ \
 )
 VECTOR_OPERATION_MACRO(\
    /* .operation               = */ vmfirstNonZero, \
@@ -1693,12 +1693,12 @@ VECTOR_OPERATION_MACRO(\
    /* .reverseBranchOperation  = */ TR::vBadOperation, \
    /* .booleanCompareOpCode    = */ TR::BadILOp, \
    /* .ifCompareOpCode         = */ TR::BadILOp, \
-   /* .description             =    masked lanewise first non-zero */ \
+   /* .description             =    lanewise first non-zero with mask */ \
 )
 VECTOR_OPERATION_MACRO(\
    /* .operation               = */ vmpopcnt, \
    /* .name                    = */ "vmpopcnt", \
-   /* .properties1             = */ 0, \
+   /* .properties1             = */ ILProp1::VectorMasked, \
    /* .properties2             = */ ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, \
    /* .properties3             = */ ILProp3::LikeUse, \
    /* .properties4             = */ 0, \
@@ -1714,7 +1714,7 @@ VECTOR_OPERATION_MACRO(\
 VECTOR_OPERATION_MACRO(\
    /* .operation               = */ vmshl, \
    /* .name                    = */ "vmshl", \
-   /* .properties1             = */ 0, \
+   /* .properties1             = */ ILProp1::VectorMasked, \
    /* .properties2             = */ ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, \
    /* .properties3             = */ 0, \
    /* .properties4             = */ 0, \
@@ -1730,7 +1730,7 @@ VECTOR_OPERATION_MACRO(\
 VECTOR_OPERATION_MACRO(\
    /* .operation               = */ vmshr, \
    /* .name                    = */ "vmshr", \
-   /* .properties1             = */ 0, \
+   /* .properties1             = */ ILProp1::VectorMasked, \
    /* .properties2             = */ ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, \
    /* .properties3             = */ 0, \
    /* .properties4             = */ 0, \
@@ -1746,7 +1746,7 @@ VECTOR_OPERATION_MACRO(\
 VECTOR_OPERATION_MACRO(\
    /* .operation               = */ vmushr, \
    /* .name                    = */ "vmushr", \
-   /* .properties1             = */ 0, \
+   /* .properties1             = */ ILProp1::VectorMasked, \
    /* .properties2             = */ ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, \
    /* .properties3             = */ 0, \
    /* .properties4             = */ 0, \
@@ -1762,7 +1762,7 @@ VECTOR_OPERATION_MACRO(\
 VECTOR_OPERATION_MACRO(\
    /* .operation               = */ vmrol, \
    /* .name                    = */ "vmrol", \
-   /* .properties1             = */ 0, \
+   /* .properties1             = */ ILProp1::VectorMasked, \
    /* .properties2             = */ ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, \
    /* .properties3             = */ 0, \
    /* .properties4             = */ 0, \
@@ -1778,7 +1778,7 @@ VECTOR_OPERATION_MACRO(\
 VECTOR_OPERATION_MACRO(\
    /* .operation               = */ vmnotz, \
    /* .name                    = */ "vmnotz", \
-   /* .properties1             = */ 0, \
+   /* .properties1             = */ ILProp1::VectorMasked, \
    /* .properties2             = */ ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, \
    /* .properties3             = */ ILProp3::LikeUse, \
    /* .properties4             = */ 0, \
@@ -1794,7 +1794,7 @@ VECTOR_OPERATION_MACRO(\
 VECTOR_OPERATION_MACRO(\
    /* .operation               = */ vmnolz, \
    /* .name                    = */ "vmnolz", \
-   /* .properties1             = */ 0, \
+   /* .properties1             = */ ILProp1::VectorMasked, \
    /* .properties2             = */ ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, \
    /* .properties3             = */ ILProp3::LikeUse, \
    /* .properties4             = */ 0, \
@@ -1810,7 +1810,7 @@ VECTOR_OPERATION_MACRO(\
 VECTOR_OPERATION_MACRO(\
    /* .operation               = */ vmbitswap, \
    /* .name                    = */ "vmbitswap", \
-   /* .properties1             = */ 0, \
+   /* .properties1             = */ ILProp1::VectorMasked, \
    /* .properties2             = */ ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, \
    /* .properties3             = */ ILProp3::LikeUse, \
    /* .properties4             = */ 0, \
@@ -1826,7 +1826,7 @@ VECTOR_OPERATION_MACRO(\
 VECTOR_OPERATION_MACRO(\
    /* .operation               = */ vmbyteswap, \
    /* .name                    = */ "vmbyteswap", \
-   /* .properties1             = */ 0, \
+   /* .properties1             = */ ILProp1::VectorMasked, \
    /* .properties2             = */ ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, \
    /* .properties3             = */ ILProp3::LikeUse, \
    /* .properties4             = */ 0, \
@@ -1842,7 +1842,7 @@ VECTOR_OPERATION_MACRO(\
 VECTOR_OPERATION_MACRO(\
    /* .operation               = */ vmcompressbits, \
    /* .name                    = */ "vmcompressbits", \
-   /* .properties1             = */ 0, \
+   /* .properties1             = */ ILProp1::VectorMasked, \
    /* .properties2             = */ ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, \
    /* .properties3             = */ 0, \
    /* .properties4             = */ 0, \
@@ -1858,7 +1858,7 @@ VECTOR_OPERATION_MACRO(\
 VECTOR_OPERATION_MACRO(\
    /* .operation               = */ vmexpandbits, \
    /* .name                    = */ "vmexpandbits", \
-   /* .properties1             = */ 0, \
+   /* .properties1             = */ ILProp1::VectorMasked, \
    /* .properties2             = */ ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, \
    /* .properties3             = */ 0, \
    /* .properties4             = */ 0, \
@@ -2048,7 +2048,7 @@ VECTOR_OPERATION_MACRO(\
    /* .reverseBranchOperation  = */ TR::vmcmpne, \
    /* .booleanCompareOpCode    = */ TR::BadILOp, \
    /* .ifCompareOpCode         = */ TR::BadILOp, \
-   /* .description             =    vector masked compare equal  (return vector mask) */ \
+   /* .description             =    vector compare equal  (return vector mask) with mask */ \
 )
 VECTOR_OPERATION_MACRO(\
    /* .operation               = */ vmcmpne, \
@@ -2064,7 +2064,7 @@ VECTOR_OPERATION_MACRO(\
    /* .reverseBranchOperation  = */ TR::vmcmpeq, \
    /* .booleanCompareOpCode    = */ TR::BadILOp, \
    /* .ifCompareOpCode         = */ TR::BadILOp, \
-   /* .description             =    vector masked compare not equal  (return vector mask) */ \
+   /* .description             =    vector compare not equal  (return vector mask) with mask */ \
 )
 VECTOR_OPERATION_MACRO(\
    /* .operation               = */ vmcmpgt, \
@@ -2080,7 +2080,7 @@ VECTOR_OPERATION_MACRO(\
    /* .reverseBranchOperation  = */ TR::vmcmple, \
    /* .booleanCompareOpCode    = */ TR::BadILOp, \
    /* .ifCompareOpCode         = */ TR::BadILOp, \
-   /* .description             =    vector masked compare greater than */ \
+   /* .description             =    vector compare greater than with mask */ \
 )
 VECTOR_OPERATION_MACRO(\
    /* .operation               = */ vmcmpge, \
@@ -2096,7 +2096,7 @@ VECTOR_OPERATION_MACRO(\
    /* .reverseBranchOperation  = */ TR::vmcmplt, \
    /* .booleanCompareOpCode    = */ TR::BadILOp, \
    /* .ifCompareOpCode         = */ TR::BadILOp, \
-   /* .description             =    vector masked compare greater equal */ \
+   /* .description             =    vector compare greater equal with mask */ \
 )
 VECTOR_OPERATION_MACRO(\
    /* .operation               = */ vmcmplt, \
@@ -2112,7 +2112,7 @@ VECTOR_OPERATION_MACRO(\
    /* .reverseBranchOperation  = */ TR::vmcmpge, \
    /* .booleanCompareOpCode    = */ TR::BadILOp, \
    /* .ifCompareOpCode         = */ TR::BadILOp, \
-   /* .description             =    vector masked compare less than */ \
+   /* .description             =    vector compare less than with mask */ \
 )
 VECTOR_OPERATION_MACRO(\
    /* .operation               = */ vmcmple, \
@@ -2128,5 +2128,5 @@ VECTOR_OPERATION_MACRO(\
    /* .reverseBranchOperation  = */ TR::vmcmpgt, \
    /* .booleanCompareOpCode    = */ TR::BadILOp, \
    /* .ifCompareOpCode         = */ TR::BadILOp, \
-   /* .description             =    vector masked compare less equal */ \
+   /* .description             =    vector compare less equal with mask */ \
 )

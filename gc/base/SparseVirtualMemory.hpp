@@ -34,6 +34,8 @@
 #include "modronopt.h"
 
 #include "BaseVirtual.hpp"
+#include "Heap.hpp"
+#include "HeapRegionManager.hpp"
 #include "VirtualMemory.hpp"
 
 class MM_GCExtensions;
@@ -68,16 +70,16 @@ public:
 private:
 	MMINLINE uintptr_t adjustSize(uintptr_t size)
 	{
-		/* Committing and de-committing memory sizes must be a multiple of page size. */
-		return MM_Math::roundToCeiling(_pageSize, size);
+		/* Committing and de-committing memory sizes must be a multiple of region size. */
+		return MM_Math::roundToCeiling(_heap->getHeapRegionManager()->getRegionSize(), size);
 	}
 
 protected:
-	bool initialize(MM_EnvironmentBase* env, uint32_t memoryCategory);
+	bool initialize(MM_EnvironmentBase *env, uint32_t memoryCategory);
 	void tearDown(MM_EnvironmentBase *env);
 
-	MM_SparseVirtualMemory(MM_EnvironmentBase* env, uintptr_t pageSize, uintptr_t pageFlags, MM_Heap *in_heap)
-		: MM_VirtualMemory(env, env->getExtensions()->heapAlignment, pageSize, pageFlags, 0, OMRPORT_VMEM_MEMORY_MODE_READ | OMRPORT_VMEM_MEMORY_MODE_WRITE)
+	MM_SparseVirtualMemory(MM_EnvironmentBase *env, uintptr_t pageSize, uintptr_t pageFlags, MM_Heap *in_heap)
+		: MM_VirtualMemory(env, in_heap->getHeapRegionManager()->getRegionSize(), pageSize, pageFlags, 0, OMRPORT_VMEM_MEMORY_MODE_READ | OMRPORT_VMEM_MEMORY_MODE_WRITE)
 		, _heap(in_heap)
 		, _sparseDataPool(NULL)
 		, _largeObjectVirtualMemoryMutex(NULL)
@@ -86,7 +88,7 @@ protected:
 	}
 
 public:
-	static MM_SparseVirtualMemory* newInstance(MM_EnvironmentBase* env, uint32_t memoryCategory, MM_Heap *in_heap);
+	static MM_SparseVirtualMemory *newInstance(MM_EnvironmentBase *env, uint32_t memoryCategory, MM_Heap *in_heap);
 	virtual void kill(MM_EnvironmentBase *env);
 
 	/**
@@ -134,7 +136,7 @@ public:
 	 *
 	 * @return true if memory was successfully decommited, false otherwise
 	 */
-	virtual bool decommitMemory(MM_EnvironmentBase* env, void* address, uintptr_t size);
+	virtual bool decommitMemory(MM_EnvironmentBase *env, void *address, uintptr_t size);
 	/* tell the compiler we want both decommit from Base class and our class */
 	using MM_VirtualMemory::decommitMemory;
 

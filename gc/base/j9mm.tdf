@@ -987,8 +987,8 @@ TraceException=Trc_MM_SparseAddressOrderedFixedSizeDataPool_allocation_failure n
 TraceEvent=Trc_MM_SparseAddressOrderedFixedSizeDataPool_initialization_success noEnv Overhead=1 Level=1 Group=gclogger Template="Successfully intialized SparseAddressOrderedFixedSizeDataPool: sparseHeapBase: %p, freeListPool: %p, objectToSparseDataTable: %p, heapFreeList: %p"
 TraceException=Trc_MM_SparseAddressOrderedFixedSizeDataPool_initialization_failure noEnv Overhead=1 Level=1 Group=arraylet Template="Failed to initialize SparseAddressOrderedFixedSizeDataPool: sparseHeapBase: %p, freeListPool: %p, objectToSparseDataTable: %p, heapFreeList: %p"
 
-TraceEvent=Trc_MM_SparseAddressOrderedFixedSizeDataPool_insertEntry_success noEnv Overhead=1 Level=1 Group=arraylet Template="Successfully inserted an entry into objectToSparseDataTable: sparseHeapObjectDataPointer: %p, adjustedSize: %p, inHeapObjectPointer (spine): %p"
-TraceException=Trc_MM_SparseAddressOrderedFixedSizeDataPool_insertEntry_failure noEnv Overhead=1 Level=1 Group=arraylet Template="Failed to insert an entry into objectToSparseDataTable: sparseHeapObjectDataPointer: %p, adjustedSize: %p, inHeapObjectPointer (spine): %p"
+TraceEvent=Trc_MM_SparseAddressOrderedFixedSizeDataPool_insertEntry_success noEnv Overhead=1 Level=1 Group=arraylet Template="Successfully inserted an entry into objectToSparseDataTable: sparseHeapObjectDataPointer: %p, requestedSize: %p, inHeapObjectPointer (spine): %p"
+TraceException=Trc_MM_SparseAddressOrderedFixedSizeDataPool_insertEntry_failure noEnv Overhead=1 Level=1 Group=arraylet Template="Failed to insert an entry into objectToSparseDataTable: sparseHeapObjectDataPointer: %p, requestedSize: %p, inHeapObjectPointer (spine): %p"
 
 TraceEvent=Trc_MM_SparseAddressOrderedFixedSizeDataPool_removeEntry_success noEnv Overhead=1 Level=1 Group=arraylet Template="Successfully removed an entry from objectToSparseDataTable: sparseHeapObjectDataPointer: %p"
 TraceException=Trc_MM_SparseAddressOrderedFixedSizeDataPool_removeEntry_failure noEnv Overhead=1 Level=1 Group=arraylet Template="Failed to remove an entry from objectToSparseDataTable: sparseHeapObjectDataPointer: %p"

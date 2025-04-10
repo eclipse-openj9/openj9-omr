@@ -55,6 +55,7 @@ if(OMR_ARCH_X86)
 			-m64
 		)
 	else()
+		set(CMAKE_ASM_NASM_OBJECT_FORMAT elf32)
 		list(APPEND OMR_PLATFORM_COMPILE_OPTIONS
 			-m32
 			-msse2

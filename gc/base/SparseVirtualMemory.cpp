@@ -72,7 +72,7 @@ MM_SparseVirtualMemory::initialize(MM_EnvironmentBase *env, uint32_t memoryCateg
 	uintptr_t off_heap_size = (uintptr_t)((ceilLog2 * in_heap_size) / 2);
 
 	if (UDATA_MAX != ext->sparseHeapSizeRatio) {
-		off_heap_size = (ext->sparseHeapSizeRatio / 100) * in_heap_size;
+		off_heap_size = MM_Math::roundToCeiling(regionSize, (in_heap_size / 100) * ext->sparseHeapSizeRatio);
 	}
 
 	bool success = MM_VirtualMemory::initialize(env, off_heap_size, NULL, NULL, 0, memoryCategory);

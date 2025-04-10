@@ -452,6 +452,7 @@ public:
       ClientSessionData,
       ROMClass,
       JITServerAOTCache,
+      JITServerProfileCache,
 
       SymbolValidationManager,
 

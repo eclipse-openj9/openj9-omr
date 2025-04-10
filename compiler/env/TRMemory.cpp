@@ -309,6 +309,7 @@ const char * objectName[] =
    "ClientSessionData",
    "ROMClass",
    "JITServerAOTCache",
+   "JITServerProfileCache",
 
    "SymbolValidationManager",
 

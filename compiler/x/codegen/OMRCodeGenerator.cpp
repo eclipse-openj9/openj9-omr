@@ -975,6 +975,16 @@ bool OMR::X86::CodeGenerator::getSupportsOpCodeForAutoSIMD(TR::CPU *cpu, TR::ILO
    if (opcode.isVectorMasked() && !cpu->supportsFeature(OMR_FEATURE_X86_SSE4_1))
       return false;
 
+   if (opcode.isVectorMasked() || ot.isMask())
+      {
+#if TR_TARGET_64BIT
+      if (!cpu->supportsFeature(OMR_FEATURE_X86_SSE4_1))
+         return false;
+#else
+      return false;
+#endif
+      }
+
    // implemented vector opcodes
    switch (opcode.getVectorOperation())
       {

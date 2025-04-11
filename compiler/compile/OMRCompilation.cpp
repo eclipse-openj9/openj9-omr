@@ -2687,7 +2687,10 @@ bool OMR::Compilation::incompleteOptimizerSupportForReadWriteBarriers()
 
 bool OMR::Compilation::isRecursiveMethodTarget(TR_ResolvedMethod *targetResolvedMethod)
    {
-   return targetResolvedMethod && targetResolvedMethod->isSameMethod(self()->getCurrentMethod()) && !self()->isDLT();
+   return targetResolvedMethod != NULL
+      && targetResolvedMethod->isSameMethod(self()->getCurrentMethod())
+      && !targetResolvedMethod->isNative() // linkage adapters are not recursive
+      && !self()->isDLT();
    }
 
 

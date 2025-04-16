@@ -236,10 +236,11 @@ class ASTstates {
             stateTransition(START, "=", EQUALS);
             stateTransition(START, ",", COMMA);
             stateTransition(START, "0", ZERO);
-		    stateTransition(WHITESPACE, isspace, WHITESPACE);
+		      stateTransition(WHITESPACE, isspace, WHITESPACE);
             stateTransition(AT, isalpha, ID);
             stateTransition(ID, isalpha, ID);
             stateTransition(ID, isdigit, ID);
+            stateTransition(ID, "_", ID);
             stateTransition(MINUS, "0", ZERO);
             stateTransition(MINUS, isNonZeroDigit, INT);
             stateTransition(MINUS, isalpha, ID);

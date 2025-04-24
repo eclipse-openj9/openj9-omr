@@ -5599,8 +5599,6 @@ MM_Scavenger::scavengeIncremental(MM_EnvironmentBase *env)
 
 			_concurrentPhase = concurrent_phase_complete;
 
-			mergeIncrementGCStats(env, false);
-			clearIncrementGCStats(env, false);
 			continue;
 		}
 

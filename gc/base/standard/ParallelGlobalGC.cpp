@@ -1621,12 +1621,12 @@ MM_ParallelGlobalGC::checkColorAndMark(MM_EnvironmentBase* env, omrobjectptr_t o
 }
 
 void
-MM_ParallelGlobalGC::completeExternalConcurrentCycle(MM_EnvironmentBase *env)
+MM_ParallelGlobalGC::completeExternalConcurrentCycle(MM_EnvironmentBase *env, MM_MemorySubSpace *subSpace, MM_AllocateDescription *allocDescription, uint32_t gcCode)
 {
 #if defined(OMR_GC_CONCURRENT_SCAVENGER)
 	if (_extensions->isConcurrentScavengerEnabled()) {
 		/* ParallelGlobalGC or ConcurrentGC (STW phase) cannot start before Concurrent Scavenger cycle is in progress */
-		_extensions->scavenger->completeConcurrentCycle(env);
+		_extensions->scavenger->completeConcurrentCycle(env, subSpace, allocDescription, gcCode);
 	}
 #endif /* OMR_GC_CONCURRENT_SCAVENGER */
 }

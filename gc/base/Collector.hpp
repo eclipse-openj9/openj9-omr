@@ -289,7 +289,7 @@ public:
 	virtual uintptr_t mainThreadConcurrentCollect(MM_EnvironmentBase *env) { return 0; }
 	virtual	void postConcurrentUpdateStatsAndReport(MM_EnvironmentBase *env, MM_ConcurrentPhaseStatsBase *stats, UDATA bytesConcurrentlyScanned) {}
 	virtual void forceConcurrentFinish() {}
-	virtual void completeExternalConcurrentCycle(MM_EnvironmentBase *env) {}
+	virtual void completeExternalConcurrentCycle(MM_EnvironmentBase *env, MM_MemorySubSpace *subSpace, MM_AllocateDescription *allocDescription, uint32_t gcCode) {}
 	/**
 	 * Notify any (concurrent) collector that might block and hold VM access
 	 * that an Exclusive VM Access is to be requested so that VM access can be released

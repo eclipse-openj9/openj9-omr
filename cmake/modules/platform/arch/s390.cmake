@@ -23,11 +23,14 @@
 # of the OMR code should be heavily reduced. In the mean time, we keep
 # the distinction
 set(TR_HOST_ARCH z)
-set(TR_HOST_BITS 64)
 list(APPEND TR_COMPILE_DEFINITIONS TR_HOST_S390 TR_TARGET_S390)
 
 if(OMR_ENV_DATA64)
 	list(APPEND TR_COMPILE_DEFINITIONS TR_HOST_64BIT TR_TARGET_64BIT BITVECTOR_64BIT)
+	set(TR_HOST_BITS 64)
+else()
+	list(APPEND TR_COMPILE_DEFINITIONS TR_HOST_32BIT TR_TARGET_32BIT)
+	set(TR_HOST_BITS 32)
 endif()
 set(CMAKE_ASM-ATT_FLAGS "-noexecstack -march=z9-109")
 

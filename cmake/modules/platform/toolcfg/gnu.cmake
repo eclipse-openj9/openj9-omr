@@ -71,6 +71,20 @@ endif()
 
 if(OMR_HOST_ARCH STREQUAL "s390")
 	list(APPEND OMR_PLATFORM_COMPILE_OPTIONS -march=z9-109)
+	if(OMR_ENV_DATA32)
+		list(APPEND OMR_PLATFORM_COMPILE_OPTIONS
+			-m31
+			-mzarch
+		)
+		list(APPEND OMR_PLATFORM_EXE_LINKER_OPTIONS
+			-m31
+			-mzarch
+		)
+		list(APPEND OMR_PLATFORM_SHARED_LINKER_OPTIONS
+			-m31
+			-mzarch
+		)
+	endif()
 endif()
 
 if(OMR_OS_AIX AND CMAKE_C_COMPILER_IS_OPENXL)

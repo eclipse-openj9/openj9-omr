@@ -2611,8 +2611,10 @@ genLoadAddressConstant(TR::CodeGenerator * cg, TR::Node * node, uintptr_t value,
       if (!usedLARL && comp->target().is64Bit() && !isCompressedClassPointer)
          {
          toS390RILInstruction(cursor)->setisFirstOfAddressPair();
+#if defined(TR_TARGET_64BIT)
          uint32_t high32 = static_cast<uint32_t>(value >> 32);
          cursor = generateRILInstruction(cg, TR::InstOpCode::IIHF, node, targetRegister, high32, cursor);
+#endif /* defined(TR_TARGET_64BIT) */
          }
 
       return cursor;

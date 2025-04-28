@@ -1015,7 +1015,24 @@ OMR::Power::TreeEvaluator::l2mEvaluator(TR::Node *node, TR::CodeGenerator *cg)
 TR::Register*
 OMR::Power::TreeEvaluator::v2mEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   return TR::TreeEvaluator::unImpOpEvaluator(node, cg);
+   TR::Node *child = node->getFirstChild();
+   TR_ASSERT_FATAL(child->getDataType().getVectorElementType() == TR::Int8, "Child of v2m should have byte elements");
+
+   TR::Register *srcReg = cg->evaluate(child);
+   TR::Register *resReg = cg->allocateRegister(TR_VRF);
+
+   // Lowest mask bit needs to be expanded to the whole mask element
+   TR::Register *tmpReg = cg->allocateRegister(TR_VRF);
+   generateTrg1ImmInstruction(cg, TR::InstOpCode::vspltisb, node, tmpReg, 15);
+   // move lowest bit to the sign position
+   generateTrg1Src2Instruction(cg, TR::InstOpCode::vslb, node, resReg, srcReg, tmpReg);
+   // extend sign bit to the right
+   generateTrg1Src2Instruction(cg, TR::InstOpCode::vsrab, node, resReg, resReg, tmpReg);
+   cg->stopUsingRegister(tmpReg);
+
+   node->setRegister(resReg);
+   cg->decReferenceCount(child);
+   return resReg;
    }
 
 TR::Register*
@@ -3286,19 +3303,6 @@ TR::Register *OMR::Power::TreeEvaluator::vloadEvaluator(TR::Node *node, TR::Code
    TR::Register *dstReg = cg->allocateRegister(kind);
 
    TR::LoadStoreHandler::generateLoadNodeSequence(cg, dstReg, node, opcode, 16, true);
-
-   if (node->getDataType().isMask() &&
-       node->getDataType().getVectorElementType() == TR::Int8)
-      {
-      // Lowest mask bit needs to be expanded to the whole mask element
-      TR::Register *tmpReg = cg->allocateRegister(TR_VRF);
-      generateTrg1ImmInstruction(cg, TR::InstOpCode::vspltisb, node, tmpReg, 15);
-      // move lowest bit to the sign position
-      generateTrg1Src2Instruction(cg, TR::InstOpCode::vslb, node, dstReg, dstReg, tmpReg);
-      // extend sign bit to the right
-      generateTrg1Src2Instruction(cg, TR::InstOpCode::vsrab, node, dstReg, dstReg, tmpReg);
-      cg->stopUsingRegister(tmpReg);
-      }
 
    node->setRegister(dstReg);
    return dstReg;

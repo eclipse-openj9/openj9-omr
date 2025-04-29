@@ -869,6 +869,25 @@ VECTOR_OPERATION_MACRO(\
    /* .description             =    vector bit-wise select operator */ \
 )
 VECTOR_OPERATION_MACRO(\
+   /* .operation               = */ vblend, \
+   /* .name                    = */ "vblend", \
+   /* .properties1             = */ 0, \
+   /* .properties2             = */ ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, \
+   /* .properties3             = */ 0, \
+   /* .properties4             = */ 0, \
+   /* .dataType                = */ TR::NoType, \
+   /* .typeProperties          = */ ILTypeProp::VectorResult, \
+   /* .childProperties         = */ THREE_CHILD(ILChildProp::UnspecifiedChildType, ILChildProp::UnspecifiedChildType, ILChildProp::UnspecifiedChildType), \
+   /* .swapChildrenOperation   = */ TR::vBadOperation, \
+   /* .reverseBranchOperation  = */ TR::vBadOperation, \
+   /* .booleanCompareOpCode    = */ TR::BadILOp, \
+   /* .ifCompareOpCode         = */ TR::BadILOp, \
+   /* .description             =    vector blend operator \
+                                    blends second vector into first based on mask (third child) \
+                                    if lane is not set in the mask the value from the first vector is chosen \
+                                    the lane from the second vector is chosen otherwise */
+)
+VECTOR_OPERATION_MACRO(\
    /* .operation               = */ vsetelem, \
    /* .name                    = */ "vsetelem", \
    /* .properties1             = */ 0, \

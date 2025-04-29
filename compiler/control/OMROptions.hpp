@@ -408,7 +408,7 @@ enum TR_CompilationOptions
    TR_DisableSSE4_1                       = 0x01000000 + 10,
    TR_DisableSSE4_2                       = 0x02000000 + 10,
    TR_DisableNewX86VolatileSupport        = 0x04000000 + 10,
-   // Available                           = 0x08000000 + 10,
+   TR_DisableZ17                          = 0x08000000 + 10,
    // Available                           = 0x10000000 + 10,
    // Available                           = 0x20000000 + 10,
    // Available                           = 0x40000000 + 10,

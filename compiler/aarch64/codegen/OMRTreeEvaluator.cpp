@@ -3083,6 +3083,12 @@ OMR::ARM64::TreeEvaluator::vcalliEvaluator(TR::Node *node, TR::CodeGenerator *cg
    }
 
 TR::Register*
+OMR::ARM64::TreeEvaluator::vblendEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+   {
+   return OMR::ARM64::TreeEvaluator::vbitselectEvaluator(node, cg);
+   }
+
+TR::Register*
 OMR::ARM64::TreeEvaluator::vbitselectEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    TR_ASSERT_FATAL_WITH_NODE(node, node->getFirstChild()->getDataType().getVectorLength() == TR::VectorLength128,
@@ -3134,12 +3140,6 @@ OMR::ARM64::TreeEvaluator::vbitselectEvaluator(TR::Node *node, TR::CodeGenerator
    cg->decReferenceCount(thirdChild);
 
    return targetReg;
-   }
-
-TR::Register*
-OMR::ARM64::TreeEvaluator::vblendEvaluator(TR::Node *node, TR::CodeGenerator *cg)
-   {
-   return TR::TreeEvaluator::unImpOpEvaluator(node, cg);
    }
 
 TR::Register*

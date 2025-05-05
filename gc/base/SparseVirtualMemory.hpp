@@ -33,9 +33,11 @@
 #include "modronbase.h"
 #include "modronopt.h"
 
+#include "AllocationContext.hpp"
 #include "BaseVirtual.hpp"
 #include "Heap.hpp"
 #include "HeapRegionManager.hpp"
+#include "ModronAssertions.h"
 #include "VirtualMemory.hpp"
 
 class GC_HashTableIterator;
@@ -63,6 +65,9 @@ private:
 	MM_Heap *_heap; /**< reference to in-heap */
 	MM_SparseAddressOrderedFixedSizeDataPool *_sparseDataPool; /**< Structure that manages data and free region of sparse virtual memory */
 	omrthread_monitor_t _largeObjectVirtualMemoryMutex; /**< Monitor that manages access to sparse virtual memory */
+
+	MM_AllocationContext **_allocationContextArray; /**< an array of AC pointers indicating for each Offheap region allocated which Heap region (its AC) has been reserved. */
+	uintptr_t _allocationContextArraySize;
 protected:
 public:
 /*
@@ -86,6 +91,8 @@ protected:
 		, _heap(in_heap)
 		, _sparseDataPool(NULL)
 		, _largeObjectVirtualMemoryMutex(NULL)
+		, _allocationContextArray(NULL)
+		, _allocationContextArraySize(0)
 	{
 		_typeId = __FUNCTION__;
 	}
@@ -158,6 +165,78 @@ public:
 	MMINLINE MM_SparseAddressOrderedFixedSizeDataPool *getSparseDataPool()
 	{
 		return _sparseDataPool;
+	}
+
+	/**
+	 * Calculate the index of _allocationContextArray from heap address
+	 *
+	 * @param address	void*	heap address
+	 *
+	 * @return index of _allocationContextArray
+	 */
+	MMINLINE uintptr_t getAllocationContextIndexForAddress(const void *address)
+	{
+		const uintptr_t regionSize = _heap->getHeapRegionManager()->getRegionSize();
+		return ((uintptr_t)address - (uintptr_t)getHeapBase()) / regionSize;
+	}
+
+	/**
+	 * Calculate the size in _allocationContextArray from allocated sparse memory size
+	 *
+	 * @param size	uintptr_t	the allocated sparse memory size
+	 *
+	 * @return the size in _allocationContextArray
+	 */
+	MMINLINE uintptr_t getAllocationContextCount(uintptr_t size)
+	{
+		const uintptr_t regionSize = _heap->getHeapRegionManager()->getRegionSize();
+		return size / regionSize;
+	}
+
+	/**
+	 * Get the related allocationContext from _allocationContextArray
+	 *
+	 * @param address	void*		heap address
+	 * @param index		uintptr_t	index of the reserved heap region
+	 *
+	 * @return the allocation context
+	 */
+	MMINLINE MM_AllocationContext *getAllocationContextForAddress(const void *address, uintptr_t index)
+	{
+		uintptr_t offset = getAllocationContextIndexForAddress(address);
+		Assert_MM_true((offset + index) < _allocationContextArraySize);
+		return _allocationContextArray[offset + index];
+	}
+
+	/**
+	 * Set the related allocationContext to _allocationContextArray
+	 *
+	 * @param address			void*		heap address
+	 * @param allocationContext	MM_AllocationContext*		allocation context
+	 * @param index				uintptr_t	index of the reserved heap region
+	 *
+	 */
+	MMINLINE void setAllocationContextForAddress(const void *address, MM_AllocationContext *allocationContext, uintptr_t index)
+	{
+		uintptr_t offset = getAllocationContextIndexForAddress(address);
+		Assert_MM_true((offset + index) < _allocationContextArraySize);
+		_allocationContextArray[offset + index] = allocationContext;
+	}
+
+	/**
+	 * Reset the related allocationContexts in _allocationContextArray for releasing the allocated sparse memory
+	 *
+	 * @param address			void*		heap address
+	 * @param size				uintptr_t	the allocated sparse memory
+	 */
+	MMINLINE void resetAllocationContextForAddress(const void *address, uintptr_t size)
+	{
+		uintptr_t offset = getAllocationContextIndexForAddress(address);
+		uintptr_t count = getAllocationContextCount(size);
+		Assert_MM_true((offset + count) <= _allocationContextArraySize);
+		for (uintptr_t index = 0; index < count; index++) {
+			_allocationContextArray[offset + index] = NULL;
+		}
 	}
 };
 

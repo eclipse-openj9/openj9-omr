@@ -1034,3 +1034,7 @@ TraceEvent=Trc_MM_CPUUtilStats_processAndCpuUtilization_cpu_larger_than_elapsed 
 TraceEvent=Trc_MM_CPUUtilStats_processAndCpuUtilization_cpu_smaller_than_process Overhead=1 Level=1 Group=gclogger Template="cpu %lld smaller than process %lld; cpu adjusted to process"
 
 TraceEntry=Trc_MM_double_map_EntryNew Obsolete Overhead=1 Level=3 Group=arraylet Template="MM_IndexableObjectAllocationModel::doubleMapArraylets. originalDataSize: %p, adjustedDataSize: %p, spine: %p, leafSize: %p leavesCount: %zu"
+
+TraceException=Trc_MM_getSparseAddressAndDecommitLeaves_allocFailed Overhead=1 Level=1 Group=arraylet Template="Failed to allocate sparse memory sparseEntrySize: %zu"
+TraceException=Trc_MM_getSparseAddressAndDecommitLeaves_reserveFailed Overhead=1 Level=1 Group=arraylet Template="Failed to reserve region, ReservedRegionCount: %zu"
+

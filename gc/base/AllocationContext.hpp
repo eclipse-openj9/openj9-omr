@@ -97,6 +97,50 @@ public:
 		return NULL;
 	}
 
+	/**
+	 * Reserve (allocate) a non-region aligned fraction of an array from a shared reserved region.
+	 *
+	 * @param[in]		 env The calling thread
+	 * @param[in/out] 	allocateDescription The description of the requested allocation
+	 * @param[in] 		fraction  non-region aligned fraction
+	 * @param[in] 		shouldCollectOnFailure if true trigger GC on allocation failure
+	 *
+	 * @return The result of the allocation (NULL on failure or don't need to allocate new shared reserved region)
+	 */
+	virtual void *allocateFromSharedReservedRegion(MM_EnvironmentBase *env, MM_AllocateDescription *allocateDescription, uintptr_t fraction, bool shouldCollectOnFailure)
+	{
+		Assert_MM_unreachable();
+		return NULL;
+	}
+
+	/**
+	 * Recycle (free) a non-region aligned fraction of an array to shared reserved regions.
+	 *
+	 * @param[in] env The calling thread
+	 * @param[in] fraction  non-region aligned fraction
+	 * @param[in] needLock if true need common lock
+	 *
+	 * @return True if need to recycle shared reserved region
+	 */
+	virtual bool recycleToSharedArrayReservedRegion(MM_EnvironmentBase *env, uintptr_t fraction, bool needLock = false)
+	{
+		Assert_MM_unreachable();
+		return false;
+	}
+
+	/**
+	 * Unreserve an array reserved region from the main heap and convert it to an ordinary free region.
+	 *
+	 * @param[in] env 					The calling thread
+	 * @param[in] reservedRegionCount	how many region need to be Unreserved
+	 * @param[in] needLock 				if true need common lock
+	 *
+	 */
+	virtual void recycleReservedRegionsForVirtualLargeObjectHeap(MM_EnvironmentBase *env, uintptr_t reservedRegionCount, bool needLock)
+	{
+		Assert_MM_unreachable();
+	}
+
 protected:
 	virtual void tearDown(MM_EnvironmentBase *env);
 	bool initialize(MM_EnvironmentBase *env);

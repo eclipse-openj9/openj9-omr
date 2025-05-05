@@ -33,6 +33,7 @@
 #include "Base.hpp"
 #include "MemorySubSpace.hpp"
 
+class MM_AllocationContext;
 class MM_MemoryPool;
 class MM_MemorySpace;
 
@@ -66,6 +67,7 @@ protected:
 	omrarrayptr_t _spine; /**< field to store the arraylet spine allocated during an arraylet allocation */
 	bool _threadAtSafePoint;
 	MM_MemoryPool *_memoryPool;
+	MM_AllocationContext *_allocationContext; /**< resulting Allocation Context */
 		
 	/* The following fields are applicable to collectorAllocate requests only; ignored on other allocate requests */
 	bool _collectorAllocateExpandOnFailure; /**< if the allocation fails then expand heap if possible to satify the allocation */
@@ -74,7 +76,6 @@ protected:
 	bool  _collectAndClimb;
 	bool  _climb;				/* indicates that current attempt to allocate should try parent, if current subspace failed */
 	bool  _completedFromTlh;
-
 public:
 
 	/**
@@ -207,6 +208,8 @@ public:
 	MMINLINE bool isCompletedFromTlh() { return _completedFromTlh; }
 	MMINLINE void completedFromTlh() { _completedFromTlh = true; }
 
+	MMINLINE void setAllocationContext(MM_AllocationContext *allocationContext) {_allocationContext = allocationContext;}
+	MMINLINE MM_AllocationContext *getAllocationContext() {return _allocationContext;}
 	/**
 	 * Set whether the allocation succeeded
 	 * @param suceeded - true if the allocation succeeded, false otherwise
@@ -239,6 +242,7 @@ public:
 		,_spine(NULL)
 		,_threadAtSafePoint(threadAtSafePoint)
 		,_memoryPool(NULL)
+		,_allocationContext(NULL)
 		,_collectorAllocateExpandOnFailure(false)
 		,_collectorAllocateSatisfyAnywhere(false)
 		, _allocationType(MM_MemorySubSpace::ALLOCATION_TYPE_INVALID)

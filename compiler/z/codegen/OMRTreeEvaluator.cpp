@@ -2606,6 +2606,7 @@ genLoadAddressConstant(TR::CodeGenerator * cg, TR::Node * node, uintptr_t value,
          comp->getStaticHCRPICSites()->push_front(cursor);
          }
 
+#if defined(TR_TARGET_64BIT)
       TR_ASSERT(!isCompressedClassPointer || ((value & CONSTANT64(0xFFFFFFFF00000000)) == 0), "Compressed class pointers are assumed to fit in 32 bits");
       // IIHF is only needed when addresses do not fit into 32 bits and LARL could not be used
       if (!usedLARL && comp->target().is64Bit() && !isCompressedClassPointer)
@@ -2614,6 +2615,7 @@ genLoadAddressConstant(TR::CodeGenerator * cg, TR::Node * node, uintptr_t value,
          uint32_t high32 = static_cast<uint32_t>(value >> 32);
          cursor = generateRILInstruction(cg, TR::InstOpCode::IIHF, node, targetRegister, high32, cursor);
          }
+#endif /* defined(TR_TARGET_64BIT) */
 
       return cursor;
       }

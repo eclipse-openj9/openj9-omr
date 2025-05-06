@@ -1821,7 +1821,9 @@ TR::S390RILInstruction::addMetaDataForCodeAddress(uint8_t *cursor)
    bool is32bit = true;
    if (isFirstOfAddressPair())
       {
+#if defined(TR_TARGET_64BIT)
       immediateAsAddress |= static_cast<uintptr_t>(toS390RILInstruction(getNext())->getSourceImmediate()) << 32;
+#endif /* defined(TR_TARGET_64BIT) */
       is32bit = false;
       }
 

@@ -5403,9 +5403,9 @@ TR::Register* OMR::X86::TreeEvaluator::vectorFPNaNHelper(TR::Node *node, TR::Reg
 //
 TR::Register* OMR::X86::TreeEvaluator::vectorCompareEvaluator(TR::Node* node, TR::CodeGenerator* cg)
    {
-   TR::DataType type = node->getDataType();
-   TR::DataType et = type.getVectorElementType();
-   TR::VectorLength vl = type.getVectorLength();
+   TR::DataType srcType = node->getOpCode().getVectorSourceDataType();
+   TR::DataType et = srcType.getVectorElementType();
+   TR::VectorLength vl = srcType.getVectorLength();
    TR::ILOpCode opcode = node->getOpCode();
    TR_ASSERT_FATAL_WITH_NODE(node, opcode.isVectorOpCode(), "Expecting a vector opcode in vectorCompareEvaluator");
 
@@ -5519,12 +5519,9 @@ TR::Register* OMR::X86::TreeEvaluator::vectorCompareEvaluator(TR::Node* node, TR
 //   GTE -> NOT(GT(b,a))
 //   LT  -> GT(b,a)
 //   LTE -> NOT (GT(a,b))
-      TR::InstOpCode movOpcode = TR::InstOpCode::MOVDQURegReg;
-      OMR::X86::Encoding movEncoding = movOpcode.getSIMDEncoding(&cg->comp()->target().cpu, vl);
-      TR_ASSERT_FATAL(movEncoding != OMR::X86::Bad, "Unsupported movdqu opcode in vcmp");
-
       TR::Register *resultReg = cg->allocateRegister(TR_VRF);
       TR::InstOpCode cmpOpcode = TR::InstOpCode::bad;
+      TR::InstOpCode invCmpOpcode = TR::InstOpCode::bad;
       bool swapOperands = false;
       bool invAfter = false;
       bool cmpEq = false;
@@ -5569,19 +5566,23 @@ TR::Register* OMR::X86::TreeEvaluator::vectorCompareEvaluator(TR::Node* node, TR
          rhsReg = tmpReg;
          }
 
-      switch (type.getVectorElementType())
+      switch (et)
          {
          case TR::Int8:
             cmpOpcode = cmpEq ? TR::InstOpCode::PCMPEQBRegReg : TR::InstOpCode::PCMPGTBRegReg;
+            invCmpOpcode = TR::InstOpCode::PCMPEQBRegReg;
             break;
          case TR::Int16:
             cmpOpcode = cmpEq ? TR::InstOpCode::PCMPEQWRegReg : TR::InstOpCode::PCMPGTWRegReg;
+            invCmpOpcode = TR::InstOpCode::PCMPEQWRegReg;
             break;
          case TR::Int32:
             cmpOpcode = cmpEq ? TR::InstOpCode::PCMPEQDRegReg : TR::InstOpCode::PCMPGTDRegReg;
+            invCmpOpcode = TR::InstOpCode::PCMPEQDRegReg;
             break;
          case TR::Int64:
             cmpOpcode = cmpEq ? TR::InstOpCode::PCMPEQQRegReg : TR::InstOpCode::PCMPGTQRegReg;
+            invCmpOpcode = TR::InstOpCode::PCMPEQQRegReg;
             break;
          case TR::Float:
             cmpOpcode = TR::InstOpCode::CMPPSRegRegImm1;
@@ -5596,11 +5597,15 @@ TR::Register* OMR::X86::TreeEvaluator::vectorCompareEvaluator(TR::Node* node, TR
 
       OMR::X86::Encoding cmpEncoding = cmpOpcode.getSIMDEncoding(&cg->comp()->target().cpu, vl);
 
-      if (cmpEncoding == OMR::X86::Legacy || type.getVectorElementType().isFloatingPoint())
+      if (cmpEncoding == OMR::X86::Legacy || et.isFloatingPoint())
          {
+         TR::InstOpCode movOpcode = TR::InstOpCode::MOVDQURegReg;
+         OMR::X86::Encoding movEncoding = movOpcode.getSIMDEncoding(&cg->comp()->target().cpu, vl);
+         TR_ASSERT_FATAL(movEncoding != OMR::X86::Bad, "Unsupported movdqu opcode in vcmp");
+
          generateRegRegInstruction(movOpcode.getMnemonic(), node, resultReg, lhsReg, cg, movEncoding);
 
-         if (type.getVectorElementType().isFloatingPoint())
+         if (et.isFloatingPoint())
             {
             generateRegRegImmInstruction(cmpOpcode.getMnemonic(), node, resultReg, rhsReg, predicate, cg, cmpEncoding);
             }
@@ -5616,11 +5621,12 @@ TR::Register* OMR::X86::TreeEvaluator::vectorCompareEvaluator(TR::Node* node, TR
 
       if (invAfter)
          {
+         OMR::X86::Encoding invCmpEncoding = invCmpOpcode.getSIMDEncoding(&cg->comp()->target().cpu, vl);
          TR::Register *invMaskReg = cg->allocateRegister(TR_VRF);
          // pcmpeq invMaskReg, invMaskReg
          // pxor resultReg, invMaskReg
-         TR_ASSERT_FATAL(cmpEncoding != OMR::X86::Bad, "Unsupported comparison opcode in vcmp");
-         generateRegRegInstruction(cmpOpcode.getMnemonic(), node, invMaskReg, invMaskReg, cg, cmpEncoding);
+         TR_ASSERT_FATAL(invCmpEncoding != OMR::X86::Bad, "Unsupported comparison opcode in vcmp");
+         generateRegRegInstruction(invCmpOpcode.getMnemonic(), node, invMaskReg, invMaskReg, cg, invCmpEncoding);
 
          TR::InstOpCode xorOpcode = TR::InstOpCode::PXORRegReg;
          OMR::X86::Encoding xorEncoding = xorOpcode.getSIMDEncoding(&cg->comp()->target().cpu, vl);
@@ -5629,22 +5635,21 @@ TR::Register* OMR::X86::TreeEvaluator::vectorCompareEvaluator(TR::Node* node, TR
          cg->stopUsingRegister(invMaskReg);
          }
 
-      node->setRegister(resultReg);
-
       if (maskReg)
          {
-         TR::Register *tmpReg = cg->allocateRegister(TR_VRF);
+         TR::InstOpCode andOpcode = TR::InstOpCode::PANDRegReg;
+         OMR::X86::Encoding andEncoding = andOpcode.getSIMDEncoding(&cg->comp()->target().cpu, vl);
+         TR_ASSERT_FATAL(andEncoding != OMR::X86::Bad, "Unsupported vector and opcode in vmcmp");
 
-         generateRegRegInstruction(movOpcode.getMnemonic(), node, tmpReg, resultReg, cg, movEncoding);
-         generateRegRegInstruction(movOpcode.getMnemonic(), node, resultReg, lhsReg, cg, movEncoding);
+         generateRegRegInstruction(andOpcode.getMnemonic(), node, resultReg, maskReg, cg, andEncoding);
 
-         vectorMergeMaskHelper(node, resultReg, tmpReg, maskReg, cg);
-         cg->stopUsingRegister(tmpReg);
          cg->decReferenceCount(maskNode);
          }
 
       cg->decReferenceCount(lhsNode);
       cg->decReferenceCount(rhsNode);
+
+      node->setRegister(resultReg);
 
       return resultReg;
       }

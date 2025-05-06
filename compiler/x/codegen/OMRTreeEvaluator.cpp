@@ -6731,41 +6731,31 @@ OMR::X86::TreeEvaluator::binaryVectorMaskHelper(TR::InstOpCode opcode,
    {
    TR_ASSERT_FATAL(encoding != OMR::X86::Bad, "No suitable encoding method for opcode");
    bool vectorMask = maskReg->getKind() == TR_VRF;
-   TR::Register *tmpReg = vectorMask ? cg->allocateRegister(TR_VRF) : NULL;
 
-   if (vectorMask)
-      {
-      generateRegRegInstruction(TR::InstOpCode::MOVDQURegReg, node, resultReg, lhsReg, cg, encoding);
-      }
+   generateRegRegInstruction(TR::InstOpCode::MOVDQURegReg, node, resultReg, lhsReg, cg, encoding);
 
-   if (encoding == OMR::X86::Legacy)
+   if (maskTypeMismatch && !vectorMask)
       {
-      generateRegRegInstruction(TR::InstOpCode::MOVDQURegReg, node, tmpReg, lhsReg, cg);
-      generateRegRegInstruction(opcode.getMnemonic(), node, tmpReg, rhsReg, cg, encoding);
-      TR_ASSERT_FATAL(vectorMask, "Native vector masking not supported");
-      vectorMergeMaskHelper(node, resultReg, tmpReg, maskReg, cg);
-      cg->stopUsingRegister(tmpReg);
-      return resultReg;
-      }
-   else if (vectorMask && maskTypeMismatch)
-      {
+      TR::Register *tmpReg = cg->allocateRegister(TR_VRF);
       generateRegRegRegInstruction(opcode.getMnemonic(), node, tmpReg, lhsReg, rhsReg, cg, encoding);
       vectorMergeMaskHelper(node, resultReg, tmpReg, maskReg, cg);
       cg->stopUsingRegister(tmpReg);
       return resultReg;
       }
-   else if (vectorMask)
+   else if (!vectorMask)
       {
-      generateRegMaskRegRegInstruction(opcode.getMnemonic(), node, tmpReg, maskReg, lhsReg, rhsReg, cg, encoding);
-      cg->stopUsingRegister(tmpReg);
+      generateRegMaskRegRegInstruction(opcode.getMnemonic(), node, resultReg, maskReg, lhsReg, rhsReg, cg, encoding);
       return resultReg;
       }
    else
       {
-      TR::InstOpCode movOpcode = TR::InstOpCode::MOVDQURegReg;
-      OMR::X86::Encoding movEncoding = movOpcode.getSIMDEncoding(&cg->comp()->target().cpu, node->getDataType().getVectorLength());
-      generateRegRegInstruction(movOpcode.getMnemonic(), node, resultReg, lhsReg, cg, movEncoding);
-      generateRegMaskRegRegInstruction(opcode.getMnemonic(), node, resultReg, maskReg, lhsReg, rhsReg, cg, encoding);
+      TR::Register *tmpReg = cg->allocateRegister(TR_VRF);
+      generateRegRegInstruction(TR::InstOpCode::MOVDQURegReg, node, tmpReg, lhsReg, cg, encoding);
+      generateRegRegInstruction(opcode.getMnemonic(), node, tmpReg, rhsReg, cg, encoding);
+      TR_ASSERT_FATAL(vectorMask, "Native vector masking not supported");
+      vectorMergeMaskHelper(node, resultReg, tmpReg, maskReg, cg);
+      cg->stopUsingRegister(tmpReg);
+      return resultReg;
       }
 
    return resultReg;
@@ -6950,7 +6940,9 @@ OMR::X86::TreeEvaluator::arrayToVectorMaskHelper(TR::Node *node, TR::CodeGenerat
    TR::Register *tmpVectorReg = cg->allocateRegister(TR_VRF);
    TR::Register *valueReg = valueNodeReg;
 
-   if (valueNode->getType().isIntegral())
+   // Evaluate boolean array into a register.
+   // If its register type is general-purpose, move it into a vector register.
+   if (valueNodeReg->getKind() == TR_GPR)
       {
       TR_ASSERT_FATAL(cg->comp()->target().is64Bit(), "arrayToVectorMask not supported on 32-bit");
       generateRegRegInstruction(TR::InstOpCode::MOVQRegReg8, node, tmpVectorReg, valueNodeReg, cg);
@@ -6980,6 +6972,8 @@ OMR::X86::TreeEvaluator::arrayToVectorMaskHelper(TR::Node *node, TR::CodeGenerat
       TR_ASSERT_FATAL(v2mEncoding != OMR::X86::Bad, "No suitable encoding form for v2m opcode");
       TR_ASSERT_FATAL(shiftEncoding != OMR::X86::Bad, "No suitable encoding form for psllq opcode");
 
+      // vpmov*2m opcode copies the highest most bit into the mask register.
+      // Since boolean value is stored in the lowest bit, shift left by the lane size - 1.
       generateRegImmInstruction(shiftOp.getMnemonic(), node, tmpVectorReg, shiftAmount, cg, TR_NoRelocation, shiftEncoding);
       generateRegRegInstruction(v2mOp.getMnemonic(), node, result, tmpVectorReg, cg, v2mEncoding);
 
@@ -6997,6 +6991,9 @@ OMR::X86::TreeEvaluator::arrayToVectorMaskHelper(TR::Node *node, TR::CodeGenerat
       TR_ASSERT_FATAL(xorEncoding != OMR::X86::Bad, "No suitable encoding form for pxor opcode");
       TR_ASSERT_FATAL(subEncoding != OMR::X86::Bad, "No suitable encoding form for psub opcode");
 
+      // Create all zero or all one mask in a vector register by computing 0 - mask.
+      // 0 - 1 = 0xff
+      // 0 - 0 = 0x00
       generateRegRegInstruction(xorOpcode.getMnemonic(), node, result, result, cg, xorEncoding);
       generateRegRegInstruction(subOp.getMnemonic(), node, result, tmpVectorReg, cg, subEncoding);
 

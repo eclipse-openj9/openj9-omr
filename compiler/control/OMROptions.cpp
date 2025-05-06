@@ -623,6 +623,7 @@ TR::OptionTable OMR::Options::_jitOptions[] = {
    {"disableZ14",                         "O\tdisable z14 support",                            SET_OPTION_BIT(TR_DisableZ14), "F"},
    {"disableZ15",                         "O\tdisable z15 support",                        SET_OPTION_BIT(TR_DisableZ15), "F"},
    {"disableZ16",                         "O\tdisable z16 support",                        SET_OPTION_BIT(TR_DisableZ16), "F"},
+   {"disableZ17",                         "O\tdisable z17 support",                        SET_OPTION_BIT(TR_DisableZ17), "F"},
    {"disableZ196",                        "O\tdisable z196 support",                           SET_OPTION_BIT(TR_DisableZ196), "F"},
    {"disableZArraySetUnroll",             "O\tdisable arraySet unrolling on 390.",             SET_OPTION_BIT(TR_DisableZArraySetUnroll), "F"},
    {"disableZealousCodegenOpts",          "O\tdisable use of zealous codegen optimizations.", SET_OPTION_BIT(TR_DisableZealousCodegenOpts), "F"},
@@ -2761,8 +2762,8 @@ OMR::Options::jitPreProcess()
          }
       else if (TR::Compiler->target.is32Bit())
          {
-         // On 31-Bit Linux on Z, zNext exploitation is disabled by default.
-         self()->setOption(TR_DisableZNext);
+         // On 31-Bit Linux on Z, z16+ exploitation is disabled by default.
+         self()->setOption(TR_DisableZ16);
          }
 
 #if defined(TR_HOST_X86) || defined(TR_HOST_S390) || defined(TR_HOST_ARM64)

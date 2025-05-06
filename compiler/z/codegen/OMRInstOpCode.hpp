@@ -630,7 +630,7 @@ class InstOpCode: public OMR::InstOpCode
    uint64_t isEmulatable() {return metadata[_mnemonic].properties & S390OpProp_IsEmulatable;}
    bool canEmulate()
    {
-#ifdef EMULATE_ZNEXT
+#ifdef EMULATE_Z17
       return isEmulatable();
 #else
       return false;

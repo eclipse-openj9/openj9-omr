@@ -1179,7 +1179,7 @@
    VUPKZL,              // VECTOR UNPACK ZONED LOW
    VUPKZH,              // VECTOR UNPACK ZONED HIGH
 
-   /* zNext Instructions */
+   /* z17 Instructions */
    BDEPG,               // BIT DEPOSIT
    BEXTG,               // BIT EXTRACT
    CLZG,                // COUNT LEADING ZEROS

@@ -771,7 +771,7 @@ public:
 	/**
 	 * complete (trigger end) of a Concurrent Scavenger Cycle
 	 */
-	void completeConcurrentCycle(MM_EnvironmentBase *envBase);
+	void completeConcurrentCycle(MM_EnvironmentBase *envBase, MM_MemorySubSpace *subSpace, MM_AllocateDescription *allocDescription, uint32_t gcCode);
 
 	/* worker thread */
 	void workThreadProcessRoots(MM_EnvironmentStandard *env);

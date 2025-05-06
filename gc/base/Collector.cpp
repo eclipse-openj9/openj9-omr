@@ -194,15 +194,16 @@ MM_Collector::recordExcessiveStatsForGCEnd(MM_EnvironmentBase* env)
  * @param aggressive True if this is an aggressive collect, otherwise false
  */
 void
-MM_Collector::preCollect(MM_EnvironmentBase* env, MM_MemorySubSpace* subSpace, MM_AllocateDescription* allocDescription, uint32_t gcCode)
+MM_Collector::preCollect(MM_EnvironmentBase *env, MM_MemorySubSpace *subSpace, MM_AllocateDescription *allocDescription, uint32_t gcCode)
 {
-	MM_GCExtensionsBase* extensions = env->getExtensions();
+	MM_GCExtensionsBase *extensions = env->getExtensions();
 
 	/* There might be a colliding concurrent cycle in progress, that must be completed before we start this one.
 	 * Specific Collector subclass will have exact knowledge if that is the case.
 	 */
-	completeExternalConcurrentCycle(env);
+	completeExternalConcurrentCycle(env, subSpace, allocDescription, gcCode);
 
+	Assert_MM_false(_stwCollectionInProgress);
 	_stwCollectionInProgress = true;
 	
 	/* Record the main GC thread CPU time at the start to diff later */

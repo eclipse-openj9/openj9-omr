@@ -432,6 +432,25 @@ class OMR_EXTENSIBLE TreeEvaluator: public OMR::TreeEvaluator
                                                 TR::CodeGenerator *cg);
    static TR::Register *vectorMergeMaskHelper(TR::Node *node, TR::VectorLength vl, TR::DataType dt, TR::Register *resultReg, TR::Register *srcReg, TR::Register *maskReg, TR::CodeGenerator *cg, bool zeroMask = false);
    static TR::Register *vectorMergeMaskHelper(TR::Node *node, TR::Register *resultReg, TR::Register *srcReg, TR::Register *maskReg, TR::CodeGenerator *cg, bool zeroMask = false);
+
+   /**
+    * @brief Converts a boolean array into mask representation.
+    *
+    * This helper transforms a node representing a boolean array (either in a scalar or vector) into a mask
+    * usable by SIMD masking operations. The behaviour of this function changes based on whether AVX-512 mask
+    * registers are supported by the target platform.
+    *
+    * - **On AVX-512 targets:** Produces a hardware mask register (`k1`–`k7`) using `VPMOV*2M` instructions.
+    * - **On non-AVX-512 targets:** Produces a vector register with each lane containing all bits set to either zero / one.
+    *
+    * The input node must be of a type that represents boolean values—either as scalar integer types or
+    * their corresponding packed vector types.
+    *
+    * @param node A node with mask conversion opcode, with a child that evaluates to a boolean array
+    * @param cg The code generator
+    *
+    * @return The mask register (TR_VMR or TR_VRF)
+    */
    static TR::Register *arrayToVectorMaskHelper(TR::Node *node, TR::CodeGenerator *cg);
 
    // For unary ILOpcodes that can be translated to a single SSE/AVX instruction

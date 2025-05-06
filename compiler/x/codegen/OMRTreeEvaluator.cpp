@@ -6940,6 +6940,8 @@ OMR::X86::TreeEvaluator::arrayToVectorMaskHelper(TR::Node *node, TR::CodeGenerat
    TR::Register *tmpVectorReg = cg->allocateRegister(TR_VRF);
    TR::Register *valueReg = valueNodeReg;
 
+   // Evaluate boolean array into a register.
+   // If its register type is general-purpose, move it into a vector register.
    if (valueNodeReg->getKind() == TR_GPR)
       {
       TR_ASSERT_FATAL(cg->comp()->target().is64Bit(), "arrayToVectorMask not supported on 32-bit");
@@ -6970,6 +6972,8 @@ OMR::X86::TreeEvaluator::arrayToVectorMaskHelper(TR::Node *node, TR::CodeGenerat
       TR_ASSERT_FATAL(v2mEncoding != OMR::X86::Bad, "No suitable encoding form for v2m opcode");
       TR_ASSERT_FATAL(shiftEncoding != OMR::X86::Bad, "No suitable encoding form for psllq opcode");
 
+      // vpmov*2m opcode copies the highest most bit into the mask register.
+      // Since boolean value is stored in the lowest bit, shift left by the lane size - 1.
       generateRegImmInstruction(shiftOp.getMnemonic(), node, tmpVectorReg, shiftAmount, cg, TR_NoRelocation, shiftEncoding);
       generateRegRegInstruction(v2mOp.getMnemonic(), node, result, tmpVectorReg, cg, v2mEncoding);
 
@@ -6987,6 +6991,9 @@ OMR::X86::TreeEvaluator::arrayToVectorMaskHelper(TR::Node *node, TR::CodeGenerat
       TR_ASSERT_FATAL(xorEncoding != OMR::X86::Bad, "No suitable encoding form for pxor opcode");
       TR_ASSERT_FATAL(subEncoding != OMR::X86::Bad, "No suitable encoding form for psub opcode");
 
+      // Create all zero or all one mask in a vector register by computing 0 - mask.
+      // 0 - 1 = 0xff
+      // 0 - 0 = 0x00
       generateRegRegInstruction(xorOpcode.getMnemonic(), node, result, result, cg, xorEncoding);
       generateRegRegInstruction(subOp.getMnemonic(), node, result, tmpVectorReg, cg, subEncoding);
 

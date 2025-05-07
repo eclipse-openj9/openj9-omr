@@ -69,6 +69,11 @@ if(OMR_ARCH_X86)
 	endif()
 endif()
 
+if(OMR_OS_LINUX)
+	list(APPEND OMR_PLATFORM_EXE_LINKER_OPTIONS "-Wl,-z,noexecstack")
+	list(APPEND OMR_PLATFORM_SHARED_LINKER_OPTIONS "-Wl,-z,noexecstack")
+endif()
+
 if(OMR_HOST_ARCH STREQUAL "s390")
 	list(APPEND OMR_PLATFORM_COMPILE_OPTIONS -march=z9-109)
 	if(OMR_ENV_DATA32)

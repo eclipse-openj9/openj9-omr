@@ -3617,7 +3617,7 @@ INSTRUCTION(VPCMPQMaskMaskRegRegImm, vpcmpq,
             ),
 INSTRUCTION(PMOVMSKB4RegReg, pmovmskb,
             BINARY(VEX_L128, VEX_vNONE, PREFIX_66, REX__, ESCAPE_0F__, 0xd7, 0, ModRM_RM__, Immediate_0),
-            PROPERTY0(IA32OpProp_SourceRegisterInModRM),
+            PROPERTY0(IA32OpProp_SourceRegisterInModRM | IA32OpProp_IntTarget),
             PROPERTY1(IA32OpProp1_XMMSource),
             FEATURES(X86FeatureProp_MinTargetSupported |
                      X86FeatureProp_VEX128Supported | X86FeatureProp_VEX128RequiresAVX | X86FeatureProp_VEX256Supported | X86FeatureProp_VEX256RequiresAVX2)

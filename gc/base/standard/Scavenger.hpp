@@ -563,31 +563,40 @@ public:
 
 	/**
 	 * Clear global (not thread local) stats for current phase/increment
-	 * @param firstIncrement true if first increment in a cycle
+	 * @param env[in] the current thread
+	 * @param firstIncrement[in] true if first increment in a cycle
 	 */
 	void clearIncrementGCStats(MM_EnvironmentBase *env, bool firstIncrement);
 	/**
-	 * Clear global (not thread local) cumulative cycle stats 
+	 * Clear global (not thread local) cumulative cycle stats
+	 * @param env[in] the current thread
 	 */
 	void clearCycleGCStats(MM_EnvironmentBase *env);
 	/**
 	 * Clear thread local stats for current phase/increment
-	 * @param firstIncrement true if first increment in a cycle
+	 * @param env[in] the current thread
+	 * @param firstIncrement[in] true if first increment in a cycle
 	 */
 	void clearThreadGCStats(MM_EnvironmentBase *env, bool firstIncrement);
 	/**
 	 * Merge thread local stats for current phase/increment in to global current increment stats
+	 * @param env[in] the current thread
 	 */	
 	void mergeThreadGCStats(MM_EnvironmentBase *env);
 	/**
 	 * Merge global current increment stats in to global cycle stats
-	 * @param firstIncrement true if last increment in a cycle
+	 * @param env[in] the current thread
+	 * @param firstIncrement[in] true if last increment in a cycle
 	 */		
 	void mergeIncrementGCStats(MM_EnvironmentBase *env, bool lastIncrement);
 	/**
 	 * Common merge logic used for both thread and increment level merges.
+	 * @param env[in] the current thread
+	 * @param finalGCStats[in/out] stats being added to
+	 * @param scavStats[in] stats being added from
 	 */
 	void mergeGCStatsBase(MM_EnvironmentBase *env, MM_ScavengerStats *finalGCStats, MM_ScavengerStats *scavStats);
+
 	bool canCalcGCStats(MM_EnvironmentStandard *env);
 	void calcGCStats(MM_EnvironmentStandard *env);
 
@@ -743,6 +752,14 @@ public:
 	virtual void preConcurrentInitializeStatsAndReport(MM_EnvironmentBase *env, MM_ConcurrentPhaseStatsBase *stats);
 	virtual uintptr_t mainThreadConcurrentCollect(MM_EnvironmentBase *env);
 	virtual void postConcurrentUpdateStatsAndReport(MM_EnvironmentBase *env, MM_ConcurrentPhaseStatsBase *stats, UDATA bytesConcurrentlyScanned);
+
+	/**
+	 * Merge RB increment stats to general increment stats.
+	 * RB occasionally updates separate copy stats fields in the increment stats,
+	 * but eventually those values need to be added to the general copy increment stats.
+	 * @param env[in] the current thread
+	 */
+	void mergeReadBarrierStats(MM_EnvironmentBase *env);
 
 	/* main thread specific methods */
 	bool scavengeIncremental(MM_EnvironmentBase *env);

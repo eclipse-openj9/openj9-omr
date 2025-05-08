@@ -152,6 +152,8 @@ public:
 #if defined(OMR_GC_CONCURRENT_SCAVENGER)
 	uint64_t _readObjectBarrierCopy; /**< Number of objects copied by read barrier */
 	uint64_t _readObjectBarrierUpdate; /**< Number of reference slots updates, which may be (often is) preceded by object copy */ 
+	uint64_t _readObjectBarrierFlipBytes; /**< Bytes flipped through read barrier. Meaningful in the global-incremental stats struct, but not in a thread local. */
+	uint64_t _readObjectBarrierTenureBytes; /**< Bytes tenured through read barrier. Meaningful in the global-incremental stats struct, but not in a thread local. */
 #endif /* OMR_GC_CONCURRENT_SCAVENGER */
 
 protected:

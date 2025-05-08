@@ -96,6 +96,8 @@ MM_ScavengerStats::MM_ScavengerStats()
 #if defined(OMR_GC_CONCURRENT_SCAVENGER)
 	,_readObjectBarrierCopy(0)
 	,_readObjectBarrierUpdate(0)
+	,_readObjectBarrierFlipBytes(0)
+	,_readObjectBarrierTenureBytes(0)
 #endif /* OMR_GC_CONCURRENT_SCAVENGER */
 	,_flipHistoryNewIndex(0)
 {
@@ -205,6 +207,8 @@ MM_ScavengerStats::clear(bool firstIncrement)
 #if defined(OMR_GC_CONCURRENT_SCAVENGER)
 	_readObjectBarrierCopy = 0;
 	_readObjectBarrierUpdate = 0;
+	_readObjectBarrierFlipBytes = 0;
+	_readObjectBarrierTenureBytes = 0;
 #endif /* OMR_GC_CONCURRENT_SCAVENGER */
 
 	_leafObjectCount = 0;

@@ -2323,13 +2323,48 @@ MM_Scavenger::shouldDoFinalNotify(MM_EnvironmentStandard *env)
 	return true;
 }
 
+
+MMINLINE MM_CopyScanCacheStandard *
+MM_Scavenger::getNextScanCacheFromThread(MM_EnvironmentStandard *env)
+{
+	MM_CopyScanCacheStandard *cache = NULL;
+
+	/* Preference is to use survivor copy cache. */
+	cache = env->_survivorCopyScanCache;
+	if (isWorkAvailableInCacheWithCheck(cache)) {
+		return cache;
+	}
+
+	/* Otherwise the tenure copy cache. */
+	cache = env->_tenureCopyScanCache;
+	if (isWorkAvailableInCacheWithCheck(cache)) {
+		return cache;
+	}
+
+	cache = env->_deferredScanCache;
+	if (NULL != cache) {
+		/* There is deferred scanning to do from partial depth first scanning. */
+		env->_deferredScanCache = NULL;
+		return cache;
+	}
+
+	cache = env->_deferredCopyCache;
+	if (NULL != cache) {
+		/* Deferred copy caches are used to merge memory-contiguous caches that got chopped up due to large objects not fitting and resuing remainder.
+		 * We want to delay scanning them as much as possible (up to the size of the original cache size being chopped up),
+		 * but we still want to do it before we synchronizing on scan queue and realizing no more work is available. */
+		Assert_MM_true(0 != (cache->flags & OMR_COPYSCAN_CACHE_TYPE_COPY));
+		cache->flags &= ~OMR_COPYSCAN_CACHE_TYPE_COPY;
+		env->_deferredCopyCache = NULL;
+		return cache;
+	}
+
+	return cache;
+}
+
 MM_CopyScanCacheStandard *
 MM_Scavenger::getNextScanCache(MM_EnvironmentStandard *env)
 {
-	MM_CopyScanCacheStandard *cache = NULL;
-	bool doneFlag = false;
-	volatile uintptr_t doneIndex = _doneIndex;
-
 	OMRPORT_ACCESS_FROM_OMRPORT(env->getPortLibrary());
 
 	if (checkAndSetShouldYieldFlag(env)) {
@@ -2345,34 +2380,13 @@ MM_Scavenger::getNextScanCache(MM_EnvironmentStandard *env)
 	}
 
 	/* Preference is to use survivor copy cache */
-	cache = env->_survivorCopyScanCache;
-	if (isWorkAvailableInCacheWithCheck(cache)) {
-		return cache;
-	}
-
-	/* Otherwise the tenure copy cache */
-	cache = env->_tenureCopyScanCache;
-	if (isWorkAvailableInCacheWithCheck(cache)) {
-		return cache;
-	}
-
-	cache = env->_deferredScanCache;
+	MM_CopyScanCacheStandard *cache = getNextScanCacheFromThread(env);
 	if (NULL != cache) {
-		/* there is deferred scanning to do from partial depth first scanning */
-		env->_deferredScanCache = NULL;
 		return cache;
 	}
 
-	cache = env->_deferredCopyCache;
-	if (NULL != cache) {
-		/* deferred copy caches are used to merge memory-contiguous caches that got chopped up due to large objects not fitting and resuing remainder.
-		 * we want to delay scanning them as much as possible (up to the size of the original cache size being chopped up),
-		 * but we still want to do it before we synchronizing on scan queue and realizing no more work is awailable */
-		Assert_MM_true(0 != (cache->flags & OMR_COPYSCAN_CACHE_TYPE_COPY));
-		cache->flags &= ~OMR_COPYSCAN_CACHE_TYPE_COPY;
-		env->_deferredCopyCache = NULL;
-		return cache;
-	}
+	bool doneFlag = false;
+	volatile uintptr_t doneIndex = _doneIndex;
 
 #if defined(J9MODRON_TGC_PARALLEL_STATISTICS)
 	env->_scavengerStats._acquireScanListCount += 1;
@@ -6002,11 +6016,13 @@ MM_Scavenger::payAllocationTax(MM_EnvironmentBase *envBase, MM_MemorySubSpace *s
 
 		/* Yet to provide a meaningful heuristic (current one should never trigger). */
 		while (((1.0f + flipBytesRatio) < usedMemoryRatio) && (totalScanTime < 1000)) {
+			MM_CopyScanCacheStandard *scanCache = getNextScanCacheFromThread(env);
 
-			MM_CopyScanCacheStandard *scanCache = getNextScanCacheFromList(env);
+			if (NULL == scanCache) {
+				scanCache = getNextScanCacheFromList(env);
+			}
 
 			if (NULL != scanCache) {
-
 				if (!workDone) {
 					Assert_MM_true(NULL == env->_cycleState);
 					env->_cycleState = &_cycleState;

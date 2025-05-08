@@ -114,6 +114,7 @@ public:
 	uintptr_t _avgInitialFree;
 	uintptr_t _avgTenureBytes;
 	uintptr_t _avgTenureBytesDeviation; /**< The average, weighted deviation of the tenureBytes*/
+	uintptr_t _avgExpectedFlipBytes; /**< Recent historical average amount of objects flip/survived in Nursery, per a cycle. */
 	
 	uintptr_t _tiltRatio;	/**< use to pass tiltRatio to verbose */
 

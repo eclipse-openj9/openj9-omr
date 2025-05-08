@@ -352,6 +352,13 @@ MM_Scavenger::collectorStartup(MM_GCExtensionsBase* extensions)
 		}
 	}
 #endif /* OMR_GC_CONCURRENT_SCAVENGER */
+
+	/* There is no history, but during startup survivor ratio is relatively high, say 1/4 of Allocate (which is initially 1/2 of Nursery).
+	 * For very large initial heap/Nursery, it may not be that high, so it's additionally capped.
+	 * Need to initialize this before first cycle start (may be used by concurrent phase), but it's too early in initialize(), since heap is not created, yet.
+	 */
+	_extensions->scavengerStats._avgExpectedFlipBytes = OMR_MIN(_extensions->heap->getActiveMemorySize(MEMORY_TYPE_NEW) / 8, (uintptr_t)128 * 1024 * 1024);
+
 	return true;
 }
 
@@ -1000,6 +1007,10 @@ MM_Scavenger::calcGCStats(MM_EnvironmentStandard *env)
 			survivorAllocated = _extensions->allocationStats.bytesAllocated();
 			initialFree += survivorAllocated;
 		}
+
+		uintptr_t expectedFlipBytes = scavengerGCStats->_flipBytes + scavengerGCStats->_failedFlipBytes;
+
+		scavengerGCStats->_avgExpectedFlipBytes = (uintptr_t)MM_Math::weightedAverage((float)scavengerGCStats->_avgExpectedFlipBytes, (float)expectedFlipBytes, 0.6f);
 
 		/* First collection  ? */
 		if (scavengerGCStats->_gcCount > 1 ) {
@@ -5929,6 +5940,34 @@ MM_Scavenger::completeConcurrentCycle(MM_EnvironmentBase *env, MM_MemorySubSpace
 
 		internalPostCollect(env, subSpace);
 		env->_cycleState = NULL;
+	}
+}
+
+void
+MM_Scavenger::payAllocationTax(MM_EnvironmentBase *env, MM_MemorySubSpace *subspace, MM_MemorySubSpace *baseSubSpace, MM_AllocateDescription *allocDescription)
+{
+	if (isCurrentPhaseConcurrent()) {
+		uintptr_t freeMemory = _activeSubSpace->getMemorySubSpaceAllocate()->getApproximateActiveFreeMemorySize();
+		uintptr_t totalMemory = _activeSubSpace->getMemorySubSpaceAllocate()->getActiveMemorySize();
+
+		/* Progress of how much Survivor/Allocate area has been consumed since the start this cycle relative.
+		 * Although fairly small, in future, consider excluding the amount consumed by the first STW increment.
+		 */
+		float usedMemoryRatio = 1.0f - (float)freeMemory / totalMemory;
+
+		/* Total flipped bytes, from both GC background threads and from Read Barriers, since the start of the concurrent phase of this cycle. */
+		uintptr_t flipBytes = _extensions->incrementScavengerStats._flipBytes + _extensions->incrementScavengerStats._readObjectBarrierFlipBytes;
+
+		/* Progress of how much objects have been flipped since the start of concurrent phase of this cycle relative to historically averaged amount. */
+		float flipBytesRatio = (float)flipBytes / _extensions->scavengerStats._avgExpectedFlipBytes;
+
+		/* If flip progress is too low (too small Nursery, background GC threads starved by CPU overloading,...)
+		 * mutator threads need to be taxed to slow down their heap allocation and CPU consumption.
+		 */
+		if ((1.0f + flipBytesRatio) < usedMemoryRatio) {
+			/* Yet to provide a meaningful heuristic (current one should never trigger). */
+			omrthread_sleep(1);
+		}
 	}
 }
 

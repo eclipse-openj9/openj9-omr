@@ -981,6 +981,25 @@ MM_Scavenger::calcGCStats(MM_EnvironmentStandard *env)
 		uintptr_t initialFree = env->_cycleState->_activeSubSpace->getActualActiveFreeMemorySize();
 		uintptr_t tenureAggregateBytes = 0;
 		float tenureBytesDeviation = 0;
+		uintptr_t survivorAllocated = 0;
+
+		if (IS_CONCURRENT_ENABLED) {
+			/* InitialFree is more precisely intended to represent the amount of
+ 			 * memory predicted to be allocated between two cycles, which is later
+ 			 * used for CM kickoff. For a simple STW Scavenge, it is indeed just the
+  			 * initial free memory at the start of the allocation phase (end of a
+  			 * cycle). However, for Concurrent Scavenge (CS), we also have to account
+ 			 * for memory allocated during the active CS cycle (allocated from the
+  			 * survivor/allocate hybrid area). While InitialFree is based on predicted
+  			 * future allocation, survivorAllocated represents what was actually
+  			 * allocated in the just-completed cycle, since we cannot predict how much
+  			 * will be allocated (due to other allocations by GC). That one-cycle-off
+  			 * difference should be acceptable, as we historically average these values
+  			 * over a span of a few cycles anyway.
+  			 */
+			survivorAllocated = _extensions->allocationStats.bytesAllocated();
+			initialFree += survivorAllocated;
+		}
 
 		/* First collection  ? */
 		if (scavengerGCStats->_gcCount > 1 ) {
@@ -1011,12 +1030,13 @@ MM_Scavenger::calcGCStats(MM_EnvironmentStandard *env)
 			if (_extensions->debugConcurrentMark) {
 				OMRPORT_ACCESS_FROM_OMRPORT(env->getPortLibrary());
 				omrtty_printf(
-					"Tenured bytes: %zu\navgTenureBytes: %zu\ntenureBytesDeviation: %f\navgTenureBytesDeviation: %zu\ninitialFree: %zu\navgInitialFree: %zu\n",
+					"Tenured bytes: %zu\navgTenureBytes: %zu\ntenureBytesDeviation: %f\navgTenureBytesDeviation: %zu\ninitialFree: %zu\nsurvivorAllocated: %zu\navgInitialFree: %zu\n",
 					tenureAggregateBytes,
 					scavengerGCStats->_avgTenureBytes,
 					tenureBytesDeviation,
 					scavengerGCStats->_avgTenureBytesDeviation,
 					initialFree,
+					survivorAllocated,
 					scavengerGCStats->_avgInitialFree);
 			}
 #endif /* OMR_GC_MODRON_CONCURRENT_MARK */

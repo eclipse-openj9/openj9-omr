@@ -1062,7 +1062,24 @@ OMR::Power::TreeEvaluator::m2lEvaluator(TR::Node *node, TR::CodeGenerator *cg)
 TR::Register*
 OMR::Power::TreeEvaluator::m2vEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   return TR::TreeEvaluator::unImpOpEvaluator(node, cg);
+   // Resulting vector should represent boolean array
+   TR_ASSERT_FATAL_WITH_NODE(node, node->getDataType().getVectorLength() == TR::VectorLength128 &&
+                             node->getDataType().getVectorElementType() == TR::Int8,
+                   "Only 128-bit vectors are supported %s", node->getDataType().toString());
+
+   TR_ASSERT_FATAL(cg->comp()->target().cpu.isAtLeast(OMR_PROCESSOR_PPC_P9), "m2v is only supported on P9 and higher");
+
+   TR::Node *child = node->getFirstChild();
+   TR::Register *srcReg = cg->evaluate(child);
+   TR::Register *resReg = cg->allocateRegister(TR_VRF);
+
+   // in the mask register, true is represented as -1, but in a boolean array it should be 1
+   generateTrg1ImmInstruction(cg, TR::InstOpCode::xxspltib, node, resReg, 1);
+   generateTrg1Src2Instruction(cg, TR::InstOpCode::vand, node, resReg, resReg, srcReg);
+
+   node->setRegister(resReg);
+   cg->decReferenceCount(child);
+   return resReg;
    }
 
 // vector evaluators

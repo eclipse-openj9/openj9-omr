@@ -1536,7 +1536,7 @@ OMR::Power::TreeEvaluator::vbitselectEvaluator(TR::Node *node, TR::CodeGenerator
 TR::Register*
 OMR::Power::TreeEvaluator::vblendEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   return TR::TreeEvaluator::unImpOpEvaluator(node, cg);
+   return TR::TreeEvaluator::inlineVectorBitSelectOp(node, cg, TR::InstOpCode::xxsel);
    }
 
 TR::Register*

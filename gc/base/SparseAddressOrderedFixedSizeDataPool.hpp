@@ -104,12 +104,21 @@ public:
 	virtual void kill(MM_EnvironmentBase *env);
 
 	/**
+	 * Retrieve Object To SparseData Hashtable
+	 *
+	 * @return J9HashTable objectToSparseDataTable
+	 */
+	J9HashTable *getObjectToSparseDataTable()
+	{
+		return _objectToSparseDataTable;
+	}
+
+	/**
 	 * Finds first available free region that fits parameter size
 	 *
 	 * @param: region size
 	 * @return address of free region or NULL if there's no such contiguous free region
 	 */
-
 	void *findFreeListEntry(uintptr_t size);
 
 	/**

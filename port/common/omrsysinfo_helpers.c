@@ -70,6 +70,8 @@
 #define CPUID_FAMILYCODE_INTEL_CORE                       0x06
 #define CPUID_FAMILYCODE_INTEL_PENTIUM4                   0x0F
 
+#define INDEX_TO_MASK(idx) (1u << ((idx) % 32))
+
 /**
  * Intel model code suffix naming convention (post-Broadwell)
  *
@@ -429,13 +431,68 @@ omrsysinfo_get_x86_description(struct OMRPortLibrary *portLibrary, OMRProcessorD
 	/* features */
 	desc->features[0] = CPUInfo[CPUID_EDX];
 	desc->features[1] = CPUInfo[CPUID_ECX];
-	desc->features[2] = 0; /* reserved for future expansion */
+	desc->features[2] = 0;
+
+	/* If OSXSAVE is supported, populate the XSAVE state in desc->features[2]. Unused bits (4-31) are reserved for future expansion. */
+	if (OMR_ARE_ANY_BITS_SET(desc->features[(OMR_FEATURE_X86_OSXSAVE) / 32], INDEX_TO_MASK(OMR_FEATURE_X86_OSXSAVE))) {
+		desc->features[2] |= omrsysinfo_get_x86_xsave_state();
+	}
+
 	/* extended features */
 	omrsysinfo_get_x86_cpuid_ext(CPUID_STRUCTURED_EXTENDED_FEATURE_INFO, 0, CPUInfo); /* 0x0 is the only valid subleaf value for this leaf */
 	desc->features[3] = CPUInfo[CPUID_EBX]; /* Structured Extended Feature Flags in EBX */
 	desc->features[4] = CPUInfo[CPUID_ECX]; /* Structured Extended Feature Flags in ECX */
 
 	return 0;
+}
+
+/**
+ * @internal
+ * @brief Retrieves a bitmap representing the extended processor state components
+ *        enabled by the operating system via the XCR0 register (XSAVE).
+ *
+ * This function uses the `xgetbv` instruction to query the XCR0 register, which
+ * indicates which portions of the extended processor state are enabled and managed
+ * by the OS. This function requires that the `OSXSAVE` CPU feature is present.
+ *
+ * The returned bitmap contains flags representing supported XSAVE state components,
+ * such as SSE, AVX, AVX-512, and APX, based on what is enabled in XCR0.
+ *
+ * @return A bitmap of enabled XSAVE state components.
+ */
+uint32_t
+omrsysinfo_get_x86_xsave_state()
+{
+	uint32_t state = 0;
+	/* Record extended processor state features from XCR0. */
+	unsigned long long xcr0 = 0;
+	unsigned int leaf = 0;
+#if defined(OMR_OS_WINDOWS)
+	xcr0 = _xgetbv(leaf);
+#else /* defined(OMR_OS_WINDOWS) */
+	unsigned int eax = 0;
+	unsigned int edx = 0;
+	__asm__ __volatile__("xgetbv" : "=a"(eax), "=d"(edx) : "c"(leaf));
+	xcr0 = ((unsigned long long) edx << 32) | eax;
+#endif /* defined(OMR_OS_WINDOWS) */
+
+	if (OMR_ARE_ANY_BITS_SET(xcr0, OMR_X86_XCR0_MASK_XMM)) {
+		state |= INDEX_TO_MASK(OMR_FEATURE_X86_XSAVE_SSE);
+	}
+
+	if (OMR_ARE_ALL_BITS_SET(xcr0, OMR_X86_XCR0_MASK_XMM | OMR_X86_XCR0_MASK_YMM)) {
+		state |= INDEX_TO_MASK(OMR_FEATURE_X86_XSAVE_AVX);
+	}
+
+	if (OMR_ARE_ALL_BITS_SET(xcr0, OMR_X86_XCR0_MASK_XMM | OMR_X86_XCR0_MASK_YMM | OMR_X86_XCR0_MASK_AVX512)) {
+		state |= INDEX_TO_MASK(OMR_FEATURE_X86_XSAVE_AVX512);
+	}
+
+	if (OMR_ARE_ANY_BITS_SET(xcr0, OMR_X86_XCR0_MASK_APX_EGPR)) {
+		state |= INDEX_TO_MASK(OMR_FEATURE_X86_XSAVE_APX);
+	}
+
+	return state;
 }
 
 /**

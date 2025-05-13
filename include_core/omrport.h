@@ -1767,6 +1767,19 @@ typedef struct OMRProcessorDesc {
 #define OMR_FEATURE_X86_RDRAND       32 + 30 /* Processor supports RDRAND instruction. */
 #define OMR_FEATURE_X86_1_31         32 + 31 /* Not used */
 
+/* FLAGS FOR OS XSAVE/XRSTOR SUPPORT.
+ * These flags are to be set after checking XCR0 register flags.
+ */
+#define OMR_FEATURE_X86_XSAVE_SSE    64 + 0 /* OS Supports SSE (xmm) state */
+#define OMR_FEATURE_X86_XSAVE_AVX    64 + 1 /* OS Supports AVX (ymm) state */
+#define OMR_FEATURE_X86_XSAVE_AVX512 64 + 2 /* OS Supports AVX-512 (zmm, opmask) state */
+#define OMR_FEATURE_X86_XSAVE_APX    64 + 3 /* OS Supports APX (r16-r31) state */
+
+#define OMR_X86_XCR0_MASK_XMM        0x2      /* XCR0[1] - XMM state (SSE) */
+#define OMR_X86_XCR0_MASK_YMM        0x4      /* XCR0[2] - YMM state (AVX) */
+#define OMR_X86_XCR0_MASK_AVX512     0xe0     /* XCR0[7:5] - Opmask, ZMM_Hi256, Hi16_ZMM */
+#define OMR_X86_XCR0_MASK_APX_EGPR   0x80000  /* XCR0[19] - APX Extended GPRs */
+
 /* INTEL INSTRUCTION SET REFERENCE, A-L May 2019
  * Vol. 2 3-197 Table 3-8. Structured Feature Information Returned in the EBX Register by CPUID instruction
  */

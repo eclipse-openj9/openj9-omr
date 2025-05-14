@@ -260,6 +260,7 @@ const char * objectName[] =
    "TR_IPBCDataEightWords",
    "TR_IPBCDataPointer",
    "TR_IPBCDataCallGraph",
+   "TR_IPBCDataDirectCall",
    "TR_ICallingContext",
 
    "TR_IPMethodTable",

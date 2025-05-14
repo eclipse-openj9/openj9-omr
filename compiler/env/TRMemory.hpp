@@ -404,6 +404,7 @@ public:
       IPBCDataEightWords,
       IPBCDataPointer,
       IPBCDataCallGraph,
+      IPBCDataDirectCall,
       IPCallingContext,
       IPMethodTable,
       IPCCNode,

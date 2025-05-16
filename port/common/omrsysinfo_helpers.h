@@ -37,6 +37,9 @@ omrsysinfo_get_x86_processor_feature_name(uint32_t feature);
 extern intptr_t
 omrsysinfo_get_x86_description(struct OMRPortLibrary *portLibrary, OMRProcessorDesc *desc);
 
+extern uint32_t
+omrsysinfo_get_x86_xsave_state();
+
 extern void
 omrsysinfo_get_x86_cpuid(uint32_t leaf, uint32_t *cpuInfo);
 

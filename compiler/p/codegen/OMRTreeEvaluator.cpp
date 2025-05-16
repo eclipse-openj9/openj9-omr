@@ -3290,9 +3290,6 @@ TR::Register *OMR::Power::TreeEvaluator::vloadEvaluator(TR::Node *node, TR::Code
    TR_ASSERT_FATAL_WITH_NODE(node, node->getDataType().getVectorLength() == TR::VectorLength128,
                    "Only 128-bit vectors are supported %s", node->getDataType().toString());
 
-   TR_ASSERT_FATAL(!node->getDataType().isMask() || node->getDataType().getVectorElementType() == TR::Int8,
-                   "Only load of Byte masks is currently supported"); // TODO: support other mask types
-
    TR::InstOpCode::Mnemonic opcode;
    TR_RegisterKinds kind;
 

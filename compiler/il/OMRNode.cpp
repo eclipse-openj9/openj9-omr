@@ -3873,6 +3873,7 @@ OMR::Node::createStoresForVar(TR::SymbolReference * &nodeRef, TR::TreeTop *inser
          self()->setIsInternalPointer(true);
 
       TR::Node *child = NULL;
+      bool updateBaseArray = self()->getReferenceCount() == 1;
 
       if (isInternalPointer)
          {
@@ -3885,7 +3886,10 @@ OMR::Node::createStoresForVar(TR::SymbolReference * &nodeRef, TR::TreeTop *inser
             else
                {
                while (child->getOpCode().isArrayRef())
+                  {
+                  if (child->getReferenceCount() > 1) updateBaseArray = false;
                   child = child->getFirstChild();
+                  }
 
                if (child->getOpCode().isLoadVarDirect() &&
                    child->getSymbolReference()->getSymbol()->isAuto())
@@ -3913,7 +3917,7 @@ OMR::Node::createStoresForVar(TR::SymbolReference * &nodeRef, TR::TreeTop *inser
                   newArrayRef->getSymbol()->setPinningArrayPointer();
                   pinningArray = newArrayRef->getSymbol()->castToAutoSymbol();
 
-                  if (child->isDataAddrPointer())
+                  if (child->isDataAddrPointer() && updateBaseArray)
                      {
                      arrayLoadNode = TR::Node::createLoad(arrayObjectNode, newArrayRef);
                      child->setAndIncChild(0, arrayLoadNode);

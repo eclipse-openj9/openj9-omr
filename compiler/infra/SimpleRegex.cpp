@@ -35,23 +35,6 @@
 #include "ras/IgnoreLocale.hpp"
 
 
-/***
-    This is a mechanism to define a "filter."  A "filter" is basically
-    a (form of a) regular expression that allows one to specify a set
-    of class names, method names, etc.
-    <filter>:           <simple_pattern> | <simple_pattern> "[:|]" <filter>
-    <simple_pattern>:   <component> | <component> <simple_pattern>
-    <component>:        <str> | <wildcards> | <alternate>
-
-    for example, proc[d-g]:func*z will define a filter that matches
-    procd, proce, procf and procg as well as any string that begins
-    with func and ends with z.
-
-    If the first simple_pattern of a filter is a ^, the truth value
-    of the entire filter is inverted.
-***/
-
-
 namespace TR
 {
 
@@ -80,7 +63,7 @@ SimpleRegex *SimpleRegex::create(const char *& s)
 
 SimpleRegex::Regex *SimpleRegex::processRegex(const char *&s, bool &foundError)
    {
-   // First get rid of all + and |
+   // First get rid of all , and |
    //
    while (s[0] == ',' || s[0] == '|')
       ++s;

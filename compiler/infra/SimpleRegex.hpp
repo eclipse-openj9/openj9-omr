@@ -41,8 +41,29 @@ class TR_ResolvedMethod;
 namespace TR
 {
 
-// Simple regular expression
-//
+/**
+ * This is a mechanism to define a \em filter.  A \em filter is basically
+ * a (form of a) regular expression that allows one to specify a set
+ * of class names, method names, etc.
+ *
+ \verbatim
+ <filter>:           <simple_pattern> | <simple_pattern> <separator> <filter>
+ <simple_pattern>:   <component> | <component> <simple_pattern>
+ <separator>:        "," | "|"
+ <component>:        <str> | <wildcard> | <character_choice>
+ <wildcard>:         "*" | "?"
+ <character_choice>: "[" "^"? <str> "]"
+ \endverbatim
+ *
+ * For example, <tt>proc[d-g],func*z</tt> will define a filter that matches
+ * \c procd, \c proce, \c procf and \c procg as well as any string that begins
+ * with \c func and ends with \c z.
+ *
+ * If the first \em simple_pattern of a filter is a caret &mdash; \c ^ &mdash; the truth value
+ * of the entire filter is inverted.  Similarly, if the first character of
+ * a \em character_choice is a caret, the truth value of that \em character_choice
+ * portion of the filter is inverted.
+ */
 class SimpleRegex
    {
    public:

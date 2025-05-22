@@ -20,7 +20,6 @@
 #############################################################################
 
 list(APPEND OMR_PLATFORM_DEFINITIONS
-	-D_AE_BIMODAL
 	-D_ALL_SOURCE
 	-DJ9ZOS390
 	-DLONGLONG

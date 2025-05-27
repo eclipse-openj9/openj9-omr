@@ -51,11 +51,15 @@
 #include "ut_omrport.h"
 #include <sys/stat.h>
 
-#ifdef J9ZOS390
+#if defined(J9ZOS390)
 /* The following undef is to address CMVC 95221 */
 #undef fwrite
 #undef fread
-#endif
+
+#if !defined(OMR_EBCDIC)
+#include "atoe.h"
+#endif /* !defined(OMR_EBCDIC) */
+#endif /* defined(J9ZOS390) */
 
 #if defined(LINUX) || defined(OSX)
 typedef struct statfs PlatformStatfs;

@@ -5552,10 +5552,45 @@ MM_Scavenger::threadReleaseCaches(MM_EnvironmentBase *currentEnvBase, MM_Environ
 		flushInactiveDeferredCopyScanCache(currentEnv, targetEnv, flushCaches, final);
 		deactivateDeferredCopyScanCache(currentEnv, targetEnv, flushCaches, final);
 
+		if (flushCaches && (MUTATOR_THREAD == targetEnv->getThreadType()) && isCurrentPhaseConcurrent()) {
+			/* Flush copy byte stats from Mutator threads during the concurrent phase (via Read Barrier).
+			 * GC threads will merge the stats a bit later (STW or concurrent) when the rest of the stats are merged.
+			 * These flushes are minimized to only when flushCaches is true, which should be typically just
+			 * a couple of times at the end of the concurrent phase. Hence, invocations from OOL VM Access Release will be ignored.
+			 */
+			uint64_t *flipBytesThreadLocal = &targetEnvBase->_scavengerStats._flipBytes;
+			if (0 != *flipBytesThreadLocal) {
+				uint64_t *flipBytesGlobal = &_extensions->incrementScavengerStats._readObjectBarrierFlipBytes;
+				MM_AtomicOperations::addU64(flipBytesGlobal, *flipBytesThreadLocal);
+				*flipBytesThreadLocal = 0;
+			}
+
+			uint64_t *tenureBytesThreadLocal = &targetEnvBase->_scavengerStats._tenureAggregateBytes;
+			if (0 != *tenureBytesThreadLocal) {
+				uint64_t *tenureBytesGlobal = &_extensions->incrementScavengerStats._readObjectBarrierTenureBytes;
+				MM_AtomicOperations::addU64(tenureBytesGlobal, *tenureBytesThreadLocal);
+				*tenureBytesThreadLocal = 0;
+			}
+
+			uint64_t *readBarrierCopyThreadLocal = &targetEnvBase->_scavengerStats._readObjectBarrierCopy;
+			if (0 != *readBarrierCopyThreadLocal) {
+				uint64_t *readBarrierCopyThreadGlobal = &_extensions->incrementScavengerStats._readObjectBarrierCopy;
+				MM_AtomicOperations::addU64(readBarrierCopyThreadGlobal, *readBarrierCopyThreadLocal);
+				*readBarrierCopyThreadLocal = 0;
+			}
+
+			uint64_t *readBarrierUpdateThreadLocal = &targetEnvBase->_scavengerStats._readObjectBarrierUpdate;
+			if (0 != *readBarrierUpdateThreadLocal) {
+				uint64_t *readBarrierUpdateThreadGlobal = &_extensions->incrementScavengerStats._readObjectBarrierUpdate;
+				MM_AtomicOperations::addU64(readBarrierUpdateThreadGlobal, *readBarrierUpdateThreadLocal);
+				*readBarrierUpdateThreadLocal = 0;
+			}
+		}
+
 		if (final) {
-			/* If it's an intermediate release (mutator threads releasing VM access in a middle of Concurrent Scavenger cycle),
-			 * keep copy cache remainders around (do not abandon yet), to be reused if the threads re-acquires VM access during the same CS cycle.
-			 * For final release, we abondon ever remainders.
+			/* If it's an intermediate release (mutator threads releasing VM access in a middle of CS cycle),
+			 * copy cache remainders are kept around (not abandoned yet), to be reused if the threads re-acquires VM access during the same CS cycle.
+			 * For the final release, even the remainders are abandoned.
 			 */
 			abandonSurvivorTLHRemainder(targetEnv);
 			abandonTenureTLHRemainder(targetEnv, true);
@@ -5712,7 +5747,7 @@ MM_Scavenger::workThreadComplete(MM_EnvironmentStandard *env)
 	abandonTenureTLHRemainder(env, true);
 
 	/* If -Xgc:fvtest=forceScavengerBackout has been specified, set backout flag every 3rd scavenge */
-	if(_extensions->fvtest_forceScavengerBackout) {
+	if (_extensions->fvtest_forceScavengerBackout) {
 		if (env->_currentTask->synchronizeGCThreadsAndReleaseMain(env, UNIQUE_ID)) {
 			if (2 <= _extensions->fvtest_backoutCounter) {
 #if defined(OMR_SCAVENGER_TRACE_BACKOUT)
@@ -5728,7 +5763,7 @@ MM_Scavenger::workThreadComplete(MM_EnvironmentStandard *env)
 		}
 	}
 
-	if(isBackOutFlagRaised()) {
+	if (isBackOutFlagRaised()) {
 		env->_scavengerStats._backout = 1;
 		completeBackOut(env);
 	} else {
@@ -5777,6 +5812,8 @@ MM_Scavenger::mainThreadConcurrentCollect(MM_EnvironmentBase *env)
 			/* make allocate space non-allocatable to trigger the next GC phase */
 			_activeSubSpace->flip(env, MM_MemorySubSpaceSemiSpace::disable_allocation);
 		}
+
+		mergeReadBarrierStats(env);
 
 		mergeIncrementGCStats(env, false);
 
@@ -5827,6 +5864,13 @@ void MM_Scavenger::postConcurrentUpdateStatsAndReport(MM_EnvironmentBase *env, M
 	env->_cycleState = NULL;
 }
 
+void
+MM_Scavenger::mergeReadBarrierStats(MM_EnvironmentBase *env)
+{
+	/* Append separate RB stats fields to the general stats fields, of the same increment stats struct. */
+	_extensions->incrementScavengerStats._flipBytes += _extensions->incrementScavengerStats._readObjectBarrierFlipBytes;
+	_extensions->incrementScavengerStats._tenureAggregateBytes += _extensions->incrementScavengerStats._readObjectBarrierTenureBytes;
+}
 
 void
 MM_Scavenger::switchConcurrentForThread(MM_EnvironmentBase *env)

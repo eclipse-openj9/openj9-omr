@@ -66,7 +66,7 @@ MM_ConfigurationGenerational::newInstance(MM_EnvironmentBase *env)
 bool
 MM_ConfigurationGenerational::initialize(MM_EnvironmentBase* env)
 {
-	MM_GCExtensionsBase* extensions = env->getExtensions();
+	MM_GCExtensionsBase *extensions = env->getExtensions();
 
 	if (!extensions->dnssExpectedRatioMaximum._wasSpecified) {
 		extensions->dnssExpectedRatioMaximum._valueSpecified = 0.05;
@@ -74,6 +74,17 @@ MM_ConfigurationGenerational::initialize(MM_EnvironmentBase* env)
 
 	if (!extensions->dnssExpectedRatioMinimum._wasSpecified) {
 		extensions->dnssExpectedRatioMinimum._valueSpecified = 0.01;
+	}
+
+	if (extensions->concurrentKickoffTenuringHeadroom < 0) {
+		if (extensions->isConcurrentScavengerEnabled()) {
+			/* Scavenge Abort is rather expensive operation. Give some more tenuring headroom with CS,
+			 * to decrease probability of an abort, even if that means slightly more frequent Global GC.
+			 */
+			extensions->concurrentKickoffTenuringHeadroom = 0.10f;
+		} else {
+			extensions->concurrentKickoffTenuringHeadroom = 0.02f;
+		}
 	}
 
 	return MM_ConfigurationStandard::initialize(env);

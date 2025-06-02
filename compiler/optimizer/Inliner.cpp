@@ -4163,14 +4163,6 @@ void TR_InlinerBase::getSymbolAndFindInlineTargets(TR_CallStack *callStack, TR_C
    if(callsite->numTargets())    //if we still have targets at this point we can return true as we would have in the loop
       return;
 
-   if ( getUtil()->getCallCount(callNode) > 0)
-      {
-      if (callsite->isInterface())
-         TR::Options::INLINE_failedToDevirtualize ++;
-      else
-         TR::Options::INLINE_failedToDevirtualizeInterface ++;
-      }
-
    if (callsite->numTargets()>0 && callsite->getTarget(0) && !callsite->getTarget(0)->_calleeMethod && comp()->trace(OMR::inlining))
       {
       traceMsg(comp(), "inliner: method is unresolved: %s into %s\n", callsite->_interfaceMethod->signature(trMemory()), tracer()->traceSignature(callStack->_methodSymbol));

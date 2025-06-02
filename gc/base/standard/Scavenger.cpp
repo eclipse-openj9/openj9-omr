@@ -5558,17 +5558,17 @@ MM_Scavenger::threadReleaseCaches(MM_EnvironmentBase *currentEnvBase, MM_Environ
 			 * These flushes are minimized to only when flushCaches is true, which should be typically just
 			 * a couple of times at the end of the concurrent phase. Hence, invocations from OOL VM Access Release will be ignored.
 			 */
-			uint64_t *flipBytesThreadLocal = &targetEnvBase->_scavengerStats._flipBytes;
+			uintptr_t *flipBytesThreadLocal = &targetEnvBase->_scavengerStats._flipBytes;
 			if (0 != *flipBytesThreadLocal) {
-				uint64_t *flipBytesGlobal = &_extensions->incrementScavengerStats._readObjectBarrierFlipBytes;
-				MM_AtomicOperations::addU64(flipBytesGlobal, *flipBytesThreadLocal);
+				uintptr_t *flipBytesGlobal = &_extensions->incrementScavengerStats._readObjectBarrierFlipBytes;
+				MM_AtomicOperations::add(flipBytesGlobal, *flipBytesThreadLocal);
 				*flipBytesThreadLocal = 0;
 			}
 
-			uint64_t *tenureBytesThreadLocal = &targetEnvBase->_scavengerStats._tenureAggregateBytes;
+			uintptr_t *tenureBytesThreadLocal = &targetEnvBase->_scavengerStats._tenureAggregateBytes;
 			if (0 != *tenureBytesThreadLocal) {
-				uint64_t *tenureBytesGlobal = &_extensions->incrementScavengerStats._readObjectBarrierTenureBytes;
-				MM_AtomicOperations::addU64(tenureBytesGlobal, *tenureBytesThreadLocal);
+				uintptr_t *tenureBytesGlobal = &_extensions->incrementScavengerStats._readObjectBarrierTenureBytes;
+				MM_AtomicOperations::add(tenureBytesGlobal, *tenureBytesThreadLocal);
 				*tenureBytesThreadLocal = 0;
 			}
 

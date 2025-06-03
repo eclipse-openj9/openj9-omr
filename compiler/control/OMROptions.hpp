@@ -1918,8 +1918,6 @@ public:
    static int32_t _queueWeightThresholdForStarvation;
 
 
-   static int32_t INLINE_failedToDevirtualize;
-   static int32_t INLINE_failedToDevirtualizeInterface;
    static int32_t INLINE_fanInCallGraphFactor;
    static int32_t INLINE_calleeToBig;
    static int32_t INLINE_calleeToDeep;

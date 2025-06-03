@@ -1700,8 +1700,6 @@ uint32_t      OMR::Options::_cpuExpensiveCompThreshold = 0; // not initialized
 int32_t       OMR::Options::_deterministicMode = -1; // -1 means we're not in any deterministic mode
 int32_t       OMR::Options::_maxPeekedBytecodeSize = 100000;
 
-int32_t       OMR::Options::INLINE_failedToDevirtualize          = 0;
-int32_t       OMR::Options::INLINE_failedToDevirtualizeInterface = 0;
 int32_t       OMR::Options::INLINE_fanInCallGraphFactor          = 90;
 int32_t       OMR::Options::INLINE_calleeToBig                   = 0;
 int32_t       OMR::Options::INLINE_calleeToDeep                  = 0;

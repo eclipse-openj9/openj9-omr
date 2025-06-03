@@ -1875,7 +1875,7 @@ bool OMR::Power::CodeGenerator::getSupportsOpCodeForAutoSIMD(TR::CPU *cpu, TR::I
          else
             return false;
       case TR::mFirstTrue:
-         if (et == TR::Int8 && cpu->isAtLeast(OMR_PROCESSOR_PPC_P9))
+         if (cpu->isAtLeast(OMR_PROCESSOR_PPC_P9))
             return true;
          else
             return false;

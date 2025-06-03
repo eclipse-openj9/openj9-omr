@@ -924,14 +924,33 @@ OMR::Power::TreeEvaluator::mFirstTrueEvaluator(TR::Node *node, TR::CodeGenerator
    TR_ASSERT_FATAL_WITH_NODE(node, firstChild->getDataType().getVectorLength() == TR::VectorLength128,
                              "Only 128-bit vectors are supported %s", node->getDataType().toString());
 
-   TR_ASSERT_FATAL_WITH_NODE(node, firstChild->getDataType().getVectorNumLanes() == 16,
-                             "Unsupported vector type %s for mFirstTrue\n", firstChild->getDataType().toString());
-
-
    TR::Register *srcReg = cg->evaluate(firstChild);
    TR::Register *resReg = cg->allocateRegister(TR_GPR);
 
+   //get number of leading 0 bytes
    generateTrg1Src1Instruction(cg, OMR::InstOpCode::vclzlsbb, node, resReg, srcReg);
+
+   //we can determine the number of leading 0 vector elements by dividing by (element size)/(size of byte element)
+   switch(firstChild->getDataType().getVectorElementType())
+     {
+     case(TR::Int8):
+        //no change needed (divide by 1)
+        break;
+     case(TR::Int16):
+        //divide by 2
+        generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::sradi, node, resReg, resReg, 1);
+        break;
+     case(TR::Int32):
+        //divide by 4
+        generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::sradi, node, resReg, resReg, 2);
+        break;
+     case(TR::Int64):
+        //divide by 8
+        generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::sradi, node, resReg, resReg, 3);
+        break;
+     default:
+        TR_ASSERT_FATAL(false, "Unsupported vector type %s for mFirstTrue\n", firstChild->getDataType().toString()); return NULL;
+     }
 
    node->setRegister(resReg);
    cg->decReferenceCount(firstChild);

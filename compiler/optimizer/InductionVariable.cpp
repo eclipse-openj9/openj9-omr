@@ -3607,6 +3607,7 @@ bool TR_LoopStrider::reassociateAndHoistComputations(TR::Block *loopInvariantBlo
          int32_t hdrSize = (int32_t)TR::Compiler->om.contiguousArrayHeaderSizeInBytes();
          if ((isInternalPointer &&
               (comp()->getSymRefTab()->getNumInternalPointers() < maxInternalPointers()) &&
+              (!originalNode->getFirstChild()->isDataAddrPointer()) &&
               ((isAdd && (constValue == hdrSize)) ||
                (!isAdd && constValue == -hdrSize))) &&
               (!_registersScarce || (node->getReferenceCount() > 1) || _reassociatedNodes.find(node)) &&

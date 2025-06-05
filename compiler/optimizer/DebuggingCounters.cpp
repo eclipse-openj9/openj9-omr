@@ -354,12 +354,10 @@ void TR_DebuggingCounters::inliningReportForMethod(TR::Compilation *comp)
          char buffer[512];
 
          if (curSite->opaque_method)
-            fprintf(output, "\t%d %d %d %d %d %s \t%s\n", curSite->flag, (comp->fej9()->getIProfilerCallCount(curSite->bcInfo, comp)),
-                  curSite->frequency, curSite->size,
+            fprintf(output, "\t%d %d %d %d %s \t%s\n", curSite->flag, curSite->frequency, curSite->size,
                   curSite->numLocals, curSite->name, comp->fe()->sampleSignature(curSite->opaque_method, buffer, 512, comp->trMemory()));
          else
-            fprintf(output, "\t%d %d %d %d %d %s \t%s\n", curSite->flag, (comp->fej9()->getIProfilerCallCount(curSite->bcInfo, comp)),
-                  curSite->frequency, curSite->size,
+            fprintf(output, "\t%d %d %d %d %s \t%s\n", curSite->flag, curSite->frequency, curSite->size,
                   curSite->numLocals, curSite->name, curSite->method->signature(comp->trMemory()));
 #endif
          }

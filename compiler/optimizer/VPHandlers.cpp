@@ -4803,14 +4803,6 @@ TR::Node *constrainArraylength(OMR::ValuePropagation *vp, TR::Node *node)
 
    vp->getArrayLengthLimits(constraint, lowerBoundLimit, upperBoundLimit, elementSize, isKnownObj);
 
-   // If this is a known array object, we definitely know its length
-   //
-   if (isKnownObj)
-      {
-      vp->replaceByConstant(node, TR::VPIntConst::create(vp, lowerBoundLimit), isGlobal);
-      return node;
-      }
-
    // If the element size is still not known, try to get it from the node or
    // from the signature, and then propagate it back down to the object ref.
    //

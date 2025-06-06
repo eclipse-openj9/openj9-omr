@@ -913,7 +913,58 @@ OMR::Power::TreeEvaluator::mstoreiEvaluator(TR::Node *node, TR::CodeGenerator *c
 TR::Register*
 OMR::Power::TreeEvaluator::mTrueCountEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   return TR::TreeEvaluator::unImpOpEvaluator(node, cg);
+   TR::Node *firstChild = node->getFirstChild();
+
+   TR_ASSERT_FATAL_WITH_NODE(node, firstChild->getDataType().getVectorLength() == TR::VectorLength128,
+                   "Only 128-bit vectors are supported %s", node->getDataType().toString());
+
+   TR::Register *srcReg = cg->evaluate(firstChild);
+   TR::Register *resReg = cg->allocateRegister(TR_GPR);
+
+   TR::Register *temp1 = cg->allocateRegister(TR_VRF);
+   TR::Register *temp2 = cg->allocateRegister(TR_VRF);
+
+   node->setRegister(resReg);
+
+   //pick shift distance based on vector element type
+   TR::DataType type = firstChild->getDataType().getVectorElementType();
+   int shift;
+
+   switch(type)
+     {
+     case TR::Int8:
+        shift = 3;
+        break;
+     case TR::Int16:
+        shift = 4;
+        break;
+     case TR::Int32:
+        shift = 5;
+        break;
+     case TR::Int64:
+        shift = 6;
+        break;
+     default:
+        TR_ASSERT_FATAL(false, "Unsupported vector type %s for mTrueCount\n", firstChild->getDataType().toString()); return NULL;
+     }
+
+   //get population counts of each half of input vector separately
+   generateTrg1Src1Instruction(cg, OMR::InstOpCode::vpopcntd, node, temp1, srcReg);
+
+   //add two halves together and move result to GPR
+   generateTrg1Src2ImmInstruction(cg, OMR::InstOpCode::xxpermdi, node, temp2, temp1, temp1, 2);
+   generateTrg1Src2Instruction(cg, OMR::InstOpCode::vaddudm, node, temp1, temp1, temp2);
+   generateTrg1Src1Instruction(cg, TR::InstOpCode::mfvsrd, node, resReg, temp1);
+
+   //since vector mask values are represented as either all 1's (true) or all 0's (false), the number
+   //of "true" values can be calculated as: (total bitwise population count)/(element size in bits)
+   generateTrg1Src1ImmInstruction(cg, OMR::InstOpCode::sradi, node, resReg, resReg, shift);
+
+   cg->stopUsingRegister(temp1);
+   cg->stopUsingRegister(temp2);
+   cg->decReferenceCount(firstChild);
+
+   return resReg;
    }
 
 TR::Register*

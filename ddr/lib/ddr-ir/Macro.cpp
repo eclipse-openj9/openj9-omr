@@ -23,7 +23,6 @@
 
 #include "ddr/ir/Type.hpp"
 
-#include <ctype.h>
 #include <stdint.h>
 #include <string.h>
 
@@ -58,6 +57,11 @@ class MacroScanner
 private:
 	char const *_cursor;
 
+	/* Note: Even on z/OS, the argument, c, received by the functions below,
+	 * is expected to be ASCII-encoded, so we don't need to deal with the
+	 * gaps in the EBCDIC encodings for letters.
+	 */
+	static bool isAlpha(char c);
 	static bool isDigit(char c, int32_t base);
 	static int32_t digitValue(char c);
 
@@ -106,6 +110,20 @@ public:
 };
 
 /**
+ * Helper function to check if a character is a letter.
+ *
+ * @param[in] c: character being checked
+ *
+ * @return: if the character is a letter
+ */
+bool
+MacroScanner::isAlpha(char c)
+{
+	return (('A' <= c) && (c <= 'Z'))
+		|| (('a' <= c) && (c <= 'z'));
+}
+
+/**
  * Helper function to check if a character is a digit in a specified base.
  *
  * @param[in] c: character being checked
@@ -128,7 +146,7 @@ MacroScanner::isDigit(char c, int32_t base)
 /**
  * Helper function to read the value of a number from a string, this gets the
  * value of a single digit, assuming digits go 0-9 then A-Z case-insensitive
- * (36 possible digits)
+ * (36 possible digit choices).
  *
  * @param[in] c: digit whose value is sought
  *
@@ -149,7 +167,7 @@ MacroScanner::digitValue(char c)
 void
 MacroScanner::skipWhitespace()
 {
-	while (isspace(*_cursor)) {
+	while ((' ' == *_cursor) || ('\t' == *_cursor)) {
 		_cursor += 1;
 	}
 }
@@ -178,10 +196,10 @@ MacroScanner::validTypeCast(bool *isSigned, size_t *bitWidth)
 	const char *start = _cursor;
 	const char *end = start;
 
-	while (isalpha(*_cursor)) {
+	while (isAlpha(*_cursor)) {
 		do {
 			_cursor += 1;
-		} while (('_' == *_cursor) || isalnum(*_cursor));
+		} while (('_' == *_cursor) || isAlpha(*_cursor) || isDigit(*_cursor, 10));
 
 		end = _cursor;
 
@@ -348,7 +366,7 @@ MacroScanner::atSymbol(Symbol sym)
 
 /**
  * Reads an integer number starting at the cursor in the expression string.
- * Number is read as a 64bit integer.
+ * Number is read as a 64-bit integer.
  */
 bool
 MacroScanner::readNumber(int64_t *ret)
@@ -358,7 +376,7 @@ MacroScanner::readNumber(int64_t *ret)
 
 	skipWhitespace();
 
-	if (!(isdigit(_cursor[0]))) {
+	if (!isDigit(_cursor[0], 10)) {
 		return false;
 	}
 
@@ -383,8 +401,8 @@ MacroScanner::readNumber(int64_t *ret)
 		_cursor += 1;
 	}
 
-	/* type suffixes do nothing since we treat each literal as an uint64_t.
-	 * so we just verify the suffix is correct
+	/* Type suffixes do nothing since we treat each literal as an uint64_t,
+	 * so we just verify the suffix is correct.
 	 */
 	bool seenL = false;
 	bool seenU = false;

@@ -1390,6 +1390,7 @@ public:
       _disabledInlineSites = NULL;
       _disabledOpts = NULL;
       _optsToTrace = NULL;
+      _optsToDumpTrees = NULL;
       _dontInline = NULL;
       _onlyInline = NULL;
       _tryToInline = NULL;
@@ -1724,6 +1725,7 @@ public:
    TR::SimpleRegex * getDisabledOpts()                 {return _disabledOpts; }
    TR::SimpleRegex * getDisabledInlineSites()          {return _disabledInlineSites; }
    TR::SimpleRegex * getOptsToTrace()                  {return _optsToTrace; }
+   TR::SimpleRegex * getOptsToDumpTrees()              {return _optsToDumpTrees; }
    TR::SimpleRegex * getDontInline()                   {return _dontInline; }
    TR::SimpleRegex * getOnlyInline()                   {return _onlyInline; }
    TR::SimpleRegex * getTryToInline()                  {return _tryToInline; }
@@ -2391,6 +2393,7 @@ protected:
    TR::SimpleRegex *            _disabledInlineSites;
    TR::SimpleRegex *            _disabledOpts;
    TR::SimpleRegex *            _optsToTrace;
+   TR::SimpleRegex *            _optsToDumpTrees;
    TR::SimpleRegex *            _dontInline;
    TR::SimpleRegex *            _onlyInline;
    TR::SimpleRegex *            _tryToInline;

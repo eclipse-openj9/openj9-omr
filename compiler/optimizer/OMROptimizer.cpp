@@ -2013,6 +2013,19 @@ int32_t OMR::Optimizer::performOptimization(const OptimizationStrategy *optimiza
       if (doThisOptimizationIfEnabled)
          manager->setPerformOnlyOnEnabledBlocks(true);
 
+      bool methodTreeDumpPermitted = (optIndex >= _firstDumpOptPhaseTrees
+                                  && optIndex <= _lastDumpOptPhaseTrees);
+
+      // Check whether this optimization's index or name matches the
+      // filter specified to request dumps of method trees
+      //
+      regex = comp()->getOptions()->getOptsToDumpTrees();
+      if (regex && (TR::SimpleRegex::match(regex, optIndex) || TR::SimpleRegex::match(regex, manager->name())))
+         {
+         needTreeDump = true;
+         methodTreeDumpPermitted = true;
+         }
+
       // check if method exceeds loop or basic block threshold
       if (manager->getRequiresStructure() && comp()->getFlowGraph()->getStructure())
          {
@@ -2151,12 +2164,11 @@ int32_t OMR::Optimizer::performOptimization(const OptimizationStrategy *optimiza
 
    #endif
 
-   if ((optIndex >= _firstDumpOptPhaseTrees && optIndex <= _lastDumpOptPhaseTrees) &&
-       comp()->isOutermostMethod())
+   if (methodTreeDumpPermitted && comp()->isOutermostMethod())
       {
       if (manager->getDoesNotRequireTreeDumps())
          {
-         dumpOptDetails(comp(), "Trivial opt -- omitting lisitings\n");
+         dumpOptDetails(comp(), "Trivial opt -- omitting listings\n");
          }
       else if (needTreeDump || (finalOptMsgIndex != origOptMsgIndex))
          comp()->dumpMethodTrees("Trees after ", manager->name(), getMethodSymbol());

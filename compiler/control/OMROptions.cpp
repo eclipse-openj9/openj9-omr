@@ -1254,6 +1254,7 @@ TR::OptionTable OMR::Options::_jitOptions[] = {
    {"traceOpts",                        "L\tdump each optimization name",                 SET_OPTION_BIT(TR_TraceOpts), "P" },
    {"traceOpts=",                       "L{regex}\tlist of optimizations to trace", TR::Options::setRegex, offsetof(OMR::Options, _optsToTrace), 0, "P"},
    {"traceOptTreeLowering",             "L\ttrace tree lowering optimization",             TR::Options::traceOptimization, treeLowering,   0, "P"},
+   {"traceOptTrees=",                   "L{regex}\tlist of optimizations after which to dump trees", TR::Options::setRegex, offsetof(OMR::Options, _optsToDumpTrees), 0, "P"},
    {"traceOSR",                         "L\ttrace OSR",                                    SET_OPTION_BIT(TR_TraceOSR), "P"},
    {"traceOSRDefAnalysis",              "L\ttrace OSR reaching definitions analysis",       TR::Options::traceOptimization, osrDefAnalysis, 0, "P"},
 #ifdef J9_PROJECT_SPECIFIC
@@ -3905,7 +3906,7 @@ OMR::Options::jitPostProcess()
 bool
 OMR::Options::requiresLogFile()
    {
-   if (self()->getOptsToTrace())
+   if (self()->getOptsToTrace() || self()->getOptsToDumpTrees())
       return true;
 
    // note: enumerators with different word maps can't be or'ed together

@@ -1159,7 +1159,7 @@ OMR::Power::TreeEvaluator::vcmpeqEvaluator(TR::Node *node, TR::CodeGenerator *cg
    TR_ASSERT_FATAL_WITH_NODE(node, node->getDataType().getVectorLength() == TR::VectorLength128,
                    "Only 128-bit vectors are supported %s", node->getDataType().toString());
 
-   TR::DataType elementType = node->getDataType().getVectorElementType();
+   TR::DataType elementType = node->getOpCode().getVectorSourceDataType().getVectorElementType();
 
    switch (elementType)
       {
@@ -1176,7 +1176,7 @@ OMR::Power::TreeEvaluator::vcmpeqEvaluator(TR::Node *node, TR::CodeGenerator *cg
       case TR::Double:
          return TR::TreeEvaluator::inlineVectorBinaryOp(node, cg, TR::InstOpCode::xvcmpeqdp);
       default:
-         TR_ASSERT_FATAL(false, "unrecognized vector type %s\n", node->getDataType().toString()); return NULL;
+         TR_ASSERT_FATAL(false, "unrecognized vector type %s\n", elementType.toString()); return NULL;
       }
    }
 
@@ -1210,7 +1210,7 @@ OMR::Power::TreeEvaluator::vcmpneEvaluator(TR::Node *node, TR::CodeGenerator *cg
       TR_ASSERT_FATAL_WITH_NODE(node, node->getDataType().getVectorLength() == TR::VectorLength128,
                    "Only 128-bit vectors are supported %s", node->getDataType().toString());
 
-      TR::DataType elementType = node->getDataType().getVectorElementType();
+      TR::DataType elementType = node->getOpCode().getVectorSourceDataType().getVectorElementType();
       bool p9Plus = cg->comp()->target().cpu.isAtLeast(OMR_PROCESSOR_PPC_P9); // VMX vector NE instructions are only available on P9 and up
 
       // for types/power versions where no PPC assembly instruction exists for NE, take the complement of EQ instead -> (A != B) == ~(A == B)
@@ -1238,7 +1238,7 @@ OMR::Power::TreeEvaluator::vcmpneEvaluator(TR::Node *node, TR::CodeGenerator *cg
          case TR::Double:
             return vcmpHelper(node, cg, TR::InstOpCode::xvcmpeqdp, true, false);
          default:
-            TR_ASSERT_FATAL(false, "unrecognized vector type %s\n", node->getDataType().toString()); return NULL;
+            TR_ASSERT_FATAL(false, "unrecognized vector type %s\n", elementType.toString()); return NULL;
          }
    }
 
@@ -1248,7 +1248,7 @@ OMR::Power::TreeEvaluator::vcmpltEvaluator(TR::Node *node, TR::CodeGenerator *cg
    TR_ASSERT_FATAL_WITH_NODE(node, node->getDataType().getVectorLength() == TR::VectorLength128,
                    "Only 128-bit vectors are supported %s", node->getDataType().toString());
 
-   TR::DataType elementType = node->getDataType().getVectorElementType();
+   TR::DataType elementType = node->getOpCode().getVectorSourceDataType().getVectorElementType();
 
    // since no PPC assembly instruction exists for LT, switch operands and take GT instead -> (A < B) == (B > A)
    switch (elementType)
@@ -1266,7 +1266,7 @@ OMR::Power::TreeEvaluator::vcmpltEvaluator(TR::Node *node, TR::CodeGenerator *cg
       case TR::Double:
          return vcmpHelper(node, cg, TR::InstOpCode::xvcmpgtdp, false, true);
       default:
-         TR_ASSERT_FATAL(false, "unrecognized vector type %s\n", node->getDataType().toString()); return NULL;
+         TR_ASSERT_FATAL(false, "unrecognized vector type %s\n", elementType.toString()); return NULL;
       }
    }
 
@@ -1276,7 +1276,7 @@ OMR::Power::TreeEvaluator::vcmpgtEvaluator(TR::Node *node, TR::CodeGenerator *cg
    TR_ASSERT_FATAL_WITH_NODE(node, node->getDataType().getVectorLength() == TR::VectorLength128,
                    "Only 128-bit vectors are supported %s", node->getDataType().toString());
 
-   TR::DataType elementType = node->getDataType().getVectorElementType();
+   TR::DataType elementType = node->getOpCode().getVectorSourceDataType().getVectorElementType();
 
    switch (elementType)
       {
@@ -1293,7 +1293,7 @@ OMR::Power::TreeEvaluator::vcmpgtEvaluator(TR::Node *node, TR::CodeGenerator *cg
       case TR::Double:
          return TR::TreeEvaluator::inlineVectorBinaryOp(node, cg, TR::InstOpCode::xvcmpgtdp);
       default:
-         TR_ASSERT_FATAL(false, "unrecognized vector type %s\n", node->getDataType().toString()); return NULL;
+         TR_ASSERT_FATAL(false, "unrecognized vector type %s\n", elementType.toString()); return NULL;
       }
    }
 
@@ -1303,7 +1303,7 @@ OMR::Power::TreeEvaluator::vcmpleEvaluator(TR::Node *node, TR::CodeGenerator *cg
    TR_ASSERT_FATAL_WITH_NODE(node, node->getDataType().getVectorLength() == TR::VectorLength128,
                    "Only 128-bit vectors are supported %s", node->getDataType().toString());
 
-   TR::DataType elementType = node->getDataType().getVectorElementType();
+   TR::DataType elementType = node->getOpCode().getVectorSourceDataType().getVectorElementType();
 
    // since no PPC assembly instruction exists for LE, take complements/switch operands as needed and use other comparison operations instead
    switch (elementType)
@@ -1321,7 +1321,7 @@ OMR::Power::TreeEvaluator::vcmpleEvaluator(TR::Node *node, TR::CodeGenerator *cg
       case TR::Double:
          return vcmpHelper(node, cg, TR::InstOpCode::xvcmpgedp, false, true);
       default:
-         TR_ASSERT_FATAL(false, "unrecognized vector type %s\n", node->getDataType().toString()); return NULL;
+         TR_ASSERT_FATAL(false, "unrecognized vector type %s\n", elementType.toString()); return NULL;
       }
    }
 
@@ -1331,7 +1331,7 @@ OMR::Power::TreeEvaluator::vcmpgeEvaluator(TR::Node *node, TR::CodeGenerator *cg
    TR_ASSERT_FATAL_WITH_NODE(node, node->getDataType().getVectorLength() == TR::VectorLength128,
                    "Only 128-bit vectors are supported %s", node->getDataType().toString());
 
-   TR::DataType elementType = node->getDataType().getVectorElementType();
+   TR::DataType elementType = node->getOpCode().getVectorSourceDataType().getVectorElementType();
 
    // for types where no PPC assembly instruction exists for GE, reverse operands and then take the complement of GT instead -> (A >= B) == ~(B > A)
    switch (elementType)
@@ -1349,7 +1349,7 @@ OMR::Power::TreeEvaluator::vcmpgeEvaluator(TR::Node *node, TR::CodeGenerator *cg
       case TR::Double:
          return TR::TreeEvaluator::inlineVectorBinaryOp(node, cg, TR::InstOpCode::xvcmpgedp);
       default:
-         TR_ASSERT_FATAL(false, "unrecognized vector type %s\n", node->getDataType().toString()); return NULL;
+         TR_ASSERT_FATAL(false, "unrecognized vector type %s\n", elementType.toString()); return NULL;
       }
    }
 

@@ -3496,6 +3496,9 @@ MM_Scavenger::releaseLocalCopyCache(MM_EnvironmentStandard *env, MM_CopyScanCach
 	return cacheToReuse;
 }
 
+/* Threshold is chosen to provide reasonably accurate (frequent) updates without causing contention in atomic operations. */
+#define INCREMENTAL_STATS_COPY_BYTES_THRESHOLD 65536
+
 bool
 MM_Scavenger::clearCache(MM_EnvironmentStandard *env, MM_CopyScanCacheStandard *cache)
 {
@@ -3520,6 +3523,14 @@ MM_Scavenger::clearCache(MM_EnvironmentStandard *env, MM_CopyScanCacheStandard *
 				env->_tenureTLHRemainderTop = cache->cacheTop;
 				env->_loaAllocation = (OMR_COPYSCAN_CACHE_TYPE_LOA == (cache->flags & OMR_COPYSCAN_CACHE_TYPE_LOA));
 			}
+
+#if defined(OMR_GC_CONCURRENT_SCAVENGER)
+			if (isCurrentPhaseConcurrent() && (env->_scavengerStats._tenureAggregateBytes > INCREMENTAL_STATS_COPY_BYTES_THRESHOLD)) {
+				MM_AtomicOperations::add(&_extensions->incrementScavengerStats._tenureAggregateBytes, env->_scavengerStats._tenureAggregateBytes);
+				env->_scavengerStats._tenureAggregateBytes = 0;
+			}
+#endif /* #if defined(OMR_GC_CONCURRENT_SCAVENGER) */
+
 		} else if (0 != (cache->flags & OMR_COPYSCAN_CACHE_TYPE_SEMISPACE)) {
 			allocSubSpace = _survivorMemorySubSpace;
 			if (discardSize < env->getExtensions()->tlhSurvivorDiscardThreshold) {
@@ -3533,6 +3544,14 @@ MM_Scavenger::clearCache(MM_EnvironmentStandard *env, MM_CopyScanCacheStandard *
 				Assert_MM_true(NULL == env->_survivorTLHRemainderTop);
 				env->_survivorTLHRemainderTop = cache->cacheTop;
 			}
+
+#if defined(OMR_GC_CONCURRENT_SCAVENGER)
+			if (isCurrentPhaseConcurrent() && (env->_scavengerStats._flipBytes > INCREMENTAL_STATS_COPY_BYTES_THRESHOLD)) {
+				MM_AtomicOperations::add(&_extensions->incrementScavengerStats._flipBytes, env->_scavengerStats._flipBytes);
+				env->_scavengerStats._flipBytes = 0;
+			}
+#endif /* #if defined(OMR_GC_CONCURRENT_SCAVENGER) */
+
 		} else {
 			/*
 			 * In case if OMR_COPYSCAN_CACHE_TYPE_SPLIT_ARRAY flag is set none of

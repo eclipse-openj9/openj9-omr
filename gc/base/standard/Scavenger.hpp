@@ -823,6 +823,8 @@ public:
 	void reportConcurrentScavengeStart(MM_EnvironmentStandard *env);
 	void reportConcurrentScavengeEnd(MM_EnvironmentStandard *env);
 	
+	virtual void payAllocationTax(MM_EnvironmentBase *env, MM_MemorySubSpace *subspace, MM_MemorySubSpace *baseSubSpace, MM_AllocateDescription *allocDescription);
+
 #endif /* OMR_GC_CONCURRENT_SCAVENGER */
 
 	/**

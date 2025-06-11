@@ -60,9 +60,9 @@
  * Tear down Standard Configuration
  */
 void
-MM_ConfigurationStandard::tearDown(MM_EnvironmentBase* env)
+MM_ConfigurationStandard::tearDown(MM_EnvironmentBase *env)
 {
-	MM_GCExtensionsBase* extensions = env->getExtensions();
+	MM_GCExtensionsBase *extensions = env->getExtensions();
 
 	if (NULL != extensions->sweepPoolManagerAddressOrderedList) {
 		extensions->sweepPoolManagerAddressOrderedList->kill(env);
@@ -80,12 +80,12 @@ MM_ConfigurationStandard::tearDown(MM_EnvironmentBase* env)
 }
 
 bool
-MM_ConfigurationStandard::initialize(MM_EnvironmentBase* env)
+MM_ConfigurationStandard::initialize(MM_EnvironmentBase *env)
 {
-	MM_GCExtensionsBase* extensions = env->getExtensions();
+	MM_GCExtensionsBase *extensions = env->getExtensions();
 	bool result = MM_Configuration::initialize(env);
 	if (result) {
-		extensions->payAllocationTax = extensions->isConcurrentMarkEnabled() || extensions->isConcurrentSweepEnabled();
+		extensions->payAllocationTax = extensions->isConcurrentMarkEnabled() || extensions->isConcurrentSweepEnabled() || extensions->isConcurrentScavengerEnabled();
 		extensions->setStandardGC(true);
 	}
 
@@ -104,10 +104,10 @@ MM_ConfigurationStandard::initialize(MM_EnvironmentBase* env)
  * Create the global collector for a Standard configuration
  */
 MM_GlobalCollector*
-MM_ConfigurationStandard::createCollectors(MM_EnvironmentBase* env)
+MM_ConfigurationStandard::createCollectors(MM_EnvironmentBase *env)
 {
 #if defined(OMR_GC_MODRON_CONCURRENT_MARK) || defined(OMR_GC_MODRON_CONCCURENT_SWEEP)
-	MM_GCExtensionsBase* extensions = env->getExtensions();
+	MM_GCExtensionsBase *extensions = env->getExtensions();
 #endif /* OMR_GC_MODRON_CONCURRENT_MARK || OMR_GC_CONCURRENT_SWEEP */
 
 #if defined(OMR_GC_MODRON_CONCURRENT_MARK)
@@ -133,8 +133,8 @@ MM_ConfigurationStandard::createCollectors(MM_EnvironmentBase* env)
 /**
  * Create the heap for a Standard configuration
  */
-MM_Heap*
-MM_ConfigurationStandard::createHeapWithManager(MM_EnvironmentBase* env, uintptr_t heapBytesRequested, MM_HeapRegionManager* regionManager)
+MM_Heap *
+MM_ConfigurationStandard::createHeapWithManager(MM_EnvironmentBase *env, uintptr_t heapBytesRequested, MM_HeapRegionManager *regionManager)
 {
 	return MM_HeapVirtualMemory::newInstance(env, env->getExtensions()->heapAlignment, heapBytesRequested, regionManager);
 }
@@ -146,10 +146,10 @@ MM_ConfigurationStandard::createHeapWithManager(MM_EnvironmentBase* env, uintptr
  * 
  * @return the appropriate memoryPool
  */
-MM_MemoryPool*
-MM_ConfigurationStandard::createMemoryPool(MM_EnvironmentBase* env, bool appendCollectorLargeAllocateStats)
+MM_MemoryPool *
+MM_ConfigurationStandard::createMemoryPool(MM_EnvironmentBase *env, bool appendCollectorLargeAllocateStats)
 {
-	MM_GCExtensionsBase* extensions = env->getExtensions();
+	MM_GCExtensionsBase *extensions = env->getExtensions();
 	uintptr_t minimumFreeEntrySize = extensions->tlhMinimumSize;
 
 	bool doSplit = 1 < extensions->splitFreeListSplitAmount;
@@ -193,8 +193,8 @@ MM_ConfigurationStandard::createMemoryPool(MM_EnvironmentBase* env, bool appendC
 	}
 
 	if (extensions->largeObjectArea) {
-		MM_MemoryPoolAddressOrderedListBase* memoryPoolLargeObjects = NULL;
-		MM_MemoryPoolAddressOrderedListBase* memoryPoolSmallObjects = NULL;
+		MM_MemoryPoolAddressOrderedListBase *memoryPoolLargeObjects = NULL;
+		MM_MemoryPoolAddressOrderedListBase *memoryPoolSmallObjects = NULL;
 
 		/* create memory pools for SOA and LOA */
 		if (doSplit) {
@@ -227,7 +227,7 @@ MM_ConfigurationStandard::createMemoryPool(MM_EnvironmentBase* env, bool appendC
 		return MM_MemoryPoolLargeObjects::newInstance(env, memoryPoolLargeObjects, memoryPoolSmallObjects);
 
 	} else {
-		MM_MemoryPool* memoryPool = NULL;
+		MM_MemoryPool *memoryPool = NULL;
 
 		if (doSplit) {
 			memoryPool = MM_MemoryPoolSplitAddressOrderedList::newInstance(env, minimumFreeEntrySize, extensions->splitFreeListSplitAmount, "Tenure");
@@ -252,14 +252,14 @@ MM_ConfigurationStandard::createMemoryPool(MM_EnvironmentBase* env, bool appendC
 	}
 }
 
-MM_EnvironmentBase*
-MM_ConfigurationStandard::allocateNewEnvironment(MM_GCExtensionsBase* extensions, OMR_VMThread* omrVMThread)
+MM_EnvironmentBase *
+MM_ConfigurationStandard::allocateNewEnvironment(MM_GCExtensionsBase *extensions, OMR_VMThread *omrVMThread)
 {
 	return MM_EnvironmentStandard::newInstance(extensions, omrVMThread);
 }
 
-J9Pool*
-MM_ConfigurationStandard::createEnvironmentPool(MM_EnvironmentBase* env)
+J9Pool *
+MM_ConfigurationStandard::createEnvironmentPool(MM_EnvironmentBase *env)
 {
 	OMRPORT_ACCESS_FROM_OMRPORT(env->getPortLibrary());
 
@@ -272,9 +272,9 @@ MM_ConfigurationStandard::createEnvironmentPool(MM_EnvironmentBase* env)
  * Create Sweep Pool Manager for Memory Pool Address Ordered List
  */
 bool
-MM_ConfigurationStandard::createSweepPoolManagerAddressOrderedList(MM_EnvironmentBase* env)
+MM_ConfigurationStandard::createSweepPoolManagerAddressOrderedList(MM_EnvironmentBase *env)
 {
-	MM_GCExtensionsBase* extensions = env->getExtensions();
+	MM_GCExtensionsBase *extensions = env->getExtensions();
 
 	/* Create Sweep Pool Manager for MPAOL if it is not created yet */
 	if (NULL == extensions->sweepPoolManagerAddressOrderedList) {
@@ -291,9 +291,9 @@ MM_ConfigurationStandard::createSweepPoolManagerAddressOrderedList(MM_Environmen
  * Create Sweep Pool Manager for Memory Pool Split Address Ordered List
  */
 bool
-MM_ConfigurationStandard::createSweepPoolManagerSplitAddressOrderedList(MM_EnvironmentBase* env)
+MM_ConfigurationStandard::createSweepPoolManagerSplitAddressOrderedList(MM_EnvironmentBase *env)
 {
-	MM_GCExtensionsBase* extensions = env->getExtensions();
+	MM_GCExtensionsBase *extensions = env->getExtensions();
 
 	/* Create Sweep Pool Manager for MPSAOL if it is not created yet */
 	if (NULL == extensions->sweepPoolManagerSmallObjectArea) {
@@ -310,9 +310,9 @@ MM_ConfigurationStandard::createSweepPoolManagerSplitAddressOrderedList(MM_Envir
  * Create Sweep Pool Manager for Memory Pool Split Address Ordered List
  */
 bool
-MM_ConfigurationStandard::createSweepPoolManagerHybrid(MM_EnvironmentBase* env)
+MM_ConfigurationStandard::createSweepPoolManagerHybrid(MM_EnvironmentBase *env)
 {
-	MM_GCExtensionsBase* extensions = env->getExtensions();
+	MM_GCExtensionsBase *extensions = env->getExtensions();
 
 	/* Create Sweep Pool Manager for MPSAOL if it is not created yet */
 	if (NULL == extensions->sweepPoolManagerSmallObjectArea) {
@@ -325,24 +325,24 @@ MM_ConfigurationStandard::createSweepPoolManagerHybrid(MM_EnvironmentBase* env)
 	return true;
 }
 
-MM_HeapRegionManager*
-MM_ConfigurationStandard::createHeapRegionManager(MM_EnvironmentBase* env)
+MM_HeapRegionManager *
+MM_ConfigurationStandard::createHeapRegionManager(MM_EnvironmentBase *env)
 {
-	MM_GCExtensionsBase* extensions = env->getExtensions();
-	MM_HeapRegionManager* heapRegionManager = MM_HeapRegionManagerStandard::newInstance(env, extensions->regionSize, sizeof(MM_HeapRegionDescriptorStandard), MM_HeapRegionDescriptorStandard::initializer, MM_HeapRegionDescriptorStandard::destructor);
+	MM_GCExtensionsBase *extensions = env->getExtensions();
+	MM_HeapRegionManager *heapRegionManager = MM_HeapRegionManagerStandard::newInstance(env, extensions->regionSize, sizeof(MM_HeapRegionDescriptorStandard), MM_HeapRegionDescriptorStandard::initializer, MM_HeapRegionDescriptorStandard::destructor);
 
 	return heapRegionManager;
 }
 
 #if defined(J9VM_OPT_CRIU_SUPPORT)
 bool
-MM_ConfigurationStandard::reinitializeForRestore(MM_EnvironmentBase* env)
+MM_ConfigurationStandard::reinitializeForRestore(MM_EnvironmentBase *env)
 {
-	MM_GCExtensionsBase* extensions = env->getExtensions();
+	MM_GCExtensionsBase *extensions = env->getExtensions();
 
 	MM_Configuration::reinitializeForRestore(env);
 
-	MM_MemoryPool* memoryPool;
+	MM_MemoryPool *memoryPool = NULL;
 	MM_HeapMemoryPoolIterator poolIterator(env, extensions->heap);
 
 	while (NULL != (memoryPool = poolIterator.nextPool())) {

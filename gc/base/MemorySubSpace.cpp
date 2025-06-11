@@ -428,7 +428,7 @@ MM_MemorySubSpace::initialize(MM_EnvironmentBase* env)
 
 	/* Attach to the correct parent */
 	/* TODO: this code to go */
-	if (_parent) {
+	if (NULL != _parent) {
 		_parent->registerMemorySubSpace(this);
 	} else if (_memorySpace) {
 		_memorySpace->registerMemorySubSpace(this);
@@ -911,7 +911,7 @@ MM_MemorySubSpace::getAllocationFailureStats()
 void
 MM_MemorySubSpace::systemGarbageCollect(MM_EnvironmentBase* env, uint32_t gcCode)
 {
-	if (_parent) {
+	if (NULL != _parent) {
 		_parent->systemGarbageCollect(env, gcCode);
 		return;
 	}
@@ -972,7 +972,7 @@ MM_MemorySubSpace::percolateGarbageCollect(MM_EnvironmentBase* env, MM_AllocateD
 {
 	Trc_MM_MemorySubSpace_percolateGarbageCollect_Entry(env->getLanguageVMThread());
 
-	if (_parent) {
+	if (NULL != _parent) {
 		bool result = _parent->garbageCollect(env, allocDescription, gcCode);
 		Trc_MM_MemorySubSpace_percolateGarbageCollect_Exit1(env->getLanguageVMThread(), result ? "true" : "false");
 		Trc_OMRMM_MemorySubSpace_percolateGarbageCollect_Exit1(env->getOmrVMThread(), result ? "true" : "false");
@@ -1027,7 +1027,7 @@ MM_MemorySubSpace::garbageCollect(MM_EnvironmentBase* env, MM_AllocateDescriptio
 	}
 
 	/* ..otherwise percolate to parent if any */
-	if (_parent) {
+	if (NULL != _parent) {
 		bool result = _parent->garbageCollect(env, allocDescription, gcCode);
 		Trc_MM_MemorySubSpace_garbageCollect_Exit2(env->getLanguageVMThread(), result ? "true" : "false");
 		return result;
@@ -1100,18 +1100,19 @@ MM_MemorySubSpace::payAllocationTax(MM_EnvironmentBase* env, MM_AllocateDescript
 
 /**
  * Pay the allocation tax for the mutator.
+ * It may be paid to multiple overlapping concurrent collectors.
  */
 void
 MM_MemorySubSpace::payAllocationTax(MM_EnvironmentBase* env, MM_MemorySubSpace* baseSubSpace, MM_AllocateDescription* allocDescription)
 {
 	if (_extensions->payAllocationTax) {
-		if (_parent) {
+		if (NULL != _collector) {
+			_collector->payAllocationTax(env, this, baseSubSpace, allocDescription);
+		}
+		if (NULL != _parent) {
 			_parent->payAllocationTax(env, baseSubSpace, allocDescription);
 		} else {
-			Assert_MM_true(_usesGlobalCollector); /* If you don't have a parent, you really should be using the global */
-			if (_usesGlobalCollector) {
-				_collector->payAllocationTax(env, this, baseSubSpace, allocDescription);
-			}
+			Assert_MM_true(_usesGlobalCollector);
 		}
 	}
 }
@@ -1140,7 +1141,7 @@ bool
 MM_MemorySubSpace::canExpand(MM_EnvironmentBase* env, uintptr_t expandSize)
 {
 	if ((expandSize <= _maximumSize) && (_currentSize <= (_maximumSize - expandSize))) {
-		if (_parent) {
+		if (NULL != _parent) {
 			return _parent->canExpand(env, expandSize);
 		}
 		return _memorySpace->canExpand(env, expandSize);
@@ -1218,7 +1219,7 @@ MM_MemorySubSpace::maxExpansionInSpace(MM_EnvironmentBase* env)
 	if (max == 0) {
 		return 0;
 	} else {
-		if (_parent) {
+		if (NULL != _parent) {
 			return OMR_MIN(_parent->maxExpansionInSpace(env), max);
 		}
 		return OMR_MIN(_memorySpace->maxExpansion(env), max);
@@ -1252,7 +1253,7 @@ MM_MemorySubSpace::maxContractionInSpace(MM_EnvironmentBase* env)
 	if (max == 0) {
 		return 0;
 	} else {
-		if (_parent) {
+		if (NULL != _parent) {
 			return OMR_MIN(_parent->maxContractionInSpace(env), max);
 		}
 		return OMR_MIN(_memorySpace->maxContraction(env), max);
@@ -1392,7 +1393,7 @@ MM_MemorySubSpace::heapAddRange(MM_EnvironmentBase* env, MM_MemorySubSpace* subs
 		result = _collector->heapAddRange(env, subspace, size, lowAddress, highAddress);
 	}
 
-	if (_parent) {
+	if (NULL != _parent) {
 		result = result && _parent->heapAddRange(env, subspace, size, lowAddress, highAddress);
 	} else if (_memorySpace) {
 		result = result && _memorySpace->heapAddRange(env, subspace, size, lowAddress, highAddress);
@@ -1418,7 +1419,7 @@ MM_MemorySubSpace::heapRemoveRange(MM_EnvironmentBase* env, MM_MemorySubSpace* s
 		result = _collector->heapRemoveRange(env, subspace, size, lowAddress, highAddress, lowValidAddress, highValidAddress);
 	}
 
-	if (_parent) {
+	if (NULL != _parent) {
 		result = result && _parent->heapRemoveRange(env, subspace, size, lowAddress, highAddress, lowValidAddress, highValidAddress);
 	} else if (_memorySpace) {
 		result = result && _memorySpace->heapRemoveRange(env, subspace, size, lowAddress, highAddress, lowValidAddress, highValidAddress);
@@ -1440,7 +1441,7 @@ MM_MemorySubSpace::heapReconfigured(MM_EnvironmentBase* env, HeapReconfigReason 
 		_collector->heapReconfigured(env, reason, subspace, lowAddress, highAddress);
 	}
 
-	if (_parent) {
+	if (NULL != _parent) {
 		_parent->heapReconfigured(env, reason, subspace, lowAddress, highAddress);
 	} else if (_memorySpace) {
 		_memorySpace->heapReconfigured(env, reason, subspace, lowAddress, highAddress);
@@ -1455,7 +1456,7 @@ bool
 MM_MemorySubSpace::canContract(MM_EnvironmentBase* env, uintptr_t contractSize)
 {
 	if ((contractSize < _currentSize) && (_minimumSize <= (_currentSize - contractSize))) {
-		if (_parent) {
+		if (NULL != _parent) {
 			return _parent->canContract(env, contractSize);
 		}
 		return _memorySpace->canContract(env, contractSize);

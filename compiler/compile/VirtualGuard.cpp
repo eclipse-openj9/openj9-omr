@@ -56,7 +56,8 @@ TR_VirtualGuard::TR_VirtualGuard(TR_VirtualGuardTestType test, TR_VirtualGuardKi
 #ifdef J9_PROJECT_SPECIFIC
      _sites(comp->trMemory()),
 #endif
-     _mutableCallSiteObject(0),_mutableCallSiteEpoch(0),
+     _mutableCallSiteObject(TR::KnownObjectTable::UNKNOWN),
+     _mutableCallSiteEpoch(TR::KnownObjectTable::UNKNOWN),
      _evalChildren(true), _mergedWithHCRGuard(false), _mergedWithOSRGuard(false),
      _guardNode(guardNode), _currentInlinedSiteIndex(currentSiteIndex)
    {
@@ -373,7 +374,7 @@ TR_VirtualGuard::createNonoverriddenGuard
 
 
 TR::Node *
-TR_VirtualGuard::createMutableCallSiteTargetGuard(TR::Compilation * comp, int16_t calleeIndex, TR::Node * node, TR::TreeTop * destination, uintptr_t *mcsObject, TR::KnownObjectTable::Index mcsEpoch)
+TR_VirtualGuard::createMutableCallSiteTargetGuard(TR::Compilation * comp, int16_t calleeIndex, TR::Node * node, TR::TreeTop * destination, TR::KnownObjectTable::Index mcsObject, TR::KnownObjectTable::Index mcsEpoch)
    {
    TR::SymbolReferenceTable *symRefTab = comp->getSymRefTab();
    TR::SymbolReference *addressSymRef = symRefTab->createKnownStaticDataSymbolRef(0, TR::Address, mcsEpoch);

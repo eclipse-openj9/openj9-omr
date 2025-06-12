@@ -1518,7 +1518,7 @@ TR_InlinerBase::createVirtualGuard(
          {
          heuristicTrace(
             tracer(),
-            "  createVirtualGuard: MutableCallSite %p epoch is obj%d",
+            "  createVirtualGuard: MutableCallSite obj%d epoch is obj%d",
             guard->_mutableCallSiteObject,
             guard->_mutableCallSiteEpoch);
          }

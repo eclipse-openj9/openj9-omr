@@ -280,8 +280,8 @@ static bool safeToMoveGuard(TR::Block *destination, TR::TreeTop *guardCandidate,
              && tt->getNode()->getBranchDestination() != branchDest)
             return false;
 
-         // Moving a guard can allow an unguarded load to occur which can expose an invalid reference to the GC
-         // Aborting in the presence of shadow symrefs avoides this possibility
+         // Moving a guard can allow an unguarded load to occur which can expose an invalid reference to the GC.
+         // Aborting in the presence of shadow symrefs avoids this possibility.
          if (checkForShadow(tt->getNode(), checklist))
             return false;
          }

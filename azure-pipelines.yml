@@ -102,15 +102,15 @@ jobs:
   - job:
     displayName: 'x86-64 Windows'
     pool:
-      vmImage: windows-2019
+      vmImage: windows-2025
     steps:
       - script: |
           mkdir build
         displayName: 'Create build directory'
 
       - script: |
-          set PATH=C:\Program Files (x86)\Windows Kits\10\bin\10.0.16299.0\x64;%PATH%
-          cmake .. -G "Visual Studio 16 2019" -A x64 -C../cmake/caches/Windows.cmake .. -DOMR_DDR=0 -DOMR_TEST_COMPILER=ON -DOMR_JITBUILDER_TEST=ON
+          set PATH=C:\Program Files (x86)\Windows Kits\10\bin\10.0.26100.0\x64;%PATH%
+          cmake .. -G "Visual Studio 17 2022" -A x64 -C../cmake/caches/Windows.cmake .. -DOMR_DDR=0 -DOMR_TEST_COMPILER=ON -DOMR_JITBUILDER_TEST=ON
         displayName: 'Configure'
         workingDirectory: 'build'
 

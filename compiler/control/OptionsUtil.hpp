@@ -185,6 +185,7 @@ private:
 enum CodeCacheKind
    {
    DEFAULT_CC = 0,
+   FILE_BACKED_CC,
    };
 
 }

@@ -345,6 +345,7 @@ TR::OptionTable OMR::Options::_jitOptions[] = {
                                                  SET_OPTION_BIT(TR_DisableFastDLTOnLongRunningInterpreter), "F", NOT_IN_SUBSET},
    {DisableFastStringIndexOfString,       "O\tdisable fast String.indexOf",                    SET_OPTION_BIT(TR_DisableFastStringIndexOf), "F"},
    {"disableFieldPrivatization",          "O\tdisable field privatization",                    TR::Options::disableOptimization, fieldPrivatization, 0, "P"},
+   {"disableFileBackedCodeCacheDisclaiming","M\tdisable disclaiming of file-backed code caches", RESET_OPTION_BIT(TR_EnableFileBackedCodeCacheDisclaiming), "F", NOT_IN_SUBSET},
    {"disableForcedEXInlining",            "O\tdisable forced EX inlining",                     SET_OPTION_BIT(TR_DisableForcedEXInlining), "F"},
    {"disableForceInlineAnnotations",      "M\tdisable recognition of @ForceInline",            SET_OPTION_BIT(TR_DisableForceInlineAnnotations), "F"},
    {"disableFPCodeGen",                   "O\tdisable floating point code generation",               SET_OPTION_BIT(TR_DisableFPCodeGen), "F"},
@@ -723,6 +724,7 @@ TR::OptionTable OMR::Options::_jitOptions[] = {
    {"enableExpensiveOptsAtWarm",          "O\tenable store sinking and OSR at warm and below", SET_OPTION_BIT(TR_EnableExpensiveOptsAtWarm), "F" },
    {"enableFastHotRecompilation",         "R\ttry to recompile at hot sooner", SET_OPTION_BIT(TR_EnableFastHotRecompilation), "F"},
    {"enableFastScorchingRecompilation",   "R\ttry to recompile at scorching sooner", SET_OPTION_BIT(TR_EnableFastScorchingRecompilation), "F"},
+   {"enableFileBackedCodeCacheDisclaiming","M\tenable disclaiming of file-backed code caches; this overrides other code cache disclaiming options", SET_OPTION_BIT(TR_EnableFileBackedCodeCacheDisclaiming), "F", NOT_IN_SUBSET},
    {"enableFpreductionAnnotation",        "O\tenable fpreduction annotation", SET_OPTION_BIT(TR_EnableFpreductionAnnotation), "F"},
    {"enableFSDGRA",                       "O\tenable basic GRA in FSD mode", SET_OPTION_BIT(TR_FSDGRA), "F"},
    {"enableGCRPatching",                  "R\tenable patching of the GCR guard", SET_OPTION_BIT(TR_EnableGCRPatching), "F"},
@@ -2450,6 +2452,16 @@ OMR::Options::jitLatePostProcess(TR::OptionSet *optionSet, void * jitConfig)
    if (self()->getOption(TR_DisableLockResevation))
       {
          self()->setOption(TR_ReservingLocks, false);
+      }
+
+   // File Backed Code Cache Disclaiming overrides all other kinds of
+   // code cache disclaiming. This is because this option is meant to indicate
+   // that an entire code code cache should be backed by a file
+   if (self()->getOption(TR_EnableFileBackedCodeCacheDisclaiming))
+      {
+      self()->setOption(TR_EnableCodeCacheDisclaiming, false);
+      self()->setOption(TR_EnableCodeCacheDisclaimingSupport, false);
+      self()->setOption(TR_DisclaimMemoryOnSwap, false);
       }
 
    if (self()->getOption(TR_EnableCodeCacheDisclaimingSupport))

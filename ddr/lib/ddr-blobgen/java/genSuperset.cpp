@@ -211,7 +211,7 @@ SupersetFieldVisitor::visitUnion(UnionUDT *type) const
  * - MODIFIERS: Field modifiers, such as const or volatile, are only added to the second
  *   type name and not the assembled type name.
  * - OUTER_TYPE: Outer type names are prefixed both to assembled type names and type names,
-     but with different formatting.
+ *   but with different formatting.
  * - PREFIX: class/struct/enum is only prefixed to the assembled type name of types
  *   which are defined with the format "typedef struct NAME {...} NAME". In dwarf, for
  *   example, these are fields of a typedef of an identically named type.
@@ -339,9 +339,9 @@ JavaSupersetGenerator::printFieldMember(Field *field, const string &prefix)
 				if (DDR_RC_OK == rc) {
 					string nameFormatted = prefix + (field->_name == "class" ? "klass" : field->_name);
 					string lineToPrint = "F|" + replaceAll(nameFormatted, ".", "$")
-									    + "|" + nameFormatted
-									    + "|" + replaceAll(assembledTypeName, "::", "$")
-									    + "|" + simpleTypeName + "\n";
+										+ "|" + nameFormatted
+										+ "|" + replaceAll(assembledTypeName, "::", "$")
+										+ "|" + simpleTypeName + "\n";
 
 					rc = print(lineToPrint);
 				}

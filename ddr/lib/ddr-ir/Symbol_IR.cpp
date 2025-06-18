@@ -464,15 +464,15 @@ private:
 class TypeCheck
 {
 private:
-    const Type * const _other;
+	const Type * const _other;
 
 public:
-    explicit TypeCheck(const Type *other)
-    	: _other(other)
-    {
-    }
+	explicit TypeCheck(const Type *other)
+		: _other(other)
+	{
+	}
 
-    bool operator()(Type *compare) const {
+	bool operator()(Type *compare) const {
 		return *compare == *_other;
 	}
 };

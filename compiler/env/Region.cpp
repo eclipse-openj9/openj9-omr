@@ -75,7 +75,7 @@ Region::~Region() throw()
 void *
 Region::allocate(size_t const size, void *hint)
    {
-   size_t const roundedSize = round(size);
+   size_t const roundedSize = (size+15) & (~15);
    if (_currentSegment.get().remaining() >= roundedSize)
       {
       _bytesAllocated += roundedSize;
@@ -92,11 +92,5 @@ Region::allocate(size_t const size, void *hint)
 void
 Region::deallocate(void * allocation, size_t) throw()
    {
-   }
-
-size_t
-Region::round(size_t bytes)
-   {
-   return (bytes+15) & (~15);
    }
 }

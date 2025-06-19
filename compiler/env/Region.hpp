@@ -166,8 +166,6 @@ public:
 private:
    friend class TR::RegionProfiler;
 
-   size_t round(size_t bytes);
-
    size_t _bytesAllocated;
    TR::SegmentProvider &_segmentProvider;
    TR::RawAllocator _rawAllocator;

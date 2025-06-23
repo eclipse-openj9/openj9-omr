@@ -44,6 +44,10 @@ public:
 	uint64_t  _startTime;		/**< Collection start time */
 	uint64_t  _endTime;			/**< Collection end time */
 	uint64_t  _stallTime;		/**< Collection stall time */
+	uint64_t  _exclusiveStartTime;		/**< Exclusive VM access start time */
+	uint64_t  _exclusiveEndTime;		/**< Exclusive VM access end time */
+	uint64_t  _maxExclusiveTime;		/**< Longest exclusive access for this GC cycle */
+	uint64_t  _totalTime;				/**< Total time spent for this GC cycle */
 
 	omrthread_process_time_t _startProcessTimes; /**< Process (Kernel and User) start time(s) */
 	omrthread_process_time_t _endProcessTimes;   /**< Process (Kernel and User) end time(s) */
@@ -63,6 +67,10 @@ public:
 		,_startTime(0)
 		,_endTime(0)
 		,_stallTime(0)
+		,_exclusiveStartTime(0)
+		,_exclusiveEndTime(0)
+		,_maxExclusiveTime(0)
+	  	,_totalTime(0)
 		,_startProcessTimes()
 		,_endProcessTimes()
 		,_cpuUtilStats()

@@ -448,7 +448,14 @@ MM_EnvironmentBase::acquireExclusiveVMAccessForGC(MM_Collector *collector, bool 
 
 	collector->notifyAcquireExclusiveVMAccess(this);
 
-	acquireExclusiveVMAccess();
+	if (0 == _exclusiveCount) {
+		_delegate.acquireExclusiveVMAccess();
+		// Time for start should be here.
+		OMRPORT_ACCESS_FROM_OMRPORT(_portLibrary);
+		_gcCollectionStats._exclusiveStartTime = omrtime_hires_clock();
+		reportExclusiveAccessAcquire();
+	}
+	_exclusiveCount += 1;
 
 	collector->incrementExclusiveAccessCount();
 
@@ -472,6 +479,14 @@ MM_EnvironmentBase::releaseExclusiveVMAccessForGC()
 		omrthread_monitor_notify_all(extensions->gcExclusiveAccessMutex);
 		omrthread_monitor_exit(extensions->gcExclusiveAccessMutex);
 		reportExclusiveAccessRelease();
+		// Time for end should be here.
+		OMRPORT_ACCESS_FROM_OMRPORT(_portLibrary);
+		_gcCollectionStats._exclusiveEndTime = omrtime_hires_clock();
+		uint64_t exclusiveTime = _gcCollectionStats._exclusiveEndTime - _gcCollectionStats._exclusiveStartTime;
+		_gcCollectionStats._totalTime += exclusiveTime;
+		if (_gcCollectionStats._maxExclusiveTime < exclusiveTime ) {
+			_gcCollectionStats._maxExclusiveTime = exclusiveTime;
+		}
 		_delegate.releaseExclusiveVMAccess();
 	}
 }
@@ -492,7 +507,14 @@ MM_EnvironmentBase::unwindExclusiveVMAccessForGC()
 		omrthread_monitor_notify_all(extensions->gcExclusiveAccessMutex);
 		omrthread_monitor_exit(extensions->gcExclusiveAccessMutex);
 		reportExclusiveAccessRelease();
-
+		// Time for end should be here too.
+		OMRPORT_ACCESS_FROM_OMRPORT(_portLibrary);
+		_gcCollectionStats._exclusiveEndTime = omrtime_hires_clock();
+		uint64_t exclusiveTime = _gcCollectionStats._exclusiveEndTime - _gcCollectionStats._exclusiveStartTime;
+		_gcCollectionStats._totalTime += exclusiveTime;
+		if (_gcCollectionStats._maxExclusiveTime < exclusiveTime ) {
+			_gcCollectionStats._maxExclusiveTime = exclusiveTime;
+		}
 		_delegate.releaseExclusiveVMAccess();
 	}
 }

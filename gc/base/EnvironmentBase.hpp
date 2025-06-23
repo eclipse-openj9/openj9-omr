@@ -42,6 +42,7 @@
 #include "SweepStats.hpp"
 #include "WorkPacketStats.hpp"
 #include "WorkStack.hpp"
+#include "CollectionStatistics.hpp"
 
 class MM_AllocationContext;
 class MM_AllocateDescription;
@@ -157,6 +158,8 @@ public:
 	MM_MarkStats _markStats;
 
 	MM_RootScannerStats _rootScannerStats; /**< Per thread stats to track the performance of the root scanner */
+
+	MM_CollectionStatistics _gcCollectionStats;
 
 	const char * _lastSyncPointReached; /**< string indicating latest sync point reached by this associated env's thread */
 

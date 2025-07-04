@@ -908,8 +908,11 @@ void OMR::X86::CodeGenerator::deactivateDependentDiscardableRegisters(TR::Regist
 
 bool OMR::X86::CodeGenerator::supportsOpMaskRegisters()
 {
-    return self()->comp()->getOption(TR_EnableOpMaskRegisters)
-        && self()->comp()->target().cpu.supportsFeature(OMR_FEATURE_X86_AVX512F);
+    TR::CPU *cpu = &self()->comp()->target().cpu;
+
+    return self()->comp()->getOption(TR_EnableOpMaskRegisters) && cpu->supportsFeature(OMR_FEATURE_X86_AVX512F)
+        && cpu->supportsFeature(OMR_FEATURE_X86_AVX512VL) && cpu->supportsFeature(OMR_FEATURE_X86_AVX512BW)
+        && cpu->supportsFeature(OMR_FEATURE_X86_AVX512DQ);
 }
 
 #define ALLOWED_TO_REMATERIALIZE(x) (getRematerializationOptString() && strstr(getRematerializationOptString(), (x)))
@@ -1062,6 +1065,7 @@ bool OMR::X86::CodeGenerator::getSupportsOpCodeForAutoSIMD(TR::CPU *cpu, TR::ILO
         case TR::mand:
         case TR::mor:
         case TR::mxor:
+        case TR::msplats:
         case TR::mAnyTrue:
         case TR::mAllTrue:
         case TR::mTrueCount:

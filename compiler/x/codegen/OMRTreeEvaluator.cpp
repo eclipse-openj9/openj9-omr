@@ -6032,7 +6032,98 @@ TR::Register *OMR::X86::TreeEvaluator::mstoreiEvaluator(TR::Node *node, TR::Code
 
 TR::Register *OMR::X86::TreeEvaluator::msplatsEvaluator(TR::Node *node, TR::CodeGenerator *cg)
 {
-    return TR::TreeEvaluator::unImpOpEvaluator(node, cg);
+    TR::Node *boolNode = node->getFirstChild();
+    TR::DataType dt = node->getOpCode().getVectorResultDataType();
+    int32_t numLanes = dt.getVectorNumLanes();
+
+    TR::Register *resultReg = cg->allocateRegister(cg->supportsOpMaskRegisters() ? TR_VMR : TR_VRF);
+
+#ifndef TR_TARGET_64BIT
+    TR_ASSERT_FATAL(false, "msplatsEvaluator is only supported on 64-bit");
+#endif
+
+    if (resultReg->getKind() == TR_VMR && boolNode->getOpCode().isLoadConst()) {
+        TR::InstOpCode::Mnemonic maskOpcode = TR::InstOpCode::KXORWRegRegReg;
+
+        if (boolNode->getInt() != 0) {
+            switch (numLanes) {
+                case 8:
+                    maskOpcode = InstOpCode::KXNORBRegRegReg;
+                    break;
+                case 16:
+                    maskOpcode = InstOpCode::KXNORWRegRegReg;
+                    break;
+                case 32:
+                    maskOpcode = InstOpCode::KXNORDRegRegReg;
+                    break;
+                case 64:
+                    maskOpcode = InstOpCode::KXNORQRegRegReg;
+                    break;
+                default:
+                    TR_ASSERT_FATAL(false, "msplatsEvaluator: unexpected number of lanes");
+                    break;
+            }
+        }
+
+        generateRegRegRegInstruction(maskOpcode, node, resultReg, resultReg, resultReg, cg);
+    } else if (resultReg->getKind() == TR_VRF && boolNode->getOpCode().isLoadConst() && boolNode->getInt() == 0) {
+        TR::InstOpCode maskOpcode = TR::InstOpCode::PXORRegReg;
+        OMR::X86::Encoding maskEncoding = maskOpcode.getSIMDEncoding(&cg->comp()->target().cpu, dt.getVectorLength());
+        generateRegRegInstruction(maskOpcode.getMnemonic(), node, resultReg, resultReg, cg, maskEncoding);
+    } else {
+        TR::Register *boolReg = cg->evaluate(boolNode);
+        // Handle non-constant input boolean and edge cases
+
+        TR_RematerializableTypes rematType = numLanes > 32 ? TR_RematerializableLong : TR_RematerializableInt;
+        int64_t mask = numLanes == 64 ? -1 : (1ll << numLanes) - 1;
+
+        if (resultReg->getKind() != TR_VMR) {
+            rematType = TR_RematerializableLong;
+            mask = -1;
+        }
+
+        TR::Register *tmpGPR = cg->allocateRegister();
+        TR::Register *maskGPR = cg->allocateRegister();
+
+        TR::TreeEvaluator::loadConstant(node, 0, rematType, cg, maskGPR);
+        TR::TreeEvaluator::loadConstant(node, mask, rematType, cg, tmpGPR);
+
+        // if child (boolean) is true, set mask
+        generateRegRegInstruction(TR::InstOpCode::TESTRegReg(), node, boolReg, boolReg, cg);
+        generateRegRegInstruction(TR::InstOpCode::CMOVERegReg(), node, maskGPR, tmpGPR, cg);
+
+        if (resultReg->getKind() == TR_VMR) {
+            TR::InstOpCode movOpcode = (numLanes > 16) ? TR::InstOpCode::KMOVQRegMask : TR::InstOpCode::KMOVWRegMask;
+            generateRegRegInstruction(movOpcode.getMnemonic(), node, resultReg, maskGPR, cg);
+        } else {
+            generateRegRegInstruction(TR::InstOpCode::MOVQRegReg8, node, resultReg, tmpGPR, cg);
+
+            if (dt.getVectorLength() == TR::VectorLength128) {
+                generateRegRegImmInstruction(TR::InstOpCode::PSHUFDRegRegImm1, node, resultReg, resultReg, 0x44, cg);
+            } else if (dt.getVectorLength() == TR::VectorLength256) {
+                TR_ASSERT_FATAL(cg->comp()->target().cpu.supportsFeature(OMR_FEATURE_X86_AVX2),
+                    "256-bit vsplats requires AVX2");
+                TR::InstOpCode opcode = TR::InstOpCode::VBROADCASTSDYmmYmm;
+                generateRegRegInstruction(opcode.getMnemonic(), node, resultReg, resultReg, cg,
+                    opcode.getSIMDEncoding(&cg->comp()->target().cpu, TR::VectorLength256));
+            } else {
+                TR_ASSERT_FATAL(false, "msplatsEvaluator: unexpected vector length");
+            }
+        }
+
+        cg->stopUsingRegister(tmpGPR);
+        cg->stopUsingRegister(maskGPR);
+    }
+
+    if (boolNode->getRegister()) {
+        cg->decReferenceCount(boolNode);
+    } else {
+        cg->recursivelyDecReferenceCount(boolNode);
+    }
+
+    node->setRegister(resultReg);
+
+    return resultReg;
 }
 
 TR::Register *OMR::X86::TreeEvaluator::mTrueCountEvaluator(TR::Node *node, TR::CodeGenerator *cg)

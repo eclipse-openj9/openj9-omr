@@ -808,17 +808,17 @@ omrsl_get_libraries(struct OMRPortLibrary *portLibrary, OMRLibraryInfoCallback c
 				pathName = fullLibName;
 			}
 			if (0 != ldInfo->ldinfo_datasize) {
-				void *data_start = ldInfo->ldinfo_dataorg;
-				void *data_end = (char *)data_start + ldInfo->ldinfo_datasize;
-				result = callback(pathName, data_start, data_end, userData);
+				void *dataStart = ldInfo->ldinfo_dataorg;
+				void *dataEnd = (char *)dataStart + ldInfo->ldinfo_datasize;
+				result = callback(pathName, dataStart, dataEnd, userData);
 				if (0 != result) {
 					break;
 				}
 			}
 			if (0 != ldInfo->ldinfo_textsize) {
-				void *text_start = ldInfo->ldinfo_textorg;
-				void *text_end = (char *)text_start + ldInfo->ldinfo_textsize;
-				result = callback(pathName, text_start, text_end, userData);
+				void *textStart = ldInfo->ldinfo_textorg;
+				void *textEnd = (char *)textStart + ldInfo->ldinfo_textsize;
+				result = callback(pathName, textStart, textEnd, userData);
 				if (0 != result) {
 					break;
 				}

@@ -509,15 +509,15 @@ omrsl_get_libraries(struct OMRPortLibrary *portLibrary, OMRLibraryInfoCallback c
 	portLibrary->file_close(portLibrary, fd);
 	return result;
 #elif defined(OSX) /* defined(LINUX) */
-	uint32_t image_count = _dyld_image_count();
+	uint32_t imageCount = _dyld_image_count();
 	uint32_t i = 0;
-	for (i = 0; i < image_count; ++i) {
+	for (i = 0; i < imageCount; ++i) {
 		intptr_t slide = 0;
 		const struct mach_header_64 *header = NULL;
 		const struct load_command *lc = NULL;
 		uint32_t cmd = 0;
-		const char *image_name = _dyld_get_image_name(i);
-		if ((NULL == image_name) || ('/' != image_name[0])) {
+		const char *imageName = _dyld_get_image_name(i);
+		if ((NULL == imageName) || ('/' != imageName[0])) {
 			continue;
 		}
 		header = (const struct mach_header_64 *)_dyld_get_image_header(i);
@@ -534,7 +534,7 @@ omrsl_get_libraries(struct OMRPortLibrary *portLibrary, OMRLibraryInfoCallback c
 				const struct segment_command_64 *seg = (const struct segment_command_64 *)lc;
 				uint64_t addrLow = seg->vmaddr + slide;
 				uint64_t addrHigh = addrLow + seg->vmsize;
-				uintptr_t result = callback(image_name, (void *)addrLow, (void *)addrHigh, userData);
+				uintptr_t result = callback(imageName, (void *)addrLow, (void *)addrHigh, userData);
 				if (0 != result) {
 					return result;
 				}

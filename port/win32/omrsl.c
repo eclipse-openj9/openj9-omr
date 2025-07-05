@@ -517,17 +517,17 @@ omrsl_get_libraries(struct OMRPortLibrary *portLibrary, OMRLibraryInfoCallback c
 	}
 	for (i = 0; i < numModules; i++) {
 		char fileName[MAX_PATH];
-		MODULEINFO modinfo;
+		MODULEINFO modInfo;
 		void *addrLow = NULL;
 		void *addrHigh = NULL;
 		if (0 == GetModuleFileNameExA(hProcess, modules[i], fileName, sizeof(fileName))) {
 			continue;
 		}
-		if (!GetModuleInformation(hProcess, modules[i], &modinfo, sizeof(modinfo))) {
+		if (!GetModuleInformation(hProcess, modules[i], &modInfo, sizeof(modInfo))) {
 			continue;
 		}
-		addrLow = modinfo.lpBaseOfDll;
-		addrHigh = (void *)((char *)addrLow + modinfo.SizeOfImage);
+		addrLow = modInfo.lpBaseOfDll;
+		addrHigh = (void *)((char *)addrLow + modInfo.SizeOfImage);
 		result = callback(fileName, addrLow, addrHigh, userData);
 		if (0 != result) {
 			goto done;

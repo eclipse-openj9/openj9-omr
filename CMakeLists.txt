@@ -23,7 +23,7 @@
 # TODO: OMR_RTTI flag
 # TODO: Version things
 
-cmake_minimum_required(VERSION 3.2 FATAL_ERROR)
+cmake_minimum_required(VERSION 3.5 FATAL_ERROR)
 
 message(STATUS "Starting with CMake version ${CMAKE_VERSION}")
 

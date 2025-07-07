@@ -26,7 +26,7 @@ Normal build instructions are in the main [`README.md`](../README.md).
 
 ## Requirements
 
-* `cmake` 3.2 or newer;
+* `cmake` 3.5 or newer;
 * A supported C++ toolchain, E.G. `clang`, `gcc`, or `msvc`;
 * A supported build tool, E.G. `ninja`, `make`, or Microsoft Visual Studio.
 

@@ -185,6 +185,12 @@ omrvmem_startup(struct OMRPortLibrary *portLibrary)
 				Trc_PRT_vmem_omrvmem_startup_pagessize_exceeds_physical_memory(psizes[counter], physicalMemory);
 				break;
 			}
+#if !defined(OMR_ENV_DATA64)
+			if (psizes[counter] > UINT_MAX) {
+				/* Don't advertise sizes larger than the 32-bit address space. */
+				break;
+			}
+#endif /* !defined(OMR_ENV_DATA64) */
 			PPG_vmem_pageSize[counter] = psizes[counter];
 			PPG_vmem_pageFlags[counter] = OMRPORT_VMEM_PAGE_FLAG_NOT_USED;
 		}

@@ -211,6 +211,10 @@ static uintptr_t copyEnvToBufferSignalHandler(struct OMRPortLibrary *portLib, ui
 
 static void setPortableError(OMRPortLibrary *portLibrary, const char *funcName, int32_t portlibErrno, int systemErrno);
 
+#if defined(LINUX)
+static intptr_t readFully(struct OMRPortLibrary *portLibrary, intptr_t file, char **data, uintptr_t *size);
+#endif /* defined(LINUX) */
+
 #if (defined(LINUXPPC) || defined(AIXPPC))
 static OMRProcessorArchitecture omrsysinfo_map_ppc_processor(const char *processorName);
 const char* omrsysinfo_get_ppc_processor_feature_name(uint32_t feature);
@@ -7560,10 +7564,21 @@ done:
 
 #if defined(LINUX)
 /*
- * A helper function to fully read a file.
+ * Reads the entire contents of a file descriptor into a dynamically growing buffer.
+ *
+ * If the buffer is too small, it grows until all data is read.
+ *
+ * @param[in] portLibrary Port library used for memory and file operations.
+ * @param[in] file File descriptor to read from.
+ * @param[in,out] data Pointer to the buffer holding the file contents; reallocated if needed.
+ * @param[in,out] size Pointer to the buffer size in bytes; updated if the buffer grows.
+ *
+ * @return Total bytes read on success, or a negative value on failure.
+ *
+ * @note The caller must free the buffer using portLibrary->mem_free_memory().
  */
 static intptr_t
-read_fully(struct OMRPortLibrary *portLibrary, intptr_t file, char **data, uintptr_t *size)
+readFully(struct OMRPortLibrary *portLibrary, intptr_t file, char **data, uintptr_t *size)
 {
 	uintptr_t bufferSize = *size;
 	intptr_t totalBytesRead = 0;
@@ -7751,7 +7766,7 @@ alloc_failed:
 		portLibrary->str_printf(portLibrary, path, sizeof(path), "/proc/%s/cmdline", entry->d_name);
 		file = portLibrary->file_open(portLibrary, path, EsOpenRead, 0);
 		if (file >= 0) {
-			bytesRead = read_fully(portLibrary, file, &command, &bufferSize);
+			bytesRead = readFully(portLibrary, file, &command, &bufferSize);
 			portLibrary->file_close(portLibrary, file);
 		}
 		/* If cmdline is empty, try reading /proc/[pid]/comm. */
@@ -7759,7 +7774,7 @@ alloc_failed:
 			portLibrary->str_printf(portLibrary, path, sizeof(path), "/proc/%s/comm", entry->d_name);
 			file = portLibrary->file_open(portLibrary, path, EsOpenRead, 0);
 			if (file >= 0) {
-				bytesRead = read_fully(portLibrary, file, &command, &bufferSize);
+				bytesRead = readFully(portLibrary, file, &command, &bufferSize);
 				portLibrary->file_close(portLibrary, file);
 			}
 		}

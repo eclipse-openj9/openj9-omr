@@ -4298,6 +4298,7 @@ MM_Scavenger::mainThreadGarbageCollect(MM_EnvironmentBase *envBase, MM_AllocateD
 
 	_extensions->incrementScavengerStats._gcCount += 1;
 	if (firstIncrement)	{
+		_extensions->scavengerStats._gcCount += 1;
 		if (_extensions->processLargeAllocateStats) {
 			processLargeAllocateStatsBeforeGC(env);
 		}
@@ -4836,7 +4837,6 @@ MM_Scavenger::internalGarbageCollect(MM_EnvironmentBase *envBase, MM_MemorySubSp
 
 	_extensions->heap->getPercolateStats()->incrementScavengesSincePercolate();
 
-	_extensions->scavengerStats._gcCount += 1;
 	env->_cycleState->_activeSubSpace = subSpace;
 	_collectorExpandedSize = 0;
 

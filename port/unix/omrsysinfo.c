@@ -7631,7 +7631,15 @@ omrsysinfo_get_processes(struct OMRPortLibrary *portLibrary, OMRProcessInfoCallb
 	uintptr_t callbackResult = 0;
 	int argsSize = 8192;
 	char *args = NULL;
-	struct procentry64 *procs = (struct procentry64 *)portLibrary->mem_allocate_memory(
+	struct procentry64 *procs = NULL;
+	if (NULL == callback) {
+		portLibrary->error_set_last_error_with_message(
+				portLibrary,
+				OMRPORT_ERROR_OPFAILED,
+				"Callback function is NULL.");
+		return (uintptr_t)(intptr_t)OMRPORT_ERROR_OPFAILED;
+	}
+	procs = (struct procentry64 *)portLibrary->mem_allocate_memory(
 			portLibrary,
 			maxProcs * sizeof(struct procentry64),
 			OMR_GET_CALLSITE(),

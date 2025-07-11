@@ -768,6 +768,13 @@ omrsl_get_libraries(struct OMRPortLibrary *portLibrary, OMRLibraryInfoCallback c
 	struct ld_info *ldInfo = NULL;
 	int rc = 0;
 	unsigned int bufferSize = 65536;
+	if (NULL == callback) {
+		portLibrary->error_set_last_error_with_message(
+				portLibrary,
+				OMRPORT_ERROR_OPFAILED,
+				"Callback function is NULL.");
+		return (uintptr_t)(intptr_t)OMRPORT_ERROR_OPFAILED;
+	}
 	for (;;) {
 		buffer = portLibrary->mem_allocate_memory(
 				portLibrary,

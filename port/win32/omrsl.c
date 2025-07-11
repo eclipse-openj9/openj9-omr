@@ -486,6 +486,13 @@ omrsl_get_libraries(struct OMRPortLibrary *portLibrary, OMRLibraryInfoCallback c
 	uint32_t numModules = 0;
 	uint32_t i = 0;
 	uintptr_t result = 0;
+	if (NULL == callback) {
+		portLibrary->error_set_last_error_with_message(
+				portLibrary,
+				OMRPORT_ERROR_OPFAILED,
+				"Callback function is NULL.");
+		return (uintptr_t)(intptr_t)OMRPORT_ERROR_OPFAILED;
+	}
 	if ((0 == EnumProcessModules(hProcess, NULL, 0, &needed)) || (0 == needed)) {
 		portLibrary->error_set_last_error_with_message(
 				portLibrary,

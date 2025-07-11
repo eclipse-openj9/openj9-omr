@@ -475,7 +475,15 @@ omrsl_get_libraries(struct OMRPortLibrary *portLibrary, OMRLibraryInfoCallback c
 	int count = 0;
 	int pathOffset = 0;
 	int32_t portableError = 0;
-	intptr_t fd = portLibrary->file_open(portLibrary, "/proc/self/maps", EsOpenRead, 0);
+	intptr_t fd = -1;
+	if (NULL == callback) {
+		portLibrary->error_set_last_error_with_message(
+				portLibrary,
+				OMRPORT_ERROR_OPFAILED,
+				"Callback function is NULL.");
+		return (uintptr_t)(intptr_t)OMRPORT_ERROR_OPFAILED;
+	}
+	fd = portLibrary->file_open(portLibrary, "/proc/self/maps", EsOpenRead, 0);
 	if (-1 == fd) {
 		portableError = portLibrary->error_last_error_number(portLibrary);
 		Trc_PRT_failed_to_open_proc_maps(portableError);
@@ -511,6 +519,13 @@ omrsl_get_libraries(struct OMRPortLibrary *portLibrary, OMRLibraryInfoCallback c
 #elif defined(OSX) /* defined(LINUX) */
 	uint32_t imageCount = _dyld_image_count();
 	uint32_t i = 0;
+	if (NULL == callback) {
+		portLibrary->error_set_last_error_with_message(
+				portLibrary,
+				OMRPORT_ERROR_OPFAILED,
+				"Callback function is NULL.");
+		return (uintptr_t)(intptr_t)OMRPORT_ERROR_OPFAILED;
+	}
 	for (i = 0; i < imageCount; ++i) {
 		intptr_t slide = 0;
 		const struct mach_header_64 *header = NULL;

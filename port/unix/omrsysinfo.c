@@ -211,9 +211,9 @@ static uintptr_t copyEnvToBufferSignalHandler(struct OMRPortLibrary *portLib, ui
 
 static void setPortableError(OMRPortLibrary *portLibrary, const char *funcName, int32_t portlibErrno, int systemErrno);
 
-#if defined(LINUX)
+#if defined(J9ZOS390) || defined(LINUX)
 static intptr_t readFully(struct OMRPortLibrary *portLibrary, intptr_t file, char **data, uintptr_t *size);
-#endif /* defined(LINUX) */
+#endif /* defined(J9ZOS390) || defined(LINUX) */
 
 #if (defined(LINUXPPC) || defined(AIXPPC))
 static OMRProcessorArchitecture omrsysinfo_map_ppc_processor(const char *processorName);
@@ -7562,7 +7562,7 @@ done:
 #endif /* defined(LINUX) */
 }
 
-#if defined(LINUX)
+#if defined(J9ZOS390) || defined(LINUX)
 /*
  * Reads the entire contents of a file descriptor into a dynamically growing buffer.
  *
@@ -7613,7 +7613,7 @@ readFully(struct OMRPortLibrary *portLibrary, intptr_t file, char **data, uintpt
 	}
 	return totalBytesRead;
 }
-#endif /* defined(LINUX) */
+#endif /* defined(J9ZOS390) || defined(LINUX) */
 
 /*
  * Get the process ID and commandline for each process.
@@ -7721,11 +7721,19 @@ done:
 alloc_failed:
 	callbackResult = (uintptr_t)(intptr_t)OMRPORT_ERROR_SYSINFO_MEMORY_ALLOC_FAILED;
 	goto done;
-#elif defined(LINUX) /* defined(AIXPPC) */
+#elif defined(J9ZOS390) || defined(LINUX) /* defined(AIXPPC) */
 	uintptr_t callbackResult = 0;
 	uintptr_t bufferSize = 4096;
 	char *command = NULL;
-	DIR *dir = opendir("/proc");
+	DIR *dir = NULL;
+	if (NULL == callback) {
+		portLibrary->error_set_last_error_with_message(
+				portLibrary,
+				OMRPORT_ERROR_OPFAILED,
+				"Callback function is NULL.");
+		return (uintptr_t)(intptr_t)OMRPORT_ERROR_OPFAILED;
+	}
+	dir = opendir("/proc");
 	if (NULL == dir) {
 		int32_t rc = findError(errno);
 		portLibrary->error_set_last_error(portLibrary, errno, rc);
@@ -7740,7 +7748,7 @@ alloc_failed:
 			OMRMEM_CATEGORY_PORT_LIBRARY);
 	if (NULL == command) {
 		closedir(dir);
-		return OMRPORT_ERROR_SYSINFO_MEMORY_ALLOC_FAILED;
+		return (uintptr_t)(intptr_t)OMRPORT_ERROR_SYSINFO_MEMORY_ALLOC_FAILED;
 	}
 	for (;;) {
 		char path[PATH_MAX];
@@ -7782,6 +7790,9 @@ alloc_failed:
 		if (bytesRead <= 0) {
 			continue;
 		}
+#if defined(J9ZOS390) && !defined(OMR_EBCDIC)
+		sysTranslate(command, bytesRead, e2a_tab, command);
+#endif /* defined(J9ZOS390) && !defined(OMR_EBCDIC) */
 		/* Replace null terminators with spaces. */
 		for (i = 0; i < bytesRead; i++) {
 			if ('\0' == command[i]) {
@@ -7798,7 +7809,7 @@ alloc_failed:
 	portLibrary->mem_free_memory(portLibrary, command);
 	closedir(dir);
 	return callbackResult;
-#elif defined(OSX) /* defined(LINUX) */
+#elif defined(OSX) /* defined(J9ZOS390) || defined(LINUX) */
 	uintptr_t callbackResult = 0;
 	pid_t *pidBuffer = NULL;
 	int actualBytes = 0;

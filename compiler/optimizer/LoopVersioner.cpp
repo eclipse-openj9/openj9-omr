@@ -6029,8 +6029,9 @@ void TR_LoopVersioner::buildConditionalTree(
              && requiresPrivatization(unmentionedReceiver))
             {
             chainPrep = true;
-            prep =
-               createLoopEntryPrep(LoopEntryPrep::PRIVATIZE, unmentionedReceiver);
+            prep = createLoopEntryPrep(
+               LoopEntryPrep::PRIVATIZE,
+               unmentionedReceiver->duplicateTreeWithCommoning(comp()->allocator()));
             }
          }
 

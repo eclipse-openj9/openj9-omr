@@ -1656,7 +1656,25 @@ OMR::Power::TreeEvaluator::vblendEvaluator(TR::Node *node, TR::CodeGenerator *cg
 TR::Register*
 OMR::Power::TreeEvaluator::vcastEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   return TR::TreeEvaluator::passThroughEvaluator(node, cg);
+   TR::DataType srcType  = node->getOpCode().getVectorSourceDataType().getVectorElementType();
+   TR::DataType resType  = node->getOpCode().getVectorResultDataType().getVectorElementType();
+
+   if (srcType.isFloatingPoint() &&
+       resType.isIntegral())
+      {
+      TR::Node *child = node->getFirstChild();
+      TR::Register *srcReg = cg->evaluate(child);
+      TR::Register *resReg = cg->allocateRegister(TR_VRF);
+
+      generateTrg1Src2Instruction(cg, TR::InstOpCode::xxlor, node, resReg, srcReg, srcReg);
+      node->setRegister(resReg);
+      cg->decReferenceCount(child);
+      return resReg;
+      }
+   else
+      {
+      return TR::TreeEvaluator::passThroughEvaluator(node, cg);
+      }
    }
 
 TR::Register*
@@ -3603,7 +3621,7 @@ TR::Register *OMR::Power::TreeEvaluator::inlineVectorBitSelectOp(TR::Node *node,
        op != TR::InstOpCode::xvmsubadp &&
        op != TR::InstOpCode::xvnmsubadp)
       {
-      resReg = cg->allocateRegister(TR_VSX_VECTOR);
+      resReg = firstReg->getKind() == TR_VRF ? cg->allocateRegister(TR_VRF) : cg->allocateRegister(TR_VSX_VECTOR);
       generateTrg1Src3Instruction(cg, op, node, resReg, firstReg, secondReg, thirdReg);
       }
    else
@@ -3614,7 +3632,7 @@ TR::Register *OMR::Power::TreeEvaluator::inlineVectorBitSelectOp(TR::Node *node,
       	 }
       else
       	 {
-         resReg = cg->allocateRegister(TR_VSX_VECTOR);
+         resReg = firstReg->getKind() == TR_VRF ? cg->allocateRegister(TR_VRF) : cg->allocateRegister(TR_VSX_VECTOR);
          generateTrg1Src2Instruction(cg, TR::InstOpCode::xxlor, node, resReg, thirdReg, thirdReg);
       	 }
       generateTrg1Src2Instruction(cg, op, node, resReg, firstReg, secondReg);

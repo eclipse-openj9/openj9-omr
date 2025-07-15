@@ -498,9 +498,6 @@ void TR_LiveVariableInformation::visitTreeForLocals(TR::Node *node, TR_BitVector
             }
          else
             {
-            if (traceLiveVarInfo())
-               traceMsg(comp(), "            first reference, ");
-
             bool otherReferencesStillLive = false;
 
             // if this is a load, and there are no other live commoned loads of the local,
@@ -541,11 +538,18 @@ void TR_LiveVariableInformation::visitTreeForLocals(TR::Node *node, TR_BitVector
                {
                if (otherReferencesStillLive)
                   {
-                  traceMsg(comp(), "but other commoned references to this sym are still live\n");
+                  traceMsg(comp(), "            First reference to this node, but other commoned references to this local sym are still live\n");
                   }
                else
                   {
-                  traceMsg(comp(), "and this was the first of all commoned references to this sym\n");
+                  if (local != NULL)
+                     {
+                     traceMsg(comp(), "            First reference to this node, and either this is the first of all commoned references to this sym or this it is not a commoned reference\n");
+                     }
+                  else
+                     {
+                     traceMsg(comp(), "            First reference to this node\n");
+                     }
                   }
                }
             }

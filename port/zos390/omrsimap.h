@@ -51,8 +51,8 @@
  * field of interest here is the total amount of online storage.
  */
 typedef struct J9RIT {
-	uint8_t ritFiller1[296];    /**< 0:296 Fields irrelevant to our current purpose. */
-	uint64_t rittos;            /**< 296:8 The total amount of online storage at IPL */
+	uint8_t ritFiller1[296];          /**< 0:296 Fields irrelevant to our current purpose. */
+	uint64_t rittos;                  /**< 296:8 The total amount of online storage at IPL */
 	/**< Ignore rest of the fields in RIT. */
 } J9RIT;
 
@@ -61,8 +61,8 @@ typedef struct J9RIT {
  * CVT.
  */
 typedef struct J9PVT {
-	uint8_t pvtFiller1[4];              /**< 0:4 PVT Control Block Identifier 'PVT' */
-	J9RIT *__ptr32 pvtritp;         /**< 4:4 Address of the start of RSM Internal Table (RIT) */
+	uint8_t pvtFiller1[4];             /**< 0:4 PVT Control Block Identifier 'PVT' */
+	J9RIT *__ptr32 pvtritp;            /**< 4:4 Address of the start of RSM Internal Table (RIT) */
 	/**< Ignore rest of the fields in PVT. */
 } J9PVT;
 
@@ -95,7 +95,7 @@ typedef struct J9CCT {
  */
 typedef struct J9RMCT {
 	uint8_t rmctname[4];              /**< 0:4 Block Identification */
-	J9CCT *__ptr32 rmctcct;       /**< 4:4 CPU Management Control Table */
+	J9CCT *__ptr32 rmctcct;           /**< 4:4 CPU Management Control Table */
 	/**< Ignore rest of the RMCT */
 } J9RMCT;
 
@@ -126,9 +126,9 @@ typedef struct J9ASMVT {
  */
 typedef struct J9RCE {
 	uint8_t rceid[4];                 /**< 0:4 RCE control block Id */
-	int32_t rcepool;                 /**< 4:4 No of frames currently available to system */
+	int32_t rcepool;                  /**< 4:4 No of frames currently available to system */
 	uint8_t rceFiller1[128];          /**< 8:128 Ignore fields not relevant to current implementation */
-	int32_t rceafc;                  /**< 136:4 Total no of frames currently on all available frame queues */
+	int32_t rceafc;                   /**< 136:4 Total no of frames currently on all available frame queues */
 	/**< Ignore rest of the RCE */
 } J9RCE;
 
@@ -144,15 +144,15 @@ typedef struct J9RCE {
  */
 typedef struct J9CVT {
 	uint8_t cvtFiller1[356];          /**< 0:356 Ignore fields not relevant to current implementation */
-	J9PVT *__ptr32 cvtpvtp;       /**< 356:4 Address of Page Vector Table (PVT). */
+	J9PVT *__ptr32 cvtpvtp;           /**< 356:4 Address of Page Vector Table (PVT). */
 	uint8_t cvtFiller2[244];          /**< 360:244 Ignore fields not relevant to current implementation */
-	J9RMCT *__ptr32 cvtopctp;     /**< 604:4 Address of system resources manager (SRM) table */
+	J9RMCT *__ptr32 cvtopctp;         /**< 604:4 Address of system resources manager (SRM) table */
 	uint8_t cvtFiller3[96];           /**< 608:96 Ignore fields not relevant to current implementation */
-	J9ASMVT *__ptr32 cvtasmvt;    /**< 704:4 Pointer to auxiliary storage management vector table (ASMVT) */
+	J9ASMVT *__ptr32 cvtasmvt;        /**< 704:4 Pointer to auxiliary storage management vector table (ASMVT) */
 	uint8_t cvtFiller4[460];          /**< 708:460 Ignore fields not relevant to current implementation */
-	J9RCE *__ptr32 cvtrcep;       /**< 1168:4 Address of the RSM Control & Enumeration Area */
-	uint8_t cvtFiller5[92];          /**< 1172:1263 Ignore fields not relevant to current implementation */
-	uint8_t cvtoslvl[16];          /**< 1264:1279 OS level/feature information */
+	J9RCE *__ptr32 cvtrcep;           /**< 1168:4 Address of the RSM Control & Enumeration Area */
+	uint8_t cvtFiller5[92];           /**< 1172:1263 Ignore fields not relevant to current implementation */
+	uint8_t cvtoslvl[16];             /**< 1264:1279 OS level/feature information */
 	/**< Ignore rest of the CVT */
 } J9CVT;
 
@@ -164,7 +164,7 @@ typedef struct J9CVT {
  */
 typedef struct J9PSA {
 	uint8_t psaFiller1[16];           /**< 0:16 Ignore 16 bytes before CVT pointer */
-	J9CVT *__ptr32 flccvt;        /**< 16:4 Address of CVT after IPL */
+	J9CVT *__ptr32 flccvt;            /**< 16:4 Address of CVT after IPL */
 	/**< Ignore rest of the PSA */
 } J9PSA;
 

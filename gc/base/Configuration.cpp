@@ -249,26 +249,28 @@ MM_Configuration::createHeap(MM_EnvironmentBase *env, uintptr_t heapBytesRequest
 	if (NULL != heap) {
 		if (!heap->initializeHeapRegionManager(env, extensions->heapRegionManager)) {
 			heap->kill(env);
-			heap = NULL;
+			return NULL;
 		}
 
 		if (!initializeRunTimeObjectAlignmentAndCRShift(env, heap)) {
 			heap->kill(env);
-			heap = NULL;
+			return NULL;
 		}
 
 		extensions->heap = heap;
 		if (!_delegate.heapInitialized(env)) {
 			heap->kill(env);
-			heap = NULL;
+			extensions->heap = NULL;
+			return NULL;
 		}
 
 		/* VM Design 1869: kill the heap if it was allocated but not in the area requested by the fvtest options and then let it fall through to the normal error handling */
 		if ((heap->getHeapBase() < extensions->fvtest_verifyHeapAbove)
-		|| ((NULL != extensions->fvtest_verifyHeapBelow) && (heap->getHeapTop() > extensions->fvtest_verifyHeapBelow))
+			|| ((NULL != extensions->fvtest_verifyHeapBelow) && (heap->getHeapTop() > extensions->fvtest_verifyHeapBelow))
 		) {
 			heap->kill(env);
-			heap = NULL;
+			extensions->heap = NULL;
+			return NULL;
 		}
 	}
 

@@ -1160,7 +1160,7 @@ reserve_memory_with_mmap(struct OMRPortLibrary *portLibrary, void *address, uint
 		if (OMR_ARE_ANY_BITS_SET(mode, OMRPORT_VMEM_MEMORY_MODE_SHARE_TMP_FILE_OPEN)) {
 			/* Generate a unique temporary filename from template and open the file. */
 			char filename[FILE_NAME_SIZE + 1];
-			snprintf(filename, sizeof(filename), "omrvmem_%09d_XXXXXX", getpid());
+			snprintf(filename, sizeof(filename), "/tmp/omrvmem_%09d_XXXXXX", getpid());
 			fd = mkostemp(filename, 0);
 			if (OMRPORT_INVALID_FD != fd) {
 				unlink(filename);

@@ -22,7 +22,14 @@
 
 include(OmrCompilerSupport)
 
-find_package(PythonInterp REQUIRED)
+if ((CMAKE_MAJOR_VERSION LESS 3) OR (CMAKE_VERSION VERSION_LESS "3.12"))
+	find_package(PythonInterp REQUIRED)
+	# Use the modern variable name for access to the interpreter.
+	set(Python_EXECUTABLE ${PYTHON_EXECUTABLE})
+else()
+	# PythonInterp is deprecated as of cmake version 3.12.
+	find_package(Python COMPONENTS Interpreter REQUIRED)
+endif()
 
 # JitBuilder Files
 set(JITBUILDER_OBJECTS
@@ -95,7 +102,7 @@ add_custom_command(
 	OUTPUT ${JITBUILDER_API_SOURCES} ${JITBUILDER_API_HEADERS}
 	COMMAND ${CMAKE_COMMAND} -E make_directory ${JITBUILDER_CPP_API_SOURCE_DIR}
 	COMMAND ${CMAKE_COMMAND} -E make_directory ${JITBUILDER_CPP_API_HEADER_DIR}
-	COMMAND ${PYTHON_EXECUTABLE} ${CPP_API_GENERATOR} ${JITBUILDER_API_DESCRIPTION} --sourcedir ${JITBUILDER_CPP_API_SOURCE_DIR} --headerdir ${JITBUILDER_CPP_API_HEADER_DIR}
+	COMMAND ${Python_EXECUTABLE} ${CPP_API_GENERATOR} ${JITBUILDER_API_DESCRIPTION} --sourcedir ${JITBUILDER_CPP_API_SOURCE_DIR} --headerdir ${JITBUILDER_CPP_API_HEADER_DIR}
 	DEPENDS ${CPP_API_GENERATOR} ${JITBUILDER_API_DESCRIPTION}
 	COMMENT "Running JitBuilder C++ API generator"
 )
@@ -145,7 +152,7 @@ endif()
 if(OMR_JITBUILDER_TEST AND NOT (OMR_OS_OSX AND OMR_ARCH_X86))
 	add_test(
 		NAME TestJitBuilderAPIGenerator
-		COMMAND ${PYTHON_EXECUTABLE} run_tests.py
+		COMMAND ${Python_EXECUTABLE} run_tests.py
 		WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/apigen
 	)
 endif()

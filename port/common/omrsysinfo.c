@@ -625,8 +625,9 @@ omrsysinfo_get_load_average(struct OMRPortLibrary *portLibrary, struct J9PortSys
 
 /**
  * Obtain the cumulative CPU utilization of all CPUs on the system.
- * The cpuTime and timestamp values have no absolute significance: they should be used only to compute
- * differences from previous values.
+ * The cpuTime, timestamp, userTime, systemTime and idleTime values have no absolute significance.
+ * They should be used only to compute differences from previous values.
+ * userTime, systemTime and idleTime are set to -1 if they are unavailable.
  * On an N-processor  system, cpuTimeStats.cpuTime may increase up to N times faster than real time.
  *
  * @param[in] OMRPortLibrary portLibrary The port library.

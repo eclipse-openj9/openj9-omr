@@ -38,6 +38,10 @@
  *
  * @return The index of the last valid uint64_t in the bits array.
  */
-extern int getstfle(int lastDoubleWord, uint64_t *bits);
+extern int
+getstfle(int lastDoubleWord, uint64_t *bits);
+
+extern double
+omrsysinfo_calculate_cpu_load(J9SysinfoCPUTime *new, J9SysinfoCPUTime *old);
 
 #endif /* SYSINFO_HELPERS_H_ */

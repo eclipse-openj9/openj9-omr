@@ -1717,9 +1717,9 @@ static bool addKnownObjectConstraints(
 
    uintptr_t *objectReferenceLocation = NULL;
    if (symRef->hasKnownObjectIndex())
+      {
       objectReferenceLocation = symRef->getKnownObjectReferenceLocation(vp->comp());
-   else if (symRef->getSymbol()->isFixedObjectRef())
-      objectReferenceLocation = (uintptr_t*)symRef->getSymbol()->castToStaticSymbol()->getStaticAddress();
+      }
 
 #ifdef J9_PROJECT_SPECIFIC
    if (objectReferenceLocation)

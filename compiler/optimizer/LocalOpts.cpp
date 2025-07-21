@@ -7679,10 +7679,6 @@ void TR_InvariantArgumentPreexistence::processIndirectLoad(TR::Node *node, TR::T
       {
       somethingMayHaveChanged = TR::TransformUtil::transformIndirectLoadChain(comp(), node, addressChild, addressChild->getSymbolReference()->getKnownObjectIndex(), &removedNode);
       }
-   else if (addressChild->getSymbol()->isFixedObjectRef())
-      {
-      somethingMayHaveChanged = TR::TransformUtil::transformIndirectLoadChainAt(comp(), node, addressChild, (uintptr_t*)addressChild->getSymbol()->castToStaticSymbol()->getStaticAddress(), &removedNode);
-      }
    else if (addressChild->getSymbol()->isParm())
       {
       int32_t index = addressChild->getSymbol()->castToParmSymbol()->getOrdinal();

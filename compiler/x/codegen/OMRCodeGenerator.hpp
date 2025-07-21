@@ -505,7 +505,7 @@ public:
 
     bool getSupportsBitOpCodes() { return true; }
 
-    static bool getSupportsOpCodeForAutoSIMD(TR::CPU *cpu, TR::ILOpCode opcode);
+    static bool getSupportsOpCodeForAutoSIMD(TR::CPU *cpu, TR::ILOpCode opcode, bool supportsOpMaskRegs = false);
     bool getSupportsOpCodeForAutoSIMD(TR::ILOpCode opcode);
 
     bool getSupportsEncodeUtf16LittleWithSurrogateTest();
@@ -650,6 +650,7 @@ public:
 
     TR_X86ScratchRegisterManager *generateScratchRegisterManager(int32_t capacity = 7);
 
+    bool supportsOpMaskRegisters();
     bool supportsConstantRematerialization();
     bool supportsLocalMemoryRematerialization();
     bool supportsStaticMemoryRematerialization();

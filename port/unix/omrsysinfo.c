@@ -921,7 +921,9 @@ omrsysinfo_get_processor_feature_string(struct OMRPortLibrary *portLibrary, OMRP
 				uint32_t feature = (uint32_t)(i * numberOfBits + j);
 				const char * featureName = omrsysinfo_get_processor_feature_name(portLibrary, feature);
 				size_t featureLength = strlen(featureName);
-
+				if ((4 == featureLength) && (0 == strncmp("null", featureName, 4))) {
+					continue;
+				}
 				if (start == FALSE) {
 					strncat(buffer, " ", length - bufferLength - 1);
 					bufferLength += 1;

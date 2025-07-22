@@ -1075,6 +1075,7 @@ TR::OptionTable OMR::Options::_jitOptions[] = {
    {"performLookaheadAtWarmCold", "O\tallow lookahead to be performed at cold and warm", SET_OPTION_BIT(TR_PerformLookaheadAtWarmCold), "F"},
    {"perfTool", "M\tenable PerfTool", SET_OPTION_BIT(TR_PerfTool), "F", NOT_IN_SUBSET },
    {"poisonDeadSlots",    "O\tpaints all dead slots with deadf00d", SET_OPTION_BIT(TR_PoisonDeadSlots), "F"},
+   {"preferSwapForMemoryDisclaim", "M\tIf possible, use swap file as a backup for disclaimed memory (linux only). Can be enabled internally by the JVM", SET_OPTION_BIT(TR_PreferSwapForMemoryDisclaim),"F", NOT_IN_SUBSET},
    {"prepareForOSREvenIfThatDoesNothing",   "O\temit the call to prepareForOSR even if there is no slot sharing", SET_OPTION_BIT(TR_EnablePrepareForOSREvenIfThatDoesNothing), "F"},
    {"printAbsoluteTimestampInVerboseLog", "O\tPrint Absolute Timestamp in vlog", SET_OPTION_BIT(TR_PrintAbsoluteTimestampInVerboseLog), "F", NOT_IN_SUBSET},
    {"printCodeCacheUsage",        "M\tPrint code cache usage at shutdown", SET_OPTION_BIT(TR_PrintCodeCacheUsage), "F", NOT_IN_SUBSET},

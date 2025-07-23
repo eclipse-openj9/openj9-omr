@@ -388,7 +388,7 @@ enum TR_CompilationOptions
    //
    TR_DisableDataCacheDisclaiming         = 0x00000020 + 10,
    TR_DisableIProfilerDataDisclaiming     = 0x00000040 + 10,
-   TR_DisclaimMemoryOnSwap                = 0x00000080 + 10,
+   // Available                           = 0x00000080 + 10,
    TR_FirstLevelProfiling                 = 0x00000100 + 10,
    TR_EnableCodeCacheDisclaiming          = 0x00000200 + 10,
    TR_EnableMHRelocatableCompile          = 0x00000400 + 10,

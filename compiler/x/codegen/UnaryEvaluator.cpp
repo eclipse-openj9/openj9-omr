@@ -121,16 +121,19 @@ TR::Register *OMR::X86::TreeEvaluator::unaryVectorArithmeticEvaluator(TR::Node *
 
    TR::InstOpCode regRegOpcode = TR::InstOpCode::bad;
    TR::InstOpCode regMemOpcode = TR::InstOpCode::bad;
-   OMR::X86::Encoding simdEncoding;
 
    regMemOpcode = TR::TreeEvaluator::getNativeSIMDOpcode(opcode.getOpCodeValue(), node->getType(), true).getMnemonic();
    node->setRegister(resultReg);
    TR_ASSERT_FATAL_WITH_NODE(node, opcode.isVectorOpCode(), "unaryVectorArithmeticEvaluator expects a vector opcode");
+   OMR::X86::Encoding simdEncoding = regMemOpcode.getSIMDEncoding(&cg->comp()->target().cpu, type.getVectorLength());
 
-   if (!opcode.isVectorMasked() && valueNode->getRegister() == NULL && valueNode->getReferenceCount() == 1 && regMemOpcode.getMnemonic() != TR::InstOpCode::bad)
+   // We can use the RegMem instruction form if valueNode has no future references and the
+   // instruction is valid to encode. Don't use RegMem instruction form with legacy instructions.
+   // Some legacy SSE instructions require alignment of their memory operands, which cannot be
+   // guaranteed.
+   if (simdEncoding != OMR::X86::Legacy && !opcode.isVectorMasked() && valueNode->getRegister() == NULL &&
+       valueNode->getReferenceCount() == 1 && regMemOpcode.getMnemonic() != TR::InstOpCode::bad)
       {
-      simdEncoding = regMemOpcode.getSIMDEncoding(&cg->comp()->target().cpu, type.getVectorLength());
-
       if (simdEncoding != OMR::X86::Encoding::Bad)
          {
          TR::MemoryReference *mr = generateX86MemoryReference(valueNode, cg);

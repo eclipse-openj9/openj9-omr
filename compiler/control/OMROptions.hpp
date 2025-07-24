@@ -956,7 +956,7 @@ enum TR_CompilationOptions
    TR_TraceILWalks                                    = 0x00000080 + 30,
    TR_DisableSIMDDoubleMaxMin                         = 0x00000100 + 30,
    TR_DisableStoreOnCondition                         = 0x00000200 + 30,
-   TR_EnableTailCallOpt                               = 0x00000400 + 30,
+   // Available                                       = 0x00000400 + 30,
    TR_DisableInlineEXTarget                           = 0x00000800 + 30,
    TR_EnableNewCheckCastInstanceOf                    = 0x00001000 + 30,
    TR_DisableHardwareProfilerReducedWarm              = 0x00002000 + 30,

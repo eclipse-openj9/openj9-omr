@@ -632,7 +632,6 @@ TR::OptionTable OMR::Options::_jitOptions[] = {
    {"disableZHelix",                      "O\t[Deprecated] alias for disableZEC12",                          SET_OPTION_BIT(TR_DisableZEC12), "F"},
    {"disableZImplicitNullChecks",         "O\tdisable implicit null checks on 390",            SET_OPTION_BIT(TR_DisableZImplicitNullChecks), "F"},
    {"disableZNext",                       "O\tdisable zNext support",                        SET_OPTION_BIT(TR_DisableZNext), "F"},
-   {"disclaimMemoryOnSwap",               "M\tuse swap file as a backup for disclaimed memory (linux only). Can be enabled internally by the JVM", SET_OPTION_BIT(TR_DisclaimMemoryOnSwap),"F", NOT_IN_SUBSET},
    {"dltMostOnce",                        "O\tprevent DLT compilation of a method at more than one bytecode index.", SET_OPTION_BIT(TR_DLTMostOnce), "F"},
    {"dltOptLevel=cold",                   "O\tforce DLT compilation at cold level",            TR::Options::set32BitValue, offsetof(OMR::Options, _dltOptLevel), cold, "P"},
    {"dltOptLevel=hot",                    "O\tforce DLT compilation at hot level",             TR::Options::set32BitValue, offsetof(OMR::Options, _dltOptLevel), hot, "P"},
@@ -2463,13 +2462,13 @@ OMR::Options::jitLatePostProcess(TR::OptionSet *optionSet, void * jitConfig)
       {
       self()->setOption(TR_EnableCodeCacheDisclaiming, false);
       self()->setOption(TR_EnableCodeCacheDisclaimingSupport, false);
-      self()->setOption(TR_DisclaimMemoryOnSwap, false);
+      self()->setOption(TR_PreferSwapForMemoryDisclaim, false);
       }
 
    if (self()->getOption(TR_EnableCodeCacheDisclaimingSupport))
       {
       self()->setOption(TR_SplitWarmAndColdBlocks);
-      self()->setOption(TR_DisclaimMemoryOnSwap);
+      self()->setOption(TR_PreferSwapForMemoryDisclaim);
       self()->setOption(TR_InstallAOTToColdCode);
       self()->setOption(TR_MoveOOLInstructionsToWarmCode);
       self()->setOption(TR_MoveSnippetsToWarmCode);

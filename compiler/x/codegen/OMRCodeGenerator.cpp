@@ -1715,9 +1715,6 @@ void OMR::X86::CodeGenerator::doBackwardsRegisterAssignment(
 
 void OMR::X86::CodeGenerator::doRegisterAssignment(TR_RegisterKinds kindsToAssign)
    {
-   TR::Instruction *instructionCursor;
-   TR::Instruction *nextInstruction;
-
 #if defined(DEBUG)
    TR::Instruction *origPrevInstruction;
    bool            dumpPreFP = (debug("dumpFPRA") || debug("dumpFPRA0")) && self()->comp()->getOutFile() != NULL;
@@ -1727,48 +1724,6 @@ void OMR::X86::CodeGenerator::doRegisterAssignment(TR_RegisterKinds kindsToAssig
 #endif
 
    LexicalTimer pt1("total register assignment", self()->comp()->phaseTimer());
-
-   // Assign FPRs in a forward pass
-   //
-   if (kindsToAssign & TR_X87_Mask)
-      {
-      if (self()->getDebug())
-         self()->getDebug()->startTracingRegisterAssignment("forward", TR_X87_Mask);
-
-#if defined(DEBUG)
-      if (dumpPreFP || dumpPostFP)
-         diagnostic("\n\nFP Register Assignment (forward pass):\n");
-#endif
-
-      LexicalTimer pt2("FP register assignment", self()->comp()->phaseTimer());
-
-      self()->setAssignmentDirection(Forward);
-      instructionCursor = self()->getFirstInstruction();
-      while (instructionCursor)
-         {
-         self()->tracePreRAInstruction(instructionCursor);
-#if defined(DEBUG)
-         if (dumpPreFP)
-            {
-            origPrevInstruction = instructionCursor->getPrev();
-            self()->dumpPreFPRegisterAssignment(instructionCursor);
-            }
-#endif
-         nextInstruction = instructionCursor->getNext();
-         instructionCursor->assignRegisters(TR_X87_Mask);
-
-#if defined(DEBUG)
-         if (dumpPostFP)
-            self()->dumpPostFPRegisterAssignment(instructionCursor, origPrevInstruction);
-#endif
-         self()->tracePostRAInstruction(instructionCursor);
-
-         instructionCursor = nextInstruction;
-         }
-
-      if (self()->getDebug())
-         self()->getDebug()->stopTracingRegisterAssignment();
-      }
 
    // Use new float/double slots for XMMR spills, to avoid
    // interfering with existing FPR spills.

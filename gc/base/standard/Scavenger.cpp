@@ -986,7 +986,7 @@ MM_Scavenger::calcGCStats(MM_EnvironmentStandard *env)
 	/* Do not calculate stats unless we actually collected */
 	if (canCalcGCStats(env)) {
 		MM_ScavengerStats *scavengerGCStats = &_extensions->scavengerStats;
-		uintptr_t initialFree = env->_cycleState->_activeSubSpace->getActualActiveFreeMemorySize();
+		uintptr_t initialFree = _activeSubSpace->getActualActiveFreeMemorySize();
 		uintptr_t tenureAggregateBytes = 0;
 		float tenureBytesDeviation = 0;
 		uintptr_t survivorAllocated = 0;
@@ -5578,7 +5578,6 @@ MM_Scavenger::threadReleaseCaches(MM_EnvironmentBase *currentEnvBase, MM_Environ
 		}
 
 		if (NULL != targetEnv->_deferredScanCache) {
-			Assert_MM_true(MUTATOR_THREAD != targetEnv->getThreadType());
 #if defined(J9MODRON_TGC_PARALLEL_STATISTICS)
 			targetEnv->_scavengerStats._releaseScanListCount += 1;
 #endif /* J9MODRON_TGC_PARALLEL_STATISTICS */
@@ -5959,7 +5958,7 @@ void
 MM_Scavenger::completeConcurrentCycle(MM_EnvironmentBase *env, MM_MemorySubSpace *subSpace, MM_AllocateDescription *allocDescription, uint32_t gcCode)
 {
 	/* This is supposed to be called by an external cycle (for example ConcurrentGC, STW phase)
-	 * that is just to be started, but cannot before Scavenger is complete.
+	 * which is just to be started, but cannot before Scavenger is complete.
 	 * On this path, calling subSpace is Generational (while typically Scavenger::postCollect would be called from SemiSpace).
 	 */
 	Assert_MM_true(NULL == env->_cycleState);
@@ -5969,13 +5968,17 @@ MM_Scavenger::completeConcurrentCycle(MM_EnvironmentBase *env, MM_MemorySubSpace
 		triggerConcurrentScavengerTransition(env, allocDescription);
 
 		internalPostCollect(env, subSpace);
+		Assert_MM_true(&_cycleState == env->_cycleState);
 		env->_cycleState = NULL;
 	}
 }
 
 void
-MM_Scavenger::payAllocationTax(MM_EnvironmentBase *env, MM_MemorySubSpace *subspace, MM_MemorySubSpace *baseSubSpace, MM_AllocateDescription *allocDescription)
+MM_Scavenger::payAllocationTax(MM_EnvironmentBase *envBase, MM_MemorySubSpace *subspace, MM_MemorySubSpace *baseSubSpace, MM_AllocateDescription *allocDescription)
 {
+	MM_EnvironmentStandard *env = MM_EnvironmentStandard::getEnvironment(envBase);
+	OMRPORT_ACCESS_FROM_OMRPORT(env->getPortLibrary());
+
 	if (isCurrentPhaseConcurrent()) {
 		uintptr_t freeMemory = _activeSubSpace->getMemorySubSpaceAllocate()->getApproximateActiveFreeMemorySize();
 		uintptr_t totalMemory = _activeSubSpace->getMemorySubSpaceAllocate()->getActiveMemorySize();
@@ -5994,9 +5997,52 @@ MM_Scavenger::payAllocationTax(MM_EnvironmentBase *env, MM_MemorySubSpace *subsp
 		/* If flip progress is too low (too small Nursery, background GC threads starved by CPU overloading,...)
 		 * mutator threads need to be taxed to slow down their heap allocation and CPU consumption.
 		 */
-		if ((1.0f + flipBytesRatio) < usedMemoryRatio) {
-			/* Yet to provide a meaningful heuristic (current one should never trigger). */
-			omrthread_sleep(1);
+		uint64_t totalScanTime = 0;
+		bool workDone = false;
+
+		/* Yet to provide a meaningful heuristic (current one should never trigger). */
+		while (((1.0f + flipBytesRatio) < usedMemoryRatio) && (totalScanTime < 1000)) {
+
+			MM_CopyScanCacheStandard *scanCache = getNextScanCacheFromList(env);
+
+			if (NULL != scanCache) {
+
+				if (!workDone) {
+					Assert_MM_true(NULL == env->_cycleState);
+					env->_cycleState = &_cycleState;
+
+					Assert_MM_true(env->getGCEnvironment()->_referenceObjectBuffer->isEmpty());
+
+					workDone = true;
+				}
+
+				uint64_t startTime = omrtime_hires_clock();
+
+				switch (_extensions->scavengerScanOrdering) {
+				case MM_GCExtensionsBase::OMR_GC_SCAVENGER_SCANORDERING_BREADTH_FIRST:
+				case MM_GCExtensionsBase::OMR_GC_SCAVENGER_SCANORDERING_DYNAMIC_BREADTH_FIRST:
+					completeScanCache(env, scanCache);
+					break;
+				case MM_GCExtensionsBase::OMR_GC_SCAVENGER_SCANORDERING_HIERARCHICAL:
+					incrementalScanCacheBySlot(env, scanCache);
+					break;
+				default:
+					Assert_MM_unreachable();
+					break;
+				}
+
+				uint64_t intervalTime = omrtime_hires_delta(startTime, omrtime_hires_clock(), OMRPORT_TIME_DELTA_IN_MICROSECONDS);
+				totalScanTime += intervalTime;
+			} else {
+				break;
+			}
+		}
+
+		if (workDone) {
+			_delegate.flushReferenceObjects(env);
+
+			Assert_MM_true(env->_cycleState == &_cycleState);
+			env->_cycleState = NULL;
 		}
 	}
 }

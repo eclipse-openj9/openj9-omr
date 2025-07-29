@@ -32,8 +32,8 @@
 #if defined(J9ZOS39064)
 #include "omrgcconsts.h"
 #include "omriarv64.h"
-#pragma map (getUserExtendedPrivateAreaMemoryType,"GETTTT")
-UDATA getUserExtendedPrivateAreaMemoryType(void);
+extern "C" UDATA getUserExtendedPrivateAreaMemoryType(void);
+#pragma map (getUserExtendedPrivateAreaMemoryType, "GETTTT")
 #endif /* defined(J9ZOS39064) */
 
 #if defined(LINUX) && defined(S390)

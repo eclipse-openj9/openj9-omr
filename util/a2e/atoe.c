@@ -883,7 +883,7 @@ atoe_strerror(int errnum)
 	}
 
 	for (index = 0;
-		 index < ERRNO_CACHE_SIZE, errno_cache[index].errnum != -1;
+		 (index < ERRNO_CACHE_SIZE) && (-1 != errno_cache[index].errnum);
 		 index++) {
 		if (errnum == errno_cache[index].errnum) {
 			pthread_mutex_unlock(&strerror_mutex);
@@ -1976,7 +1976,7 @@ atoe_gethostbyname(const char *hostname)
 
 	/* see if we are already using a cache entry for this hostname */
 	for (index = 0;
-		 index < HOSTBYNAME_CACHE_SIZE, hostbyname_cache[index].hostname != NULL;
+		 (index < HOSTBYNAME_CACHE_SIZE) && (NULL != hostbyname_cache[index].hostname);
 		 index++) {
 		if (0 == strcmp(hostname, hostbyname_cache[index].hostname)) {
 			hostptr_a = &hostbyname_cache[index].h;

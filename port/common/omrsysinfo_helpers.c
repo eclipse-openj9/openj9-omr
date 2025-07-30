@@ -750,3 +750,39 @@ omrsysinfo_get_cpu_extended_model(uint32_t processorSignature)
 }
 
 #endif /* defined(OMR_OS_WINDOWS) || defined(J9X86) || defined(J9HAMMER) */
+
+/**
+ * @brief Calculates the average CPU load between two time points.
+ *
+ * This function uses two CPU time samples to estimate how busy the system was.
+ * If user, system, and idle times are available in both new and old, it calculates:
+ *   CPU load = (user + system time) / (user + system + idle time).
+ *
+ * If those times are not available (set to -1), it falls back to:
+ *   CPU load = (total CPU time difference) / (number of CPUs * time passed).
+ *
+ * @param new Pointer to the newer CPU time sample.
+ * @param old Pointer to the older CPU time sample.
+ * @return A value between 0.0 and 1.0 representing CPU usage during the interval.
+ */
+double
+omrsysinfo_calculate_cpu_load(J9SysinfoCPUTime *new, J9SysinfoCPUTime *old)
+{
+	double cpuLoad = 0.0;
+
+	if ((-1 != new->userTime) && (-1 != new->systemTime) &&  (-1 != new->idleTime)
+		&& (-1 != old->userTime) && (-1 != old->systemTime) &&  (-1 != old->idleTime)
+	) {
+		int64_t userDelta = new->userTime - old->userTime;
+		int64_t systemDelta = new->systemTime - old->systemTime;
+		int64_t idleDelta = new->idleTime - old->idleTime;
+		int64_t totalDelta = userDelta + systemDelta + idleDelta;
+		cpuLoad = (totalDelta > 0) ? ((userDelta + systemDelta) / (double)(totalDelta)) : 0.0;
+	} else {
+		int64_t cpuTimeDelta = new->cpuTime - old->cpuTime;
+		int64_t timestampDelta = new->timestamp - old->timestamp;
+		cpuLoad = cpuTimeDelta / ((double)new->numberOfCpus * timestampDelta);
+	}
+
+	return OMR_MIN(cpuLoad, 1.0);
+}

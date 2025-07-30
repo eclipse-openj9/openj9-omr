@@ -1273,6 +1273,11 @@ omrsysinfo_get_CPU_utilization(struct OMRPortLibrary *portLibrary, struct J9Sysi
 	userTime = lpUserTimeU64.QuadPart * 100;
 	Trc_PRT_sysinfo_get_CPU_utilization_GST_result("user", userTime);
 	cpuTime->cpuTime = kernelActiveTime + userTime;
+
+	cpuTime->userTime = lpUserTimeU64.QuadPart;
+	cpuTime->systemTime = lpKernelTimeU64.QuadPart - lpIdleTimeU64.QuadPart;
+	cpuTime->idleTime = lpIdleTimeU64.QuadPart;
+
 	cpuTime->timestamp = portLibrary->time_nano_time(portLibrary);
 	if (0 == cpuTime->timestamp) {
 		Trc_PRT_sysinfo_get_CPU_utilization_timeFailed();
@@ -1304,7 +1309,7 @@ omrsysinfo_get_CPU_load(struct OMRPortLibrary *portLibrary, double *cpuLoad)
 
 	/* Calculate using the most recent value in the history */
 	if (((currentCPUTime.timestamp - latestCPUTime->timestamp) >= 10000000) && (currentCPUTime.numberOfCpus != 0)) {
-		*cpuLoad = OMR_MIN((currentCPUTime.cpuTime - latestCPUTime->cpuTime) / ((double)currentCPUTime.numberOfCpus * (currentCPUTime.timestamp - latestCPUTime->timestamp)), 1.0);
+		*cpuLoad = omrsysinfo_calculate_cpu_load(&currentCPUTime, latestCPUTime);
 		if (*cpuLoad >= 0.0) {
 			*oldestCPUTime = *latestCPUTime;
 			*latestCPUTime = currentCPUTime;
@@ -1316,7 +1321,7 @@ omrsysinfo_get_CPU_load(struct OMRPortLibrary *portLibrary, double *cpuLoad)
 	}
 	
 	if (((currentCPUTime.timestamp - oldestCPUTime->timestamp) >= 10000000) && (currentCPUTime.numberOfCpus != 0)) {
-		*cpuLoad = OMR_MIN((currentCPUTime.cpuTime - oldestCPUTime->cpuTime) / ((double)currentCPUTime.numberOfCpus * (currentCPUTime.timestamp - oldestCPUTime->timestamp)), 1.0);
+		*cpuLoad = omrsysinfo_calculate_cpu_load(&currentCPUTime, oldestCPUTime);
 		if (*cpuLoad >= 0.0) {
 			return 0;
 		} else {

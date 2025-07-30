@@ -42,6 +42,6 @@ extern int
 getstfle(int lastDoubleWord, uint64_t *bits);
 
 extern double
-omrsysinfo_calculate_cpu_load(J9SysinfoCPUTime *new, J9SysinfoCPUTime *old);
+omrsysinfo_calculate_cpu_load(const J9SysinfoCPUTime *newTime, const J9SysinfoCPUTime *oldTime);
 
 #endif /* SYSINFO_HELPERS_H_ */

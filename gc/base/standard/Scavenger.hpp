@@ -436,7 +436,25 @@ public:
 	MMINLINE uintptr_t scanCacheDistanceMetric(MM_CopyScanCacheStandard* cache, GC_SlotObject *scanSlot);
 	MMINLINE uintptr_t copyCacheDistanceMetric(MM_CopyScanCacheStandard* cache);
 
+
+	/**
+	 * Try to get a thread local scan cache. It's un-contended and preferred over the global scan list.
+	 *
+	 * @param env - current thread environment
+	 * @return scan cache or null
+	 */
+	MMINLINE MM_CopyScanCacheStandard *getNextScanCacheFromThread(MM_EnvironmentStandard *env);
+	/**
+	 * Try to get a scan cache from the global scan cache list. It's potentially blocking, if the list is empty.
+	 * Hence, not to be used by mutators, but only by dedicated GC threads.
+	 * It also serves as an implicit thread synchronization barrier, when all threads block on the empty list.
+	 * Hence, returning NULL means the work cycle is complete.
+	 *
+	 * @param env - current thread environment
+	 * @return scan cache or null
+	 */
 	MMINLINE MM_CopyScanCacheStandard *getNextScanCacheFromList(MM_EnvironmentStandard *env);
+
 	/**
 	 * Called at the end of a task to return empty caches to the global free pool
 	 */

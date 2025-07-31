@@ -606,6 +606,7 @@ TR::OptionTable OMR::Options::_jitOptions[] = {
    {"disableUTF16BEEncoder",              "M\tdisable inlining of UTF16 Big Endian encoder", SET_OPTION_BIT(TR_DisableUTF16BEEncoder), "F"},
    {"disableValueProfiling",              "O\tdisable value profiling",                        SET_OPTION_BIT(TR_DisableValueProfiling), "F"},
    {"disableVariablePrecisionDAA",        "O\tdisable variable precision DAA optimizations",   SET_OPTION_BIT(TR_DisableVariablePrecisionDAA), "F"},
+   {"disableVectorAPIBoxing",             "M\tdisable boxing/unboxing during VectorAPIExpansion", SET_OPTION_BIT(TR_DisableVectorAPIBoxing), "F"},
    {"disableVectorAPIExpansion",          "M\tdisable expansion of Vector API",               SET_OPTION_BIT(TR_DisableVectorAPIExpansion), "F"},
    {"disableVectorBCD",                   "O\tdisable vector instructions for DAA BCD intrinsics ", SET_OPTION_BIT(TR_DisableVectorBCD), "F"},
    {"disableVectorRegGRA",                "O\tdisable global register allocation for vector regs",   SET_OPTION_BIT(TR_DisableVectorRegGRA), "F"},

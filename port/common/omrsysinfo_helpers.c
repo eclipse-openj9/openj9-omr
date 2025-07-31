@@ -761,27 +761,27 @@ omrsysinfo_get_cpu_extended_model(uint32_t processorSignature)
  * If those times are not available (set to -1), it falls back to:
  *   CPU load = (total CPU time difference) / (number of CPUs * time passed).
  *
- * @param new Pointer to the newer CPU time sample.
- * @param old Pointer to the older CPU time sample.
+ * @param newTime Pointer to the newer CPU time sample.
+ * @param oldTime Pointer to the older CPU time sample.
  * @return A value between 0.0 and 1.0 representing CPU usage during the interval.
  */
 double
-omrsysinfo_calculate_cpu_load(J9SysinfoCPUTime *new, J9SysinfoCPUTime *old)
+omrsysinfo_calculate_cpu_load(const J9SysinfoCPUTime *newTime, const J9SysinfoCPUTime *oldTime)
 {
 	double cpuLoad = 0.0;
 
-	if ((-1 != new->userTime) && (-1 != new->systemTime) &&  (-1 != new->idleTime)
-		&& (-1 != old->userTime) && (-1 != old->systemTime) &&  (-1 != old->idleTime)
+	if ((-1 != newTime->userTime) && (-1 != newTime->systemTime) && (-1 != newTime->idleTime)
+	&&  (-1 != oldTime->userTime) && (-1 != oldTime->systemTime) && (-1 != oldTime->idleTime)
 	) {
-		int64_t userDelta = new->userTime - old->userTime;
-		int64_t systemDelta = new->systemTime - old->systemTime;
-		int64_t idleDelta = new->idleTime - old->idleTime;
+		int64_t userDelta = newTime->userTime - oldTime->userTime;
+		int64_t systemDelta = newTime->systemTime - oldTime->systemTime;
+		int64_t idleDelta = newTime->idleTime - oldTime->idleTime;
 		int64_t totalDelta = userDelta + systemDelta + idleDelta;
-		cpuLoad = (totalDelta > 0) ? ((userDelta + systemDelta) / (double)(totalDelta)) : 0.0;
+		cpuLoad = (totalDelta > 0) ? ((userDelta + systemDelta) / (double)totalDelta) : 0.0;
 	} else {
-		int64_t cpuTimeDelta = new->cpuTime - old->cpuTime;
-		int64_t timestampDelta = new->timestamp - old->timestamp;
-		cpuLoad = cpuTimeDelta / ((double)new->numberOfCpus * timestampDelta);
+		int64_t cpuTimeDelta = newTime->cpuTime - oldTime->cpuTime;
+		int64_t timestampDelta = newTime->timestamp - oldTime->timestamp;
+		cpuLoad = cpuTimeDelta / ((double)newTime->numberOfCpus * timestampDelta);
 	}
 
 	return OMR_MIN(cpuLoad, 1.0);

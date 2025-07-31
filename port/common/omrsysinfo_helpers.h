@@ -63,5 +63,5 @@ omrsysinfo_get_cpu_extended_model(uint32_t processorSignature);
 #endif /* defined(OMR_OS_WINDOWS) || defined(J9X86) || defined(J9HAMMER) */
 
 extern double
-omrsysinfo_calculate_cpu_load(J9SysinfoCPUTime *new, J9SysinfoCPUTime *old);
+omrsysinfo_calculate_cpu_load(const J9SysinfoCPUTime *newTime, const J9SysinfoCPUTime *oldTime);
 #endif /* SYSINFOHELPERS_H_ */

@@ -62,14 +62,14 @@ static void monitor_free_nolock(omrthread_library_t lib, omrthread_t thread, omr
 static intptr_t monitor_enter(omrthread_t self, omrthread_monitor_t monitor);
 #endif /* !defined(OMR_THR_THREE_TIER_LOCKING) */
 static intptr_t monitor_exit(omrthread_t self, omrthread_monitor_t monitor);
-static intptr_t monitor_wait(omrthread_monitor_t monitor, int64_t millis, intptr_t nanos, uintptr_t interruptible);
+static intptr_t monitor_wait(omrthread_monitor_t monitor, int64_t millis, intptr_t nanos, uintptr_t interruptible, omrthread_monitor_wait_callback callbackFunction, void *userData);
 static intptr_t monitor_notify_one_or_all(omrthread_monitor_t monitor, int notifyall);
 #if defined(OMR_THR_THREE_TIER_LOCKING)
 static intptr_t monitor_enter_three_tier(omrthread_t self, omrthread_monitor_t monitor, BOOLEAN isAbortable);
-static intptr_t monitor_wait_three_tier(omrthread_t self, omrthread_monitor_t monitor, int64_t millis, intptr_t nanos, uintptr_t interruptible);
+static intptr_t monitor_wait_three_tier(omrthread_t self, omrthread_monitor_t monitor, int64_t millis, intptr_t nanos, uintptr_t interruptible, omrthread_monitor_wait_callback callbackFunction, void *userData);
 static intptr_t monitor_notify_three_tier(omrthread_t self, omrthread_monitor_t monitor, int notifyall);
 #endif /* OMR_THR_THREE_TIER_LOCKING */
-static intptr_t monitor_wait_original(omrthread_t self, omrthread_monitor_t monitor, int64_t millis, intptr_t nanos, uintptr_t interruptible);
+static intptr_t monitor_wait_original(omrthread_t self, omrthread_monitor_t monitor, int64_t millis, intptr_t nanos, uintptr_t interruptible, omrthread_monitor_wait_callback callbackFunction, void *userData);
 static intptr_t monitor_notify_original(omrthread_t self, omrthread_monitor_t monitor, int notifyall);
 
 #if defined(OMR_THR_THREE_TIER_LOCKING)
@@ -4398,7 +4398,29 @@ monitor_exit(omrthread_t self, omrthread_monitor_t monitor)
 intptr_t
 omrthread_monitor_wait(omrthread_monitor_t monitor)
 {
-	return monitor_wait(monitor, 0, 0, 0);
+	return monitor_wait(monitor, 0, 0, 0, NULL, NULL);
+}
+
+/**
+ * Wait on a monitor until notified.
+ *
+ * Release the monitor, invoke the callback function, wait for a signal (notification), then re-acquire the monitor.
+ * The wait may not be interrupted.
+ *
+ * @param[in] monitor a monitor to be waited on
+ * @param[in] callbackFunction the function to call when the monitor is released before waiting
+ * @param[in] userData data to be passed to the callback function
+ * @return status code
+ * @retval 0 The monitor has been waited on, notified, and reobtained.
+ * @retval J9THREAD_ILLEGAL_MONITOR_STATE The current thread does not own the monitor.
+ *
+ * @see omrthread_monitor_wait_interruptable, omrthread_monitor_wait_timed, omrthread_monitor_wait_abortable
+ * @see omrthread_monitor_enter
+ */
+intptr_t
+omrthread_monitor_wait_with_callback(omrthread_monitor_t monitor, omrthread_monitor_wait_callback callbackFunction, void *userData)
+{
+	return monitor_wait(monitor, 0, 0, 0, callbackFunction, userData);
 }
 
 /**
@@ -4427,7 +4449,7 @@ omrthread_monitor_wait(omrthread_monitor_t monitor)
 intptr_t
 omrthread_monitor_wait_abortable(omrthread_monitor_t monitor, int64_t millis, intptr_t nanos)
 {
-	return monitor_wait(monitor, millis, nanos, J9THREAD_FLAG_ABORTABLE);
+	return monitor_wait(monitor, millis, nanos, J9THREAD_FLAG_ABORTABLE, NULL, NULL);
 }
 
 /**
@@ -4458,7 +4480,7 @@ omrthread_monitor_wait_abortable(omrthread_monitor_t monitor, int64_t millis, in
 intptr_t
 omrthread_monitor_wait_interruptable(omrthread_monitor_t monitor, int64_t millis, intptr_t nanos)
 {
-	return monitor_wait(monitor, millis, nanos, J9THREAD_FLAG_ABORTABLE | J9THREAD_FLAG_INTERRUPTABLE);
+	return monitor_wait(monitor, millis, nanos, J9THREAD_FLAG_ABORTABLE | J9THREAD_FLAG_INTERRUPTABLE, NULL, NULL);
 }
 
 /**
@@ -4483,7 +4505,35 @@ omrthread_monitor_wait_interruptable(omrthread_monitor_t monitor, int64_t millis
 intptr_t
 omrthread_monitor_wait_timed(omrthread_monitor_t monitor, int64_t millis, intptr_t nanos)
 {
-	return monitor_wait(monitor, millis, nanos, 0);
+	return monitor_wait(monitor, millis, nanos, 0, NULL, NULL);
+}
+
+/**
+ * Wait on a monitor until notified or timed out. Invoke callback
+ * when monitor is released.
+ *
+ * A timeout of 0 (0ms, 0ns) indicates wait indefinitely.
+ * The wait may not be interrupted.
+ *
+ * @param[in] monitor a monitor to be waited on
+ * @param[in] millis >=0
+ * @param[in] nanos >=0
+ * @param[in] callbackFunction the function to call when the monitor is released before waiting
+ * @param[in] userData data to be passed to the callback function
+ *
+ * @return status code
+ * @retval 0 The monitor has been waited on, notified, and reobtained.
+ * @retval J9THREAD_INVALID_ARGUMENT millis or nanos is out of range (millis or nanos < 0, or nanos >= 1E6).
+ * @retval J9THREAD_ILLEGAL_MONITOR_STATE The current thread does not own the monitor.
+ * @retval J9THREAD_TIMED_OUT The timeout expired.
+ *
+ * @see omrthread_monitor_wait, omrthread_monitor_wait_interruptable, omrthread_monitor_wait_abortable
+ * @see omrthread_monitor_enter
+ */
+intptr_t
+omrthread_monitor_wait_timed_with_callback(omrthread_monitor_t monitor, int64_t millis, intptr_t nanos, omrthread_monitor_wait_callback callbackFunction, void *userData)
+{
+	return monitor_wait(monitor, millis, nanos, 0, callbackFunction, userData);
 }
 
 /**
@@ -4520,18 +4570,18 @@ omrthread_monitor_wait_timed(omrthread_monitor_t monitor, int64_t millis, intptr
  * @see omrthread_interrupt, omrthread_priority_interrupt, omrthread_abort
  */
 static intptr_t
-monitor_wait(omrthread_monitor_t monitor, int64_t millis, intptr_t nanos, uintptr_t interruptible)
+monitor_wait(omrthread_monitor_t monitor, int64_t millis, intptr_t nanos, uintptr_t interruptible, omrthread_monitor_wait_callback callbackFunction, void *userData)
 {
 	omrthread_t self = MACRO_SELF();
 
 #if defined(OMR_THR_THREE_TIER_LOCKING)
 	if (self->library->flags & J9THREAD_LIB_FLAG_FAST_NOTIFY) {
-		return monitor_wait_three_tier(self, monitor, millis, nanos, interruptible);
+		return monitor_wait_three_tier(self, monitor, millis, nanos, interruptible, callbackFunction, userData);
 	} else {
-		return monitor_wait_original(self, monitor, millis, nanos, interruptible);
+		return monitor_wait_original(self, monitor, millis, nanos, interruptible, callbackFunction, userData);
 	}
 #else
-	return monitor_wait_original(self, monitor, millis, nanos, interruptible);
+	return monitor_wait_original(self, monitor, millis, nanos, interruptible, callbackFunction, userData);
 #endif
 }
 
@@ -4543,7 +4593,8 @@ monitor_wait(omrthread_monitor_t monitor, int64_t millis, intptr_t nanos, uintpt
  */
 static intptr_t
 monitor_wait_original(omrthread_t self, omrthread_monitor_t monitor,
-					  int64_t millis, intptr_t nanos, uintptr_t interruptible)
+					  int64_t millis, intptr_t nanos, uintptr_t interruptible,
+					  omrthread_monitor_wait_callback callbackFunction, void *userData)
 {
 	omrthread_t *queue;
 	intptr_t count = -1;
@@ -4638,6 +4689,11 @@ monitor_wait_original(omrthread_t self, omrthread_monitor_t monitor,
 #endif /* defined(OMR_THR_MCS_LOCKS) */
 	self->lockedmonitorcount--;
 #endif /* defined(OMR_THR_THREE_TIER_LOCKING) */
+
+	/* Monitor is released. */
+	if (NULL != callbackFunction) {
+		callbackFunction(userData);
+	}
 
 	self->waitNumber = monitor_maximum_wait_number(monitor) + 1;
 	threadEnqueue(&monitor->waiting, self);
@@ -4804,7 +4860,8 @@ monitor_wait_original(omrthread_t self, omrthread_monitor_t monitor,
 #if defined(OMR_THR_THREE_TIER_LOCKING)
 static intptr_t
 monitor_wait_three_tier(omrthread_t self, omrthread_monitor_t monitor,
-						int64_t millis, intptr_t nanos, uintptr_t interruptible)
+						int64_t millis, intptr_t nanos, uintptr_t interruptible,
+						omrthread_monitor_wait_callback callbackFunction, void *userData)
 {
 	omrthread_t *queue;
 	intptr_t count = -1;
@@ -4905,6 +4962,11 @@ monitor_wait_three_tier(omrthread_t self, omrthread_monitor_t monitor,
 #endif /* defined(OMR_THR_SPIN_WAKE_CONTROL) */
 #endif /* defined(OMR_THR_MCS_LOCKS) */
 	self->lockedmonitorcount--;
+
+	/* Monitor is released. */
+	if (NULL != callbackFunction) {
+		callbackFunction(userData);
+	}
 
 	threadEnqueue(&monitor->waiting, self);
 

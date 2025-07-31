@@ -63,7 +63,9 @@ omr_add_exports(j9thr_obj
 	omrthread_monitor_notify
 	omrthread_monitor_notify_all
 	omrthread_monitor_wait
+	omrthread_monitor_wait_with_callback
 	omrthread_monitor_wait_timed
+	omrthread_monitor_wait_timed_with_callback
 	omrthread_monitor_wait_abortable
 	omrthread_monitor_wait_interruptable
 	omrthread_monitor_num_waiting

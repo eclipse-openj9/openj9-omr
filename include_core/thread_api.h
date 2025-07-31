@@ -47,6 +47,8 @@
 extern "C" {
 #endif
 
+typedef void (*omrthread_monitor_wait_callback)(void *userData);
+
 #define J9THREAD_RWMUTEX_OK		 	 0
 #define J9THREAD_RWMUTEX_FAIL	 	 1
 #define J9THREAD_RWMUTEX_WOULDBLOCK -1
@@ -530,7 +532,7 @@ omrthread_monitor_t
 omrthread_global_monitor(void);
 
 /**
- * Return monitor that thread is currently waiting to acquire. 
+ * Return monitor that thread is currently waiting to acquire.
  * If thread is not waiting on a monitor return null.
  * @param thread
  * @return omrthread_monitor_t
@@ -874,6 +876,16 @@ omrthread_monitor_wait(omrthread_monitor_t monitor);
 /**
 * @brief
 * @param monitor
+* @param callbackFunction
+* @param userData
+* @return intptr_t
+*/
+intptr_t
+omrthread_monitor_wait_with_callback(omrthread_monitor_t monitor, omrthread_monitor_wait_callback callbackFunction, void *userData);
+
+/**
+* @brief
+* @param monitor
 * @param millis
 * @param nanos
 * @return intptr_t
@@ -901,6 +913,18 @@ omrthread_monitor_wait_interruptable(omrthread_monitor_t monitor, int64_t millis
 */
 intptr_t
 omrthread_monitor_wait_timed(omrthread_monitor_t monitor, int64_t millis, intptr_t nanos);
+
+/**
+* @brief
+* @param monitor
+* @param millis
+* @param nanos
+* @param callbackFunction
+* @param userData
+* @return intptr_t
+*/
+intptr_t
+omrthread_monitor_wait_timed_with_callback(omrthread_monitor_t monitor, int64_t millis, intptr_t nanos, omrthread_monitor_wait_callback callbackFunction, void *userData);
 
 /**
 * @brief

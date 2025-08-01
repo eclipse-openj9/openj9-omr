@@ -417,7 +417,7 @@ enum TR_CompilationOptions
    // Option word 11
    //
    TR_RetryCodeCacheAllocAndIgnoreKind        = 0x00000020 + 11,
-   // Available                               = 0x00000040 + 11,
+   TR_DisableVectorAPIBoxing                  = 0x00000040 + 11,
    TR_EnableSelectiveEnterExitHooks           = 0x00000080 + 11,
    // Available                               = 0x00000100 + 11,
    // Available                               = 0x00000200 + 11,

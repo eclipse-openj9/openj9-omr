@@ -162,7 +162,9 @@ define WRITE_COMMON_THREAD_EXPORTS
 @echo omrthread_monitor_notify >>$@
 @echo omrthread_monitor_notify_all >>$@
 @echo omrthread_monitor_wait >>$@
+@echo omrthread_monitor_wait_with_callback >>$@
 @echo omrthread_monitor_wait_timed >>$@
+@echo omrthread_monitor_wait_timed_with_callback >>$@
 @echo omrthread_monitor_wait_abortable >>$@
 @echo omrthread_monitor_wait_interruptable >>$@
 @echo omrthread_monitor_num_waiting >>$@

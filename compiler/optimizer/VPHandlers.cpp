@@ -81,6 +81,7 @@
 
 #ifdef J9_PROJECT_SPECIFIC
 #include "env/CHTable.hpp"
+#include "env/J9ConstProvenanceGraph.hpp"
 #include "env/PersistentCHTable.hpp"
 #include "runtime/RuntimeAssumptions.hpp"
 #include "env/VMJ9.h"
@@ -1955,10 +1956,19 @@ TR::Node *constrainAloadi(OMR::ValuePropagation *vp, TR::Node *node)
                             if (0 != fieldObject) {
                                 TR_OpaqueClassBlock *fieldObjectClazz
                                     = TR::Compiler->cls.objectClass(vp->comp(), fieldObject);
+
+                                // The provenance edge could originate from fieldObjectKnotIndex
+                                // if fieldObject were always added to the known object table.
+                                J9::ConstProvenanceGraph *cpg = vp->comp()->constProvenanceGraph();
+                                cpg->addEdge(cpg->knownObject(base->getKnownObject()->getIndex()), fieldObjectClazz);
+
                                 if (!TR::Compiler->cls.isClassArray(vp->comp(), fieldObjectClazz)) {
                                     traceMsg(vp->comp(), "Recognized known object field node %p \n", node);
                                     TR::KnownObjectTable::Index fieldObjectKnotIndex
                                         = knot->getOrCreateIndex(fieldObject);
+                                    cpg->addEdge(cpg->knownObject(base->getKnownObject()->getIndex()),
+                                        cpg->knownObject(fieldObjectKnotIndex));
+
                                     // Global constraints should work here, as field loads get fresh value numbers
                                     constraint
                                         = TR::VPClass::create(vp, TR::VPKnownObject::create(vp, fieldObjectKnotIndex),
@@ -1995,6 +2005,10 @@ TR::Node *constrainAloadi(OMR::ValuePropagation *vp, TR::Node *node)
                     if (constrainAloadiCriticalSection.hasVMAccess()) {
                         uintptr_t jlclazz = knot->getPointer(base->getKnownObject()->getIndex());
                         TR_OpaqueClassBlock *clazz = TR::Compiler->cls.classFromJavaLangClass(vp->comp(), jlclazz);
+
+                        J9::ConstProvenanceGraph *cpg = vp->comp()->constProvenanceGraph();
+                        cpg->addEdge(cpg->knownObject(base->getKnownObject()->getIndex()), clazz);
+
                         if (TR::Compiler->cls.isClassInitialized(vp->comp(), clazz)) {
                             // this should be able to be precise because we do know the compenent class pointer
                             // precisely but clearly others make invalid assumptions on seeing this fixed class
@@ -2029,6 +2043,10 @@ TR::Node *constrainAloadi(OMR::ValuePropagation *vp, TR::Node *node)
                 TR_J9VMBase *fej9 = (TR_J9VMBase *)(vp->comp()->fe());
                 TR::KnownObjectTable::Index knownObjectIndex = knot->getOrCreateIndexAt(
                     (uintptr_t *)(base->getClass() + fej9->getOffsetOfJavaLangClassFromClassField()));
+
+                J9::ConstProvenanceGraph *cpg = vp->comp()->constProvenanceGraph();
+                cpg->addEdge(base->getClass(), cpg->knownObject(knownObjectIndex));
+
                 vp->addBlockOrGlobalConstraint(node,
                     TR::VPClass::create(vp, TR::VPKnownObject::createForJavaLangClass(vp, knownObjectIndex),
                         TR::VPNonNullObject::create(vp), NULL, NULL,

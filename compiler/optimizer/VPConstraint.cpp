@@ -50,6 +50,7 @@
 #include "optimizer/ValuePropagation.hpp"
 
 #ifdef J9_PROJECT_SPECIFIC
+#include "env/J9ConstProvenanceGraph.hpp"
 #include "env/PersistentCHTable.hpp"
 #include "runtime/RuntimeAssumptions.hpp"
 #include "env/VMJ9.h"
@@ -1082,6 +1083,10 @@ TR::VPConstraint *TR::VPClass::create(OMR::ValuePropagation *vp, TR::VPClassType
         uintptr_t objRefOffs = fej9->getOffsetOfJavaLangClassFromClassField();
         uintptr_t *objRef = (uintptr_t *)(type->getClass() + objRefOffs);
         TR::KnownObjectTable::Index index = knot->getOrCreateIndexAt(objRef);
+
+        J9::ConstProvenanceGraph *cpg = comp()->constProvenanceGraph();
+        cpg->addEdge(type->getClass(), cpg->knownObject(index));
+
         type = TR::VPKnownObject::createForJavaLangClass(vp, index);
     }
 #endif

@@ -819,7 +819,7 @@ MM_ConcurrentCardTable::cleanCards(MM_EnvironmentBase *env, bool isMutator, uint
 		currentCleaningPhase = _cardCleanPhase;
 	}
 
-	if (gcCount != _extensions->globalGCStats.gcCount) {
+	if ((gcCount != _extensions->globalGCStats.gcCount) || (CONCURRENT_INIT_COMPLETE >= _collector->getConcurrentGCStats()->getExecutionMode())) {
 		/* A gc has occured while attempting to acquire exclusive access to the card table */
 		return false;
 	}

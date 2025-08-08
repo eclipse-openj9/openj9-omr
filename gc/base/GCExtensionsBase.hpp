@@ -1466,7 +1466,7 @@ public:
 	 *
 	 * @return unique GC ID count
 	 */
-	UDATA getUniqueGCCycleCount();
+	uintptr_t getUniqueGCCycleCount();
 
 #if defined(J9VM_OPT_CRIU_SUPPORT)
 	/**

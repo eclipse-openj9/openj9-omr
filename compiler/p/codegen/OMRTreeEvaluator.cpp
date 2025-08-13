@@ -4060,6 +4060,7 @@ static TR::Register *vminFPHelper(TR::Node *node, TR::CodeGenerator *cg, TR::Dat
     */
 
     // Check the first operand for NaN elements, and convert corresponding elements in second operand to NaN
+    // Note that this works because a) NaN != NaN and b) 0b111...1 as a floating point value is NaN
     generateTrg1Src2Instruction(cg, cmpOp, node, cmpReg, firstReg, firstReg);
     generateTrg1Src2Instruction(cg, TR::InstOpCode::xxlorc, node, tempA, secondReg, cmpReg);
 
@@ -4143,6 +4144,7 @@ TR::Register *vmaxFPHelper(TR::Node *node, TR::CodeGenerator *cg, TR::DataType t
     */
 
     // Check the first operand for NaN elements, and convert corresponding elements in second operand to NaN
+    // Note that this works because a) NaN != NaN and b) 0b111...1 as a floating point value is NaN
     generateTrg1Src2Instruction(cg, cmpOp, node, cmpReg, firstReg, firstReg);
     generateTrg1Src2Instruction(cg, TR::InstOpCode::xxlorc, node, tempA, secondReg, cmpReg);
 

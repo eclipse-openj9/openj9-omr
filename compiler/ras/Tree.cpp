@@ -1342,6 +1342,20 @@ void TR_Debug::printNodeInfo(TR::Node *node, TR_PrettyPrinterString &output, boo
         output.appendf("%s", getName(node->getOpCode()));
     }
 
+    // print vector type immediately after opcode name
+    if (node->getOpCode().isVectorOpCode()) {
+        TR::ILOpCode opcode = node->getOpCode();
+
+        if (opcode.isTwoTypeVectorOpCode()) {
+            // example: vconvVector128Int32_Vector128Float
+            output.appendf("%s_%s", getName(opcode.getVectorSourceDataType()),
+                getName(opcode.getVectorResultDataType()));
+        } else {
+            // example: vaddVector128Int32
+            output.appendf("%s", getName(opcode.getVectorResultDataType()));
+        }
+    }
+
     if (node->hasKnownObjectIndex())
         output.appendf(" (node obj%d)", node->getKnownObjectIndex());
 
@@ -1482,17 +1496,6 @@ void TR_Debug::printNodeInfo(TR::Node *node, TR_PrettyPrinterString &output, boo
         }
     } else if (node->getOpCode().hasNoDataType()) {
         output.appendf(" (%s)", getName(node->getDataType()));
-    } else if (node->getOpCode().isVectorOpCode()) {
-        TR::ILOpCode opcode = node->getOpCode();
-
-        if (opcode.isTwoTypeVectorOpCode()) {
-            // example: vconvVector128Int32_Vector128Float
-            output.appendf("%s_%s", getName(opcode.getVectorSourceDataType()),
-                getName(opcode.getVectorResultDataType()));
-        } else {
-            // example: vaddVector128Int32
-            output.appendf("%s", getName(opcode.getVectorResultDataType()));
-        }
     }
 
     if (node->getOpCode().isLoadConst()) {

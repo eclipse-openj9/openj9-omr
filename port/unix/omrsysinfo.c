@@ -1110,7 +1110,11 @@ _error:
 static OMRProcessorArchitecture
 omrsysinfo_map_ppc_processor(const char *processorName)
 {
-	OMRProcessorArchitecture rc = OMR_PROCESSOR_PPC_UNKNOWN;
+#ifdef OMR_ENV_LITTLE_ENDIAN
+	OMRProcessorArchitecture rc = OMR_PROCESSOR_PPC_P8;
+#else  /* OMR_ENV_LITTLE_ENDIAN */
+	OMRProcessorArchitecture rc = OMR_PROCESSOR_PPC_P7;
+#endif /* OMR_ENV_LITTLE_ENDIAN */
 
 	if (0 == strncasecmp(processorName, "ppc403", 6)) {
 		rc = OMR_PROCESSOR_PPC_PWR403;
@@ -1206,7 +1210,7 @@ omrsysinfo_get_aix_ppc_description(struct OMRPortLibrary *portLibrary, OMRProces
 	} else if (__power_latestKnownAndUp()) {
 		desc->processor = OMR_PROCESSOR_PPC_P11;
 	} else {
-		desc->processor = OMR_PROCESSOR_PPC_UNKNOWN;
+		desc->processor = OMR_PROCESSOR_PPC_P7;
 	}
 #if !defined(J9OS_I5_V6R1)
 	/* AIX physical processor */

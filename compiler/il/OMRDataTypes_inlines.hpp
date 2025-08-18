@@ -157,6 +157,12 @@ TR::DataTypes OMR::DataType::createMaskType(TR::DataType elementType, TR::Vector
 {
     TR::DataTypes et = elementType.getDataType();
 
+    if (et == TR::Float) {
+        et = TR::Int32;
+    } else if (et == TR::Double) {
+        et = TR::Int64;
+    }
+
     TR_ASSERT_FATAL(et > TR::NoType && et <= TR::NumVectorElementTypes, "Invalid vector element type %d\n", et);
     TR_ASSERT_FATAL(length > TR::NoVectorLength && length <= TR::NumVectorLengths, "Invalid vector length %d\n",
         length);

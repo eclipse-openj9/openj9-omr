@@ -1155,6 +1155,8 @@ TR::OptionTable OMR::Options::_jitOptions[] = {
      SET_OPTION_BIT(TR_EmitExecutableELFFile), "F", NOT_IN_SUBSET },
     { "enableExpensiveOptsAtWarm", "O\tenable store sinking and OSR at warm and below",
      SET_OPTION_BIT(TR_EnableExpensiveOptsAtWarm), "F" },
+    { "enableExtendedVectorLengths", "C\tenable vectors wider than 128-bits in vector API",
+     SET_OPTION_BIT(TR_EnableExtendedVectorLengths), "F" },
     { "enableFastHotRecompilation", "R\ttry to recompile at hot sooner", SET_OPTION_BIT(TR_EnableFastHotRecompilation),
      "F" },
     { "enableFastScorchingRecompilation", "R\ttry to recompile at scorching sooner",

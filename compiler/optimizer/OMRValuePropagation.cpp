@@ -7018,6 +7018,9 @@ void OMR::ValuePropagation::doDelayedTransformations()
                 if (methodSymbol->isJNI())
                     callNode->processJNICall(ci->_tt, comp()->getMethodSymbol());
                 else {
+                    static char *minInliningFreqDuringVPOverride = feGetEnv("TR_minInliningFreqDuringVP");
+                    static int minInliningFreqDuringVP
+                        = minInliningFreqDuringVPOverride ? atoi(minInliningFreqDuringVPOverride) : 750;
                     bool tryToInline = true;
 
                     if (comp()->getMethodHotness() <= warm && comp()->getOption(TR_DisableInliningDuringVPAtWarm)) {
@@ -7025,6 +7028,11 @@ void OMR::ValuePropagation::doDelayedTransformations()
                         if (trace())
                             traceMsg(comp(), "\tDo not inline call at [%p]: TR_DisableInliningDuringVPAtWarm\n",
                                 callNode);
+                    } else if (ci->_block->getFrequency() < minInliningFreqDuringVP) {
+                        tryToInline = false;
+                        if (trace())
+                            traceMsg(comp(), "\tDo not inline call at [%p]: block frequency %d < %d\n", callNode,
+                                ci->_block->getFrequency(), minInliningFreqDuringVP);
                     }
 
                     if (tryToInline) {

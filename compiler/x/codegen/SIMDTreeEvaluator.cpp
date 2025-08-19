@@ -72,7 +72,7 @@ TR::Register *OMR::X86::TreeEvaluator::SIMDRegStoreEvaluator(TR::Node *node, TR:
 
 TR::Register *OMR::X86::TreeEvaluator::maskLoadEvaluator(TR::Node *node, TR::CodeGenerator *cg)
 {
-    if (cg->comp()->target().cpu.supportsFeature(OMR_FEATURE_X86_AVX512F)) {
+    if (cg->supportsOpMaskRegisters()) {
         TR::MemoryReference *tempMR = generateX86MemoryReference(node, cg);
         tempMR = ConvertToPatchableMemoryReference(tempMR, node, cg);
         TR::Register *resultReg = cg->allocateRegister(TR_VMR);
@@ -95,7 +95,7 @@ TR::Register *OMR::X86::TreeEvaluator::maskLoadEvaluator(TR::Node *node, TR::Cod
 
 TR::Register *OMR::X86::TreeEvaluator::maskStoreEvaluator(TR::Node *node, TR::CodeGenerator *cg)
 {
-    if (cg->comp()->target().cpu.supportsFeature(OMR_FEATURE_X86_AVX512F)) {
+    if (cg->supportsOpMaskRegisters()) {
         TR::MemoryReference *tempMR = generateX86MemoryReference(node, cg);
         tempMR = ConvertToPatchableMemoryReference(tempMR, node, cg);
         TR::Node *valueNode = node->getChild(node->getOpCode().isIndirect() ? 1 : 0);

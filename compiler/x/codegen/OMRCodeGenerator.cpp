@@ -909,6 +909,12 @@ void OMR::X86::CodeGenerator::deactivateDependentDiscardableRegisters(TR::Regist
         diagnostic("\n");
 }
 
+bool OMR::X86::CodeGenerator::supportsOpMaskRegisters()
+{
+    return self()->comp()->getOption(TR_EnableOpMaskRegisters)
+        && self()->comp()->target().cpu.supportsFeature(OMR_FEATURE_X86_AVX512F);
+}
+
 #define ALLOWED_TO_REMATERIALIZE(x) (getRematerializationOptString() && strstr(getRematerializationOptString(), (x)))
 
 #define CAN_REMATERIALIZE(x) (!getRematerializationOptString() || strstr(getRematerializationOptString(), (x)))
@@ -973,7 +979,7 @@ TR::VectorLength OMR::X86::CodeGenerator::getMaxPreferredVectorLength()
     return TR::VectorLength128;
 }
 
-bool OMR::X86::CodeGenerator::getSupportsOpCodeForAutoSIMD(TR::CPU *cpu, TR::ILOpCode opcode)
+bool OMR::X86::CodeGenerator::getSupportsOpCodeForAutoSIMD(TR::CPU *cpu, TR::ILOpCode opcode, bool supportsOpMaskRegs)
 {
     TR_ASSERT_FATAL(opcode.isVectorOpCode(), "getSupportsOpCodeForAutoSIMD expects vector opcode\n");
 
@@ -993,9 +999,14 @@ bool OMR::X86::CodeGenerator::getSupportsOpCodeForAutoSIMD(TR::CPU *cpu, TR::ILO
     if ((opcode.isVectorMasked() || ot.isMask()) && !cpu->supportsFeature(OMR_FEATURE_X86_SSE4_1))
         return false;
 
-    if (opcode.isVectorMasked() || ot.isMask()) {
+    if (ot.getVectorLength() == TR::VectorLength512 && !supportsOpMaskRegs && et.isFloatingPoint())
+        return false;
+
+    if (opcode.isVectorMasked() || opcode.isMaskReduction() || opcode.isMaskResult() || ot.isMask()) {
 #if TR_TARGET_64BIT
         if (!cpu->supportsFeature(OMR_FEATURE_X86_SSE4_1))
+            return false;
+        if (ot.getVectorLength() == TR::VectorLength512 && !supportsOpMaskRegs)
             return false;
 #else
         return false;
@@ -1203,7 +1214,8 @@ bool OMR::X86::CodeGenerator::getSupportsOpCodeForAutoSIMD(TR::CPU *cpu, TR::ILO
 
 bool OMR::X86::CodeGenerator::getSupportsOpCodeForAutoSIMD(TR::ILOpCode opcode)
 {
-    return TR::CodeGenerator::getSupportsOpCodeForAutoSIMD(&self()->comp()->target().cpu, opcode);
+    return TR::CodeGenerator::getSupportsOpCodeForAutoSIMD(&self()->comp()->target().cpu, opcode,
+        self()->supportsOpMaskRegisters());
 }
 
 bool OMR::X86::CodeGenerator::getSupportsEncodeUtf16LittleWithSurrogateTest()

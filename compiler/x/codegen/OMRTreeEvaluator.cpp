@@ -5157,7 +5157,8 @@ TR::Register *OMR::X86::TreeEvaluator::vectorFPNaNHelper(TR::Node *node, TR::Reg
     TR::InstOpCode orOpcode = mr ? TR::InstOpCode::ORPDRegMem : TR::InstOpCode::ORPDRegReg;
     TR::InstOpCode cmpOpcode = et.isFloat() ? TR::InstOpCode::CMPPSRegRegImm1 : TR::InstOpCode::CMPPDRegRegImm1;
 
-    OMR::X86::Encoding cmpEncoding = cmpOpcode.getSIMDEncoding(&cg->comp()->target().cpu, vl);
+    OMR::X86::Encoding cmpEncoding
+        = cmpOpcode.getSIMDEncoding(&cg->comp()->target().cpu, vl, cg->supportsOpMaskRegisters());
     OMR::X86::Encoding movEncoding = movOpcode.getSIMDEncoding(&cg->comp()->target().cpu, vl);
 
     TR_ASSERT_FATAL(cmpEncoding != OMR::X86::Encoding::Bad, "No suitable encoding method for compare opcode");
@@ -5275,7 +5276,7 @@ TR::Register *OMR::X86::TreeEvaluator::vectorCompareEvaluator(TR::Node *node, TR
             break;
     }
 
-    if (cg->comp()->target().cpu.supportsFeature(OMR_FEATURE_X86_AVX512F)) {
+    if (cg->supportsOpMaskRegisters()) {
         TR::Register *resultReg = cg->allocateRegister(TR_VMR);
         TR::InstOpCode cmpOpcode = TR::InstOpCode::bad;
 
@@ -5445,7 +5446,7 @@ TR::Register *OMR::X86::TreeEvaluator::vectorCompareEvaluator(TR::Node *node, TR
                 break;
         }
 
-        OMR::X86::Encoding cmpEncoding = cmpOpcode.getSIMDEncoding(&cg->comp()->target().cpu, vl);
+        OMR::X86::Encoding cmpEncoding = cmpOpcode.getSIMDEncoding(&cg->comp()->target().cpu, vl, false);
         TR_ASSERT_FATAL(cmpEncoding != OMR::X86::Bad,
             "vectorCompareEvaluator: Selected illegal instruction for target hardware");
 
@@ -5467,7 +5468,7 @@ TR::Register *OMR::X86::TreeEvaluator::vectorCompareEvaluator(TR::Node *node, TR
         }
 
         if (invAfter) {
-            OMR::X86::Encoding invCmpEncoding = invCmpOpcode.getSIMDEncoding(&cg->comp()->target().cpu, vl);
+            OMR::X86::Encoding invCmpEncoding = invCmpOpcode.getSIMDEncoding(&cg->comp()->target().cpu, vl, false);
             TR::Register *invMaskReg = cg->allocateRegister(TR_VRF);
             // pcmpeq invMaskReg, invMaskReg
             // pxor resultReg, invMaskReg
@@ -6669,8 +6670,6 @@ TR::Register *OMR::X86::TreeEvaluator::ternaryVectorMaskHelper(TR::InstOpCode op
     generateRegRegInstruction(TR::InstOpCode::MOVDQURegReg, node, resultReg, lhsReg, cg, encoding);
 
     if (vectorMask) {
-        TR_ASSERT_FATAL(encoding == OMR::X86::VEX_L128 || encoding == OMR::X86::VEX_L256,
-            "AVX supported opcode required for ternary mask emulation");
         generateRegRegInstruction(TR::InstOpCode::MOVDQURegReg, node, tmpReg, lhsReg, cg);
         generateRegRegRegInstruction(opcode.getMnemonic(), node, tmpReg, middleReg, rhsReg, cg, encoding);
         vectorMergeMaskHelper(node, resultReg, tmpReg, maskReg, cg);
@@ -6775,7 +6774,6 @@ TR::Register *OMR::X86::TreeEvaluator::arrayToVectorMaskHelper(TR::Node *node, T
     TR::InstOpCode expandOp = TR::InstOpCode::bad;
     TR::InstOpCode v2mOp = TR::InstOpCode::bad;
     TR::InstOpCode shiftOp = TR::InstOpCode::PSLLQRegImm1;
-    bool nativeMasking = cg->comp()->target().cpu.supportsFeature(OMR_FEATURE_X86_AVX512F);
     TR::DataType integralType = et;
     int32_t shiftAmount = 0;
 
@@ -6831,7 +6829,7 @@ TR::Register *OMR::X86::TreeEvaluator::arrayToVectorMaskHelper(TR::Node *node, T
 
     cg->decReferenceCount(valueNode);
 
-    if (nativeMasking) {
+    if (cg->supportsOpMaskRegisters()) {
         TR::Register *result = cg->allocateRegister(TR_VMR);
         OMR::X86::Encoding v2mEncoding = v2mOp.getSIMDEncoding(&cg->comp()->target().cpu, vl);
         OMR::X86::Encoding shiftEncoding = shiftOp.getSIMDEncoding(&cg->comp()->target().cpu, vl);

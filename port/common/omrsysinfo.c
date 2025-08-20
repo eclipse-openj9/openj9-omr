@@ -165,7 +165,8 @@ omrsysinfo_get_processor_feature_name(struct OMRPortLibrary *portLibrary, uint32
 
 /**
  * Generate the corresponding string literals for the provided OMRProcessorDesc. The buffer will be zero 
- * initialized and overwritten with the processor feature output string.
+ * initialized and overwritten with the processor feature output string. The string will not contain "null",
+ * which corresponds to unknown feature names.
  *
  * @param[in] portLibrary The port library.
  * @param[in] desc The struct that contains the list of processor features to be converted to string.

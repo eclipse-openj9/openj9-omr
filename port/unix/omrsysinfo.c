@@ -1154,6 +1154,10 @@ omrsysinfo_map_ppc_processor(const char *processorName)
 		rc = OMR_PROCESSOR_PPC_P10;
 	} else if (0 == strncasecmp(processorName, "power11", 7)) {
 		rc = OMR_PROCESSOR_PPC_P11;
+	} else if (0 == strncasecmp(processorName, "power1", 6)) {
+		/* Defer the long-term anticipated cases to the latest known state. */
+		if ((processorName[6] >= '2') && (processorName[6] <= '9'))
+			rc = OMR_PROCESSOR_PPC_P11;
 	}
 
 	return rc;

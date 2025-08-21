@@ -7012,22 +7012,30 @@ void OMR::ValuePropagation::doDelayedTransformations()
                 }
             }
 
-            // else
-            // traceMsg(comp(), "Reached 2 for call %p\n", callNode);
-            // traceMsg(comp(), "unreachable %d guarded %d\n", callUnreachable, callGuarded);
+#ifdef J9_PROJECT_SPECIFIC
             if (!callGuarded || !callUnreachable) {
                 TR::ResolvedMethodSymbol *methodSymbol = callNode->getSymbol()->castToResolvedMethodSymbol();
-#ifdef J9_PROJECT_SPECIFIC
                 if (methodSymbol->isJNI())
                     callNode->processJNICall(ci->_tt, comp()->getMethodSymbol());
-                else
-#endif
-                {
+                else {
+                    static char *minInliningFreqDuringVPOverride = feGetEnv("TR_minInliningFreqDuringVP");
+                    static int minInliningFreqDuringVP
+                        = minInliningFreqDuringVPOverride ? atoi(minInliningFreqDuringVPOverride) : 750;
+                    bool tryToInline = true;
+
                     if (comp()->getMethodHotness() <= warm && comp()->getOption(TR_DisableInliningDuringVPAtWarm)) {
+                        tryToInline = false;
                         if (trace())
-                            traceMsg(comp(), "\tDo not inline call at [%p]\n", callNode);
-                    } else {
-#ifdef J9_PROJECT_SPECIFIC
+                            traceMsg(comp(), "\tDo not inline call at [%p]: TR_DisableInliningDuringVPAtWarm\n",
+                                callNode);
+                    } else if (ci->_block->getFrequency() < minInliningFreqDuringVP) {
+                        tryToInline = false;
+                        if (trace())
+                            traceMsg(comp(), "\tDo not inline call at [%p]: block frequency %d < %d\n", callNode,
+                                ci->_block->getFrequency(), minInliningFreqDuringVP);
+                    }
+
+                    if (tryToInline) {
                         TR_InlineCall newInlineCall(optimizer(), this);
 
                         // restrict the amount of inlining in warm/cold bodies
@@ -7045,16 +7053,14 @@ void OMR::ValuePropagation::doDelayedTransformations()
                                        ->castToMethodSymbol()
                                        ->isJITInternalNative()) {
                                 if (callNode->getOpCode().isCallIndirect()) {
-                                    // printf("XXX Added devirtualized call info in %s for %x\n", comp()->signature(),
-                                    // callNode);
                                     comp()->findOrCreateDevirtualizedCall(callNode, ci->_thisType);
                                 }
                             }
                         }
-#endif
                     }
                 }
             }
+#endif
         }
     }
     _devirtualizedCalls.setFirst(0);

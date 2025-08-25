@@ -650,17 +650,32 @@ inline typename ASparseBitVector<Allocator>::SparseBitRef &ASparseBitVector<Allo
 template<class Allocator>
 inline ASparseBitVector<Allocator> &ASparseBitVector<Allocator>::operator=(const ASparseBitVector<Allocator> &vector)
 {
-    if (vector.IsNull())
+    if (vector.IsNull()) {
         ClearToNull();
-    else
+    } else {
         Clear();
-    if (vector.fNumberOfSegments) {
-        fNumberOfSegments = vector.fNumberOfSegments;
-        fBase = (Segment *)Allocator::allocate(fNumberOfSegments * sizeof(Segment));
-        SparseBitIndex i;
-        for (i = 0; i < fNumberOfSegments; i++)
-            fBase[i].copy(vector.fBase[i], *this);
     }
+
+    SparseBitIndex n = vector.fNumberOfSegments;
+    if (n != 0) {
+        Segment *base = (Segment *)Allocator::allocate(n * sizeof(Segment));
+        for (SparseBitIndex i = 0; i < n; i++) {
+            try {
+                base[i].copy(vector.fBase[i], *this);
+            } catch (...) {
+                for (SparseBitIndex j = 0; j < i; j++) {
+                    base[j].deallocate(*this);
+                }
+
+                Allocator::deallocate(base, n * sizeof(Segment));
+                throw;
+            }
+        }
+
+        fBase = base;
+        fNumberOfSegments = n;
+    }
+
     return *this;
 }
 

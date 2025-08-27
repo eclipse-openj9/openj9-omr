@@ -1131,9 +1131,9 @@ uint8_t *OMR::ARM64::MemoryReference::generateBinaryEncoding(TR::Instruction *cu
                     uint32_t bitsToShift = isImm12VectorMemoryAccess(enc) ? 4 : size;
                     uint32_t shifted = displacement >> bitsToShift;
 
-                    if (size > 0) {
-                        TR_ASSERT((displacement & ((1 << size) - 1)) == 0,
-                            "Non-aligned offset in 2/4/8-byte memory access.");
+                    if (bitsToShift > 0) {
+                        TR_ASSERT_FATAL((displacement & ((1 << bitsToShift) - 1)) == 0,
+                            "Non-aligned offset in 2/4/8/16-byte memory access.");
                     }
 
                     if (constantIsUnsignedImm12(shifted)) {
@@ -1146,7 +1146,7 @@ uint8_t *OMR::ARM64::MemoryReference::generateBinaryEncoding(TR::Instruction *cu
                     uint32_t size = ((opc >> 1) + 2);
                     uint32_t shifted = displacement >> size;
 
-                    TR_ASSERT((displacement & ((1 << size) - 1)) == 0, "displacement must be 4/8-byte alligned");
+                    TR_ASSERT_FATAL((displacement & ((1 << size) - 1)) == 0, "displacement must be 4/8-byte alligned");
 
                     if (constantIsImm7(shifted)) {
                         *wcursor |= (shifted & 0x7f) << 15; /* imm7 */

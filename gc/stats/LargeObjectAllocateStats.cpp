@@ -93,7 +93,7 @@ MM_LargeObjectAllocateStats::initialize(MM_EnvironmentBase *env, uint16_t maxAll
 	_maxAllocateSizes = maxAllocateSizes;
 	_largeObjectThreshold = largeObjectThreshold;
 	_sizeClassRatio = sizeClassRatio;
-	_sizeClassRatioLog = logf(_sizeClassRatio);
+	_sizeClassRatioLogInversed = 1.0f / logf(_sizeClassRatio);
 	_maxHeapSize = maxHeapSize;
 
 	/* To accurately maintain for stats for top _maxAllocateSizes different sizes,
@@ -126,7 +126,7 @@ MM_LargeObjectAllocateStats::initialize(MM_EnvironmentBase *env, uint16_t maxAll
 	_veryLargeEntrySizeClass = env->getExtensions()->largeObjectAllocationProfilingVeryLargeObjectSizeClass; 
 
 #if defined(OMR_GC_THREAD_LOCAL_HEAP)
-	uintptr_t largestTLHClassSizeIndex = (uintptr_t)(logf((float)tlhMaximumSize)/_sizeClassRatioLog);
+	uintptr_t largestTLHClassSizeIndex = (uintptr_t)(logf((float)tlhMaximumSize) * _sizeClassRatioLogInversed);
 	uintptr_t maxTLHSizeClasses = largestTLHClassSizeIndex + 1;
 
 	if (!_tlhAllocSizeClassStats.initialize(env, 0,  maxTLHSizeClasses, UDATA_MAX)) {
@@ -223,7 +223,7 @@ MM_LargeObjectAllocateStats::allocateObject(uintptr_t allocateSize)
 		spaceSavingUpdate(_spaceSavingSizes, (void *)allocateSize, allocateSize);
 
 		/* find in which size class object belongs to and update the stats for the size class itself. */
-		uintptr_t sizeClass = (uintptr_t)(powf(_sizeClassRatio, (float)ceil(logf((float)allocateSize) / _sizeClassRatioLog)));
+		uintptr_t sizeClass = (uintptr_t)(powf(_sizeClassRatio, (float)ceil(logf((float)allocateSize) * _sizeClassRatioLogInversed)));
 		spaceSavingUpdate(_spaceSavingSizeClasses, (void *)sizeClass, sizeClass);
 	}
 }
@@ -1117,9 +1117,8 @@ MM_LargeObjectAllocateStats::getSizeClassIndex(uintptr_t size)
 
 	/* the logarithm can not be negative! */
 	Assert_GC_true_with_message2(_env, (logValue >= 0.0), "Error calculation logf(), passed %zu, returned %f\n", size, logValue);
-	Assert_GC_true_with_message(_env, (_sizeClassRatioLog > 0.0), "_sizeClassRatioLog is %f but must be larger then zero\n", _sizeClassRatioLog);
 
-	uintptr_t result = (uintptr_t)(logValue / _sizeClassRatioLog);
+	uintptr_t result = (uintptr_t)(logValue * _sizeClassRatioLogInversed);
 
 	/* the logarithm value is larger then we can accept - probably larger then logf(UDATA_MAX) */
 	Assert_GC_true_with_message2(_env, ((_freeEntrySizeClassStats._maxSizeClasses == 0) || (result < _freeEntrySizeClassStats._maxSizeClasses)),

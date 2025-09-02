@@ -56,7 +56,7 @@ private:
 	uintptr_t _largeObjectThreshold;	/**< Threshold to consider an object large enough to keep track of */
 	uintptr_t _veryLargeEntrySizeClass; /**< index of sizeClass for minimum veryLargeEntry, the cache value of GCExtensions.largeObjectAllocationProfilingVeryLargeObjectSizeClass */
 	float _sizeClassRatio;			/**< ratio of lower and upper boundary of a size class */
-	float _sizeClassRatioLog;		/**< log value of the above ratio */
+	float _sizeClassRatioLogInversed;	/**< 1.0 / (log value of the above ratio) */
 	uintptr_t _averageBytesAllocated;   /**< history average of total allocated bytes for each of the updates */
 
 	MM_FreeEntrySizeClassStats _freeEntrySizeClassStats; /**< global (still per pool) statistics structure for heap free entry size (sizeClass) distribution */
@@ -238,7 +238,7 @@ public:
 		_largeObjectThreshold(0),
 		_veryLargeEntrySizeClass(0),
 		_sizeClassRatio(0.0),
-		_sizeClassRatioLog(0.0),
+		_sizeClassRatioLogInversed(0.0f),
 		_averageBytesAllocated(0),
 		_timeEstimateFragmentation(0),
 		_cpuTimeEstimateFragmentation(0),

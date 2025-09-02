@@ -71,18 +71,9 @@ public:
     ASparseBitVector(const ASparseBitVector &v)
         : Allocator(v)
         , fBase(NULL)
-        , fNumberOfSegments(v.fNumberOfSegments)
+        , fNumberOfSegments(0)
     {
-        size_t n = fNumberOfSegments;
-
-        if (n) {
-            fBase = (Segment *)Allocator::allocate(n * sizeof(Segment));
-            for (size_t i = 0; i < n; i++)
-                fBase[i].copy(v.fBase[i], *this);
-        } else {
-            // sets to equiv zero set as v - either null or empty
-            fBase = v.fBase;
-        }
+        CopyFrom(v);
     }
 
     // Destructor will free bit vector storage
@@ -358,6 +349,8 @@ private:
 
     Segment *fBase;
     SparseBitIndex fNumberOfSegments;
+
+    template<class A2> ASparseBitVector &CopyFrom(const ASparseBitVector<A2> &vector); // operator=() implementation
 
     Segment *FindSegment(SparseBitIndex index) const;
     Segment *AddSegment(SparseBitIndex index, SparseBitIndex count);
@@ -650,6 +643,20 @@ inline typename ASparseBitVector<Allocator>::SparseBitRef &ASparseBitVector<Allo
 template<class Allocator>
 inline ASparseBitVector<Allocator> &ASparseBitVector<Allocator>::operator=(const ASparseBitVector<Allocator> &vector)
 {
+    return CopyFrom(vector);
+}
+
+template<class Allocator>
+template<class A2>
+inline ASparseBitVector<Allocator> &ASparseBitVector<Allocator>::operator=(const ASparseBitVector<A2> &vector)
+{
+    return CopyFrom(vector);
+}
+
+template<class Allocator>
+template<class A2>
+inline ASparseBitVector<Allocator> &ASparseBitVector<Allocator>::CopyFrom(const ASparseBitVector<A2> &vector)
+{
     if (vector.IsNull()) {
         ClearToNull();
     } else {
@@ -692,25 +699,6 @@ template<class Allocator> inline void Swap(ASparseBitVector<Allocator> &vectorA,
     vectorA.fNumberOfSegments = vectorB.fNumberOfSegments;
     vectorB.fBase = base;
     vectorB.fNumberOfSegments = numberOfSegments;
-}
-
-template<class Allocator>
-template<class A2>
-inline ASparseBitVector<Allocator> &ASparseBitVector<Allocator>::operator=(const ASparseBitVector<A2> &vector)
-{
-    if (vector.IsNull())
-        ClearToNull();
-    else
-        Clear();
-    if (vector.fNumberOfSegments) {
-        fNumberOfSegments = vector.fNumberOfSegments;
-        fBase = (Segment *)Allocator::allocate(fNumberOfSegments * sizeof(Segment));
-        memset(fBase, 0, fNumberOfSegments * sizeof(Segment));
-        SparseBitIndex i;
-        for (i = 0; i < fNumberOfSegments; i++)
-            fBase[i].copy(vector.fBase[i], *this);
-    }
-    return *this;
 }
 
 template<class Allocator>

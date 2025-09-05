@@ -10901,7 +10901,8 @@ TR::Register *OMR::Z::TreeEvaluator::arraycmplenEvaluator(TR::Node *node, TR::Co
     TR::Node *firstBaseAddr = node->getFirstChild();
     TR::Node *secondBaseAddr = node->getSecondChild();
     TR::Node *elemsExpr = node->getChild(2);
-
+    TR_ASSERT_FATAL_WITH_NODE(node, elemsExpr->getDataType().isInt64(),
+        "Index of the last byte to compare in arraycmplen should be of datatype Int64");
     TR::Register *firstBaseReg = NULL;
     TR::Register *secondBaseReg = NULL;
     bool lenMinusOne = false;
@@ -10924,7 +10925,7 @@ TR::Register *OMR::Z::TreeEvaluator::arraycmplenEvaluator(TR::Node *node, TR::Co
     dependencies->addPostCondition(orgLen, TR::RealRegister::AssignAny);
     dependencies->addPostCondition(resultReg, TR::RealRegister::AssignAny);
 
-    generateRRInstruction(cg, TR::InstOpCode::getLoadRegOpCode(), node, resultReg, orgLen);
+    generateRRInstruction(cg, TR::InstOpCode::LGR, node, resultReg, orgLen);
 
     generateS390LabelInstruction(cg, TR::InstOpCode::label, node, cFlowRegionStart);
     cFlowRegionStart->setStartInternalControlFlow();
@@ -10932,11 +10933,17 @@ TR::Register *OMR::Z::TreeEvaluator::arraycmplenEvaluator(TR::Node *node, TR::Co
     generateS390CompareAndBranchInstruction(cg, TR::InstOpCode::getCmpLogicalRegOpCode(), node, firstBaseReg,
         secondBaseReg, TR::InstOpCode::COND_BE, cFlowRegionEnd);
 
-    generateRRInstruction(cg, TR::InstOpCode::getLoadRegOpCode(), node, firstLen, orgLen);
-    generateRRInstruction(cg, TR::InstOpCode::getLoadRegOpCode(), node, secondLen, orgLen);
+    // For CLCL, even though only 32-63 bits are used to indicate the length of
+    // the operands, use LGR on 31-bit platform as well to ensure that we do not
+    // use garbage value in upper half of the register for result as result and
+    // third child of arraycmplen is Int64.
+    generateRRInstruction(cg, TR::InstOpCode::LGR, node, firstLen, orgLen);
+    generateRRInstruction(cg, TR::InstOpCode::LGR, node, secondLen, orgLen);
     generateRRInstruction(cg, TR::InstOpCode::CLCL, node, firstPair, secondPair);
 
-    generateRRInstruction(cg, TR::InstOpCode::getSubstractRegOpCode(), node, resultReg, firstLen);
+    // On 31-bit platform, for arraycmplen node, data type of the node itself as
+    // well as third child is Int64.
+    generateRRInstruction(cg, TR::InstOpCode::SGR, node, resultReg, firstLen);
 
     generateS390LabelInstruction(cg, TR::InstOpCode::label, node, cFlowRegionEnd, dependencies);
     cFlowRegionEnd->setEndInternalControlFlow();

@@ -32,7 +32,15 @@ Checklist::Checklist(TR::Compilation *c)
     , _v(allocBV())
 {}
 
-Checklist::~Checklist() { _comp->getBitVectorPool().release(_v); }
+Checklist::~Checklist()
+{
+    try {
+        _comp->getBitVectorPool().release(_v);
+    } catch (const std::bad_alloc &) {
+        // Prevent uncaught exception in destructor from causing termination.
+        // Okay to ignore as we will only fail to add to BitVectorPool.
+    }
+}
 
 Checklist::Checklist(const Checklist &other)
     : _comp(other._comp)

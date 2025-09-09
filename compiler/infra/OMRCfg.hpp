@@ -86,7 +86,7 @@ template<class T> class TR_Array;
 
 #define MAX_REMOVE_EDGE_NESTING_DEPTH 125
 
-#define LOW_FREQ 5
+#define LOW_FREQ 1
 #define AVG_FREQ 150
 
 namespace OMR {

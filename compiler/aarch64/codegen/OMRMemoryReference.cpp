@@ -1131,9 +1131,9 @@ uint8_t *OMR::ARM64::MemoryReference::generateBinaryEncoding(TR::Instruction *cu
                     uint32_t bitsToShift = isImm12VectorMemoryAccess(enc) ? 4 : size;
                     uint32_t shifted = displacement >> bitsToShift;
 
-                    if (size > 0) {
-                        TR_ASSERT((displacement & ((1 << size) - 1)) == 0,
-                            "Non-aligned offset in 2/4/8-byte memory access.");
+                    if (bitsToShift > 0) {
+                        TR_ASSERT_FATAL((displacement & ((1 << bitsToShift) - 1)) == 0,
+                            "Non-aligned offset in 2/4/8/16-byte memory access.");
                     }
 
                     if (constantIsUnsignedImm12(shifted)) {
@@ -1146,7 +1146,7 @@ uint8_t *OMR::ARM64::MemoryReference::generateBinaryEncoding(TR::Instruction *cu
                     uint32_t size = ((opc >> 1) + 2);
                     uint32_t shifted = displacement >> size;
 
-                    TR_ASSERT((displacement & ((1 << size) - 1)) == 0, "displacement must be 4/8-byte alligned");
+                    TR_ASSERT_FATAL((displacement & ((1 << size) - 1)) == 0, "displacement must be 4/8-byte alligned");
 
                     if (constantIsImm7(shifted)) {
                         *wcursor |= (shifted & 0x7f) << 15; /* imm7 */
@@ -1307,9 +1307,23 @@ TR::Instruction *OMR::ARM64::MemoryReference::expandInstruction(TR::Instruction 
                     uint32_t bitsToShift = isImm12VectorMemoryAccess(enc) ? 4 : size;
                     uint32_t shifted = displacement >> bitsToShift;
 
-                    if (size > 0) {
-                        TR_ASSERT((displacement & ((1 << size) - 1)) == 0,
-                            "Non-aligned offset in 2/4/8-byte memory access.");
+                    if ((bitsToShift > 0) && ((displacement & ((1 << bitsToShift) - 1)) != 0)) {
+                        /* cannot encode the unaligned offset in the load/store instruction */
+                        TR::RealRegister *x16 = cg->machine()->getRealRegister(TR::RealRegister::x16);
+                        TR::Instruction *prev = currentInstruction->getPrev();
+                        TR::Instruction *tmp
+                            = loadConstant32(cg, currentInstruction->getNode(), displacement, x16, prev);
+                        TR::InstOpCode::Mnemonic newOp = getEquivalentRegisterOffsetMnemonic(op.getMnemonic());
+
+                        if (comp->getOption(TR_TraceCG) && debugObj) {
+                            TR::InstOpCode newOpCode(newOp);
+                            traceMsg(comp, "Replacing opcode of instruction %p from %s to %s\n", currentInstruction,
+                                debugObj->getOpCodeName(&op), debugObj->getOpCodeName(&newOpCode));
+                        }
+                        currentInstruction->setOpCodeValue(newOp);
+                        self()->setIndexRegister(x16);
+                        self()->setOffset(0);
+                        return currentInstruction;
                     }
 
                     if (constantIsUnsignedImm12(shifted)) {

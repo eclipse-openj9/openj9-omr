@@ -5676,6 +5676,19 @@ void OMR::Options::setAggressiveThroughput()
 #ifdef J9_PROJECT_SPECIFIC
     TR::Options::_scorchingSampleThreshold = 500; // 6% CPU
     TR::Options::_veryHotSampleThreshold = 1000; // 3% CPU
+
+    /**
+     * Certain optimizations may work against overall throughput goals because
+     * the transformations may yield artifacts (e.g., stack local objects,
+     * increased internal pointers usage) that put pressure on method prologues
+     * for applications that may have large acyclic methods and reach higher
+     * optimization levels.  In addition, they have the potential to create
+     * improper regions which inhibit other throughput-focused optimizations.
+     */
+    self()->setDisabled(OMR::loopReplicator, true);
+    self()->setDisabled(OMR::loopStrider, true);
+    self()->setDisabled(OMR::escapeAnalysis, true);
+    self()->setOption(TR_DisableLoopTransfer);
 #endif
     self()->setOption(TR_DisablePersistIProfile); // Want to rely on freshly collected IProfiler data
     self()->setOption(TR_UseHigherMethodCounts); // Increase counts to gather more IProfiler data

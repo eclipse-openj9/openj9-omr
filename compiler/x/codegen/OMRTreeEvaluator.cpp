@@ -2579,8 +2579,7 @@ static bool enablePrimitiveArrayCopyInlineSmallSizeWithoutREPMOVS(uint8_t elemen
             int32_t newThreshold = cg->comp()->getOptions()->getArraycopyRepMovsLongArrayThreshold();
             if ((threshold < newThreshold) && ((newThreshold == 64) || (newThreshold == 128))) {
                 // If the CPU doesn't support AVX512, reduce the threshold to 64 bytes
-                threshold
-                    = ((newThreshold == 128) && !cg->comp()->target().cpu.supportsFeature(OMR_FEATURE_X86_AVX512F))
+                threshold = ((newThreshold == 128) && cg->getMaxPreferredVectorLength() != TR::VectorLength512)
                     ? 64
                     : newThreshold;
             }
@@ -2592,8 +2591,7 @@ static bool enablePrimitiveArrayCopyInlineSmallSizeWithoutREPMOVS(uint8_t elemen
             int32_t newThreshold = cg->comp()->getOptions()->getArraycopyRepMovsIntArrayThreshold();
             if ((threshold < newThreshold) && ((newThreshold == 64) || (newThreshold == 128))) {
                 // If the CPU doesn't support AVX512, reduce the threshold to 64 bytes
-                threshold
-                    = ((newThreshold == 128) && !cg->comp()->target().cpu.supportsFeature(OMR_FEATURE_X86_AVX512F))
+                threshold = ((newThreshold == 128) && cg->getMaxPreferredVectorLength() != TR::VectorLength512)
                     ? 64
                     : newThreshold;
             }
@@ -2821,7 +2819,7 @@ static void arrayCopyPrimitiveInlineSmallSizeConstantCopySize(TR::Node *node, TR
     bool emitVzeroupper = false;
 
     if (((copySize < 64) && ((copySize & (copySize - 1)) == 0)) // power of 2
-        || ((copySize == 64) && cg->comp()->target().cpu.supportsFeature(OMR_FEATURE_X86_AVX512F))) {
+        || ((copySize == 64) && cg->getMaxPreferredVectorLength() == TR::VectorLength512)) {
         TR::Register *valueReg = (copySize >= 16) ? tmpVRFReg1 : tmpReg1;
         emitVzeroupper = copySize >= 32;
         generateArrayElementLoad(node, valueReg, copySize, srcReg, 0 /* index */, cg);

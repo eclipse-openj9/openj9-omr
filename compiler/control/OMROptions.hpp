@@ -1398,6 +1398,8 @@ public:
 
     TR::CodeCacheKind getCodeCacheKind() { return _codeCacheKind; }
 
+    TR::SimpleRegex *getTransientClassRegex() { return _transientClassRegex; }
+
     void setCodeCacheKind(TR::CodeCacheKind kind) { _codeCacheKind = kind; }
 
     void init()
@@ -1560,6 +1562,7 @@ public:
         _arraycopyRepMovsLongArrayThreshold = 128;
         _arraycopyRepMovsReferenceArrayThreshold = 128;
         _codeCacheKind = TR::CodeCacheKind::DEFAULT_CC;
+        _transientClassRegex = NULL;
 
         memset(_options, 0, sizeof(_options));
         memset(_disabledOptimizations, false, sizeof(_disabledOptimizations));
@@ -2840,6 +2843,7 @@ protected:
                                                       // Only supports 32, 64, or 128 bytes
 
     TR::CodeCacheKind _codeCacheKind;
+    TR::SimpleRegex *_transientClassRegex;
 }; // TR::Options
 
 } // namespace OMR

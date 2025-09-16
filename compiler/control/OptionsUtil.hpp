@@ -208,6 +208,9 @@ private:
 //
 enum CodeCacheKind {
     DEFAULT_CC = 0,
+    TRANSIENT_CODE_CC, // To prevent fragmentation, we allow the user to indicate that certain classes are
+                       // transient, this allows us to place the code for these classes in a distinct code
+                       // cache which prevents fragmentation.
     FILE_BACKED_CC,
 };
 

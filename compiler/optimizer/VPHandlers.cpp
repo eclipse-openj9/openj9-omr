@@ -1896,29 +1896,8 @@ TR::Node *constrainAloadi(OMR::ValuePropagation *vp, TR::Node *node)
             return node;
 
         TR::SymbolReference *symRef = node->getSymbolReference();
-        bool attemptCompileTimeLoad = true;
 
 #ifdef J9_PROJECT_SPECIFIC
-        int32_t nonHelperId = symRef->getReferenceNumber() - vp->comp()->getSymRefTab()->getNumHelperSymbols();
-        switch (nonHelperId) {
-            case TR::SymbolReferenceTable::componentClassSymbol:
-            case TR::SymbolReferenceTable::componentClassAsPrimitiveSymbol:
-                // Don't try to dereference through <componentClass> unless we
-                // observe below that the base address is constrained to a fixed
-                // J9Class representing an array type. It's possible on dead paths
-                // to have the base address point to a non-array J9Class, in which
-                // case constrainCompileTimeLoad would load some garbage and treat
-                // the garbage as a J9Class pointer for loadaddr.
-                //
-                // Note that if constrainCompileTimeLoad is called for an ancestor
-                // node, it won't dereference through this <componentClass>,
-                // instead expecting it to have a good constraint if possible.
-                attemptCompileTimeLoad = false;
-                break;
-            default:
-                break; // OK to attempt compile-time load
-        }
-
         const static char *needInitializedCheck = feGetEnv("TR_needInitializedCheck");
         TR::VPConstraint *base = vp->getConstraint(node->getFirstChild(), isGlobal);
 
@@ -2053,7 +2032,6 @@ TR::Node *constrainAloadi(OMR::ValuePropagation *vp, TR::Node *node)
                 node->setIsNonNull(true);
             } else if (symRef == vp->comp()->getSymRefTab()->findArrayComponentTypeSymbolRef()
                 && base->getClassType()->isArray() == TR_yes) {
-                attemptCompileTimeLoad = true;
                 TR_OpaqueClassBlock *componentClass
                     = vp->comp()->fej9()->getComponentClassFromArrayClass(base->getClass());
                 // this should be able to be precise because we do know the compenent class pointer precisely
@@ -2088,7 +2066,7 @@ TR::Node *constrainAloadi(OMR::ValuePropagation *vp, TR::Node *node)
 
 #endif
 
-        if (attemptCompileTimeLoad && constrainCompileTimeLoad(vp, node))
+        if (constrainCompileTimeLoad(vp, node))
             return node;
 
 #ifdef J9_PROJECT_SPECIFIC

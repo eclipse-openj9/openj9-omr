@@ -162,7 +162,7 @@ void OMR::ARM64::CodeGenerator::initialize()
 
     cg->getLinkage()->setParameterLinkageRegisterIndex(comp->getJittedMethodSymbol());
 
-    if (comp->target().isSMP())
+    if (comp->target().isSMP() && !comp->getOption(TR_DisregardCPUStoreOrdering))
         cg->setEnforceStoreOrder();
 
     cg->setSupportsAutoSIMD();

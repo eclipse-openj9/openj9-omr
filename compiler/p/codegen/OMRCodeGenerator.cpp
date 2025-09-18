@@ -276,7 +276,7 @@ void OMR::Power::CodeGenerator::initialize()
     }
 
     // TODO: distinguishing among OOO and non-OOO implementations
-    if (comp->target().isSMP())
+    if (comp->target().isSMP() && !comp->getOption(TR_DisregardCPUStoreOrdering))
         cg->setEnforceStoreOrder();
 
     if (!comp->getOption(TR_DisableTraps) && TR::Compiler->vm.hasResumableTrapHandler(comp))

@@ -584,7 +584,7 @@ enum TR_CompilationOptions {
     // Option word 16
     TR_ForceNonSMP                                           = 0x00000020 + 16,
     TR_jitAllAtMain                                          = 0x00000040 + 16,
-    // Available                                             = 0x00000080 + 16,
+    TR_DisregardCPUStoreOrdering                             = 0x00000080 + 16,
     // Available                                             = 0x00000100 + 16,
     TR_EnableAOTMethodExit                                   = 0x00000200 + 16,
     // Available                                             = 0x00000400 + 16,

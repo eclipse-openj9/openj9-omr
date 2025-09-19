@@ -2063,6 +2063,9 @@ TR::OptionTable OMR::Options::_jitOptions[] = {
     { "transactionalMemoryRetryCount=", "R<nnn>\tthe time of retries when transactions get abort",
      TR::Options::setStaticNumeric, (intptr_t)&OMR::Options::_TransactionalMemoryRetryCount, 0, "F%d",
      NOT_IN_SUBSET },
+    { "transientCodeRegex=",
+     "O{regex}\tRegex to specify classes that are likely to be unloaded during runtime lifetime. Jitted code for "
+        "methods belonging to such classes will be stored in dedicated code caches.", TR::Options::setRegex, offsetof(OMR::Options, _transientClassRegex), 0, "P" },
 #if defined(DEBUG)
     { "trdebug=", "D{option,option,...}\tadd debug_options to the debug list", TR::Options::setDebug },
 #endif

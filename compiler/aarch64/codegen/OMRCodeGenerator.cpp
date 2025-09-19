@@ -196,14 +196,14 @@ OMR::ARM64::CodeGenerator::initialize()
          cg->setSupportsArraySet();
          }
 
-      static bool disableTRTO = (feGetEnv("TR_disableTRTO") != NULL);
-      if (!disableTRTO)
+      static bool enableTRTO = (feGetEnv("TR_enableTRTO") != NULL);
+      if (enableTRTO)
          {
          cg->setSupportsArrayTranslateTRTO();
          }
 
-      static bool disableTRTO255 = (feGetEnv("TR_disableTRTO255") != NULL);
-      if (!disableTRTO255)
+      static bool enableTRTO255 = (feGetEnv("TR_enableTRTO255") != NULL);
+      if (enableTRTO255)
          {
          cg->setSupportsArrayTranslateTRTO255();
          }

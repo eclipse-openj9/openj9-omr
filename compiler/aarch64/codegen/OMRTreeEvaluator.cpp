@@ -5672,11 +5672,11 @@ TR::Register *commonStoreEvaluator(TR::Node *node, TR::InstOpCode::Mnemonic op, 
     /*
      * Use xzr as source register of str instruction
      * if valueChild is a compressed refs sequence of address constant NULL,
-     * or valueChild is a zero constant integer.
+     * or valueChild is a zero constant integer or address.
      */
     if ((valueChildRoot != NULL)
-        || (valueChild->getDataType().isIntegral() && valueChild->isConstZeroValue()
-            && (valueChild->getRegister() == NULL))) {
+        || ((valueChild->getDataType().isIntegral() || valueChild->getDataType().isAddress())
+            && valueChild->isConstZeroValue() && (valueChild->getRegister() == NULL))) {
         TR::Register *zeroReg = cg->allocateRegister();
         generateMemSrc1Instruction(cg, op, node, tempMR, zeroReg);
         TR::RegisterDependencyConditions *deps

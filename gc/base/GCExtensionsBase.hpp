@@ -519,6 +519,7 @@ public:
 	float concurrentScavengerAllocAverageBoost; /**< boost factor for allocate rate, used for tilt calculation in CS - similar to Slack but expressed in relative rather than absolute terms */
 	float concurrentScavengerAllocDeviationBoost; /**< boost factor for allocate rate deviation, used for tilt calculation in CS - increase when frequent small deviations in allocation are expected */
 	bool concurrentScavengeExhaustiveTermination; /**< control flag to enable/disable concurrent phase termination optimization using involving async mutator callbacks */
+	float concurrentScavengerTaxationHeadroom; /**< Threshold of allocation progress allowed ahead of copying before taxation is activated */
 #endif	/* defined(OMR_GC_CONCURRENT_SCAVENGER) */
 	uintptr_t scavengerFailedTenureThreshold;
 	uintptr_t maxScavengeBeforeGlobal;
@@ -1718,6 +1719,7 @@ public:
 		, concurrentScavengerAllocAverageBoost(1.5)
 		, concurrentScavengerAllocDeviationBoost(5.0)
 		, concurrentScavengeExhaustiveTermination(true)
+		, concurrentScavengerTaxationHeadroom(0.00f)
 #endif /* defined(OMR_GC_CONCURRENT_SCAVENGER) */
 		, scavengerFailedTenureThreshold(0)
 		, maxScavengeBeforeGlobal(0)

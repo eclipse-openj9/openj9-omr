@@ -84,6 +84,11 @@ void OMR::ARM64::CodeGenerator::initialize()
     cg->setSupportsGlRegDeps();
     cg->setSupportsGlRegDepOnFirstBlock();
 
+    static const char *disableAllAutosAsGRACandidates = feGetEnv("TR_DisableConsiderAllAutosAsTacticalGRACandidates");
+    if (!disableAllAutosAsGRACandidates) {
+        cg->setConsiderAllAutosAsTacticalGlobalRegisterCandidates();
+    }
+
     cg->addSupportedLiveRegisterKind(TR_GPR);
     cg->addSupportedLiveRegisterKind(TR_FPR);
     cg->addSupportedLiveRegisterKind(TR_VRF);

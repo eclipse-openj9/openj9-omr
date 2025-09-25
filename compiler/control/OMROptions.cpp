@@ -425,6 +425,9 @@ TR::OptionTable OMR::Options::_jitOptions[] = {
      SET_OPTION_BIT(TR_DisableConservativeHotRecompilationForServerMode), "F", NOT_IN_SUBSET },
     { "disableConservativeInlining", "O\tDo not be conservative with inlining",
      SET_OPTION_BIT(TR_DisableConservativeInlining), "F" },
+    { "disableConstProvenance",
+     "M\tdisable constant provenance tracking. Known objects will be assumed to be reachable from the outermost "
+        "method.", SET_OPTION_BIT(TR_DisableConstProvenance), "F" },
     { "disableConverterReducer", "O\tdisable reducing converters methods to intrinsic arrayTranslate",
      SET_OPTION_BIT(TR_DisableConverterReducer), "F" },
     { "disableCPUUtilization", "M\tdisable tracking of cpu utilization", SET_OPTION_BIT(TR_DisableCPUUtilization), "F",
@@ -1884,6 +1887,7 @@ TR::OptionTable OMR::Options::_jitOptions[] = {
     { "traceCompactLocals", "L\ttrace compact locals", TR::Options::traceOptimization, compactLocals, 0, "P" },
     { "traceCompactNullChecks", "L\ttrace compact null checks", TR::Options::traceOptimization, compactNullChecks, 0,
      "P" },
+    { "traceConstProvenance", "L\ttrace constant provenance", SET_OPTION_BIT(TR_TraceConstProvenance), "P" },
     { "traceDeadTreeElimination", "L\ttrace dead tree elimination", TR::Options::traceOptimization,
      deadTreesElimination, 0, "P" },
     { "traceDominators", "L\ttrace dominators and post-dominators", SET_OPTION_BIT(TR_TraceDominators), "P" },

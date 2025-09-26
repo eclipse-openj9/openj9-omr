@@ -1640,6 +1640,7 @@ int32_t OMR::Optimizer::performOptimization(const OptimizationStrategy *optimiza
             delete opt;
             return 0;
         }
+        comp()->reportOptimizationPhase(optNum);
 
         if (comp()->getOption(TR_TraceOptDetails)) {
             if (comp()->isOutermostMethod())
@@ -1947,7 +1948,6 @@ int32_t OMR::Optimizer::performOptimization(const OptimizationStrategy *optimiza
             }
         }
 
-        comp()->reportOptimizationPhase(optNum);
         breakForTesting(optNum);
         if (!doThisOptimizationIfEnabled
             || manager->getRequestedBlocks()->find(toBlock(comp()->getFlowGraph()->getStart()))

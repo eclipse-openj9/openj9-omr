@@ -2466,7 +2466,11 @@ OMR::Compilation::CompilationPhaseScope::CompilationPhaseScope(TR::Compilation *
     , _savedPhase(comp->saveCompilationPhase())
 {}
 
-OMR::Compilation::CompilationPhaseScope::~CompilationPhaseScope() { _comp->restoreCompilationPhase(_savedPhase); }
+OMR::Compilation::CompilationPhaseScope::~CompilationPhaseScope()
+{
+    if (!std::uncaught_exception())
+        _comp->restoreCompilationPhase(_savedPhase);
+}
 
 TR::Region &OMR::Compilation::aliasRegion() { return self()->_aliasRegion; }
 

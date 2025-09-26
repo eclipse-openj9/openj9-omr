@@ -231,9 +231,9 @@ public:
 
     bool supportsAVX512VPOPCNTDQ() { return testFeatureFlags10(TR_AVX512_VPOPCNTDQ) && enabledXSAVE(); }
 
-    bool supportsBMI1() { return testFeatureFlags8(TR_BMI1) && enabledXSAVE(); }
+    bool supportsBMI1() { return testFeatureFlags8(TR_BMI1); }
 
-    bool supportsBMI2() { return testFeatureFlags8(TR_BMI2) && enabledXSAVE(); }
+    bool supportsBMI2() { return testFeatureFlags8(TR_BMI2); }
 
     bool supportsFMA() { return testFeatureFlags2(TR_FMA) && enabledXSAVE(); }
 

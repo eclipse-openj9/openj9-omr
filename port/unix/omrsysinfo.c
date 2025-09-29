@@ -102,6 +102,7 @@
 #endif /* defined(AIXPPC) */
 
 #include "omrsysinfo_helpers.h"
+#include "omrformatconsts.h"
 
 /* Start copy from omrfiletext.c */
 /* __STDC_ISO_10646__ indicates that the platform wchar_t encoding is Unicode */
@@ -7893,4 +7894,46 @@ alloc_failed:
 	/* sysinfo_get_processes is not supported on this platform. */
 	return OMRPORT_ERROR_SYSINFO_NOT_SUPPORTED;
 #endif /* defined(AIXPPC) */
+}
+
+char *
+omrsysinfo_get_process_name(struct OMRPortLibrary *portLibrary, uintptr_t pid)
+{
+#if defined(AIXPPC)
+	int fd = 0;
+	char exebuf[35];
+	union {
+		struct psinfo info;
+		char raw[1024];
+	} infobuf;
+	snprintf(exebuf, sizeof(exebuf), "/proc/%" OMR_PRIuPTR "/psinfo", pid);
+	fd = open(exebuf, O_RDONLY);
+	if (-1 != fd) {
+		const char *name = infobuf.info.pr_fname;
+		ssize_t minsize = name - infobuf.raw + sizeof(infobuf.info.pr_fname);
+		ssize_t size = read(fd, infobuf.raw, sizeof(infobuf));
+		close(fd);
+		if (size >= minsize) {
+			uintptr_t len = strlen(name);
+			char *exename = portLibrary->mem_allocate_memory(portLibrary, len, OMR_GET_CALLSITE(), OMRMEM_CATEGORY_PORT_LIBRARY);
+			strcpy(exename, name);
+			return exename;
+		}
+	}
+#elif defined(LINUX) && !defined(OMRZTPF) /* defined(AIXPPC) */
+	ssize_t exelen = 0;
+	char exebuf[32];
+	char linkbuf[PATH_MAX];
+	snprintf(exebuf, sizeof(exebuf), "/proc/%" OMR_PRIuPTR "/exe", pid);
+	exelen = readlink(exebuf, linkbuf, sizeof(linkbuf));
+	if ((-1 != exelen) && (exelen < sizeof(linkbuf))) {
+		char *exename = portLibrary->mem_allocate_memory(portLibrary, exelen + 1, OMR_GET_CALLSITE(), OMRMEM_CATEGORY_PORT_LIBRARY);
+		if (NULL != exename) {
+			memcpy(exename, linkbuf, exelen);
+			exename[exelen] = '\0';
+			return exename;
+		}
+	}
+#endif /* defined(AIXPPC) */
+	return NULL;
 }

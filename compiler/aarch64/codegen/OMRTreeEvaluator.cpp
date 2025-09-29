@@ -22,6 +22,7 @@
 #include <utility>
 #include "codegen/ARM64HelperCallSnippet.hpp"
 #include "codegen/ARM64Instruction.hpp"
+#include "codegen/ARM64OutOfLineCodeSection.hpp"
 #include "codegen/ARM64ShiftCode.hpp"
 #include "codegen/CodeGenerator.hpp"
 #include "codegen/CodeGeneratorUtils.hpp"
@@ -6926,6 +6927,136 @@ static void generateCallToArrayCopyHelper(TR::Node *node, TR::Register *srcAddrR
     return;
 }
 
+static void inlinePrimitiveForwardArraycopy(TR::Node *node, TR::Register *srcAddrReg, TR::Register *dstAddrReg,
+    TR::Register *lengthReg, TR::CodeGenerator *cg)
+{
+    TR::LabelSymbol *oolArraycopyLabel = generateLabelSymbol(cg);
+    TR::LabelSymbol *doneLabel = generateLabelSymbol(cg);
+
+    // Prepare the out of line call to arraycopy helper
+    //
+    TR_ARM64OutOfLineCodeSection *oolSection
+        = new (cg->trHeapMemory()) TR_ARM64OutOfLineCodeSection(oolArraycopyLabel, doneLabel, cg);
+    cg->getARM64OutOfLineCodeSectionList().push_front(oolSection);
+    oolSection->swapInstructionListsWithCompilation();
+
+    generateLabelInstruction(cg, TR::InstOpCode::label, node, oolArraycopyLabel);
+
+    TR::SymbolReference *arrayCopyHelper
+        = cg->symRefTab()->findOrCreateRuntimeHelper(TR_ARM64arrayCopy, false, false, false);
+
+    generateImmSymInstruction(cg, TR::InstOpCode::bl, node, (uintptr_t)arrayCopyHelper->getMethodAddress(), NULL,
+        arrayCopyHelper, NULL);
+
+    generateLabelInstruction(cg, TR::InstOpCode::b, node, doneLabel);
+
+    cg->machine()->setLinkRegisterKilled(true);
+    oolSection->swapInstructionListsWithCompilation();
+
+    // Mainline code for inline simple forward arraycopies below a threshold
+    //
+
+    // x0-x3 and v30-v31 are destroyed in the helper
+    TR::RegisterDependencyConditions *deps
+        = new (cg->trHeapMemory()) TR::RegisterDependencyConditions(6, 6, cg->trMemory());
+    TR::addDependency(deps, lengthReg, TR::RealRegister::x0, TR_GPR, cg);
+    TR::addDependency(deps, srcAddrReg, TR::RealRegister::x1, TR_GPR, cg);
+    TR::addDependency(deps, dstAddrReg, TR::RealRegister::x2, TR_GPR, cg);
+    TR::addDependency(deps, NULL, TR::RealRegister::x3, TR_GPR, cg);
+    TR::addDependency(deps, NULL, TR::RealRegister::v30, TR_FPR, cg);
+    TR::addDependency(deps, NULL, TR::RealRegister::v31, TR_FPR, cg);
+    TR::Register *x3ScratchReg = deps->searchPostConditionRegister(TR::RealRegister::x3);
+    TR::Register *v30ScratchReg = deps->searchPostConditionRegister(TR::RealRegister::v30);
+    TR::Register *v31ScratchReg = deps->searchPostConditionRegister(TR::RealRegister::v31);
+
+    static const char *breakOnInlineArraycopy = feGetEnv("TR_BreakOnInlineArraycopy");
+    if (breakOnInlineArraycopy) {
+        generateExceptionInstruction(cg, TR::InstOpCode::brkarm64, node, 0);
+    }
+
+    const int32_t inlineThresholdBytes = 63;
+    generateCompareImmInstruction(cg, node, lengthReg, inlineThresholdBytes, true);
+    generateConditionalBranchInstruction(cg, TR::InstOpCode::b_cond, node, oolArraycopyLabel, TR::CC_HI);
+
+    generateTrg1Src2Instruction(cg, TR::InstOpCode::subsx, node, x3ScratchReg, dstAddrReg, srcAddrReg);
+
+    // Skip if src and dest are the same
+    //
+    generateConditionalBranchInstruction(cg, TR::InstOpCode::b_cond, node, doneLabel, TR::CC_EQ);
+
+    if (!node->isForwardArrayCopy()) {
+        // Check for forward arraycopy dynamically if not known.  Forward arraycopies should be
+        // the more common case and are optimized inline.
+        //
+        generateCompareInstruction(cg, node, lengthReg, x3ScratchReg, true);
+        generateConditionalBranchInstruction(cg, TR::InstOpCode::b_cond, node, oolArraycopyLabel, TR::CC_HI);
+    }
+
+    // Copy 32 bytes
+    //
+    TR::LabelSymbol *fwAC16Label = generateLabelSymbol(cg);
+    generateTestBitBranchInstruction(cg, TR::InstOpCode::tbz, node, lengthReg, 5, fwAC16Label);
+    generateTrg2MemInstruction(cg, TR::InstOpCode::vldppostq, node, v30ScratchReg, v31ScratchReg,
+        TR::MemoryReference::createWithDisplacement(cg, srcAddrReg, 32));
+    generateMemSrc2Instruction(cg, TR::InstOpCode::vstppostq, node,
+        TR::MemoryReference::createWithDisplacement(cg, dstAddrReg, 32), v30ScratchReg, v31ScratchReg);
+
+    // Copy 16 bytes
+    //
+    generateLabelInstruction(cg, TR::InstOpCode::label, node, fwAC16Label);
+    TR::LabelSymbol *fwAC8Label = generateLabelSymbol(cg);
+    generateTestBitBranchInstruction(cg, TR::InstOpCode::tbz, node, lengthReg, 4, fwAC8Label);
+    generateTrg1MemInstruction(cg, TR::InstOpCode::vldrpostq, node, v30ScratchReg,
+        TR::MemoryReference::createWithDisplacement(cg, srcAddrReg, 16));
+    generateMemSrc1Instruction(cg, TR::InstOpCode::vstrpostq, node,
+        TR::MemoryReference::createWithDisplacement(cg, dstAddrReg, 16), v30ScratchReg);
+
+    // Copy 8 bytes
+    //
+    generateLabelInstruction(cg, TR::InstOpCode::label, node, fwAC8Label);
+    TR::LabelSymbol *fwAC4Label = generateLabelSymbol(cg);
+    generateTestBitBranchInstruction(cg, TR::InstOpCode::tbz, node, lengthReg, 3, fwAC4Label);
+    generateTrg1MemInstruction(cg, TR::InstOpCode::ldrpostx, node, x3ScratchReg,
+        TR::MemoryReference::createWithDisplacement(cg, srcAddrReg, 8));
+    generateMemSrc1Instruction(cg, TR::InstOpCode::strpostx, node,
+        TR::MemoryReference::createWithDisplacement(cg, dstAddrReg, 8), x3ScratchReg);
+
+    // Copy 4 bytes
+    //
+    generateLabelInstruction(cg, TR::InstOpCode::label, node, fwAC4Label);
+    TR::LabelSymbol *fwAC2Label = generateLabelSymbol(cg);
+    generateTestBitBranchInstruction(cg, TR::InstOpCode::tbz, node, lengthReg, 2, fwAC2Label);
+    generateTrg1MemInstruction(cg, TR::InstOpCode::ldrpostw, node, x3ScratchReg,
+        TR::MemoryReference::createWithDisplacement(cg, srcAddrReg, 4));
+    generateMemSrc1Instruction(cg, TR::InstOpCode::strpostw, node,
+        TR::MemoryReference::createWithDisplacement(cg, dstAddrReg, 4), x3ScratchReg);
+
+    // Copy 2 bytes
+    //
+    generateLabelInstruction(cg, TR::InstOpCode::label, node, fwAC2Label);
+    TR::LabelSymbol *fwAC1Label = generateLabelSymbol(cg);
+    generateTestBitBranchInstruction(cg, TR::InstOpCode::tbz, node, lengthReg, 1, fwAC1Label);
+    generateTrg1MemInstruction(cg, TR::InstOpCode::ldrhpost, node, x3ScratchReg,
+        TR::MemoryReference::createWithDisplacement(cg, srcAddrReg, 2));
+    generateMemSrc1Instruction(cg, TR::InstOpCode::strhpost, node,
+        TR::MemoryReference::createWithDisplacement(cg, dstAddrReg, 2), x3ScratchReg);
+
+    // Copy 1 byte
+    //
+    generateLabelInstruction(cg, TR::InstOpCode::label, node, fwAC1Label);
+    generateTestBitBranchInstruction(cg, TR::InstOpCode::tbz, node, lengthReg, 0, doneLabel);
+    generateTrg1MemInstruction(cg, TR::InstOpCode::ldrbpost, node, x3ScratchReg,
+        TR::MemoryReference::createWithDisplacement(cg, srcAddrReg, 1));
+    generateMemSrc1Instruction(cg, TR::InstOpCode::strbpost, node,
+        TR::MemoryReference::createWithDisplacement(cg, dstAddrReg, 1), x3ScratchReg);
+
+    generateLabelInstruction(cg, TR::InstOpCode::label, node, doneLabel, deps);
+
+    cg->stopUsingRegister(x3ScratchReg);
+    cg->stopUsingRegister(v30ScratchReg);
+    cg->stopUsingRegister(v31ScratchReg);
+}
+
 TR::Register *OMR::ARM64::TreeEvaluator::arraycopyEvaluator(TR::Node *node, TR::CodeGenerator *cg)
 {
     bool simpleCopy = (node->getNumChildren() == 3);
@@ -6939,7 +7070,8 @@ TR::Register *OMR::ARM64::TreeEvaluator::arraycopyEvaluator(TR::Node *node, TR::
 
     TR::Node *srcObjNode, *dstObjNode, *srcAddrNode, *dstAddrNode, *lengthNode;
     TR::Register *srcObjReg = NULL, *dstObjReg = NULL, *srcAddrReg = NULL, *dstAddrReg = NULL, *lengthReg;
-    bool stopUsingCopyReg1, stopUsingCopyReg2, stopUsingCopyReg3, stopUsingCopyReg4, stopUsingCopyReg5 = false;
+    bool stopUsingSrcObjCopyReg, stopUsingDstObjCopyReg, stopUsingSrcAddrCopyReg, stopUsingDstAddrCopyReg,
+        stopUsingLenCopyReg = false;
 
     if (simpleCopy) {
         // child 0: Source byte address
@@ -6969,10 +7101,10 @@ TR::Register *OMR::ARM64::TreeEvaluator::arraycopyEvaluator(TR::Node *node, TR::
 #endif /* defined(OMR_GC_SPARSE_HEAP_ALLOCATION) */
     }
 
-    stopUsingCopyReg1 = stopUsingCopyReg(srcObjNode, srcObjReg, cg);
-    stopUsingCopyReg2 = stopUsingCopyReg(dstObjNode, dstObjReg, cg);
-    stopUsingCopyReg3 = stopUsingCopyReg(srcAddrNode, srcAddrReg, cg);
-    stopUsingCopyReg4 = stopUsingCopyReg(dstAddrNode, dstAddrReg, cg);
+    stopUsingSrcObjCopyReg = stopUsingCopyReg(srcObjNode, srcObjReg, cg);
+    stopUsingDstObjCopyReg = stopUsingCopyReg(dstObjNode, dstObjReg, cg);
+    stopUsingSrcAddrCopyReg = stopUsingCopyReg(srcAddrNode, srcAddrReg, cg);
+    stopUsingDstAddrCopyReg = stopUsingCopyReg(dstAddrNode, dstAddrReg, cg);
 
     static const bool disableArrayCopyInlining = feGetEnv("TR_disableArrayCopyInlining") != NULL;
     if ((simpleCopy || !arrayStoreCheckIsNeeded) && (node->isForwardArrayCopy() || node->isBackwardArrayCopy())
@@ -6988,13 +7120,13 @@ TR::Register *OMR::ARM64::TreeEvaluator::arraycopyEvaluator(TR::Node *node, TR::
             cg->decReferenceCount(srcObjNode);
             cg->decReferenceCount(dstObjNode);
         }
-        if (stopUsingCopyReg1)
+        if (stopUsingSrcObjCopyReg)
             cg->stopUsingRegister(srcObjReg);
-        if (stopUsingCopyReg2)
+        if (stopUsingDstObjCopyReg)
             cg->stopUsingRegister(dstObjReg);
-        if (stopUsingCopyReg3)
+        if (stopUsingSrcAddrCopyReg)
             cg->stopUsingRegister(srcAddrReg);
-        if (stopUsingCopyReg4)
+        if (stopUsingDstAddrCopyReg)
             cg->stopUsingRegister(dstAddrReg);
 
         cg->decReferenceCount(srcAddrNode);
@@ -7009,44 +7141,54 @@ TR::Register *OMR::ARM64::TreeEvaluator::arraycopyEvaluator(TR::Node *node, TR::
         TR::Register *lenCopyReg = cg->allocateRegister();
         generateMovInstruction(cg, lengthNode, lenCopyReg, lengthReg);
         lengthReg = lenCopyReg;
-        stopUsingCopyReg5 = true;
+        stopUsingLenCopyReg = true;
     }
 
-    // x0-x3 and v30-v31 are destroyed in the helper
-    TR::RegisterDependencyConditions *deps
-        = new (cg->trHeapMemory()) TR::RegisterDependencyConditions(6, 6, cg->trMemory());
-    TR::addDependency(deps, lengthReg, TR::RealRegister::x0, TR_GPR, cg);
-    TR::addDependency(deps, srcAddrReg, TR::RealRegister::x1, TR_GPR, cg);
-    TR::addDependency(deps, dstAddrReg, TR::RealRegister::x2, TR_GPR, cg);
-    TR::addDependency(deps, NULL, TR::RealRegister::x3, TR_GPR, cg);
-    TR::addDependency(deps, NULL, TR::RealRegister::v30, TR_FPR, cg);
-    TR::addDependency(deps, NULL, TR::RealRegister::v31, TR_FPR, cg);
-    TR::Register *x3Reg = deps->searchPostConditionRegister(TR::RealRegister::x3);
-    TR::Register *v30Reg = deps->searchPostConditionRegister(TR::RealRegister::v30);
-    TR::Register *v31Reg = deps->searchPostConditionRegister(TR::RealRegister::v31);
+    // Inline primitive arraycopies that are either known forward arraycopies
+    // or where the direction is unknown.
+    //
+    static const bool disableInlinePrimitiveForwardArraycopy = feGetEnv("TR_DisableInlinePrimitiveForwardArraycopy");
+    if (cg->comp()->getOption(TR_EnableInlineAArch64PrimitiveForwardArraycopies)
+        && (simpleCopy && (node->isForwardArrayCopy() || !node->isBackwardArrayCopy())
+        && !disableInlinePrimitiveForwardArraycopy)) {
+        inlinePrimitiveForwardArraycopy(node, srcAddrReg, dstAddrReg, lengthReg, cg);
+    } else {
+        // x0-x3 and v30-v31 are destroyed in the helper
+        TR::RegisterDependencyConditions *deps
+            = new (cg->trHeapMemory()) TR::RegisterDependencyConditions(6, 6, cg->trMemory());
+        TR::addDependency(deps, lengthReg, TR::RealRegister::x0, TR_GPR, cg);
+        TR::addDependency(deps, srcAddrReg, TR::RealRegister::x1, TR_GPR, cg);
+        TR::addDependency(deps, dstAddrReg, TR::RealRegister::x2, TR_GPR, cg);
+        TR::addDependency(deps, NULL, TR::RealRegister::x3, TR_GPR, cg);
+        TR::addDependency(deps, NULL, TR::RealRegister::v30, TR_FPR, cg);
+        TR::addDependency(deps, NULL, TR::RealRegister::v31, TR_FPR, cg);
+        TR::Register *x3Reg = deps->searchPostConditionRegister(TR::RealRegister::x3);
+        TR::Register *v30Reg = deps->searchPostConditionRegister(TR::RealRegister::v30);
+        TR::Register *v31Reg = deps->searchPostConditionRegister(TR::RealRegister::v31);
 
-    generateCallToArrayCopyHelper(node, srcAddrReg, dstAddrReg, lengthReg, deps, cg);
+        generateCallToArrayCopyHelper(node, srcAddrReg, dstAddrReg, lengthReg, deps, cg);
 
-    if (!simpleCopy) {
-        TR::TreeEvaluator::genWrtbarForArrayCopy(node, srcObjReg, dstObjReg, cg);
-        cg->decReferenceCount(srcObjNode);
-        cg->decReferenceCount(dstObjNode);
+        if (!simpleCopy) {
+            TR::TreeEvaluator::genWrtbarForArrayCopy(node, srcObjReg, dstObjReg, cg);
+            cg->decReferenceCount(srcObjNode);
+            cg->decReferenceCount(dstObjNode);
+        }
+
+        cg->stopUsingRegister(x3Reg);
+        cg->stopUsingRegister(v30Reg);
+        cg->stopUsingRegister(v31Reg);
     }
 
-    if (stopUsingCopyReg1)
+    if (stopUsingSrcObjCopyReg)
         cg->stopUsingRegister(srcObjReg);
-    if (stopUsingCopyReg2)
+    if (stopUsingDstObjCopyReg)
         cg->stopUsingRegister(dstObjReg);
-    if (stopUsingCopyReg3)
+    if (stopUsingSrcAddrCopyReg)
         cg->stopUsingRegister(srcAddrReg);
-    if (stopUsingCopyReg4)
+    if (stopUsingDstAddrCopyReg)
         cg->stopUsingRegister(dstAddrReg);
-    if (stopUsingCopyReg5)
+    if (stopUsingLenCopyReg)
         cg->stopUsingRegister(lengthReg);
-
-    cg->stopUsingRegister(x3Reg);
-    cg->stopUsingRegister(v30Reg);
-    cg->stopUsingRegister(v31Reg);
 
     cg->decReferenceCount(srcAddrNode);
     cg->decReferenceCount(dstAddrNode);

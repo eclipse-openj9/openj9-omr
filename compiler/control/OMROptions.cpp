@@ -1188,6 +1188,8 @@ TR::OptionTable OMR::Options::_jitOptions[] = {
     { "enableIdiomRecognition", "O\tenable Idiom Recognition", TR::Options::enableOptimization, idiomRecognition, 0,
      "P" },
 #endif
+    { "enableInlineAArch64PrimitiveForwardArraycopies", "O\tAArch64 code generation inlining of primitive, forward arraycopies",
+     SET_OPTION_BIT(TR_EnableInlineAArch64PrimitiveForwardArraycopies), "F", NOT_IN_SUBSET },
     { "enableInlineProfilingStats", "O\tenable stats about profile based inlining",
      SET_OPTION_BIT(TR_VerboseInlineProfiling), "F" },
     { "enableInliningDuringVPAtWarm", "O\tenable inlining during VP for warm bodies",
@@ -5689,6 +5691,16 @@ void OMR::Options::setAggressiveThroughput()
     self()->setDisabled(OMR::loopStrider, true);
     self()->setDisabled(OMR::escapeAnalysis, true);
     self()->setOption(TR_DisableLoopTransfer);
+
+#if defined(TR_TARGET_ARM64)
+    /**
+     * Allow AArch64 code generator to more aggressively inline primitive,
+     * forward arraycopies. This will help workloads that tend to have a
+     * number of smaller primitive arraycopies.
+     */
+    self()->setOption(TR_EnableInlineAArch64PrimitiveForwardArraycopies);
+#endif
+
 #endif
     self()->setOption(TR_DisablePersistIProfile); // Want to rely on freshly collected IProfiler data
     self()->setOption(TR_UseHigherMethodCounts); // Increase counts to gather more IProfiler data

@@ -61,9 +61,8 @@ FUNC_LABEL(__arrayTranslateTRTO):
 	mov	x6, x1
 	// load mask to a SIMD register
 	dup	v3.8h, w3
-	cmp	w2, #16
-	b.cc	atTRTO_15
 	lsr	w4, w2, #4
+	cbz	w4, atTRTO_15
 atTRTO_16Loop:
 	// load 16 elements
 	ldp	q0, q1, [x0]
@@ -72,13 +71,13 @@ atTRTO_16Loop:
 	// fail when any one of them is non-zero
 	umaxp	v2.4s, v2.4s, v2.4s
 	mov	x5, v2.D[0]
-	cbnz	x5, atTRTO_Fail
+	cbnz	x5, atTRTO_Fail8
 	// mask next 8 elements
 	and	v2.16b, v1.16b, v3.16b
 	// fail when any one of them is non-zero
 	umaxp	v2.4s, v2.4s, v2.4s
 	mov	x5, v2.D[0]
-	cbnz	x5, atTRTO_Fail
+	cbnz	x5, atTRTO_Fail16
 	// collect lower 8 bits
 	uzp1	v2.16b, v0.16b, v1.16b
 	add	x0, x0, #32
@@ -88,8 +87,7 @@ atTRTO_16Loop:
 	b.ne	atTRTO_16Loop
 atTRTO_15:
 	// 15 elements or less remaining
-	tst	w2, #8
-	b.eq	atTRTO_7
+	tbz	w2, #3, atTRTO_7		// test bit 3
 	// load 8 elements
 	ldr	q0, [x0]
 	// mask 8 elements
@@ -97,7 +95,7 @@ atTRTO_15:
 	// fail when any one of them is non-zero
 	umaxp	v2.4s, v2.4s, v2.4s
 	mov	x5, v2.D[0]
-	cbnz	x5, atTRTO_Fail
+	cbnz	x5, atTRTO_Fail8
 	// collect lower 8 bits
 	xtn	v2.8b, v0.8h
 	add	x0, x0, #16
@@ -105,15 +103,14 @@ atTRTO_15:
 	str	d2, [x1], #8
 atTRTO_7:
 	// 7 elements or less remaining
-	tst	w2, #4
-	b.eq	atTRTO_3
+	tbz	w2, #2, atTRTO_3		// test bit 2
 	// load 4 elements
 	ldr	d0, [x0]
 	// mask 4 elements
 	and	v2.8b, v0.8b, v3.8b
 	// fail when any one of them is non-zero
 	mov	x5, v2.D[0]
-	cbnz	x5, atTRTO_Fail
+	cbnz	x5, atTRTO_Fail8
 	// collect lower 8 bits
 	xtn	v2.8b, v0.8h
 	add	x0, x0, #8
@@ -130,12 +127,23 @@ atTRTO_1Loop:
 	subs	w4, w4, #1
 	strb	w5, [x1], #1
 	b	atTRTO_1Loop
-atTRTO_Fail:
-	ldrh	w5, [x0], #2
+atTRTO_Fail16:
+	// 16 elements in v0 and v1 -- No need to check v0
+	// collect lower 8 bits
+	xtn	v2.8b, v0.8h
+	// store 8 elements
+	str	d2, [x1], #8
+	mov	v0.16b, v1.16b
+	// fall through
+atTRTO_Fail8:
+	// 8 or 4 elements in v0
+	umov	w5, v0.H[0]
 	tst	w5, w3
 	b.ne	atTRTO_Done
 	strb	w5, [x1], #1
-	b	atTRTO_Fail
+	// shift v0 to right 16 bits
+	ext	v0.16b, v0.16b, v0.16b, #2
+	b	atTRTO_Fail8
 atTRTO_Done:
 	// number of translated elements
 	sub	x0, x1, x6
@@ -168,9 +176,8 @@ atTRTO_Done:
 FUNC_LABEL(__arrayTranslateTRTO255):
 	// preserve output address
 	mov	x6, x1
-	cmp	w2, #16
-	b.cc	atTRTO255_15
 	lsr	w4, w2, #4
+	cbz	w4, atTRTO255_15
 atTRTO255_16Loop:
 	// load 16 elements
 	ldp	q0, q1, [x0]
@@ -179,7 +186,7 @@ atTRTO255_16Loop:
 	// fail when any one of them is non-zero
 	umaxp	v2.4s, v2.4s, v2.4s
 	mov	x5, v2.D[0]
-	cbnz	x5, atTRTO255_Fail
+	cbnz	x5, atTRTO255_Fail16
 	// collect lower 8 bits
 	uzp1	v2.16b, v0.16b, v1.16b
 	add	x0, x0, #32
@@ -189,16 +196,14 @@ atTRTO255_16Loop:
 	b.ne	atTRTO255_16Loop
 atTRTO255_15:
 	// 15 elements or less remaining
-	tst	w2, #8
-	b.eq	atTRTO255_7
+	tbz	w2, #3, atTRTO255_7		// test bit 3
 	// load 8 elements
 	ldr	q0, [x0]
 	// collect upper 8 bits
-	trn2	v2.16b, v0.16b, v0.16b
+	shrn	v2.8b, v0.8h, #8
 	// fail when any one of them is non-zero
-	umaxp	v2.4s, v2.4s, v2.4s
 	mov	x5, v2.D[0]
-	cbnz	x5, atTRTO255_Fail
+	cbnz	x5, atTRTO255_Fail8
 	// collect lower 8 bits
 	xtn	v2.8b, v0.8h
 	add	x0, x0, #16
@@ -206,15 +211,14 @@ atTRTO255_15:
 	str	d2, [x1], #8
 atTRTO255_7:
 	// 7 elements or less remaining
-	tst	w2, #4
-	b.eq	atTRTO255_3
+	tbz	w2, #2, atTRTO255_3		// test bit 2
 	// load 4 elements
 	ldr	d0, [x0]
 	// collect upper 8 bits
-	trn2	v2.8b, v0.8b, v0.8b
+	shrn	v2.8b, v0.8h, #8
 	// fail when any one of them is non-zero
-	mov	x5, v2.D[0]
-	cbnz	x5, atTRTO255_Fail
+	mov	w5, v2.S[0]
+	cbnz	w5, atTRTO255_Fail8
 	// collect lower 8 bits
 	xtn	v2.8b, v0.8h
 	add	x0, x0, #8
@@ -231,12 +235,27 @@ atTRTO255_1Loop:
 	subs	w4, w4, #1
 	strb	w5, [x1], #1
 	b	atTRTO255_1Loop
-atTRTO255_Fail:
-	ldrh	w5, [x0], #2
+atTRTO255_Fail16:
+	// 16 elements in v0 and v1
+	// collect upper 8 bits
+	shrn	v2.8b, v0.8h, #8
+	mov	x5, v2.D[0]
+	cbnz	x5, atTRTO255_Fail8
+	// collect lower 8 bits
+	xtn	v2.8b, v0.8h
+	// store 8 elements
+	str	d2, [x1], #8
+	mov	v0.16b, v1.16b
+	// fall through
+atTRTO255_Fail8:
+	// 8 or 4 elements in v0
+	umov	w5, v0.H[0]
 	cmp	w5, #256
 	b.cs	atTRTO255_Done
 	strb	w5, [x1], #1
-	b	atTRTO255_Fail
+	// shift v0 to right 16 bits
+	ext	v0.16b, v0.16b, v0.16b, #2
+	b	atTRTO255_Fail8
 atTRTO255_Done:
 	// number of translated elements
 	sub	x0, x1, x6

@@ -1330,7 +1330,7 @@ MM_MemoryPoolSplitAddressOrderedList::reinitializeForRestore(MM_EnvironmentBase 
 				return false;
 			}
 
-			new (&_largeObjectAllocateStatsForFreeList[i]) MM_LargeObjectAllocateStats(env);
+			new (&_largeObjectAllocateStatsForFreeList[i]) MM_LargeObjectAllocateStats(_extensions);
 
 			if (!_largeObjectAllocateStatsForFreeList[i].initialize(
 					env, (uint16_t)_extensions->largeObjectAllocationProfilingTopK,

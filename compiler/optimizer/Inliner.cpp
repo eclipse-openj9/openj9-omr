@@ -302,8 +302,15 @@ void TR_InlinerBase::setInlineThresholds(TR::ResolvedMethodSymbol *callerSymbol)
 
     _callerWeightLimit -= size;
 
-    _nodeCountThreshold
-        = (comp()->getOption(TR_NotCompileTimeSensitive) || comp()->getMethodHotness() >= hot) ? 16000 : 3000;
+    static const bool disableXtuneThroughputTheshold = feGetEnv("TR_disableXtuneThroughputNodeCountThreshold") != NULL;
+    if (!disableXtuneThroughputTheshold
+        && TR::Options::getAggressivityLevel() == TR::Options::TR_AggresivenessLevel::AGGRESSIVE_THROUGHPUT) {
+        _nodeCountThreshold = 8000;
+    } else if (comp()->getOption(TR_NotCompileTimeSensitive) || comp()->getMethodHotness() >= hot) {
+        _nodeCountThreshold = 16000;
+    } else {
+        _nodeCountThreshold = 3000;
+    }
     _methodInWarmBlockByteCodeSizeThreshold = _methodByteCodeSizeThreshold = 155;
     _methodInColdBlockByteCodeSizeThreshold = 30;
     _maxInliningCallSites = 4095;

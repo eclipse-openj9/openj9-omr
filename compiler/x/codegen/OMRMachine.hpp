@@ -287,11 +287,6 @@ public:
 
     uint8_t _numGlobalGPRs, _numGlobal8BitGPRs, _numGlobalFPRs;
 
-    // TODO:AMD64: Are these two still correct?  What are they?
-    uint8_t getGlobalGPRPartitionLimit() { return 2; }
-
-    uint8_t getGlobalFPRPartitionLimit() { return 0; }
-
     TR_GlobalRegisterNumber getNumGlobalGPRs() { return _numGlobalGPRs; }
 
     TR_GlobalRegisterNumber getLastGlobalGPRRegisterNumber() { return _numGlobalGPRs - 1; }

@@ -153,8 +153,6 @@ void OMR::Power::CodeGenerator::initialize()
 
     // Tactical GRA settings.
     //
-    cg->setGlobalGPRPartitionLimit(TR::Machine::getGlobalGPRPartitionLimit());
-    cg->setGlobalFPRPartitionLimit(TR::Machine::getGlobalFPRPartitionLimit());
     cg->setGlobalRegisterTable(_linkageProperties->getRegisterAllocationOrder());
     _numGPR = _linkageProperties->getNumAllocatableIntegerRegisters();
     _firstGPR = 0;

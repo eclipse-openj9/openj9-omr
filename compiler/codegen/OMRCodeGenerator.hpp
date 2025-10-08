@@ -1195,14 +1195,6 @@ public:
 
     uint16_t getNumberOfGlobalVRFs() { return _lastGlobalVRF - _firstGlobalVRF; }
 
-    uint8_t getGlobalGPRPartitionLimit() { return _globalGPRPartitionLimit; }
-
-    uint8_t setGlobalGPRPartitionLimit(uint8_t l) { return (_globalGPRPartitionLimit = l); }
-
-    uint8_t getGlobalFPRPartitionLimit() { return _globalFPRPartitionLimit; }
-
-    uint8_t setGlobalFPRPartitionLimit(uint8_t l) { return (_globalFPRPartitionLimit = l); }
-
     bool isGlobalGPR(TR_GlobalRegisterNumber n) { return n <= _lastGlobalGPR; }
 
     bool isAliasedGRN(TR_GlobalRegisterNumber n);
@@ -2522,8 +2514,6 @@ protected:
     TR_GlobalRegisterNumber _lastOverlappedGlobalVRF;
     TR_GlobalRegisterNumber _overlapOffsetBetweenFPRandVRFgrns;
     uint8_t _supportedLiveRegisterKinds;
-    uint8_t _globalGPRPartitionLimit;
-    uint8_t _globalFPRPartitionLimit;
     flags16_t _enabledFlags;
 
     uint8_t *_warmCodeEnd;

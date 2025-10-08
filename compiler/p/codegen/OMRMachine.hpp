@@ -113,12 +113,6 @@ public:
 
     bool setLinkRegisterKilled(bool b);
 
-    static uint8_t getGlobalGPRPartitionLimit() { return 12; }
-
-    static uint8_t getGlobalFPRPartitionLimit() { return 12; }
-
-    static uint8_t getGlobalCCRPartitionLimit() { return 3; }
-
     // Snap shot methods
     void takeRegisterStateSnapShot();
     void restoreRegisterStateFromSnapShot();

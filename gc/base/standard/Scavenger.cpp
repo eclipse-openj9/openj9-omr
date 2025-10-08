@@ -6023,7 +6023,16 @@ MM_Scavenger::payAllocationTax(MM_EnvironmentBase *envBase, MM_MemorySubSpace *s
 		uintptr_t iterationFromList = 0;
 #endif /* defined(OMR_SCAVENGER_TRACE_TAX) */
 
-		while ((flipBytesRatio < (usedMemoryRatio + _extensions->concurrentScavengerTaxationHeadroom)) && (totalScanTimeUs < 2000)) {
+		float lowHeadroom = _extensions->concurrentScavengeTaxationHeadroomLow;
+		float highHeadroom = _extensions->concurrentScavengeTaxationHeadroomHigh;
+
+		/* The headroom increases from a low one (meaning more tolerant to slow copy progress), at the start of concurrent phase,
+		 * and increases gradually as the phase progresses. There is no need to 'panic' too early during concurrent phase,
+		 * but also serves to compansate for the read barrier activity also early in the phase, which is a form of taxation, already.
+		 */
+		float headroom = (highHeadroom - lowHeadroom) * usedMemoryRatio + lowHeadroom;
+
+		while ((flipBytesRatio < (usedMemoryRatio + headroom)) && (totalScanTimeUs < 2000)) {
 #if defined(OMR_SCAVENGER_TRACE_TAX)
 			iteration += 1;
 #endif /* defined(OMR_SCAVENGER_TRACE_TAX) */
@@ -6071,13 +6080,14 @@ MM_Scavenger::payAllocationTax(MM_EnvironmentBase *envBase, MM_MemorySubSpace *s
 
 #if defined(OMR_SCAVENGER_TRACE_TAX)
 			omrtty_printf(
-					"{SCAV: payAllocationTax envID %zu iteration %zu/%zu free/total mem %zu/%zu used bytes %.3f flipped global %zu bytes %zu%% of total mem; %.3f of average expected flipped %zu total scan %zuus}\n",
+					"{SCAV: payAllocationTax envID %zu iteration %zu/%zu free/total mem %zu/%zu used bytes %.3f headroom %0.3f flipped global %zu bytes %zu%% of total mem; %.3f of average expected flipped %zu total scan %zuus}\n",
 					env->getEnvironmentId(),
 					iteration,
 					iterationFromList,
 					freeMemory,
 					totalMemory,
 					usedMemoryRatio,
+					headroom,
 					flipBytes,
 					flipBytes / (totalMemory / 100),
 					flipBytesRatio,

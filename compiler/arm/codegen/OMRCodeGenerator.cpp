@@ -125,10 +125,6 @@ void OMR::ARM::CodeGenerator::initialize()
     cg->setMethodMetaDataRegister(cg->machine()->getRealRegister(_linkageProperties->getMethodMetaDataRegister()));
 
     // Tactical GRA settings
-#if 1 // PPC enables below, but seem no longer used?
-    cg->setGlobalGPRPartitionLimit(TR::Machine::getGlobalGPRPartitionLimit());
-    cg->setGlobalFPRPartitionLimit(TR::Machine::getGlobalFPRPartitionLimit());
-#endif
     cg->setGlobalRegisterTable(TR::Machine::getGlobalRegisterTable());
     _numGPR = _linkageProperties->getNumAllocatableIntegerRegisters();
     cg->setLastGlobalGPR(TR::Machine::getLastGlobalGPRRegisterNumber());

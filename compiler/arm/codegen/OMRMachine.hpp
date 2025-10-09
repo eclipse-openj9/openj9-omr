@@ -103,11 +103,6 @@ public:
 
     TR::RealRegister *assignSingleRegister(TR::Register *virtualRegister, TR::Instruction *currentInstruction);
 
-    // TODO:Are these two still used? Are values correct?  What are they?
-    static uint8_t getGlobalGPRPartitionLimit() { return 1; }
-
-    static uint8_t getGlobalFPRPartitionLimit() { return 1; }
-
     static uint32_t *getGlobalRegisterTable() { return _globalRegisterNumberToRealRegisterMap; }
 
     static TR_GlobalRegisterNumber getLastGlobalGPRRegisterNumber() { return MAX_ARM_GLOBAL_GPRS - 1; }

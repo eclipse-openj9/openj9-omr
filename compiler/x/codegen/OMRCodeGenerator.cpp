@@ -351,8 +351,6 @@ void OMR::X86::CodeGenerator::initializeX86(TR::Compilation *comp)
         self()->setEnableTLHPrefetching();
     }
 
-    self()->setGlobalGPRPartitionLimit(self()->machine()->getGlobalGPRPartitionLimit());
-    self()->setGlobalFPRPartitionLimit(self()->machine()->getGlobalFPRPartitionLimit());
     self()->setLastGlobalGPR(self()->machine()->getLastGlobalGPRRegisterNumber());
     self()->setLast8BitGlobalGPR(self()->machine()->getLast8BitGlobalGPRRegisterNumber());
     self()->setLastGlobalFPR(self()->machine()->getLastGlobalFPRRegisterNumber());

@@ -189,17 +189,17 @@ void OMR::ARM64::CodeGenerator::initialize()
             cg->setSupportsArraySet();
         }
 
-        static bool enableTRTO = (feGetEnv("TR_enableTRTO") != NULL);
-        if (enableTRTO) {
+        static const bool disableTRTO = (feGetEnv("TR_disableTRTO") != NULL);
+        if (!disableTRTO) {
             cg->setSupportsArrayTranslateTRTO();
         }
 
-        static bool enableTRTO255 = (feGetEnv("TR_enableTRTO255") != NULL);
-        if (enableTRTO255) {
+        static const bool disableTRTO255 = (feGetEnv("TR_disableTRTO255") != NULL);
+        if (!disableTRTO255) {
             cg->setSupportsArrayTranslateTRTO255();
         }
 
-        static bool disableTROTNoBreak = (feGetEnv("TR_disableTROTNoBreak") != NULL);
+        static const bool disableTROTNoBreak = (feGetEnv("TR_disableTROTNoBreak") != NULL);
         if (!disableTROTNoBreak) {
             cg->setSupportsArrayTranslateTROTNoBreak();
         }

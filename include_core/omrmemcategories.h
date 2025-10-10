@@ -126,6 +126,9 @@ typedef struct OMRMemCategorySet {
 #define OMRMEM_CATEGORY_10_CHILDREN(description, code, c1, c2, c3, c4, c5, c6, c7, c8, c9, c10) \
 	static uint32_t _omrmem_##code##_child_categories[] = {c1, c2, c3, c4, c5, c6, c7, c8, c9, c10}; \
 	static OMRMemCategory _omrmem_category_##code = {description, code, 0, 0, 10, _omrmem_##code##_child_categories}
+#define OMRMEM_CATEGORY_11_CHILDREN(description, code, c1, c2, c3, c4, c5, c6, c7, c8, c9, c10, c11) \
+	static uint32_t _omrmem_##code##_child_categories[] = {c1, c2, c3, c4, c5, c6, c7, c8, c9, c10, c11}; \
+	static OMRMemCategory _omrmem_category_##code = {description, code, 0, 0, 11, _omrmem_##code##_child_categories}
 
 #define CATEGORY_TABLE_ENTRY(name) &_omrmem_category_##name
 

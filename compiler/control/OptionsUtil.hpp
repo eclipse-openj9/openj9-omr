@@ -205,7 +205,8 @@ private:
 };
 
 // An enum to indcate the type of code cache a compiled body will be placed into
-//
+// If you add a new value to this enum, make sure to update CodeCacheKindStrings
+// in compiler/runtime/OMRCodeCacheManager.cpp
 enum CodeCacheKind {
     DEFAULT_CC = 0,
     TRANSIENT_CODE_CC, // To prevent fragmentation, we allow the user to indicate that certain classes are

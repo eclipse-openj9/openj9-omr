@@ -736,6 +736,11 @@ static bool refineUnsafeAccess(OMR::ValuePropagation *vp, TR::Node *node)
             return refuseToConstrainUnsafe(vp, node, "performTransformation denied");
 
         node->setSymbolReference(arrayShadow);
+
+        // With the array-shadow symref replacing the unsafe shadow symref, the existing alias sets may no
+        // longer be valid. We need to mark the current alias sets as invalid to trigger a recomputation of the
+        // alias sets the next time they are needed.
+        vp->optimizer()->setAliasSetsAreValid(false);
         return okToConstrainNormally;
     }
 

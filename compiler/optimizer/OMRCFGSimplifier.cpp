@@ -826,7 +826,6 @@ bool OMR::CFGSimplifier::simplifySimpleStore(bool needToDuplicateTree)
         if (trace())
             traceMsg(comp(), "   Take side has an appropriate store as the first tree\n");
 
-        trueValue = treeCursor->getNode()->getFirstChild();
         if (treeCursor->getNode()->getFirstChild()->isInternalPointer())
             return false;
 

@@ -1052,22 +1052,22 @@ TR::Register *OMR::Z::TreeEvaluator::mmAllTrueEvaluator(TR::Node *node, TR::Code
 
 TR::Register *OMR::Z::TreeEvaluator::mloadEvaluator(TR::Node *node, TR::CodeGenerator *cg)
 {
-    return TR::TreeEvaluator::unImpOpEvaluator(node, cg);
+    return TR::TreeEvaluator::vloadEvaluator(node, cg);
 }
 
 TR::Register *OMR::Z::TreeEvaluator::mloadiEvaluator(TR::Node *node, TR::CodeGenerator *cg)
 {
-    return TR::TreeEvaluator::unImpOpEvaluator(node, cg);
+    return TR::TreeEvaluator::vloadiEvaluator(node, cg);
 }
 
 TR::Register *OMR::Z::TreeEvaluator::mstoreEvaluator(TR::Node *node, TR::CodeGenerator *cg)
 {
-    return TR::TreeEvaluator::unImpOpEvaluator(node, cg);
+    return TR::TreeEvaluator::vstoreEvaluator(node, cg);
 }
 
 TR::Register *OMR::Z::TreeEvaluator::mstoreiEvaluator(TR::Node *node, TR::CodeGenerator *cg)
 {
-    return TR::TreeEvaluator::unImpOpEvaluator(node, cg);
+    return TR::TreeEvaluator::vstoreiEvaluator(node, cg);
 }
 
 TR::Register *OMR::Z::TreeEvaluator::msplatsEvaluator(TR::Node *node, TR::CodeGenerator *cg)
@@ -1102,12 +1102,12 @@ TR::Register *OMR::Z::TreeEvaluator::mLongBitsToMaskEvaluator(TR::Node *node, TR
 
 TR::Register *OMR::Z::TreeEvaluator::mRegLoadEvaluator(TR::Node *node, TR::CodeGenerator *cg)
 {
-    return TR::TreeEvaluator::unImpOpEvaluator(node, cg);
+    return TR::TreeEvaluator::vRegLoadEvaluator(node, cg);
 }
 
 TR::Register *OMR::Z::TreeEvaluator::mRegStoreEvaluator(TR::Node *node, TR::CodeGenerator *cg)
 {
-    return TR::TreeEvaluator::unImpOpEvaluator(node, cg);
+    return TR::TreeEvaluator::vRegStoreEvaluator(node, cg);
 }
 
 TR::Register *OMR::Z::TreeEvaluator::mandEvaluator(TR::Node *node, TR::CodeGenerator *cg)

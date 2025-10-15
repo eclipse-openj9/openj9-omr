@@ -1030,13 +1030,19 @@ void TR::X86ImmSymInstruction::addMetaDataForCodeAddress(uint8_t *cursor)
                                                     NULL, TR_MethodEnterExitHookAddress, cg()),
                         __FILE__, __LINE__, getNode());
                 } else if (sym->isCallSiteTableEntry()) {
-                    cg()->addExternalRelocation(TR::ExternalRelocation::create(cursor, (uint8_t *)getSymbolReference(),
-                                                    NULL, TR_CallsiteTableEntryAddress, cg()),
-                        __FILE__, __LINE__, getNode());
+                    if (cg()->comp()->compileRelocatableCode()) {
+                        cg()->addExternalRelocation(TR::ExternalRelocation::create(cursor,
+                                                        (uint8_t *)getSymbolReference(), NULL,
+                                                        TR_CallsiteTableEntryAddress, cg()),
+                            __FILE__, __LINE__, getNode());
+                    }
                 } else if (sym->isMethodTypeTableEntry()) {
-                    cg()->addExternalRelocation(TR::ExternalRelocation::create(cursor, (uint8_t *)getSymbolReference(),
-                                                    NULL, TR_MethodTypeTableEntryAddress, cg()),
-                        __FILE__, __LINE__, getNode());
+                    if (cg()->comp()->compileRelocatableCode()) {
+                        cg()->addExternalRelocation(TR::ExternalRelocation::create(cursor,
+                                                        (uint8_t *)getSymbolReference(), NULL,
+                                                        TR_MethodTypeTableEntryAddress, cg()),
+                            __FILE__, __LINE__, getNode());
+                    }
                 } else {
                     cg()->addExternalRelocation(
                         TR::ExternalRelocation::create(cursor, (uint8_t *)getSymbolReference(),
@@ -1702,15 +1708,19 @@ void TR::X86RegImmSymInstruction::addMetaDataForCodeAddress(uint8_t *cursor)
         } break;
 
         case TR_CallsiteTableEntryAddress: {
-            cg()->addExternalRelocation(TR::ExternalRelocation::create(cursor, (uint8_t *)getSymbolReference(), NULL,
-                                            TR_CallsiteTableEntryAddress, cg()),
-                __FILE__, __LINE__, getNode());
+            if (cg()->comp()->compileRelocatableCode()) {
+                cg()->addExternalRelocation(TR::ExternalRelocation::create(cursor, (uint8_t *)getSymbolReference(),
+                                                NULL, TR_CallsiteTableEntryAddress, cg()),
+                    __FILE__, __LINE__, getNode());
+            }
         } break;
 
         case TR_MethodTypeTableEntryAddress: {
-            cg()->addExternalRelocation(TR::ExternalRelocation::create(cursor, (uint8_t *)getSymbolReference(), NULL,
-                                            TR_MethodTypeTableEntryAddress, cg()),
-                __FILE__, __LINE__, getNode());
+            if (cg()->comp()->compileRelocatableCode()) {
+                cg()->addExternalRelocation(TR::ExternalRelocation::create(cursor, (uint8_t *)getSymbolReference(),
+                                                NULL, TR_MethodTypeTableEntryAddress, cg()),
+                    __FILE__, __LINE__, getNode());
+            }
         } break;
 
         default:
@@ -2104,13 +2114,17 @@ void TR::X86MemImmSymInstruction::addMetaDataForCodeAddress(uint8_t *cursor)
                                         TR_MethodEnterExitHookAddress, cg()),
             __FILE__, __LINE__, getNode());
     } else if (symbol->isCallSiteTableEntry()) {
-        cg()->addExternalRelocation(TR::ExternalRelocation::create(cursor, (uint8_t *)getSymbolReference(), NULL,
-                                        TR_CallsiteTableEntryAddress, cg()),
-            __FILE__, __LINE__, getNode());
+        if (cg()->comp()->compileRelocatableCode()) {
+            cg()->addExternalRelocation(TR::ExternalRelocation::create(cursor, (uint8_t *)getSymbolReference(), NULL,
+                                            TR_CallsiteTableEntryAddress, cg()),
+                __FILE__, __LINE__, getNode());
+        }
     } else if (symbol->isMethodTypeTableEntry()) {
-        cg()->addExternalRelocation(TR::ExternalRelocation::create(cursor, (uint8_t *)getSymbolReference(), NULL,
-                                        TR_MethodTypeTableEntryAddress, cg()),
-            __FILE__, __LINE__, getNode());
+        if (cg()->comp()->compileRelocatableCode()) {
+            cg()->addExternalRelocation(TR::ExternalRelocation::create(cursor, (uint8_t *)getSymbolReference(), NULL,
+                                            TR_MethodTypeTableEntryAddress, cg()),
+                __FILE__, __LINE__, getNode());
+        }
     } else {
         cg()->addExternalRelocation(
             TR::ExternalRelocation::create(cursor, (uint8_t *)getSymbolReference(),
@@ -2827,15 +2841,19 @@ void TR::AMD64RegImm64SymInstruction::addMetaDataForCodeAddress(uint8_t *cursor)
             } break;
 
             case TR_CallsiteTableEntryAddress: {
-                cg()->addExternalRelocation(TR::ExternalRelocation::create(cursor, (uint8_t *)getSymbolReference(),
-                                                NULL, TR_CallsiteTableEntryAddress, cg()),
-                    __FILE__, __LINE__, getNode());
+                if (cg()->comp()->compileRelocatableCode()) {
+                    cg()->addExternalRelocation(TR::ExternalRelocation::create(cursor, (uint8_t *)getSymbolReference(),
+                                                    NULL, TR_CallsiteTableEntryAddress, cg()),
+                        __FILE__, __LINE__, getNode());
+                }
             } break;
 
             case TR_MethodTypeTableEntryAddress: {
-                cg()->addExternalRelocation(TR::ExternalRelocation::create(cursor, (uint8_t *)getSymbolReference(),
-                                                NULL, TR_MethodTypeTableEntryAddress, cg()),
-                    __FILE__, __LINE__, getNode());
+                if (cg()->comp()->compileRelocatableCode()) {
+                    cg()->addExternalRelocation(TR::ExternalRelocation::create(cursor, (uint8_t *)getSymbolReference(),
+                                                    NULL, TR_MethodTypeTableEntryAddress, cg()),
+                        __FILE__, __LINE__, getNode());
+                }
             } break;
 
             default:;

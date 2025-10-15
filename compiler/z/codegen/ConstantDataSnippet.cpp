@@ -246,17 +246,21 @@ void TR::S390ConstantDataSnippet::addMetaDataForCodeAddress(uint8_t *cursor)
         } break;
 
         case TR_CallsiteTableEntryAddress: {
-            cg()->addExternalRelocation(TR::ExternalRelocation::create(cursor,
-                                            (uint8_t *)getNode()->getSymbolReference(), NULL,
-                                            TR_CallsiteTableEntryAddress, cg()),
-                __FILE__, __LINE__, getNode());
+            if (cg()->comp()->compileRelocatableCode()) {
+                cg()->addExternalRelocation(TR::ExternalRelocation::create(cursor,
+                                                (uint8_t *)getNode()->getSymbolReference(), NULL,
+                                                TR_CallsiteTableEntryAddress, cg()),
+                    __FILE__, __LINE__, getNode());
+            }
         } break;
 
         case TR_MethodTypeTableEntryAddress: {
-            cg()->addExternalRelocation(TR::ExternalRelocation::create(cursor,
-                                            (uint8_t *)getNode()->getSymbolReference(), NULL,
-                                            TR_MethodTypeTableEntryAddress, cg()),
-                __FILE__, __LINE__, getNode());
+            if (cg()->comp()->compileRelocatableCode()) {
+                cg()->addExternalRelocation(TR::ExternalRelocation::create(cursor,
+                                                (uint8_t *)getNode()->getSymbolReference(), NULL,
+                                                TR_MethodTypeTableEntryAddress, cg()),
+                    __FILE__, __LINE__, getNode());
+            }
         } break;
 
         default:

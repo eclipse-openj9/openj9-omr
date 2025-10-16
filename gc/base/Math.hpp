@@ -28,6 +28,8 @@
 #include "modronbase.h"
 #include "omrmodroncore.h"
 
+#include "Bits.hpp"
+
 class MM_Math
 {
 public:
@@ -135,6 +137,61 @@ public:
 			number = -number;
 		}
 		return number;
+	}
+
+
+	/**
+	 * Helper function to convert size to index using integers.
+	 * In general conversion looks like index = logBase(size).
+	 * Using log2(), this conversion can be written as index = log2(size)*(1/log2(base)).
+	 * This function is hard coded to use 4 as 1/log2(base). It is corresponds with base = 1.18920712.
+	 * Such selected value allows to use approximated log2() * 4 value as an index.
+	 * Calculation of log2() is approximated:
+	 * - integer part of log2() is calculated as MSB position;
+	 * - next two bits are used for fractional part calculation (0,0.25,0.5,0.75).
+	 * MSB position is calculated as topBit position minus number of leading zeroes.
+	 * Number of leading zeroes is returned by MM_Bits::trailingZeroes().
+	 * Please note, there is limitation for input size >= 8. Caller sites should control this.
+	 * Please note this function supports 64 and 32 bit platforms.
+	 *
+	 * @param size needs to be converted to the index.
+	 * @return index correspondent to the size.
+	 */
+	MMINLINE static uintptr_t sizeToIndex(uintptr_t size)
+	{
+		uintptr_t msb = (J9BITS_BITS_IN_SLOT - 1) - MM_Bits::trailingZeroes(size);
+		uintptr_t index = 4 * msb + ((size >> (msb - 2)) & 0x3);
+
+		return index;
+	}
+
+	/**
+	 * Helper function to convert index to minimum size value for the range.
+	 * This calculation is reversal to sizeToIndex(), see comment there.
+	 *
+	 * @param index needs to be converted to the size.
+	 * @return minimum size for the range correspondent to the index.
+	 */
+	MMINLINE static uintptr_t indexToSize(uintptr_t index)
+	{
+		uintptr_t size = 0;
+
+		if (8 <= index) {
+			/*
+			 * Constructing size for index:
+			 *  create bit pattern in low bits MSB plus reserved space for two bits below 100b = 0x4
+			 *  two low bits are stored in two low bits of index (index & 0x3), add them to bit pattern (0x4 + (index & 0x3))
+			 *  (index / 4) is MSB position. In our bit pattern MSB is shifted left by 2 already (set to 4),
+			 *  so shift bit pattern left for remaining (index / 4 - 2) bits.
+			 */
+			size = (4 + (index & 3)) << (index / 4 - 2);
+		} else {
+			/*
+			 * Approximate log(n) = n + 1 for small n
+			 */
+			size = index / 4 + 1;
+		}
+		return size;
 	}
 
 };

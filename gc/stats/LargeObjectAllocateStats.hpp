@@ -33,7 +33,7 @@
 #include "FreeEntrySizeClassStats.hpp"
 
 class MM_EnvironmentBase;
-class MM_FreeEntrySizeClassStats;
+class MM_GCExtensionsBase;
 
 /*
  * Keeps track of the most frequent large allocations
@@ -41,7 +41,7 @@ class MM_FreeEntrySizeClassStats;
 class MM_LargeObjectAllocateStats : public MM_Base {
 public:
 private:
-	MM_EnvironmentBase *_env;				/**< cached thread environment */
+	MM_GCExtensionsBase *_ext;				/**< cached GC Extensions*/
 #if defined(OMR_GC_THREAD_LOCAL_HEAP)
 	uintptr_t _tlhMaximumSize;				/**< cached value of _tlhMaximumSize */
 	uintptr_t _tlhMinimumSize;				/**< cached value of _tlhMinimumSize */
@@ -222,9 +222,12 @@ public:
 	uintptr_t getFreeMemory(){return _freeEntrySizeClassStats.getFreeMemory(_sizeClassSizes);}
 	uintptr_t getPageAlignedFreeMemory(uintptr_t pageSize) {return _freeEntrySizeClassStats.getPageAlignedFreeMemory(_sizeClassSizes, pageSize);}
 
+	MMINLINE static uintptr_t sizeToIndexFP(uintptr_t size, float ratioInversed);
+	MMINLINE static uintptr_t indexToSizeFP(uintptr_t index, float ratio);
 
-	MM_LargeObjectAllocateStats(MM_EnvironmentBase* env) :
-		_env(env),
+	MM_LargeObjectAllocateStats(MM_GCExtensionsBase* ext) :
+		MM_Base(),
+		_ext(ext),
 #if defined(OMR_GC_THREAD_LOCAL_HEAP)
 		_tlhMaximumSize(0),
 		_tlhMinimumSize(0),
@@ -237,7 +240,7 @@ public:
 		_maxAllocateSizes(0),
 		_largeObjectThreshold(0),
 		_veryLargeEntrySizeClass(0),
-		_sizeClassRatio(0.0),
+		_sizeClassRatio(0.0f),
 		_sizeClassRatioLogInversed(0.0f),
 		_averageBytesAllocated(0),
 		_timeEstimateFragmentation(0),

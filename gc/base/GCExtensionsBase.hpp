@@ -885,6 +885,10 @@ public:
 
 	bool shouldForceLowMemoryHeapCeilingShiftIfPossible; /**< Whether we should force compressed reference shift to 3 **/
 	MM_CPUUtilStats cpuUtilStats; /**< CPU/process util between any STW GC increments, hence not part of any Collector Stats */
+
+	bool shouldUseIntegerSizeToIndex; /**< Use conversion size to index and index to size in integers */
+
+
 	/* Function Members */
 private:
 
@@ -1992,6 +1996,7 @@ public:
 		, shouldForceLowMemoryHeapCeilingShiftIfPossible(false)
 		, cpuUtilStats()
 #endif /* defined(OMR_VALGRIND_MEMCHECK) */
+		, shouldUseIntegerSizeToIndex(true)
 	{
 		_typeId = __FUNCTION__;
 	}

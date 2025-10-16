@@ -183,7 +183,7 @@ MM_MemoryPoolSplitAddressOrderedListBase::initialize(MM_EnvironmentBase* env)
 		return false;
 	} else {
 		for (uintptr_t i = 0; i < _heapFreeListCount; ++i) {
-			new (&_largeObjectAllocateStatsForFreeList[i]) MM_LargeObjectAllocateStats(env);
+			new (&_largeObjectAllocateStatsForFreeList[i]) MM_LargeObjectAllocateStats(_extensions);
 
 			/* set multiple factor = 2 for doubling _maxVeryLargeEntrySizes to avoid run out of _veryLargeEntryPool (minus count during decrement) */
 			if (!_largeObjectAllocateStatsForFreeList[i].initialize(env, (uint16_t)extensions->largeObjectAllocationProfilingTopK, extensions->largeObjectAllocationProfilingThreshold, extensions->largeObjectAllocationProfilingVeryLargeObjectThreshold, (float)extensions->largeObjectAllocationProfilingSizeClassRatio / (float)100.0,

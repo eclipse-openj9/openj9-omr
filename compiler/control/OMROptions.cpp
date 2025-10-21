@@ -634,6 +634,8 @@ TR::OptionTable OMR::Options::_jitOptions[] = {
      SET_OPTION_BIT(TR_DisablePersistIProfile), "F" },
     { "disableIsolatedSE", "O\tdisable isolated store elimination", TR::Options::disableOptimization,
      isolatedStoreElimination, 0, "P" },
+    { "disableITableIterationsAfterLastITableCacheCheck", "O\tdisable iterating the iTable after last cache check",
+     SET_OPTION_BIT(TR_DisableITableIterationsAfterLastITableCacheCheck), "F" },
     { "disableIterativeSA", "O\trevert back to a recursive version of Structural Analysis",
      SET_OPTION_BIT(TR_DisableIterativeSA), "P" },
     { "disableIVTT", "O\tdisable IV Type transformation", TR::Options::disableOptimization, IVTypeTransformation, 0,

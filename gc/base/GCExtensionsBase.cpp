@@ -368,20 +368,53 @@ MM_GCExtensionsBase::getUniqueGCCycleCount()
 	switch (configurationOptions._gcPolicy) {
 	case OMR_GC_POLICY_OPTTHRUPUT:
 	case OMR_GC_POLICY_OPTAVGPAUSE:
+#if defined(OMR_GC_REALTIME)
 	case OMR_GC_POLICY_METRONOME:
+#endif /* defined(OMR_GC_REALTIME) */
 		result = globalGCStats.gcCount;
 		break;
-	case OMR_GC_POLICY_GENCON:
-		result = globalGCStats.gcCount;
 #if defined(OMR_GC_MODRON_SCAVENGER)
-		result += scavengerStats._gcCount;
+	case OMR_GC_POLICY_GENCON:
+		result = globalGCStats.gcCount + scavengerStats._gcCount;
+		break;
 #endif /* defined(OMR_GC_MODRON_SCAVENGER) */
-		break;
-	case OMR_GC_POLICY_BALANCED:
 #if defined(OMR_GC_VLHGC)
+	case OMR_GC_POLICY_BALANCED:
 		result = globalVLHGCStats.gcCount;
-#endif /* defined(OMR_GC_VLHGC) */
 		break;
+#endif /* defined(OMR_GC_VLHGC) */
+	case OMR_GC_POLICY_NOGC:
+		break;
+	default :
+		/* Unknown GC policy. */
+		Assert_MM_unreachable();
+		break;
+	}
+	return result;
+}
+
+UDATA
+MM_GCExtensionsBase::getTenureThreshold()
+{
+	UDATA result = 0;
+
+	switch (configurationOptions._gcPolicy) {
+	case OMR_GC_POLICY_OPTTHRUPUT:
+	case OMR_GC_POLICY_OPTAVGPAUSE:
+#if defined(OMR_GC_REALTIME)
+	case OMR_GC_POLICY_METRONOME:
+#endif /* defined(OMR_GC_REALTIME) */
+		break;
+#if defined(OMR_GC_MODRON_SCAVENGER)
+	case OMR_GC_POLICY_GENCON:
+		result = scavengerStats._tenureAge;
+		break;
+#endif /* defined(OMR_GC_MODRON_SCAVENGER) */
+#if defined(OMR_GC_VLHGC)
+	case OMR_GC_POLICY_BALANCED:
+		result = tarokRegionMaxAge;
+		break;
+#endif /* defined(OMR_GC_VLHGC) */
 	case OMR_GC_POLICY_NOGC:
 		break;
 	default :

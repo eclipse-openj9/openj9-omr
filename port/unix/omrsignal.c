@@ -41,16 +41,14 @@
 
 #include <inttypes.h>
 
-#if !defined(J9ZOS390)
+#if defined(J9ZOS390)
+#include <pthread.h>
+#else /* defined(J9ZOS390) */
 #if defined(J9OS_I5) && defined(J9OS_I5_V5R4)
 #include "semaphore_i5.h"
 #else /* defined(J9OS_I5) && defined(J9OS_I5_V5R4) */
 #include <semaphore.h>
 #endif /* defined(J9OS_I5) && defined(J9OS_I5_V5R4) */
-#endif /* !defined(J9ZOS390) */
-
-#if defined(J9ZOS390)
-#include <pthread.h>
 #endif /* defined(J9ZOS390) */
 
 #if defined(J9ZOS390)
@@ -76,7 +74,7 @@ typedef void (*unix_sigaction)(int, siginfo_t *, void *, uintptr_t);
 typedef void (*unix_sigaction)(int, siginfo_t *, void *);
 #endif /* defined(S390) && defined(LINUX) */
 
-#define ARRAY_SIZE_SIGNALS  (MAX_UNIX_SIGNAL_TYPES + 1)
+#define ARRAY_SIZE_SIGNALS (MAX_UNIX_SIGNAL_TYPES + 1)
 
 /* Keep track of signal counts. */
 static volatile uintptr_t signalCounts[ARRAY_SIZE_SIGNALS] = {0};
@@ -89,7 +87,7 @@ static volatile uintptr_t signalPidTails[ARRAY_SIZE_SIGNALS] = {0};
 static struct {
 	struct sigaction action;
 	uint32_t restore;
-}	oldActions[ARRAY_SIZE_SIGNALS];
+} oldActions[ARRAY_SIZE_SIGNALS];
 
 /* Records the (port library defined) signals for which a handler is registered.
  * Access to these variables must be protected by the registerHandlerMonitor.
@@ -103,7 +101,7 @@ static uint32_t asyncSignalsWithHandlers;
 
 /* Records the (port library defined) signals for which a main handler is
  * registered. A main handler can be either mainSynchSignalHandler or
- * mainASynchSignalHandler. A signal can only be associated to one main
+ * mainASynchSignalHandler. A signal can only be associated with one main
  * handler. If a main handler is already registered for a signal, then avoid
  * re-registering a main handler for that signal. Access to these variables
  * must be protected by the registerHandlerMonitor.
@@ -118,7 +116,7 @@ static uint32_t asyncSignalsWithMainHandlers;
 
 #if defined(OMR_PORT_ASYNC_HANDLER)
 static uint32_t shutDownASynchReporter;
-#endif
+#endif /* defined(OMR_PORT_ASYNC_HANDLER) */
 
 typedef struct OMRUnixAsyncHandlerRecord {
 	OMRPortLibrary *portLib;
@@ -133,8 +131,15 @@ uint32_t signalOptionsGlobal;
 
 static OMRUnixAsyncHandlerRecord *asyncHandlerList;
 
-#if !defined(J9ZOS390)
-
+#if defined(J9ZOS390)
+/* The asyncSignalReporter synchronization has to be done differently on ZOS.
+ * z/OS does not have system semaphores, yet we can't rely on thread library
+ * being present for the mainASyncSignalHandler, so use pthread synchronization.
+ * Note: the use of pthread functions is allowed on z/OS
+ */
+static pthread_cond_t wakeUpASyncReporterCond;
+static pthread_mutex_t wakeUpASyncReporterMutex;
+#else /* defined(J9ZOS390) */
 #if defined(OSX)
 #define SIGSEM_T sem_t *
 #define SIGSEM_POST(_sem) sem_post(_sem)
@@ -156,15 +161,7 @@ static OMRUnixAsyncHandlerRecord *asyncHandlerList;
 #endif /* defined(OSX) */
 
 static SIGSEM_T wakeUpASyncReporter;
-#else /* !defined(J9ZOS390) */
-/* The asyncSignalReporter synchronization has to be done differently on ZOS.
- * z/OS does not have system semaphores, yet we can't rely on thread library
- * being present for the mainASyncSignalHandler, so use pthread synchronization.
- * Note: the use of pthread functions is allowed on z/OS
- */
-static pthread_cond_t wakeUpASyncReporterCond;
-static pthread_mutex_t wakeUpASyncReporterMutex;
-#endif /* !defined(J9ZOS390) */
+#endif /* defined(J9ZOS390) */
 
 static omrthread_monitor_t asyncMonitor;
 static omrthread_monitor_t registerHandlerMonitor;
@@ -297,16 +294,16 @@ omrsig_can_protect(struct OMRPortLibrary *portLibrary,  uint32_t flags)
 		return OMRPORT_SIG_ERROR;
 	}
 
-#if !defined(J9ZOS390)
-	supportedFlags |= OMRPORT_SIG_FLAG_MAY_CONTINUE_EXECUTION;
-#else /* !defined(J9ZOS390) */
-	if (TRUE == PPG_resumableTrapsSupported) {
+#if defined(J9ZOS390)
+	if (PPG_resumableTrapsSupported) {
 		Trc_PRT_sig_can_protect_OMRPORT_SIG_FLAG_MAY_CONTINUE_EXECUTION_supported();
 		supportedFlags |= OMRPORT_SIG_FLAG_MAY_CONTINUE_EXECUTION;
 	} else {
 		Trc_PRT_sig_can_protect_OMRPORT_SIG_FLAG_MAY_CONTINUE_EXECUTION_NOT_supported();
 	}
-#endif /* !defined(J9ZOS390) */
+#else /* defined(J9ZOS390) */
+	supportedFlags |= OMRPORT_SIG_FLAG_MAY_CONTINUE_EXECUTION;
+#endif /* defined(J9ZOS390) */
 
 	if (OMR_ARE_NO_BITS_SET(signalOptionsGlobal, OMRPORT_SIG_OPTIONS_REDUCED_SIGNALS_SYNCHRONOUS)) {
 		supportedFlags |= OMRPORT_SIG_FLAG_SIGALLSYNC;
@@ -327,7 +324,6 @@ omrsig_info(struct OMRPortLibrary *portLibrary, void *info, uint32_t category, i
 	*name = "";
 
 	switch (category) {
-
 	case OMRPORT_SIG_SIGNAL:
 		return infoForSignal(portLibrary, info, index, name, value);
 	case OMRPORT_SIG_GPR:
@@ -343,12 +339,14 @@ omrsig_info(struct OMRPortLibrary *portLibrary, void *info, uint32_t category, i
 		if (portLibrary->portGlobals->vectorRegsSupportOn) {
 			return infoForVR(portLibrary, info, index, name, value);
 		}
+		/* FALLTHROUGH */
 #endif /* defined(J9ZOS390) */
 	case OMRPORT_SIG_OTHER:
 	default:
 		return OMRPORT_SIG_VALUE_UNDEFINED;
 	}
 }
+
 uint32_t
 omrsig_info_count(struct OMRPortLibrary *portLibrary, void *info, uint32_t category)
 {
@@ -481,8 +479,9 @@ omrsig_set_async_signal_handler(struct OMRPortLibrary *portLibrary, omrsig_handl
 	while (NULL != cursor) {
 		if ((cursor->portLib == portLibrary) && (cursor->handler == handler) && (cursor->handler_arg == handler_arg)) {
 			if (0 == flags) {
-				/* Remove the listener
-				 * NOTE: mainHandlers get removed at omrsignal shutdown */
+				/* Remove the listener.
+				 * NOTE: mainHandlers get removed at omrsignal shutdown.
+				 */
 
 				/* remove this handler record */
 				*previousLink = cursor->next;
@@ -551,7 +550,7 @@ omrsig_set_single_async_signal_handler(struct OMRPortLibrary *portLibrary, omrsi
 	omrthread_monitor_enter(registerHandlerMonitor);
 
 	if (OMR_ARE_ANY_BITS_SET(signalOptionsGlobal, OMRPORT_SIG_OPTIONS_REDUCED_SIGNALS_ASYNCHRONOUS)) {
-		/* -Xrs was set, we can't protect against any signals, do not install any handlers except SIGXFSZ*/
+		/* -Xrs was set, we can't protect against any signals, do not install any handlers except SIGXFSZ */
 		if (OMR_ARE_ALL_BITS_SET(portlibSignalFlag, OMRPORT_SIG_FLAG_SIGXFSZ) && OMR_ARE_ANY_BITS_SET(signalOptionsGlobal, OMRPORT_SIG_OPTIONS_SIGXFSZ)) {
 			rc = registerMainHandlers(portLibrary, OMRPORT_SIG_FLAG_SIGXFSZ, OMRPORT_SIG_FLAG_SIGALLASYNC, oldOSHandler);
 		} else {
@@ -576,7 +575,7 @@ omrsig_set_single_async_signal_handler(struct OMRPortLibrary *portLibrary, omrsi
 		omrthread_monitor_wait(asyncMonitor);
 	}
 
-	/* is this handler already registered? */
+	/* Is this handler already registered? */
 	previousLink = &asyncHandlerList;
 	cursor = asyncHandlerList;
 
@@ -593,7 +592,7 @@ omrsig_set_single_async_signal_handler(struct OMRPortLibrary *portLibrary, omrsi
 					Trc_PRT_signal_omrsig_set_single_async_signal_handler_user_handler_removed(handler, handler_arg, portlibSignalFlag);
 					break;
 				} else {
-					/* Update the listener with the new portlibSignalFlag */
+					/* Update the listener with the new portlibSignalFlag. */
 					Trc_PRT_signal_omrsig_set_single_async_signal_handler_user_handler_added_1(handler, handler_arg, portlibSignalFlag);
 					cursor->flags |= portlibSignalFlag;
 				}
@@ -755,7 +754,6 @@ omrsig_shutdown(struct OMRPortLibrary *portLibrary)
 int32_t
 omrsig_startup(struct OMRPortLibrary *portLibrary)
 {
-
 	int32_t result = 0;
 	omrthread_monitor_t globalMonitor = NULL;
 	uint32_t index = 1;
@@ -765,19 +763,17 @@ omrsig_startup(struct OMRPortLibrary *portLibrary)
 	globalMonitor = omrthread_global_monitor();
 
 	omrthread_monitor_enter(globalMonitor);
-	if (attachedPortLibraries++ == 0) {
-
+	if (0 == attachedPortLibraries++) {
 		/* initialize the old actions */
 		for (index = 1; index < ARRAY_SIZE_SIGNALS; index++) {
 			oldActions[index].restore = 0;
 		}
 
 		result = initializeSignalTools(portLibrary);
-
 	}
 	omrthread_monitor_exit(globalMonitor);
 
-	if (result == 0) {
+	if (0 == result) {
 		/* we have successfully started up the signal portion, install the full shutdown routine */
 		portLibrary->sig_shutdown = sig_full_shutdown;
 	}
@@ -830,7 +826,7 @@ runHandlers(uint32_t asyncSignalFlag, int unixSignal, OMRUnixSignalInfo *sigInfo
 	}
 
 	omrthread_monitor_enter(asyncMonitor);
-	if (--asyncThreadCount == 0) {
+	if (0 == --asyncThreadCount) {
 		omrthread_monitor_notify_all(asyncMonitor);
 	}
 	omrthread_monitor_exit(asyncMonitor);
@@ -888,8 +884,9 @@ asynchSignalReporter(void *userData)
 		uint32_t asyncSignalFlag = 0;
 
 #if !defined(J9ZOS390)
-		/* CMVC  119663 sem_wait can return -1/EINTR on signal in NPTL */
-		while (0 != SIGSEM_WAIT(wakeUpASyncReporter));
+		while (0 != SIGSEM_WAIT(wakeUpASyncReporter)) {
+			/* CMVC 119663 sem_wait can return -1/EINTR on signal in NPTL */
+		}
 #endif /* !defined(J9ZOS390) */
 
 		/* determine which signal we've been woken up for */
@@ -968,7 +965,6 @@ asynchSignalReporter(void *userData)
  * This signal handler is specific to synchronous signals.
  * It will call all of the user's handlers that were registered with the vm using omrsig_protect,
  * upon receiving a signal they listen for.
- *
  */
 #if defined(S390) && defined(LINUX)
 static void
@@ -1007,20 +1003,18 @@ mainSynchSignalHandler(int signal, siginfo_t *sigInfo, void *contextInfo)
 
 #if defined(LINUXPPC64)
 #define MSR_TS_MASK 0x600000000ULL
+	/* the transactional context is in the high order bits */
 	if (OMR_ARE_ANY_BITS_SET(platformContext->uc_mcontext.regs->msr, MSR_TS_MASK))
-		/* the transactional context is in the high order bits */
 #else /* defined(LINUXPPC64) */
 #define MSR_TS_MASK 0x6U
 	/*
-	 * in 32-bit CPUs, the second context containing the transactional
+	 * In 32-bit CPUs, the second context containing the transactional
 	 * state is in a separate ucontext datastructure pointed to by uc_link.
 	 */
 	if ((NULL != platformContext->uc_link) && OMR_ARE_ANY_BITS_SET(platformContext->uc_link->uc_mcontext.regs->msr, MSR_TS_MASK))
 #endif /* defined(LINUXPPC64) */
 	{
-		/*
-		 * resume the transaction in the failed state, so it executes the failure path.
-		 */
+		/* Resume the transaction in the failed state, so it executes the failure path. */
 		return;
 	}
 #endif /* defined(LINUXPPC) */
@@ -1088,16 +1082,18 @@ mainSynchSignalHandler(int signal, siginfo_t *sigInfo, void *contextInfo)
 
 				result = thisRecord->handler(thisRecord->portLibrary, portLibType, &signalInfo, thisRecord->handler_arg);
 
-				/* The only case in which we don't want the previous handler back on top is if it just returned OMRPORT_SIG_EXCEPTION_RETURN
-				 * 		In this case we will remove it from the top after executing the siglongjmp */
+				/* The only case in which we don't want the previous handler back on top
+				 * is if it just returned OMRPORT_SIG_EXCEPTION_RETURN. In this case we
+				 * will remove it from the top after executing the siglongjmp.
+				 */
 				omrthread_tls_set(thisThread, tlsKey, thisRecord);
 
-				if (result == OMRPORT_SIG_EXCEPTION_CONTINUE_SEARCH) {
+				if (OMRPORT_SIG_EXCEPTION_CONTINUE_SEARCH == result) {
 					/* continue looping */
-				} else if (result == OMRPORT_SIG_EXCEPTION_CONTINUE_EXECUTION) {
+				} else if (OMRPORT_SIG_EXCEPTION_CONTINUE_EXECUTION == result) {
 #if defined(J9ZOS390)
-					uintptr_t r13;
-					uintptr_t rSSP;
+					uintptr_t r13 = 0;
+					uintptr_t rSSP = 0;
 					struct __mcontext *mcontext = contextInfo;
 #endif /* defined(J9ZOS390) */
 
@@ -1109,10 +1105,10 @@ mainSynchSignalHandler(int signal, siginfo_t *sigInfo, void *contextInfo)
 #endif /* defined(J9ZOS390) */
 					return;
 #if defined(J9ZOS390)
-				} else if (result == OMRPORT_SIG_EXCEPTION_COOPERATIVE_SHUTDOWN) {
+				} else if (OMRPORT_SIG_EXCEPTION_COOPERATIVE_SHUTDOWN == result) {
 					break;
 #endif /* defined(J9ZOS390) */
-				} else /* if (result == OMRPORT_SIG_EXCEPTION_RETURN) */ {
+				} else /* if (OMRPORT_SIG_EXCEPTION_RETURN == result) */ {
 					omrthread_tls_set(thisThread, tlsKeyCurrentSignal, previousSignal);
 					siglongjmp(thisRecord->returnBuf, 0);
 					/* unreachable */
@@ -1123,13 +1119,13 @@ mainSynchSignalHandler(int signal, siginfo_t *sigInfo, void *contextInfo)
 		}
 
 		omrthread_tls_set(thisThread, tlsKeyCurrentSignal, previousSignal);
-
-	} /* if (thisThread != NULL) */
+	} /* if (NULL != thisThread) */
 
 #if defined(J9ZOS390)
 
-	if ((OMRPORT_SIG_EXCEPTION_COOPERATIVE_SHUTDOWN == result) || (OMR_ARE_ALL_BITS_SET(signalOptionsGlobal, OMRPORT_SIG_OPTIONS_COOPERATIVE_SHUTDOWN))) {
-
+	if ((OMRPORT_SIG_EXCEPTION_COOPERATIVE_SHUTDOWN == result)
+		|| (OMR_ARE_ALL_BITS_SET(signalOptionsGlobal, OMRPORT_SIG_OPTIONS_COOPERATIVE_SHUTDOWN))
+	) {
 		/* Determine if returning from the signal handler will result in Language Environment (LE) initiating Resource Recovery Services (RRS)
 		 *  and terminate the enclave, or if we need to explicitly trigger an abend to force RRS and termination.
 		 *
@@ -1137,11 +1133,11 @@ mainSynchSignalHandler(int signal, siginfo_t *sigInfo, void *contextInfo)
 		 *
 		 * In general, the rules are:
 		 *
-		 * 		Hardware signals - return from the signal handler. This is preferable as the signal we're handling is reported in LE diagnostics
-		 * 								as the cause of the crash. However, returning doesn't work for software signals.
+		 *   Hardware signals - return from the signal handler. This is preferable as the signal we're handling is reported in LE diagnostics
+		 *                      as the cause of the crash. However, returning doesn't work for software signals.
 		 *
-		 * 		Software signals -  explicitly trigger an abend. Whereas this forces LE RRS in all cases,
-		 * 								LE diagnostics will report the JVM abend as the cause of the crash, which somewhat clouds the issue.
+		 *   Software signals - explicitly trigger an abend. Whereas this forces LE RRS in all cases,
+		 *                      LE diagnostics will report the JVM abend as the cause of the crash, which somewhat clouds the issue.
 		 */
 
 		/* Default to explicitly triggering the abend, as this is guaranteed to trigger RRS */
@@ -1159,7 +1155,7 @@ mainSynchSignalHandler(int signal, siginfo_t *sigInfo, void *contextInfo)
 
 		CEE3CIB(NULL, &conditionInfoBlock, &cibfc);
 
-		if (0 ==  _FBCHECK(cibfc, CEE000))
+		if (0 == _FBCHECK(cibfc, CEE000))
 #endif /* defined(OMR_ENV_DATA64) */
 		{
 			/* we successfully acquired the condition information block */
@@ -1171,7 +1167,6 @@ mainSynchSignalHandler(int signal, siginfo_t *sigInfo, void *contextInfo)
 					 (SIGILL == signal) ||
 					 (SIGFPE == signal) ||
 					 (SIGABND == signal))) {
-
 					triggerAbend = FALSE;
 				}
 			}
@@ -1184,7 +1179,7 @@ mainSynchSignalHandler(int signal, siginfo_t *sigInfo, void *contextInfo)
 		}
 #endif /* defined(OMRPORT_OMRSIG_SUPPORT) */
 
-		if (TRUE == triggerAbend) {
+		if (triggerAbend) {
 			sigrelse(SIGABND); /* CMVC 191934: need to unblock sigabnd before issuing the abend call */
 #if defined(OMR_ENV_DATA64)
 			__cabend(PORT_ABEND_CODE, PORT_ABEND_REASON_CODE, PORT_ABEND_CLEANUP_CODE /* normal termination processing */);
@@ -1192,7 +1187,7 @@ mainSynchSignalHandler(int signal, siginfo_t *sigInfo, void *contextInfo)
 			{
 				_INT4 code = PORT_ABEND_CODE;
 				_INT4 reason = PORT_ABEND_REASON_CODE;
-				_INT4 cleanup = PORT_ABEND_CLEANUP_CODE;	 /* normal termination processing */
+				_INT4 cleanup = PORT_ABEND_CLEANUP_CODE; /* normal termination processing */
 
 				CEE3AB2(&code, &reason, &cleanup);
 			}
@@ -1206,9 +1201,9 @@ mainSynchSignalHandler(int signal, siginfo_t *sigInfo, void *contextInfo)
 	/* unreachable */
 #endif /* defined(J9ZOS390) */
 
-
-	/* The only way to get here is if (1) this thread was not attached to the thread library or (2) the thread hadn't registered
-	 * any signal handlers with the port library that could handle the signal
+	/* The only way to get here is if (1) this thread was not attached to the thread
+	 * library or (2) the thread hadn't registered any signal handlers with the port
+	 * library that could handle the signal.
 	 */
 
 #if defined(OMRPORT_OMRSIG_SUPPORT)
@@ -1225,22 +1220,19 @@ mainSynchSignalHandler(int signal, siginfo_t *sigInfo, void *contextInfo)
 	/* if we got this far there weren't any handlers on the stack that knew what to with this signal
 	 * default action is to abort */
 #if defined(J9ZOS390)
-	if (SIGABND != signal) {
-		/* Percolate unhandled SIGABND and let the default action occur */
+	/* Percolate unhandled SIGABND and let the default action occur. */
+	if (SIGABND != signal)
 #endif /* defined(J9ZOS390) */
+	{
 		abort();
-#if defined(J9ZOS390)
 	}
-#endif /* defined(J9ZOS390) */
 }
 
-
 /**
- * Determines the signal received and notifies the asynch signal reporter
+ * Determines the signal received and notifies the asynch signal reporter.
  *
  * One semaphore is used to notify the asynchronous signal reporter that it is time to act.
- * Each expected aynch signal type has an associated semaphore which is used to count the number of "pending" signals.
- *
+ * Each expected asynch signal type has an associated semaphore which is used to count the number of "pending" signals.
  */
 #if defined(S390) && defined(LINUX)
 static void
@@ -1274,13 +1266,13 @@ mainASynchSignalHandler(int signal, siginfo_t *sigInfo, void *contextInfo)
 	}
 
 	addAtomic(&signalCounts[signal], 1);
-#if !defined(J9ZOS390)
-	SIGSEM_POST(wakeUpASyncReporter);
-#else /* !defined(J9ZOS390) */
+#if defined(J9ZOS390)
 	pthread_mutex_lock(&wakeUpASyncReporterMutex);
 	pthread_cond_signal(&wakeUpASyncReporterCond);
 	pthread_mutex_unlock(&wakeUpASyncReporterMutex);
-#endif /* !defined(J9ZOS390) */
+#else /* defined(J9ZOS390) */
+	SIGSEM_POST(wakeUpASyncReporter);
+#endif /* defined(J9ZOS390) */
 
 	return;
 }
@@ -1416,7 +1408,6 @@ registerSignalHandlerWithOS(OMRPortLibrary *portLibrary, uint32_t portLibrarySig
 		unsetBitMaskSignalsWithMainHandlers(portLibrarySignalNo);
 	}
 
-
 	/* If a process has blocked a signal, then the signal stays blocked
 	 * in the sub-processes across fork(s) and exec(s). A blocked
 	 * signal prevents its OS signal handler to be invoked. A signal is
@@ -1535,10 +1526,10 @@ addAsyncSignalsToSet(sigset_t *ss)
  *            OMRPORT_SIG_FLAG_SIGALLASYNC
  * @param[out] oldOSHandler points to the old signal handler function
  *
- * @return	0 upon success; OMRPORT_SIG_ERROR otherwise.
- *			Possible failure scenarios include attempting to register a handler for
- *			a signal that is not included in the allowedSubsetOfFlags
-*/
+ * @return  0 upon success; OMRPORT_SIG_ERROR otherwise.
+ *          Possible failure scenarios include attempting to register a handler for
+ *          a signal that is not included in the allowedSubsetOfFlags
+ */
 static int32_t
 registerMainHandlers(OMRPortLibrary *portLibrary, uint32_t flags, uint32_t allowedSubsetOfFlags, void **oldOSHandler)
 {
@@ -1595,14 +1586,13 @@ registerMainHandlers(OMRPortLibrary *portLibrary, uint32_t flags, uint32_t allow
 	return 0;
 }
 
-
 static int32_t
 initializeSignalTools(OMRPortLibrary *portLibrary)
 {
 #if defined(OSX)
 	char semName[31 /* SEM_NAME_LEN */ + 1];
 #endif /* defined(OSX) */
-	
+
 	/* use this to record the end of the list of signal infos */
 	if (omrthread_tls_alloc(&tlsKey)) {
 		return OMRPORT_ERROR_STARTUP_SIGNAL_TOOLS1;
@@ -1631,7 +1621,21 @@ initializeSignalTools(OMRPortLibrary *portLibrary)
 		return OMRPORT_ERROR_STARTUP_SIGNAL_TOOLS6;
 	}
 
-#if !defined(J9ZOS390)
+#if defined(J9ZOS390)
+	if (pthread_mutex_init(&wakeUpASyncReporterMutex, NULL)) {
+		return OMRPORT_ERROR_STARTUP_SIGNAL_TOOLS8;
+	}
+
+	if (pthread_cond_init(&wakeUpASyncReporterCond, NULL)) {
+		return OMRPORT_ERROR_STARTUP_SIGNAL_TOOLS9;
+	}
+
+	if (checkIfResumableTrapsSupported(portLibrary)) {
+		PPG_resumableTrapsSupported = TRUE;
+	} else {
+		PPG_resumableTrapsSupported = FALSE;
+	}
+#else /* defined(J9ZOS390) */
 #if defined(OSX)
 	/* OSX only has named semaphores. They are not shared across processes, so unlink immediately.
 	 * The semaphore name length must fit within the SEM_NAME_LEN (31) limit.
@@ -1649,22 +1653,7 @@ initializeSignalTools(OMRPortLibrary *portLibrary)
 	}
 	SIGSEM_UNLINK(SIGSEM_NAME);
 #undef SIGSEM_NAME
-
-#else /* !defined(J9ZOS390) */
-	if (pthread_mutex_init(&wakeUpASyncReporterMutex, NULL)) {
-		return OMRPORT_ERROR_STARTUP_SIGNAL_TOOLS8;
-	}
-
-	if (pthread_cond_init(&wakeUpASyncReporterCond, NULL)) {
-		return OMRPORT_ERROR_STARTUP_SIGNAL_TOOLS9;
-	}
-
-	if (TRUE == checkIfResumableTrapsSupported(portLibrary)) {
-		PPG_resumableTrapsSupported = TRUE;
-	} else {
-		PPG_resumableTrapsSupported = FALSE;
-	}
-#endif /* !defined(J9ZOS390) */
+#endif /* defined(J9ZOS390) */
 
 #if defined(OMR_PORT_ASYNC_HANDLER)
 	if (J9THREAD_SUCCESS != createThreadWithCategory(
@@ -1696,8 +1685,8 @@ setReporterPriority(OMRPortLibrary *portLibrary, uintptr_t priority)
 }
 
 /**
- * sets the priority of the the async reporting thread
-*/
+ * Sets the priority of the the async reporting thread.
+ */
 int32_t
 omrsig_set_reporter_priority(struct OMRPortLibrary *portLibrary, uintptr_t priority)
 {
@@ -1722,12 +1711,12 @@ destroySignalTools(OMRPortLibrary *portLibrary)
 	omrthread_monitor_destroy(registerHandlerMonitor);
 	omrthread_monitor_destroy(asyncReporterShutdownMonitor);
 	omrthread_monitor_destroy(asyncMonitor);
-#if !defined(J9ZOS390)
-	SIGSEM_DESTROY(wakeUpASyncReporter);
-#else /* !defined(J9ZOS390) */
+#if defined(J9ZOS390)
 	pthread_mutex_destroy(&wakeUpASyncReporterMutex);
 	pthread_cond_destroy(&wakeUpASyncReporterCond);
-#endif /* !defined(J9ZOS390) */
+#else /* defined(J9ZOS390) */
+	SIGSEM_DESTROY(wakeUpASyncReporter);
+#endif /* defined(J9ZOS390) */
 
 	return 0;
 }
@@ -1848,7 +1837,7 @@ sig_full_shutdown(struct OMRPortLibrary *portLibrary)
 		}
 
 		omrthread_monitor_exit(asyncReporterShutdownMonitor);
-#endif	/* defined(OMR_PORT_ASYNC_HANDLER) */
+#endif /* defined(OMR_PORT_ASYNC_HANDLER) */
 
 		/* destroy all of the remaining monitors */
 		destroySignalTools(portLibrary);
@@ -1894,12 +1883,10 @@ removeAsyncHandlers(OMRPortLibrary *portLibrary)
 
 #if defined(OMRPORT_OMRSIG_SUPPORT)
 
-/*  @internal
+/* @internal
  *
  * omrexit_shutdown_and_exit needs to call this to ensure the signal is chained to omrsig (the application
- *  handler in the case when the shutdown is due to a fatal signal.
- *
- * @return
+ * handler in the case when the shutdown is due to a fatal signal.
  */
 void
 omrsig_chain_at_shutdown_and_exit(struct OMRPortLibrary *portLibrary)
@@ -1930,7 +1917,8 @@ omrsig_chain_at_shutdown_and_exit(struct OMRPortLibrary *portLibrary)
  * @return 0 on success and non-zero on failure
  */
 static int32_t
-unblockSignal(int signal) {
+unblockSignal(int signal)
+{
 	int32_t rc = 0;
 	sigset_t signalSet;
 
@@ -1962,8 +1950,6 @@ exit:
  * synchronous or asynchronous signals.
  *
  * @param[in] flags the port library signal flags
- *
- * @return void
  */
 static void
 setBitMaskSignalsWithHandlers(uint32_t flags)
@@ -1981,8 +1967,6 @@ setBitMaskSignalsWithHandlers(uint32_t flags)
  * synchronous or asynchronous signals.
  *
  * @param[in] flags the port library signal flags
- *
- * @return void
  */
 static void
 unsetBitMaskSignalsWithHandlers(uint32_t flags)
@@ -2004,8 +1988,6 @@ unsetBitMaskSignalsWithHandlers(uint32_t flags)
  * synchronous or asynchronous signals.
  *
  * @param[in] flags the port library signal flags
- *
- * @return void
  */
 static void
 setBitMaskSignalsWithMainHandlers(uint32_t flags)
@@ -2023,8 +2005,6 @@ setBitMaskSignalsWithMainHandlers(uint32_t flags)
  * synchronous or asynchronous signals.
  *
  * @param[in] flags the port library signal flags
- *
- * @return void
  */
 static void
 unsetBitMaskSignalsWithMainHandlers(uint32_t flags)

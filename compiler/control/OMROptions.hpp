@@ -446,7 +446,7 @@ enum TR_CompilationOptions {
     // Available                                             = 0x00000200 + 11,
     // Available                                             = 0x00000400 + 11,
     TR_DisableConstProvenance                                = 0x00000800 + 11,
-    // Available                                             = 0x00001000 + 11,
+    TR_DisableITableIterationsAfterLastITableCacheCheck      = 0x00001000 + 11,
     TR_VerboseOptTransformations                             = 0x00002000 + 11,
     TR_DisableEnhancedClobberEval                            = 0x00004000 + 11,
     TR_Enable39064Epilogue                                   = 0x00008000 + 11,

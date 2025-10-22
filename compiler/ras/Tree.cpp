@@ -1783,12 +1783,11 @@ void TR_Debug::printVCGEdges(TR::FILE *pOutFile, TR_StructureSubGraphNode *node)
     }
 }
 
-//                                                      no-opt   cold    warm         hot            veryhot scorching
-//                                                      reducedWarm  unknown
+//      no-opt   cold    warm         hot            veryhot scorching unknown
 static const char *blockColours[numHotnessLevels]
-    = { "white", "blue", "lightblue", "lightyellow", "gold", "red", "orange", "white" };
+    = { "white", "blue", "lightblue", "lightyellow", "gold", "red", "white" };
 static const char *edgeColours[numHotnessLevels]
-    = { "black", "blue", "lightblue", "lightyellow", "gold", "red", "orange", "black" };
+    = { "black", "blue", "lightblue", "lightyellow", "gold", "red", "black" };
 
 void TR_Debug::printVCG(TR::FILE *pOutFile, TR::Block *block, int32_t vorder, int32_t horder)
 {

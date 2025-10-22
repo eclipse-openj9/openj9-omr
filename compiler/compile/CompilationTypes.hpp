@@ -53,8 +53,6 @@ enum TR_Hotness
     scorching,
     minHotness = noOpt,
     maxHotness = scorching,
-    reducedWarm, ///< (Possibly temporary) OBSOLETE.  It's way down here
-                 ///< so that count/bcount strings are not effected.
     unknownHotness,
     numHotnessLevels
 }; // NOTE: if adding new hotnessLevels, corresponding names must be added to *pHotnessNames[numHotnessLevels] table in

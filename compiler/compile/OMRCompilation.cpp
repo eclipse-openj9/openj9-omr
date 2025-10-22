@@ -173,7 +173,6 @@ static const char *pHotnessNames[numHotnessLevels] = {
     "hot", // hot
     "very-hot", // veryHot
     "scorching", // scorching
-    "reducedWarm", //
     "unknown", // unknownHotness
 };
 

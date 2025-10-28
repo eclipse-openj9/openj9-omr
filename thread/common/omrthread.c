@@ -3331,22 +3331,20 @@ omrthread_park(int64_t millis, intptr_t nanos)
 				boundedMillis -= sleptMillis.quot;
 			}
 #endif /* defined(OMR_THR_YIELD_ALG) */
-			if (boundedMillis > 0) {
-				self->flags |= J9THREAD_FLAG_TIMER_SET;
+			self->flags |= J9THREAD_FLAG_TIMER_SET;
 
-				OMROSCOND_WAIT_IF_TIMEDOUT(self->condition, self->mutex, boundedMillis, nanos) {
-					rc = J9THREAD_TIMED_OUT;
-					break;
-				} else {
-					rc = omrthread_park_check_flags(self);
-					if (J9THREAD_UNPARKED == rc) {
-						self->flags &= ~J9THREAD_FLAG_UNPARKED;
-						rc = 0;
-					}
-					break;
+			OMROSCOND_WAIT_IF_TIMEDOUT(self->condition, self->mutex, boundedMillis, nanos) {
+				rc = J9THREAD_TIMED_OUT;
+				break;
+			} else {
+				rc = omrthread_park_check_flags(self);
+				if (J9THREAD_UNPARKED == rc) {
+					self->flags &= ~J9THREAD_FLAG_UNPARKED;
+					rc = 0;
 				}
-				OMROSCOND_WAIT_TIMED_LOOP();
+				break;
 			}
+			OMROSCOND_WAIT_TIMED_LOOP();
 		} else {
 			OMROSCOND_WAIT(self->condition, self->mutex);
 				rc = omrthread_park_check_flags(self);

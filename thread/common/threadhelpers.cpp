@@ -532,13 +532,13 @@ omrthread_park_spin(omrthread_t self, int64_t millis, intptr_t nanos, uintptr_t 
 	omrthread_library_t lib = self->library;
 	intptr_t rc = 0;
 	uintptr_t parkPolicy = lib->parkPolicy;
-	intptr_t totalSleepTime = 0;
 
 	if ((OMRTHREAD_PARK_POLICY_NONE != parkPolicy)) {
 		uintptr_t count = 0;
 		uintptr_t parkSleepTime = lib->parkSleepTime;
 		uintptr_t parkSleepMultiplier = lib->parkSleepMultiplier;
 		uintptr_t timeout = (millis * 1000) + (nanos / 1000);
+		intptr_t totalSleepTime = 0;
 
 		if (OMRTHREAD_PARK_POLICY_SPIN == parkPolicy) {
 			/* For now, spin is only supported if no timeout is specified. */
@@ -567,10 +567,12 @@ omrthread_park_spin(omrthread_t self, int64_t millis, intptr_t nanos, uintptr_t 
 				break;
 			}
 		}
+
+		if (NULL != sleptDuration) {
+			*sleptDuration = totalSleepTime;
+		}
 	}
-	if (NULL != sleptDuration) {
-		*sleptDuration = totalSleepTime;
-	}
+	
 	return rc;
 }
 #endif /* defined(OMR_THR_YIELD_ALG) */

@@ -42,8 +42,8 @@ TraceEntry=Trc_pool_numElements_Entry Overhead=1 Level=4 Noenv Template="pool_nu
 TraceExit=Trc_pool_numElements_Exit Overhead=1 Level=4 Noenv Template="pool_numElements(result=%zu)"
 
 TraceEntry=Trc_pool_startDo_Entry Overhead=1 Level=4 Noenv Template="pool_startDo(aPool=%p, state=%p)"
-TraceException=Trc_pool_startDo_NULLPool Overhead=1 Level=1 Noenv Template="pool_startDo - pool is NULL"
-TraceExit=Trc_pool_startDo_Empty Overhead=1 Level=4 Noenv Template="pool_startDo - no elements"
+TraceException=Trc_pool_startDo_NULLPool Obsolete Overhead=1 Level=1 Noenv Template="pool_startDo - pool is NULL"
+TraceExit=Trc_pool_startDo_Empty Obsolete Overhead=1 Level=4 Noenv Template="pool_startDo - no elements"
 TraceExit=Trc_pool_startDo_Exit Overhead=1 Level=4 Noenv Template="pool_startDo - first element is %p"
 
 TraceEntry=Trc_pool_nextDo_Entry Overhead=1 Level=4 Noenv Template="pool_nextDo(state=%p)"
@@ -51,9 +51,9 @@ TraceExit=Trc_pool_nextDo_NextPuddle Overhead=1 Level=4 Noenv Template="pool_nex
 TraceExit=Trc_pool_nextDo_Finished Overhead=1 Level=4 Noenv Template="pool_nextDo - no more elements"
 TraceExit=Trc_pool_nextDo_Exit Overhead=1 Level=4 Noenv Template="pool_nextDo - result=%p"
 
-TraceEntry=Trc_pool_sortFree_Entry Overhead=1 Level=3 Noenv Template="pool_sortFree(%p)"
-TraceException=Trc_pool_sortFree_Conflict Overhead=1 Level=1 Noenv Template="pool_sortFree - conflict at element %p in pool %p with 0x%zx"
-TraceExit=Trc_pool_sortFree_Exit Overhead=1 Level=3 Noenv Template="pool_sortFree"
+TraceEntry=Trc_pool_sortFree_Entry Obsolete Overhead=1 Level=3 Noenv Template="pool_sortFree(%p)"
+TraceException=Trc_pool_sortFree_Conflict Obsolete Overhead=1 Level=1 Noenv Template="pool_sortFree - conflict at element %p in pool %p with 0x%zx"
+TraceExit=Trc_pool_sortFree_Exit Obsolete Overhead=1 Level=3 Noenv Template="pool_sortFree"
 
 TraceEntry=Trc_pool_clear_Entry Overhead=1 Level=3 Noenv Template="pool_clear(%p)"
 TraceExit=Trc_pool_clear_Exit Overhead=1 Level=3 Noenv Template="pool_clear"
@@ -68,9 +68,9 @@ TraceExit=Trc_pool_capacity_Exit Overhead=1 Level=3 Noenv Template="pool_capacit
 TraceEntry=Trc_poolPuddle_new_Entry Overhead=1 Level=3 Noenv Template="poolPuddle_new(%p)"
 TraceExit=Trc_poolPuddle_new_Exit Overhead=1 Level=3 Noenv Template="poolPuddle_new exiting with %p"
 
-TraceEntry=Trc_pool_newWithPuddleAlloc_Entry Overhead=1 Level=3 Noenv Template="pool_newWithPuddleAlloc(%d, %d, %d, %x, %p, %p,	%p, %p, %p, %p)"
-TraceExit=Trc_pool_newWithPuddleAlloc_TooLargeExit Overhead=1 Level=3 Noenv Template="pool_newWithPuddleAlloc exit: puddle alloc size %lld too large"
-TraceExit=Trc_pool_newWithPuddleAlloc_Exit Overhead=1 Level=3 Noenv Template="pool_newWithPuddleAlloc exit with %p"
+TraceEntry=Trc_pool_newWithPuddleAlloc_Entry Obsolete Overhead=1 Level=3 Noenv Template="pool_newWithPuddleAlloc(%d, %d, %d, %x, %p, %p,	%p, %p, %p, %p)"
+TraceExit=Trc_pool_newWithPuddleAlloc_TooLargeExit Obsolete Overhead=1 Level=3 Noenv Template="pool_newWithPuddleAlloc exit: puddle alloc size %lld too large"
+TraceExit=Trc_pool_newWithPuddleAlloc_Exit Obsolete Overhead=1 Level=3 Noenv Template="pool_newWithPuddleAlloc exit with %p"
 
 TraceEntry=Trc_poolPuddle_startDo_Entry Overhead=1 Level=3 Noenv Template="poolPuddle_startDo(aPool=%p, currentPuddle=%p, lastHandle=%p, followNextPointers=%d)"
 TraceExit=Trc_poolPuddle_startDo_ExitNullPoolPuddleExit Overhead=1 Level=3 Noenv Template="poolPuddle_startDo exiting because of NULL puddle"
@@ -79,31 +79,31 @@ TraceExit=Trc_poolPuddle_startDo_Exit Overhead=1 Level=3 Noenv Template="poolPud
 
 TraceExit=Trc_pool_newElement_ExitNoop Overhead=1 Level=3 Noenv Template="pool_newElement exiting as one or more parameters is NULL"
 TraceExit=Trc_pool_removeElement_ExitNoop Overhead=1 Level=3 Noenv Template="pool_removeElement exiting as one or more parameters is NULL"
-TraceExit=Trc_pool_sortFree_ExitNoop Overhead=1 Level=3 Noenv Template="pool_sortFree exiting as one or more parameters is NULL"
+TraceExit=Trc_pool_sortFree_ExitNoop Obsolete Overhead=1 Level=3 Noenv Template="pool_sortFree exiting as one or more parameters is NULL"
 TraceExit=Trc_pool_includesElement_ExitNoop Overhead=1 Level=3 Noenv Template="pool_includesElement exiting as one or more parameters is NULL"
 
 TraceEntry=Trc_pool_includesElement_Entry Overhead=1 Level=3 Noenv Template="pool_includesElement(aPool=%p, anElement=%p)"
-TraceExit=Trc_pool_includesElement_ExitFullPuddle Overhead=1 Level=3 Noenv Template="pool_includesElement exiting with TRUE as puddle containing element is full"
+TraceExit=Trc_pool_includesElement_ExitFullPuddle Obsolete Overhead=1 Level=3 Noenv Template="pool_includesElement exiting with TRUE as puddle containing element is full"
 TraceExit=Trc_pool_includesElement_ExitFoundFree Overhead=1 Level=3 Noenv Template="pool_includesElement exiting with FALSE as element has been freed"
 TraceExit=Trc_pool_includesElement_ExitSuccess Overhead=1 Level=3 Noenv Template="pool_includesElement exiting with TRUE as element is currently allocated"
 TraceExit=Trc_pool_includesElement_ExitOutOfScope Overhead=1 Level=3 Noenv Template="pool_includesElement exiting with FALSE as element is not in scope of the pool"
 
-TraceEntry=Trc_pool_verify_Entry Overhead=1 Level=1 Noenv Template="pool_verify(aPool=%p)"
-TraceExit=Trc_pool_verify_ExitCorruptPuddle Overhead=1 Level=1 Noenv Template="pool_verify failed pool %p corrupt puddle %p"
+TraceEntry=Trc_pool_verify_Entry Obsolete Overhead=1 Level=1 Noenv Template="pool_verify(aPool=%p)"
+TraceExit=Trc_pool_verify_ExitCorruptPuddle Obsolete Overhead=1 Level=1 Noenv Template="pool_verify failed pool %p corrupt puddle %p"
 TraceExit=Trc_pool_verify_ExitNoActive Obsolete Overhead=1 Level=1 Noenv Template="pool_verify failed pool %p active puddle %p not found"
-TraceExit=Trc_pool_verify_ExitSuccess Overhead=1 Level=1 Noenv Template="pool_verify success pool %p numElements %d numPuddles %d"
-TraceExit=Trc_pool_verify_ExitInvalidFirstElement Overhead=1 Level=1 Noenv Template="pool_verify failed pool %p puddle %p invalid first element %p"
-TraceExit=Trc_pool_verify_ExitFreeSlotInvalid Overhead=1 Level=1 Noenv Template="pool_verify failed pool %p puddle %p first free slot invalid %p"
+TraceExit=Trc_pool_verify_ExitSuccess Obsolete Overhead=1 Level=1 Noenv Template="pool_verify success pool %p numElements %d numPuddles %d"
+TraceExit=Trc_pool_verify_ExitInvalidFirstElement Obsolete Overhead=1 Level=1 Noenv Template="pool_verify failed pool %p puddle %p invalid first element %p"
+TraceExit=Trc_pool_verify_ExitFreeSlotInvalid Obsolete Overhead=1 Level=1 Noenv Template="pool_verify failed pool %p puddle %p first free slot invalid %p"
 
-TraceEvent=Trc_pool_newElement_FreeSlotInvalid Overhead=1 Level=1 Noenv Template="pool_newElement pool %p puddle %p free slot in element %p invalid %p"
+TraceEvent=Trc_pool_newElement_FreeSlotInvalid Obsolete Overhead=1 Level=1 Noenv Template="pool_newElement pool %p puddle %p free slot in element %p invalid %p"
 
-TraceEntry=Trc_pool_killWithoutPuddles_Entry Overhead=1 Level=3 Noenv Template="pool_killWithoutPuddles(%p)"
-TraceExit=Trc_pool_killWithoutPuddles_Exit Overhead=1 Level=3 Noenv Template="pool_killWithoutPuddles"
+TraceEntry=Trc_pool_killWithoutPuddles_Entry Obsolete Overhead=1 Level=3 Noenv Template="pool_killWithoutPuddles(%p)"
+TraceExit=Trc_pool_killWithoutPuddles_Exit Obsolete Overhead=1 Level=3 Noenv Template="pool_killWithoutPuddles"
 
-TraceExit=Trc_pool_verify_ExitNoPuddleList Overhead=1 Level=1 Noenv Template="pool_verify pool %p has no puddle list"
-TraceExit=Trc_pool_verify_ExitNoNextAvailablePuddle Overhead=1 Level=1 Noenv Template="pool_verify failed pool %p next available puddle %p not found"
-TraceExit=Trc_pool_verify_ExitNumElementsMismatch Overhead=1 Level=1 Noenv Template="pool_verify failed pool %p element count mismatch found %d expected %d"
+TraceExit=Trc_pool_verify_ExitNoPuddleList Obsolete Overhead=1 Level=1 Noenv Template="pool_verify pool %p has no puddle list"
+TraceExit=Trc_pool_verify_ExitNoNextAvailablePuddle Obsolete Overhead=1 Level=1 Noenv Template="pool_verify failed pool %p next available puddle %p not found"
+TraceExit=Trc_pool_verify_ExitNumElementsMismatch Obsolete Overhead=1 Level=1 Noenv Template="pool_verify failed pool %p element count mismatch found %d expected %d"
 
 TraceExit=Trc_pool_new_ArgumentTooLargeExit Overhead=1 Level=1 Noenv Template="pool_new too large (structSize=%zu, minNumberElements=%zu elementAlignment=%zu)"
-TraceExit=Trc_pool_new_NoVerifyWithHolesExit Overhead=1 Level=1 Noenv Template="pool_new POOL_VERIFY_FREE_LIST unsupported when POOL_USES_HOLES"
-TraceExit=Trc_pool_verify_ExitPrevPuddleMismatch Overhead=1 Level=1 Noenv Template="pool_verify failed pool %p puddle %p prev puddle not %p avail %d"
+TraceExit=Trc_pool_new_NoVerifyWithHolesExit Obsolete Overhead=1 Level=1 Noenv Template="pool_new POOL_VERIFY_FREE_LIST unsupported when POOL_USES_HOLES"
+TraceExit=Trc_pool_verify_ExitPrevPuddleMismatch Obsolete Overhead=1 Level=1 Noenv Template="pool_verify failed pool %p puddle %p prev puddle not %p avail %d"

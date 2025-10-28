@@ -22,4 +22,4 @@ Executable=j9vgc
 DATFileName=J9TraceFormat.dat
 TraceEvent=Trc_VGC_Verbosegc Overhead=1 Level=3 Template="vgc: %s"
 TraceAssert=Assert_VGC_true noEnv Overhead=1 Level=1 Assert="(P1)"
-TraceAssert=Assert_VGC_false noEnv Overhead=1 Level=1 Assert="!(P1)"
+TraceAssert=Assert_VGC_false noEnv Obsolete Overhead=1 Level=1 Assert="!(P1)"

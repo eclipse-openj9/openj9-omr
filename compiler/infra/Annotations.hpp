@@ -69,7 +69,9 @@
 //
 // Used on a class definition to indicate that the class is extensible
 //
-#if defined(__clang__) // Only clang is checking this macro for now
+// Only clang is checking this macro for now.
+// As well, disable on AIX as a workaround for https://github.com/eclipse-omr/omr/issues/8024
+#if defined(__clang__) && !defined(AIXPPC)
 #define OMR_EXTENSIBLE __attribute__((annotate("OMR_Extensible")))
 #else
 #define OMR_EXTENSIBLE
@@ -80,7 +82,9 @@
 // Used on a member function declaration in an extensible class to
 // indicate the function will not be overridden in a subclass
 //
-#if defined(__clang__) // Only clang is checking this macro for now
+// Only clang is checking this macro for now.
+// As well, disable on AIX as a workaround for https://github.com/eclipse-omr/omr/issues/8024
+#if defined(__clang__) && !defined(AIXPPC)
 #define OMR_FINAL __attribute__((annotate("OMR_FINAL")))
 #else
 #define OMR_FINAL

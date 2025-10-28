@@ -22,7 +22,7 @@ Executable=omrti
 DATFileName=OMRTraceFormat.dat
 
 TraceEntry=Trc_OMRTI_omrtiGetMemoryCategories_Entry Overhead=1 Level=1 Template="GetMemoryCategories max_categories=%d categories_buffer=%p written_count_ptr=%p total_categories_ptr=%p"
-TraceExit-Exception=Trc_OMRTI_omrtiGetMemoryCategories_WrongVersion_Exit Overhead=1 Level=1 Template="GetMemoryCategories failing with OMRTI_ERROR_UNSUPPORTED_VERSION: unmatched version %d"
+TraceExit-Exception=Trc_OMRTI_omrtiGetMemoryCategories_WrongVersion_Exit Obsolete Overhead=1 Level=1 Template="GetMemoryCategories failing with OMRTI_ERROR_UNSUPPORTED_VERSION: unmatched version %d"
 TraceExit-Exception=Trc_OMRTI_omrtiGetMemoryCategories_AllOutputsNull_Exit Overhead=1 Level=1 Template="GetMemoryCategories failing with OMRTI_ERROR_ILLEGAL_ARGUMENT: categories_buffer, written_count_ptr and total_categories_ptr are all NULL."
 TraceExit-Exception=Trc_OMRTI_omrtiGetMemoryCategories_NullOutput_Exit Overhead=1 Level=1 Template="GetMemoryCategories failing with OMRTI_ERROR_ILLEGAL_ARGUMENT: no categories_buffer pointer specified. max_categories=%d"
 TraceExit-Exception=Trc_OMRTI_omrtiGetMemoryCategories_NullWrittenPtr_Exit Overhead=1 Level=1 Template="GetMemoryCategories failing with OMRTI_ERROR_ILLEGAL_ARGUMENT, categories_buffer & max_categories are set, but written_count_ptr is NULL. max_categories=%d, categories_buffer=%p"

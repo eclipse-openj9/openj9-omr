@@ -47,5 +47,5 @@ TraceExit=Trc_AVL_deleteNode_NotInTree Noenv Overhead=1 Level=3 Template="delete
 TraceExit=Trc_AVL_deleteNode_Removed Noenv Overhead=1 Level=3 Template="deleteNode -- node removed: %p"
 TraceExit=Trc_AVL_deleteNode_Recursive Noenv Overhead=1 Level=3 Template="deleteNode -- deleted recursively: %p"
 
-TraceAssert=Assert_AVL_true NoEnv Overhead=1 Level=1 Assert="(P1)"
-TraceAssert=Assert_AVL_false NoEnv Overhead=1 Level=1 Assert="!(P1)"
+TraceAssert=Assert_AVL_true NoEnv Obsolete Overhead=1 Level=1 Assert="(P1)"
+TraceAssert=Assert_AVL_false NoEnv Obsolete Overhead=1 Level=1 Assert="!(P1)"

@@ -22,7 +22,7 @@ Executable=hashtable
 DATFileName=J9TraceFormat.dat
 
 TraceAssert=Assert_hashTable_true NoEnv Overhead=1 Level=1 Assert="(P1)"
-TraceAssert=Assert_hashTable_false NoEnv Overhead=1 Level=1 Assert="!(P1)"
+TraceAssert=Assert_hashTable_false NoEnv Obsolete Overhead=1 Level=1 Assert="!(P1)"
 TraceAssert=Assert_hashTable_unreachable noEnv Overhead=1 Level=1 Assert="(FALSE)"
 TraceEntry=Trc_hashTable_listToTree_Entry noEnv Overhead=1 Level=1 Template="HashTable start converting list to tree: tableName=%s, tableAddress=%p, head=%p, listLength=%zu"
 TraceExit=Trc_hashTable_listToTree_Exit noEnv Overhead=1 Level=1 Template="HashTable finish converting list to tree: rc=%zu tree=%p "

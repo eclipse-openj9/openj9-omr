@@ -34,8 +34,6 @@
 
 #include "SublistPool.hpp"
 
-class MM_SublistPuddle;
-
 /**
  * Iterate over the all puddles of a sublist
  * @see MM_SublistPool
@@ -50,10 +48,9 @@ public:
 	GC_SublistIterator(MM_SublistPool *sublistPool) :
 		_currentPuddle(NULL),
 		_sublistPool(sublistPool)
-	{};
+	{}
 
 	MM_SublistPuddle *nextList();
 };
 
-#endif /* SUBLISTITERATOR_HPP_ */
-
+#endif /* !defined(SUBLISTITERATOR_HPP_) */

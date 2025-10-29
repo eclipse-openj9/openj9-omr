@@ -1208,6 +1208,8 @@ TR::OptionTable OMR::Options::_jitOptions[] = {
     { "enableInterfaceCallCachingSingleDynamicSlot",
      "O\tenable interfaceCall caching with one slot storing J9MethodPtr   ", SET_OPTION_BIT(TR_enableInterfaceCallCachingSingleDynamicSlot), "F" },
     { "enableIprofilerChanges", "O\tenable iprofiler changes", SET_OPTION_BIT(TR_EnableIprofilerChanges), "F" },
+    { "enableITableIterationsAfterLastITableCacheCheckAtWarm",
+     "O\tenable iterating the iTable after last cache check for warm compilations", SET_OPTION_BIT(TR_EnableITableIterationsAfterLastITableCacheCheckAtWarm), "F" },
     { "enableIVTT", "O\tenable IV Type Transformation", TR::Options::enableOptimization, IVTypeTransformation, 0, "P" },
     { "enableJCLInline", "O\tenable JCL Integer and Long methods inlining", SET_OPTION_BIT(TR_EnableJCLInline), "F" },
     { "enableJITHelpershashCodeImpl", "O\tenable java version of object hashCode()",

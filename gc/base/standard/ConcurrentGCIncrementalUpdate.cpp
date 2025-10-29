@@ -680,6 +680,7 @@ MM_ConcurrentGCIncrementalUpdate::adjustTraceTarget()
 	/* Reset bytes to trace and clean based on new heap size and the average live rate */
 	uintptr_t totalBytesToTrace = (uintptr_t)(heapSize * _tenureLiveObjectFactor * _tenureNonLeafObjectFactor);
 	_bytesToTracePass1 = (uintptr_t)((float)totalBytesToTrace * _bytesTracedInPass1Factor);
+	Assert_MM_true(totalBytesToTrace >= _bytesToTracePass1);
 	_bytesToTracePass2 = totalBytesToTrace - _bytesToTracePass1;
 	_bytesToCleanPass1 = (uintptr_t)((float)_bytesToTracePass1 * _cardCleaningFactorPass1);
 	_bytesToCleanPass2 = (uintptr_t)((float)_bytesToTracePass2 * _cardCleaningFactorPass2);
@@ -765,7 +766,9 @@ MM_ConcurrentGCIncrementalUpdate::updateTuningStatisticsInternal(MM_EnvironmentB
 			}
 
 			/* What factor of the tracing work was done beofre we started 2nd pass of card cleaning ?*/
+			Assert_GC_true_with_message2(env, totalTracedPass1 <= totalTraced, "Trace pass1 %zu total %zu\n", totalTracedPass1, totalTraced);
 			newBytesTracedInPass1Factor = ((float)totalTracedPass1) / ((float)totalTraced);
+			Assert_GC_true_with_message2(env, totalCleanedPass1 <= totalTraced, "CleanedPass1 %zu totalTraced %zu\n", totalCleanedPass1, totalTraced);
 			newCardCleaningFactorPass1 = ((float)totalCleanedPass1) / ((float)totalTraced);
 			newCardCleaningFactorPass1 = OMR_MIN(newCardCleaningFactorPass1, _maxCardCleaningFactorPass1);
 			_cardCleaningFactorPass1 = MM_Math::weightedAverage(_cardCleaningFactorPass1, newCardCleaningFactorPass1, CARD_CLEANING_HISTORY_WEIGHT);
@@ -773,6 +776,7 @@ MM_ConcurrentGCIncrementalUpdate::updateTuningStatisticsInternal(MM_EnvironmentB
 
 			/* Only update pass 2 average if we did 2 passes */
 			if (_secondCardCleanPass) {
+				Assert_GC_true_with_message2(env, totalCleanedPass2 <= totalTraced, "CleanedPass2 %zu totalTraced %zu\n", totalCleanedPass2, totalTraced);
 				newCardCleaningFactorPass2 = ((float)totalCleanedPass2) / ((float)totalTraced);
 				newCardCleaningFactorPass2 = OMR_MIN(newCardCleaningFactorPass2, _maxCardCleaningFactorPass2);
 				_cardCleaningFactorPass2 = MM_Math::weightedAverage(_cardCleaningFactorPass2, newCardCleaningFactorPass2, CARD_CLEANING_HISTORY_WEIGHT);

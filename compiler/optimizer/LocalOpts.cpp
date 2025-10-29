@@ -102,6 +102,7 @@
 #include "runtime/J9Profiler.hpp"
 #include "env/CHTable.hpp"
 #include "env/ClassTableCriticalSection.hpp"
+#include "env/J9ConstProvenanceGraph.hpp"
 #include "env/PersistentCHTable.hpp"
 #include "env/RuntimeAssumptionTable.hpp"
 #include "env/VMJ9.h"
@@ -6528,8 +6529,12 @@ void TR_InvariantArgumentPreexistence::processIndirectCall(TR::Node *node, TR::T
 
         {
             TR::ClassTableCriticalSection setClass(comp()->fe());
-            receiverInfo->setClass(TR::Compiler->cls.objectClass(comp(),
-                knot->getPointer(receiver->getSymbolReference()->getKnownObjectIndex())));
+            TR::KnownObjectTable::Index koi = receiver->getSymbolReference()->getKnownObjectIndex();
+            TR_OpaqueClassBlock *clazz = TR::Compiler->cls.objectClass(comp(), knot->getPointer(koi));
+            receiverInfo->setClass(clazz);
+
+            J9::ConstProvenanceGraph *cpg = comp()->constProvenanceGraph();
+            cpg->addEdge(cpg->knownObject(koi), clazz);
         }
     }
 

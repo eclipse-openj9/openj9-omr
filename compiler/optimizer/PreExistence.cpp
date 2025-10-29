@@ -26,6 +26,7 @@
 #include "compile/Compilation.hpp"
 #ifdef J9_PROJECT_SPECIFIC
 #include "env/VMAccessCriticalSection.hpp"
+#include "env/J9ConstProvenanceGraph.hpp"
 #endif
 #include "optimizer/Inliner.hpp"
 
@@ -59,6 +60,9 @@ TR_PrexArgument::TR_PrexArgument(TR::KnownObjectTable::Index knownObjectIndex, T
         if (prexArgumentCriticalSection.hasVMAccess()) {
             _class = TR::Compiler->cls.objectClass(comp, comp->getKnownObjectTable()->getPointer(knownObjectIndex));
             _classKind = ClassIsFixed;
+
+            J9::ConstProvenanceGraph *cpg = comp->constProvenanceGraph();
+            cpg->addEdge(cpg->knownObject(knownObjectIndex), _class);
         }
     }
 #endif

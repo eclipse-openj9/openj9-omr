@@ -166,9 +166,8 @@ private:
 	 * This removes the requirement of a synchronization point after calls to completeScan when
 	 * it is followed by reference or remembered set processing.
 	 * @param env - current thread environment
-	 * @param finalFlush - lets the copy/scan flush know if it's the last thread performing the flush
 	 */
-	void flushBuffersForGetNextScanCache(MM_EnvironmentStandard *env, bool finalFlush = false);
+	void flushBuffersForGetNextScanCache(MM_EnvironmentStandard *env);
 	
 	void saveMainThreadTenureTLHRemainders(MM_EnvironmentStandard *env);
 	void restoreMainThreadTenureTLHRemainders(MM_EnvironmentStandard *env);

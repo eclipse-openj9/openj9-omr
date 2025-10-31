@@ -2277,11 +2277,11 @@ MM_Scavenger::externalNotifyToYield(MM_EnvironmentBase *env)
 }
 
 MMINLINE void
-MM_Scavenger::flushBuffersForGetNextScanCache(MM_EnvironmentStandard *env, bool finalFlush)
+MM_Scavenger::flushBuffersForGetNextScanCache(MM_EnvironmentStandard *env)
 {
 	_delegate.flushReferenceObjects(env);
 	flushRememberedSet(env);
-	flushCopyScanCounts(env, finalFlush);
+	flushCopyScanCounts(env, false);
 
 #if defined(OMR_GC_CONCURRENT_SCAVENGER)
 	if (_extensions->concurrentScavengeExhaustiveTermination && isCurrentPhaseConcurrent()) {
@@ -2423,9 +2423,10 @@ MM_Scavenger::getNextScanCache(MM_EnvironmentStandard *env)
 
 		if(doneIndex == _doneIndex) {
 			if((env->_currentTask->getThreadCount() == _waitingCount) && (0 == _cachedEntryCount)) {
-				flushBuffersForGetNextScanCache(env, true);
+				flushBuffersForGetNextScanCache(env);
 
 				if (shouldDoFinalNotify(env)) {
+					flushCopyScanCounts(env, true);
 					_waitingCount = 0;
 					_doneIndex += 1;
 					uint64_t notifyStartTime = omrtime_hires_clock();

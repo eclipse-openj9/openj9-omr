@@ -507,12 +507,16 @@ static TR::Node *addSimplifierCommon(TR::Node *node, TR::Block *block, TR::Simpl
         && (s->_curTree->getNode()->getFirstChild()->getLastChild() == node))
         return node;
 
+    // clang-format off
     //
     //       a*add          a*add
     //       / \            / \
-   //    a*add t2  =>  a*add  c1
+    //    a*add t2  =>  a*add  c1
     //     / \            / \
-   //    t1  c1         t1 t2
+    //    t1  c1         t1 t2
+    //
+    // clang-format on
+    //
     if (s->reassociate() && node->getOpCode().isArrayRef()) {
         firstChild = node->getFirstChild();
         secondChild = node->getSecondChild();
@@ -539,11 +543,16 @@ static TR::Node *addSimplifierCommon(TR::Node *node, TR::Block *block, TR::Simpl
         firstChild = node->getFirstChild();
         secondChild = node->getSecondChild();
 
+        // clang-format off
+        //
         // R9:    +              +
         //       / \            / \
-      //      +-  c2    =>   t   +-
+        //      +-  c2    =>   t   +-
         //     / \                / \
-      //    t   c1             c2 c1
+        //    t   c1             c2 c1
+        //
+        // clang-format on
+        //
         if ((firstChild->getOpCode().isAdd() || firstChild->getOpCode().isSub())
             && ((!isExprInvariant(region, firstChild->getFirstChild())
                     && isExprInvariant(region, firstChild->getSecondChild()) && isExprInvariant(region, secondChild))
@@ -582,12 +591,17 @@ static TR::Node *addSimplifierCommon(TR::Node *node, TR::Block *block, TR::Simpl
             }
         }
 
+        // clang-format off
+        //
         // R9_1:
         //        +              +
         //       / \            / \
-      //      c1  +    =>    +   t
+        //      c1  +    =>    +   t
         //         / \        / \
-      //        t   c2     c1 c2
+        //        t   c2     c1 c2
+        //
+        // clang-format on
+        //
         else if (isExprInvariant(region, firstChild) && secondChild->getOpCode().isAdd()
             && !isExprInvariant(region, secondChild->getFirstChild())
             && isExprInvariant(region, secondChild->getSecondChild())
@@ -606,12 +620,17 @@ static TR::Node *addSimplifierCommon(TR::Node *node, TR::Block *block, TR::Simpl
                 setExprInvariant(region, newFirstChild);
             }
         }
+        // clang-format off
+        //
         // R9_1_1:
         //        +              +
         //       / \            / \
-      //      +  t2     =>   c   +
+        //      +  t2     =>   c   +
         //     / \                / \
-      //    c  t1              t1 t2
+        //    c  t1              t1 t2
+        //
+        // clang-format on
+        //
         else if (firstChild->getOpCode().isAdd() && isExprInvariant(region, firstChild->getFirstChild())
             && !isExprInvariant(region, firstChild->getSecondChild())
             && (!isExprInvariant(region, secondChild)
@@ -629,12 +648,17 @@ static TR::Node *addSimplifierCommon(TR::Node *node, TR::Block *block, TR::Simpl
                 secondChild->recursivelyDecReferenceCount();
             }
         }
+        // clang-format off
+        //
         // R9_1_2:
         //        +              -
         //       / \            / \
-      //      -  c2     =>   +   t
+        //      -  c2     =>   +   t
         //     / \            / \
-      //    c1  t         c1  c2
+        //    c1  t         c1  c2
+        //
+        // clang-format on
+        //
         else if (firstChild->getOpCode().isSub() && firstChild->getFirstChild()->getOpCode().isLoadConst()
             && secondChild->getOpCode().isLoadConst()
             && firstChild->getFirstChild()->getDataType() == secondChild->getDataType()) {
@@ -655,12 +679,17 @@ static TR::Node *addSimplifierCommon(TR::Node *node, TR::Block *block, TR::Simpl
             }
         }
 
+        // clang-format off
+        //
         // R9_1_3:
         //         +                +               +               -
         //       /   \            /   \           /   \           /   \
-      //      +     +     =>   +     +         -     -    =>   +     +
+        //      +     +     =>   +     +         -     -    =>   +     +
         //     / \   / \        / \   / \       / \   / \       / \   / \
-      //    t1  c1 t2 c2     t1 t2  c1 c2    t1 c1 t2 c2     t1 t2 c1 c2
+        //    t1  c1 t2 c2     t1 t2  c1 c2    t1 c1 t2 c2     t1 t2 c1 c2
+        //
+        // clang-format on
+        //
         else if (!node->getOpCode().isRef() && firstChild->getOpCodeValue() == secondChild->getOpCodeValue()
             && (firstChild->getOpCode().isAdd() || firstChild->getOpCode().isSub())
             && !isExprInvariant(region, firstChild->getFirstChild())
@@ -688,12 +717,17 @@ static TR::Node *addSimplifierCommon(TR::Node *node, TR::Block *block, TR::Simpl
                 s->simplifyChildren(node, block);
             }
         }
+        // clang-format off
+        //
         // R9_2:
         //        +              +
         //       / \            / \
-      //      c1  -    =>    -   t
+        //      c1  -    =>    -   t
         //         / \        / \
-      //        t   c2     c1 c2
+        //        t   c2     c1 c2
+        //
+        // clang-format on
+        //
         else if (node->getOpCode().isAdd() && !node->getOpCode().isArrayRef() && isExprInvariant(region, firstChild)
             && secondChild->getOpCode().isSub()
             && firstChild->getDataType() == secondChild->getSecondChild()->getDataType()
@@ -714,14 +748,19 @@ static TR::Node *addSimplifierCommon(TR::Node *node, TR::Block *block, TR::Simpl
             }
         }
 
+        // clang-format off
+        //
         // R9_3:
         //       aiadd          aiadd
         //       /  \            /  \
-      //      c1  isub  =>  aiadd  t
+        //      c1  isub  =>  aiadd  t
         //          / \        / \
-      //         t   c2     c1 ineg
+        //         t   c2     c1 ineg
         //                         \
-      //                          c2
+        //                          c2
+        //
+        // clang-format on
+        //
         else if (node->getOpCode().isArrayRef() && isExprInvariant(region, firstChild)
             && secondChild->getOpCode().isSub() && !secondChild->getFirstChild()->getOpCode().isRef()
             && // can't move ref to the RHS
@@ -1664,18 +1703,22 @@ static TR::Node *intDemoteSimplifier(TR::Node *node, TR::Block *block, TR::Simpl
         }
     }
 
+    // clang-format off
+    //
     // Redundant "and" tranformation
     //    Tx 2 Ty                                                     Tx 2 Ty
     //       |         where                                             |
     //     Tx and   "Tx constant" & 0xF..F == "Tx constant"    ==>    subtree
     //      /   \
-   // subtree  Tx constant
+    // subtree  Tx constant
     //
     //   TR::l2b
     //       |
     //   TR::land
     //    /     \
-   // subtree  lconst 22
+    // subtree  lconst 22
+    //
+    // clang-format on
     //
     int64_t andVal = 0;
     switch (targetSize) {
@@ -1712,10 +1755,15 @@ static TR::Node *intDemoteSimplifier(TR::Node *node, TR::Block *block, TR::Simpl
     if ((result = foldRedundantAND(node, andOp, andConstOp, andVal, s)))
         return result;
 
+    // clang-format off
+    //
     // Long reduce transformation
     //       Tx 2 Ty      ==>   Tz 2 Ty      where Tz is next smaller type
     //         |                  |
     //       subtree-x          subtree-z
+    //
+    // clang-format on
+    //
     if (sourceIs64Bit) {
         TR::ILOpCodes reduceOp;
         if (targetDataType == TR::Int32) {
@@ -7448,11 +7496,16 @@ TR::Node *imulSimplifier(TR::Node *node, TR::Block *block, TR::Simplifier *s)
         decomposeMultiply(node, s, false);
     }
 
+    // clang-format off
+    //
     //       imul            iand
     //       / \             / \
-   //    idiv  c2    =>    e   c3
+    //    idiv  c2    =>    e   c3
     //     / \
-   //    e   c1
+    //    e   c1
+    //
+    // clang-format on
+    //
     int32_t size;
 
     if (s->getLastRun() && node->isNonNegative() && node->getOpCode().isMul()
@@ -7484,11 +7537,16 @@ TR::Node *imulSimplifier(TR::Node *node, TR::Block *block, TR::Simplifier *s)
     if (s->reassociate()) {
         TR_RegionStructure *region = s->containingStructure();
 
+        // clang-format off
+        //
         // R10:   *              *
         //       / \            / \
-   //      *  c2    =>    t   *
+        //      *  c2    =>    t   *
         //     / \                / \
-   //    t   c1             c2 c1
+        //    t   c1             c2 c1
+        //
+        // clang-format on
+        //
         if (region && node->getOpCodeValue() == TR::imul && isExprInvariant(region, node->getSecondChild())
             && node->getFirstChild()->getOpCodeValue() == TR::imul
             && !isExprInvariant(region, node->getFirstChild()->getFirstChild())
@@ -7503,11 +7561,16 @@ TR::Node *imulSimplifier(TR::Node *node, TR::Block *block, TR::Simplifier *s)
             }
         }
 
+        // clang-format off
+        //
         // R11:   *               +
         //       / \             / \
-   //      +  c2    =>     *  c1*c2
+        //      +  c2    =>     *  c1*c2
         //     / \             / \
-   //    e   c1          e   c2
+        //    e   c1          e   c2
+        //
+        // clang-format on
+        //
         if (region && node->getOpCodeValue() == TR::imul && isExprInvariant(region, node->getSecondChild())
             && node->getFirstChild()->getOpCodeValue() == TR::iadd
             && !isExprInvariant(region, node->getFirstChild()->getFirstChild())
@@ -7526,12 +7589,17 @@ TR::Node *imulSimplifier(TR::Node *node, TR::Block *block, TR::Simplifier *s)
                 setExprInvariant(region, newSecondChild);
             }
         }
+        // clang-format off
+        //
         //                         +
         // R13:   *               / \
-   //       / \             /   \
-   //      +   c    =>     *     *
+        //       / \             /   \
+        //      +   c    =>     *     *
         //     / \             / \   / \
-   //    e1  e2          e1  c e2  c
+        //    e1  e2          e1  c e2  c
+        //
+        // clang-format on
+        //
         else if (region && node->getOpCodeValue() == TR::imul && isExprInvariant(region, node->getSecondChild())
             && node->getFirstChild()->getOpCodeValue() == TR::iadd) {
             if (performTransformation(s->comp(), "%sApplied reassociation rule 13 to node 0x%p\n", s->optDetailString(),
@@ -7555,12 +7623,17 @@ TR::Node *imulSimplifier(TR::Node *node, TR::Block *block, TR::Simplifier *s)
                 secondChild->recursivelyDecReferenceCount();
             }
         }
+        // clang-format off
+        //
         //                         -
         // R15:   *               / \
-   //       / \             /   \
-   //      -   c    =>     *     *
+        //       / \             /   \
+        //      -   c    =>     *     *
         //     / \             / \   / \
-   //    e1  e2          e1  c e2  c
+        //    e1  e2          e1  c e2  c
+        //
+        // clang-format on
+        //
         else if (region && node->getOpCodeValue() == TR::imul &&
 
             isExprInvariant(region, node->getSecondChild()) && !isExprInvariant(region, node->getFirstChild())
@@ -15322,10 +15395,15 @@ TR::Node *imulhSimplifier(TR::Node *node, TR::Block *block, TR::Simplifier *s)
                 node->setInt(0);
             }
         }
+        // clang-format off
+        //
         // If src2 == 2^n
         // imulh             ishr
         //  /    \   =>      /  \
-      // src1  src2      src1 32-n
+        // src1  src2      src1 32-n
+        //
+        // clang-format on
+        //
         else if (src2 > 0 && !(src2 & (src2 - 1))
             && performTransformation(s->comp(),
                 "%ssecond child [%p] of node [%p] is 2's power, converting imulh to ishr\n", s->optDetailString(),

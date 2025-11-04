@@ -199,6 +199,31 @@ Following these guidelines will help us to merge your pull requests smoothly:
    also be asked to be discussed before the same architecture meeting prior to
    producing a pull request.
 
+10. If you are contributing a change to work around a problem with the build
+    and test toolchain, you must first open an OMR issue that describes the
+    toolchain problem with as much detail as possible, including information
+    such as:
+
+    a) A detailed description of the problem (mandatory)
+
+    b) Toolchain versions affected (mandatory)
+
+    c) A reference to an issue in the toolchain's repo tracking the resolution
+    of the problem (if known)
+
+    d) Any workarounds (if known)
+
+    e) ETA or expected toolchain release for resolution (if known)
+
+    You must then reference this OMR issue in a code comment implementing the
+    compiler workaround. Both the OMR issue and your pull request will be given
+    the `toolchain bug` label by a committer.
+
+    The motivation for this requirement is so that problems with toolchains
+    affecting the way the code is written have enough information to determine
+    when the problem no longer exists and the workaround can be removed at some
+    future time.
+
 ### Downstream Dependencies
 
 If a downstream project consuming OMR has a dependency on the contents of your pull

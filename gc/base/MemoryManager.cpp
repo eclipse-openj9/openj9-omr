@@ -70,7 +70,7 @@ MM_MemoryManager::createVirtualMemoryForHeap(MM_EnvironmentBase *env, MM_MemoryH
 	MM_GCExtensionsBase *extensions = env->getExtensions();
 
 	MM_VirtualMemory *instance = NULL;
-	uintptr_t mode = (OMRPORT_VMEM_MEMORY_MODE_READ | OMRPORT_VMEM_MEMORY_MODE_WRITE);
+	uintptr_t mode = (OMRPORT_VMEM_MEMORY_MODE_READ | OMRPORT_VMEM_MEMORY_MODE_WRITE | OMRPORT_VMEM_MEMORY_MODE_VIRTUAL);
 	uintptr_t options = 0;
 	uint32_t memoryCategory = OMRMEM_CATEGORY_MM_RUNTIME_HEAP;
 
@@ -509,7 +509,7 @@ MM_MemoryManager::createVirtualMemoryForMetadata(MM_EnvironmentBase *env, MM_Mem
 			uintptr_t tailPadding = 0;
 			void *preferredAddress = NULL;
 			void *ceiling = NULL;
-			uintptr_t mode = (OMRPORT_VMEM_MEMORY_MODE_READ | OMRPORT_VMEM_MEMORY_MODE_WRITE);
+			uintptr_t mode = (OMRPORT_VMEM_MEMORY_MODE_READ | OMRPORT_VMEM_MEMORY_MODE_WRITE | OMRPORT_VMEM_MEMORY_MODE_VIRTUAL);
 			uintptr_t options = 0;
 
 			uintptr_t pageSize = extensions->gcmetadataPageSize;

@@ -7934,6 +7934,17 @@ omrsysinfo_get_process_name(struct OMRPortLibrary *portLibrary, uintptr_t pid)
 			return exename;
 		}
 	}
+#elif defined(OSX) /* defined(LINUX) && !defined(OMRZTPF) */
+	char exebuf[PROC_PIDPATHINFO_MAXSIZE];
+	int pidpathrc = proc_pidpath((int)pid, exebuf, sizeof(exebuf));
+	if (pidpathrc > 0) {
+		uintptr_t alloclen = (uintptr_t)pidpathrc + 1;
+		char *exepath = portLibrary->mem_allocate_memory(portLibrary, alloclen, OMR_GET_CALLSITE(), OMRMEM_CATEGORY_PORT_LIBRARY);
+		if (NULL != exepath) {
+			memcpy(exepath, exebuf, alloclen);
+			return exepath;
+		}
+	}
 #endif /* defined(AIXPPC) */
 	return NULL;
 }

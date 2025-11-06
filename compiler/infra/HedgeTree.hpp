@@ -629,6 +629,8 @@ template<class T> T *TR_HedgeTreeHandler<T>::remove(int32_t key, T *&node, int32
             // that has become shorter.
             //
             if (node->isLeftSibling()) {
+                // clang-format off
+                //
                 // Left subtree is a sibling. Make it a child to bring the height
                 // back up to its original value.
                 //
@@ -636,7 +638,9 @@ template<class T> T *TR_HedgeTreeHandler<T>::remove(int32_t key, T *&node, int32
                 //         |                 |
                 //      A--B       ==>       B
                 //          \               / \
-            //           C             A   C
+                //           C             A   C
+                //
+                // clang-format on
                 //
                 node->setLeftSibling(false);
                 rebalance = 0;
@@ -645,6 +649,8 @@ template<class T> T *TR_HedgeTreeHandler<T>::remove(int32_t key, T *&node, int32
                 p2 = p1->left();
                 if ((node->isRightSibling() && p2->isRightSibling())
                     || (!node->isRightSibling() && p1->isLeftSibling())) {
+                    // clang-format off
+                    //
                     // Right subtree's left subtree is lifted to a new level above
                     // this node. The original height is then restored.
                     //
@@ -652,16 +658,16 @@ template<class T> T *TR_HedgeTreeHandler<T>::remove(int32_t key, T *&node, int32
                     //         |                |
                     //         B----C    ==>    D----C
                     //        /    / \         /    / \
-               //       A    D-G E       B    G   E
+                    //       A    D-G E       B    G   E
                     //           /           / \
-               //          F           A   F
+                    //          F           A   F
                     //
                     //
                     //         |                |
                     //         |                |
                     //         B----C    ==>    D----C
                     //        /    / \         /    / \
-               //       A  F-D-G E       B-F  G   E
+                    //       A  F-D-G E       B-F  G   E
                     //                       /
                     //                      A
                     //
@@ -670,7 +676,7 @@ template<class T> T *TR_HedgeTreeHandler<T>::remove(int32_t key, T *&node, int32
                     //         |                |
                     //         B         ==>    D
                     //        / \              / \
-               //       A D-C-E          B   C--E
+                    //       A D-C-E          B   C--E
                     //        / \            /\  /
                     //       F   G          A  F G
                     //
@@ -679,10 +685,12 @@ template<class T> T *TR_HedgeTreeHandler<T>::remove(int32_t key, T *&node, int32
                     //         |                |
                     //         B         ==>    D
                     //        / \              / \
-               //       A D-C            B   C
+                    //       A D-C            B   C
                     //        / \ \          / \  /\
-               //       F   G E        A   F G E
+                    //       F   G E        A   F G E
                     //
+                    //
+                    // clang-format on
                     //
                     p1->setLeft(p2->right());
                     p1->setLeftSibling(false);
@@ -695,6 +703,8 @@ template<class T> T *TR_HedgeTreeHandler<T>::remove(int32_t key, T *&node, int32
                     node = p2;
                     rebalance = 0;
                 } else if (node->isRightSibling() && p2->isLeftSibling()) {
+                    // clang-format off
+                    //
                     // Right subtree's left subtree's left subtree is lifted to a
                     // new level above this node. The original height is then restored.
                     //
@@ -702,9 +712,11 @@ template<class T> T *TR_HedgeTreeHandler<T>::remove(int32_t key, T *&node, int32
                     //         |                |
                     //         B-----C   ==>    F-----C
                     //        /     / \        /     / \
-               //       A  F--D   E      B     D   E
+                    //       A  F--D   E      B     D   E
                     //         / \  \        / \   / \
-               //        H   I  G      A   H I   G
+                    //        H   I  G      A   H I   G
+                    //
+                    // clang-format on
                     //
                     p3 = p2->left();
                     p2->setLeft(p3->right());
@@ -718,6 +730,8 @@ template<class T> T *TR_HedgeTreeHandler<T>::remove(int32_t key, T *&node, int32
                     node = p3;
                     rebalance = 0;
                 } else if (node->isRightSibling()) {
+                    // clang-format off
+                    //
                     // Right subtree is lifted to a new level above this node. The
                     // original height is then restored.
                     //
@@ -725,9 +739,11 @@ template<class T> T *TR_HedgeTreeHandler<T>::remove(int32_t key, T *&node, int32
                     //         |                   |
                     //         B-----C   ==>       C
                     //        /     / \           / \
-               //       A     D   E      B--D   E
+                    //       A     D   E      B--D   E
                     //            / \        / \  \
-               //           F   G      A   F  G
+                    //           F   G      A   F  G
+                    //
+                    // clang-format on
                     //
                     node->setRight(p2->left());
                     node->setRightSibling(false);
@@ -740,13 +756,17 @@ template<class T> T *TR_HedgeTreeHandler<T>::remove(int32_t key, T *&node, int32
                     // Right subtree is lifted to a new level above this node. The
                     // original height is not restored.
                     //
+                    // clang-format off
+                    //
                     //         |                   |
                     //         |                   |
                     //         B         ==>    B--C--E
                     //        / \              / \
-               //       A   C--E         A   D
+                    //       A   C--E         A   D
                     //          /
                     //         D
+                    //
+                    // clang-format on
                     //
                     node->setRight(p1->left());
                     p1->setParent(node->getParent());
@@ -754,6 +774,8 @@ template<class T> T *TR_HedgeTreeHandler<T>::remove(int32_t key, T *&node, int32
                     p1->setLeftSibling(true);
                     node = p1;
                 } else {
+                    // clang-format off
+                    //
                     // Raise the right subtree to be a sibling. The resulting tree
                     // is still shorter so the parent will have to rebalance.
                     // If this is a sibling of the parent, the parent will make it a
@@ -764,9 +786,11 @@ template<class T> T *TR_HedgeTreeHandler<T>::remove(int32_t key, T *&node, int32
                     //         |                |
                     //         B         ==>    B--C
                     //        / \              /  / \
-               //       A   C            A  D   E
+                    //       A   C            A  D   E
                     //          / \
-               //         D   E
+                    //         D   E
+                    //
+                    // clang-format on
                     //
                     node->setRightSibling(true);
                 }
@@ -784,6 +808,8 @@ template<class T> T *TR_HedgeTreeHandler<T>::remove(int32_t key, T *&node, int32
             // that has become shorter.
             //
             if (node->isRightSibling()) {
+                // clang-format off
+                //
                 // Right subtree is a sibling. Make it a child to bring the height
                 // back up to its original value.
                 //
@@ -791,7 +817,9 @@ template<class T> T *TR_HedgeTreeHandler<T>::remove(int32_t key, T *&node, int32
                 //         |                 |
                 //         B--A    ==>       B
                 //        /                 / \
-            //       C                 C   A
+                //       C                 C   A
+                //
+                // clang-format on
                 //
                 node->setRightSibling(false);
                 rebalance = 0;
@@ -800,6 +828,8 @@ template<class T> T *TR_HedgeTreeHandler<T>::remove(int32_t key, T *&node, int32
                 p2 = p1->right();
                 if ((node->isLeftSibling() && p2->isLeftSibling())
                     || (!node->isLeftSibling() && p1->isRightSibling())) {
+                    // clang-format off
+                    //
                     // Left subtree's right subtree is lifted to a new level above
                     // this node. The original height is then restored.
                     //
@@ -807,37 +837,38 @@ template<class T> T *TR_HedgeTreeHandler<T>::remove(int32_t key, T *&node, int32
                     //              |                |
                     //         C----B    ==>    C----D
                     //        / \    \         / \    \
-               //       E G-D    A       E   G    B
+                    //       E G-D    A       E   G    B
                     //            \                   / \
-               //             F                 F   A
+                    //             F                 F   A
                     //
                     //
                     //              |                |
                     //              |                |
                     //         C----B    ==>    C----D
                     //        / \    \         / \    \
-               //       E G-D-F  A       E   G  F-B
+                    //       E G-D-F  A       E   G  F-B
                     //                                  \
-               //                                   A
+                    //                                   A
                     //
                     //
                     //         |                |
                     //         |                |
                     //         B         ==>    D
                     //        / \              / \
-               //     E-C-D A         E--C   B
+                    //     E-C-D A         E--C   B
                     //        / \              \ / \
-               //       G   F             G F  A
+                    //       G   F             G F  A
                     //
                     //
                     //         |                |
                     //         |                |
                     //         B         ==>    D
                     //        / \              / \
-               //       C-D A            C   B
+                    //       C-D A            C   B
                     //      / / \            /\  / \
-               //     E G   F          E  G F  A
+                    //     E G   F          E  G F  A
                     //
+                    // clang-format on
                     //
                     p1->setRight(p2->left());
                     p1->setRightSibling(false);
@@ -850,6 +881,8 @@ template<class T> T *TR_HedgeTreeHandler<T>::remove(int32_t key, T *&node, int32
                     node = p2;
                     rebalance = 0;
                 } else if (node->isLeftSibling() && p2->isRightSibling()) {
+                    // clang-format off
+                    //
                     // Left subtree's right subtree's right subtree is lifted to a
                     // new level above this node. The original height is then restored.
                     //
@@ -857,9 +890,11 @@ template<class T> T *TR_HedgeTreeHandler<T>::remove(int32_t key, T *&node, int32
                     //               |                |
                     //         C-----B   ==>    C-----F
                     //        / \     \        / \     \
-               //       E   D--F  A      E   D     B
+                    //       E   D--F  A      E   D     B
                     //          /  / \           / \   / \
-               //         G  I   H         G   I H   A
+                    //         G  I   H         G   I H   A
+                    //
+                    // clang-format on
                     //
                     p3 = p2->right();
                     p2->setRight(p3->left());
@@ -873,6 +908,8 @@ template<class T> T *TR_HedgeTreeHandler<T>::remove(int32_t key, T *&node, int32
                     node = p3;
                     rebalance = 0;
                 } else if (node->isLeftSibling()) {
+                    // clang-format off
+                    //
                     // Left subtree is lifted to a new level above this node. The
                     // original height is then restored.
                     //
@@ -880,9 +917,11 @@ template<class T> T *TR_HedgeTreeHandler<T>::remove(int32_t key, T *&node, int32
                     //               |             |
                     //         C-----B   ==>       C
                     //        / \     \           / \
-               //       E   D     A         E   D--B
+                    //       E   D     A         E   D--B
                     //          / \                 /  / \
-               //         G   F               G  F   A
+                    //         G   F               G  F   A
+                    //
+                    // clang-format on
                     //
                     node->setLeft(p2->right());
                     node->setLeftSibling(false);
@@ -892,6 +931,8 @@ template<class T> T *TR_HedgeTreeHandler<T>::remove(int32_t key, T *&node, int32
                     node = p1;
                     rebalance = 0;
                 } else if (p1->isLeftSibling()) {
+                    // clang-format off
+                    //
                     // Left subtree is lifted to a new level above this node. The
                     // original height is not restored.
                     //
@@ -899,9 +940,11 @@ template<class T> T *TR_HedgeTreeHandler<T>::remove(int32_t key, T *&node, int32
                     //         |                   |
                     //         B         ==>    E--C--B
                     //        / \                    / \
-               //    E--C   A                  D   A
+                    //    E--C   A                  D   A
                     //        \
-               //         D
+                    //         D
+                    //
+                    // clang-format on
                     //
                     node->setLeft(p1->right());
                     p1->setParent(node->getParent());
@@ -909,6 +952,8 @@ template<class T> T *TR_HedgeTreeHandler<T>::remove(int32_t key, T *&node, int32
                     p1->setRightSibling(true);
                     node = p1;
                 } else {
+                    // clang-format off
+                    //
                     // Raise the left subtree to be a sibling. The resulting tree
                     // is still shorter so the parent will have to rebalance.
                     // If this is a sibling of the parent, the parent will make it a
@@ -919,9 +964,11 @@ template<class T> T *TR_HedgeTreeHandler<T>::remove(int32_t key, T *&node, int32
                     //         |                   |
                     //         B         ==>    C--B
                     //        / \              / \  \
-               //       C   A            E   D  A
+                    //       C   A            E   D  A
                     //      / \
-               //     E   D
+                    //     E   D
+                    //
+                    // clang-format on
                     //
                     node->setLeftSibling(true);
                 }

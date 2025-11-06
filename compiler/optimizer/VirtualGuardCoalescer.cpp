@@ -249,6 +249,8 @@ void TR_VirtualGuardTailSplitter::splitLinear(TR::Block *start, TR::Block *end)
         splitLinear(info->getFirstInlinedBlock(), info->getMergeBlock());
 }
 
+// clang-format off
+//
 // This analysis recognizes and merges virtual guards that exisit
 // on a linear control flow path.  For example:
 //
@@ -269,6 +271,8 @@ void TR_VirtualGuardTailSplitter::splitLinear(TR::Block *start, TR::Block *end)
 // callee. It returns the last block that it encounteres, and the calle
 // proceeds the dfs walk from there onwards.  (apologies for the non-intuitive
 // control flow)
+//
+// clang-format on
 //
 TR::Block *TR_VirtualGuardTailSplitter::lookAheadAndSplit(VGInfo *guard, List<TR::Block> *stack)
 {
@@ -359,12 +363,16 @@ TR::Block *TR_VirtualGuardTailSplitter::lookAheadAndSplit(VGInfo *guard, List<TR
     return cursor;
 }
 
+// clang-format off
+//
 // Given a proper interval marked by first and last, split
 // all guards that fall between first and last, cloning any
 // common blocks in between
 //                                   ________
 //   _/\__/\__/\_  transforms into _/ \  \   \_
 //    \/  \/  \/                    \__\__\__/
+//
+// clang-format on
 //
 void TR_VirtualGuardTailSplitter::transformLinear(TR::Block *first, TR::Block *last)
 {
@@ -639,12 +647,14 @@ void TR_VirtualGuardTailSplitter::remergeGuard(TR_BlockCloner &cloner, VGInfo *i
 
     dumpOptDetails(comp(), "%sperforming global split on guard block_%d\n", OPT_DETAILS, block->getNumber());
 
+    // clang-format off
+    //
     //        -----                -----
     //        | G |                | G'|
     //        -----                -----
     //         / \                  / \
-   //        /   \                /   \
-   //     ----- -----          ----- -----
+    //        /   \                /   \
+    //     ----- -----          ----- -----
     //     | A | | B |          | A'| | B'|
     //     ----- -----          ----- -----
 
@@ -655,8 +665,8 @@ void TR_VirtualGuardTailSplitter::remergeGuard(TR_BlockCloner &cloner, VGInfo *i
     //        | G |                | G'|
     //        -----                -----
     //         /   \__________________\
-   //        /                        \
-   //     ----- -----          ----- -----
+    //        /                        \
+    //     ----- -----          ----- -----
     //     | A | | B |          | A'| | B'|
     //     ----- -----          ----- -----
 
@@ -670,6 +680,9 @@ void TR_VirtualGuardTailSplitter::remergeGuard(TR_BlockCloner &cloner, VGInfo *i
     //        -----                -----
     //        | A |                | B'|
     //        -----                -----
+    //
+    // clang-format on
+    //
 
     TR::Block *blockA = info->getFirstInlinedBlock();
     TR::Block *cloneA = cloner.getToBlock(blockA);

@@ -576,14 +576,16 @@ TR::Instruction *TR::S390zOSSystemLinkage::genCallNOPAndDescriptor(TR::Instructi
         //
         // The XPLINK Call Descriptor has the following format:
         //
-        //                                        0x01                               0x02 0x03
-        // 0x00
-        // +----------------------------------+----------------------------------+----------------------------------+----------------------------------+
-        //      | Signed offset, in bytes, to Entry Point Marker (if it exists) |
-        // 0x04
-        // +----------------------------------+----------------------------------+----------------------------------+----------------------------------+
-        //      | Linkage and Return Value Adjust  | Parameter Adjust |
+        // clang-format off
+        //
+        //                                        0x01                               0x02                               0x03
+        // 0x00 +----------------------------------+----------------------------------+----------------------------------+----------------------------------+
+        //      | Signed offset, in bytes, to Entry Point Marker (if it exists)                                                                             |
+        // 0x04 +----------------------------------+----------------------------------+----------------------------------+----------------------------------+
+        //      | Linkage and Return Value Adjust  | Parameter Adjust                                                                                       |
         //      +----------------------------------+----------------------------------+----------------------------------+----------------------------------+
+        //
+        // clang-format on
         //
         // We generate the XPLINK call descriptor inline right after the call instead of the literal pool because some
         // z/OS 31-bit programs tend to be rather large, and the distance between the call location and the literal pool

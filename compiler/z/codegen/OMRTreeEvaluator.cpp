@@ -14100,13 +14100,12 @@ TR::Register *OMR::Z::TreeEvaluator::inlineVectorBinaryOp(TR::Node *node, TR::Co
 
 TR::Register *OMR::Z::TreeEvaluator::vloadEvaluator(TR::Node *node, TR::CodeGenerator *cg)
 {
-    TR::InstOpCode::Mnemonic opcode = TR::InstOpCode::bad;
+    TR_ASSERT_FATAL_WITH_NODE(node, node->getDataType().getVectorLength() == TR::VectorLength128,
+        "Only 128-bit vectors are supported %s", node->getDataType().toString());
 
-    if (node->getOpCode().getVectorOperation() == TR::vload || node->getOpCode().getVectorOperation() == TR::vloadi) {
-        opcode = TR::InstOpCode::VL;
-    } else {
-        TR_ASSERT(false, "Unknown vector load IL\n");
-    }
+    TR_ASSERT_FATAL_WITH_NODE(node, node->getOpCode().isLoad(), "vloadEvaluator called with non-load opcode");
+
+    TR::InstOpCode::Mnemonic opcode = TR::InstOpCode::VL;
 
     TR::Register *targetReg = cg->allocateRegister(TR_VRF);
     node->setRegister(targetReg);
@@ -14149,13 +14148,12 @@ TR::Register *OMR::Z::TreeEvaluator::vRegStoreEvaluator(TR::Node *node, TR::Code
 
 TR::Register *OMR::Z::TreeEvaluator::vstoreEvaluator(TR::Node *node, TR::CodeGenerator *cg)
 {
-    TR::InstOpCode::Mnemonic opcode = TR::InstOpCode::bad;
+    TR_ASSERT_FATAL_WITH_NODE(node, node->getDataType().getVectorLength() == TR::VectorLength128,
+        "Only 128-bit vectors are supported %s", node->getDataType().toString());
 
-    if (node->getOpCode().getVectorOperation() == TR::vstore || node->getOpCode().getVectorOperation() == TR::vstorei) {
-        opcode = TR::InstOpCode::VST;
-    } else {
-        TR_ASSERT(false, "Unknown vector store IL\n");
-    }
+    TR_ASSERT_FATAL_WITH_NODE(node, node->getOpCode().isStore(), "vstoreEvaluator called with non-store opcode");
+
+    TR::InstOpCode::Mnemonic opcode = TR::InstOpCode::VST;
 
     TR::Node *valueChild = node->getOpCode().isStoreDirect() ? node->getFirstChild() : node->getSecondChild();
     TR::Register *valueReg = cg->evaluate(valueChild);

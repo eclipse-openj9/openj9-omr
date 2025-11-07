@@ -141,6 +141,35 @@ int32_t TR_LoopReplicator::perform()
     return 0;
 }
 
+/**
+ * \brief Tests whether the last tree in the given block is a guard
+ *
+ * \param[in] lr  The \ref TR_LoopReplicator instance
+ * \param[in] blk The \ref TR::Block that is being tested
+ *
+ * \returns true if the \c TR::Block ends with a guard node;
+ *          false, otherwise.
+ */
+static bool endsWithGuard(TR_LoopReplicator *lr, TR::Block *blk)
+{
+    static const char *ignoreLoopReplicatorEndsWithGuardTest = feGetEnv("TR_ignoreLoopReplicatorEndsWithGuardTest");
+
+    if (ignoreLoopReplicatorEndsWithGuardTest != NULL) {
+        return false;
+    }
+
+    TR::TreeTop *lastTT = blk->getLastRealTreeTop();
+    TR::Node *lastNode = lastTT->getNode();
+    bool lastNodeIsGuard = lastNode->getOpCode().isBranch() && (lastNode->virtualGuardInfo() != NULL);
+
+    if (lr->trace()) {
+        traceMsg(lr->comp(), "Testing endsWithGuard for block_%d.  Last node is n%dn - is a guard?  %d\n",
+            blk->getNumber(), lastNode->getGlobalIndex(), lastNodeIsGuard);
+    }
+
+    return lastNodeIsGuard;
+}
+
 int32_t TR_LoopReplicator::perform(TR_Structure *str)
 {
     TR_RegionStructure *region;
@@ -158,11 +187,18 @@ int32_t TR_LoopReplicator::perform(TR_Structure *str)
         return 0;
     }
 
-    // ignore loops known to be cold
+    // Ignore loops known to be cold or whose entry block ends with a guard.
+    // Cloning blocks with guards can interfere with Loop Versioning - ignore
+    // loops wbose entry block ends with a guard.
+    //
     TR::Block *entryBlock = region->getEntryBlock();
     if (entryBlock->isCold()) {
         countReplicationFailure("ColdLoop", region->getNumber());
         dumpOptDetails(comp(), "region (%d) is a cold loop\n", region->getNumber());
+        return 0;
+    } else if (endsWithGuard(this, entryBlock)) {
+        countReplicationFailure("EntryEndsWithGuard", region->getNumber());
+        dumpOptDetails(comp(), "entry block to region (%d) ends with a guard\n", region->getNumber());
         return 0;
     }
 
@@ -747,11 +783,18 @@ void TR_LoopReplicator::processBlock(TR::Block *X, TR_RegionStructure *region, L
         // 2. header of inner loop
         // 3. back-edge -> header
         // 4. loop exit -> exit of the region
-        // 5. normal loop block
+        // 5. a block that ends with a guard
+        // 6. normal loop block
         if (dest->isCold())
             continue;
         else if (isBackEdgeOrLoopExit(*e, region))
             continue;
+        else if (endsWithGuard(this, dest)) {
+            // Blocks that end with a guard can interfere with Loop Versioning;
+            // don't include such a block.
+            continue;
+        }
+
         BlockEntry *bE = searchList(dest, common, lInfo);
         if (bE && bE->_nonLoop)
             continue;
@@ -825,6 +868,7 @@ TR::Block *TR_LoopReplicator::bestSuccessor(TR_RegionStructure *region, TR::Bloc
     if (trace())
         traceMsg(comp(), "   analyzing region %d (%p)\n", region->getNumber(), region);
     int16_t candFreq = -1;
+
     for (auto e = node->getSuccessors().begin(); e != node->getSuccessors().end(); ++e) {
         TR::Block *dest = toBlock((*e)->getTo());
         if (trace())

@@ -6183,9 +6183,9 @@ TR::Register *OMR::Z::TreeEvaluator::extendCastEvaluator(TR::Node *node, TR::Cod
      * n4182n   (  0)      iu2l (in GPR_3616) (highWordZero X>=0 )
      * n4109n   (  0)        ==>l2i (in GPR_3616)
      *
-     * In this case, a load is needed to zero the high half of the long to corretly convert iu to l.
+     * In this case, a load is needed to zero the high half of the long to correctly convert iu to l.
      */
-    if (!node->isUnneededConversion() && !(isSourceTypeSigned && childRegister->alreadySignExtended())) {
+    if (!node->isUnneededConversion() && !(isSourceTypeSigned && firstChild->isNodeRegSignExtendedTo64Bit())) {
         targetRegister = genericLoadHelper<srcSize, numberOfExtendBits, RegReg>(firstChild, cg, NULL, targetRegister,
             isSourceTypeSigned, canClobberSrc);
     }
@@ -12849,25 +12849,22 @@ TR::Register *OMR::Z::TreeEvaluator::iRegStoreEvaluator(TR::Node *node, TR::Code
     }
 
     if (!useLGHI) {
-        globalReg = needsLGFR && noLGFgenerated ? cg->gprClobberEvaluate(value) : cg->evaluate(value);
+        globalReg = cg->evaluate(value);
     } else {
         globalReg = value->getRegister();
         if (globalReg == NULL) {
             globalReg = value->setRegister(cg->allocateRegister());
         }
+        value->setNodeRegSignExtendedTo64Bit(true);
         globalReg->setIs64BitReg(true);
         genLoadLongConstant(cg, value, getIntegralValue(value), globalReg);
     }
-
-    // Without extensive evaluation of children & context, assume that we might have swapped signs
-    globalReg->resetAlreadySignExtended();
 
     if (needsLGFR) {
         if (noLGFgenerated) {
             generateRRInstruction(cg, TR::InstOpCode::LGFR, node, globalReg, globalReg);
         }
-
-        globalReg->setAlreadySignExtended();
+        value->setNodeRegSignExtendedTo64Bit(true);
     }
 
     cg->decReferenceCount(value);

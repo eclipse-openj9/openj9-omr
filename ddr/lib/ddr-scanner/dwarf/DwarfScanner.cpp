@@ -1667,10 +1667,11 @@ DwarfScanner::getSuperUDT(Dwarf_Die die, ClassUDT *udt)
 	Dwarf_Die superTypeDie = NULL;
 
 	if (DDR_RC_OK == getTypeTag(die, &superTypeDie, &tag)) {
-		ClassUDT *superUDT = NULL;
+		Type *superUDT = NULL;
 		/* Get the super udt. */
-		if ((DDR_RC_OK == addDieToIR(superTypeDie, tag, NULL, (Type **)&superUDT))
-				&& (NULL != superUDT)) {
+		if ((DDR_RC_OK == addDieToIR(superTypeDie, tag, NULL, &superUDT))
+			&& (NULL != superUDT)
+		) {
 			rc = DDR_RC_OK;
 			udt->_superClass = superUDT;
 		}

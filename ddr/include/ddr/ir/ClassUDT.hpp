@@ -29,7 +29,7 @@
 class ClassUDT : public ClassType
 {
 public:
-	ClassUDT *_superClass;
+	Type *_superClass;
 	bool _isClass;
 
 	explicit ClassUDT(size_t size, bool isClass = true, unsigned int lineNumber = 0);

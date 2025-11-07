@@ -221,7 +221,7 @@ enum TR_CompilationOptions {
     TR_DisableRXusage                                         = 0x04000000 + 3,
     TR_EnableInliningOfUnsafeForArraylets                     = 0x08000000 + 3,
     TR_DisableStringPeepholes                                 = 0x10000000 + 3,
-    // Available                                              = 0x20000000 + 3,
+    TR_DisableMoveAsyncCheckOutUnrolledLoop                   = 0x20000000 + 3,
     TR_DisableInliningDuringVPAtWarm                          = 0x40000000 + 3,
     TR_AlwaysFatalAssert                                      = 0x80000000 + 3,
 

@@ -1683,11 +1683,61 @@ int32_t TR_LoopUnroller::unroll(TR_RegionStructure *loop, TR_StructureSubGraphNo
     prepareForArrayShadowRenaming(loop);
     refineArrayAliasing();
 
+    bool removedAsyncCheck = false;
+
+    // Remove any asynch check from the original blocks
+    if (!comp()->getOption(TR_DisableMoveAsyncCheckOutUnrolledLoop)) {
+        TR_ScratchList<TR::Block> blocksInRegion(trMemory());
+        loop->getBlocks(&blocksInRegion);
+
+        ListIterator<TR::Block> it(&blocksInRegion);
+        TR::Block *block;
+        for (block = it.getFirst(); block; block = it.getNext()) {
+            if (block->getNumber() < _numNodes) {
+                for (TR::TreeTop *tt = block->getEntry()->getNextTreeTop(); tt != block->getExit();) {
+                    if (tt->getNode()->getOpCodeValue() == TR::asynccheck) {
+                        TR::TreeTop *ayncCheckTT = tt;
+                        tt = ayncCheckTT->getNextRealTreeTop();
+
+                        if (trace())
+                            traceMsg(comp(),
+                                "%s: _unrollKind %d found and remove asynccheck n%dn in block_%d before unrolling\n",
+                                __FUNCTION__, _unrollKind, ayncCheckTT->getNode()->getGlobalIndex(),
+                                block->getNumber());
+
+                        TR::TransformUtil::removeTree(comp(), ayncCheckTT);
+                        removedAsyncCheck = true;
+                    } else {
+                        tt = tt->getNextRealTreeTop();
+                    }
+                }
+            }
+        }
+    }
+
     int32_t unrollCount = (_unrollCount + 1) / _vectorSize - 1;
 
     for (_iteration = 1; _iteration <= unrollCount; _iteration++) {
         unrollLoopOnce(loop, branchNode, _iteration == unrollCount);
         refineArrayAliasing();
+    }
+
+    if (removedAsyncCheck && (_unrollKind != CompleteUnroll)) {
+        // add the async tree into the loopheader
+        TR::Block *loopHeader = loop->getEntryBlock();
+        TR::Node *bbstartNode = loopHeader->getEntry()->getNode();
+        TR::TreeTop *nextTree = loopHeader->getEntry()->getNextTreeTop();
+
+        TR::TreeTop *asyncTT = TR::TreeTop::create(comp(),
+            TR::Node::createWithSymRef(bbstartNode, TR::asynccheck, 0,
+                comp()->getSymRefTab()->findOrCreateAsyncCheckSymbolRef(comp()->getMethodSymbol())));
+
+        loopHeader->getEntry()->join(asyncTT);
+        asyncTT->join(nextTree);
+
+        if (trace())
+            traceMsg(comp(), "%s: Insert asynccheck n%dn in loopHeader block_%d after unrolling\n", __FUNCTION__,
+                asyncTT->getNode()->getGlobalIndex(), loopHeader->getNumber());
     }
 
     if (!_newSymRefs.isEmpty())

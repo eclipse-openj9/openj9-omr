@@ -724,6 +724,8 @@ TR::OptionTable OMR::Options::_jitOptions[] = {
     { "disableMHRelocatableCompile", "O\tdisable relocatable compilation of invokeHandle/invokeDynamic",
      RESET_OPTION_BIT(TR_EnableMHRelocatableCompile), "F", NOT_IN_SUBSET },
     { "disableMonitorCoarsening", "O\tdisable monitor coarsening", SET_OPTION_BIT(TR_DisableMonitorCoarsening), "F" },
+    { "disableMoveAsyncCheckOutUnrolledLoop", "O\tdisable moving aynch check out of the unrolled loop body",
+     SET_OPTION_BIT(TR_DisableMoveAsyncCheckOutUnrolledLoop), "F" },
     { "disableMultiLeafArrayCopy", "O\tdisable multi-leaf arraycopy for real-time",
      SET_OPTION_BIT(TR_DisableMultiLeafArrayCopy), "F" },
     { "disableMultiTargetInlining", "O\tdisable multi-target inlining", SET_OPTION_BIT(TR_DisableMultiTargetInlining),

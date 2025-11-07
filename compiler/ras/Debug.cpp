@@ -873,6 +873,7 @@ void TR_Debug::nodePrintAllFlags(TR::Node *node, TR_PrettyPrinterString &output)
     FLAG(isSignExtendedTo64BitAtSource, "signExtendedTo64BitAtSource");
     FLAG(isZeroExtendedTo32BitAtSource, "zeroExtendTo32BitAtSource");
     FLAG(isZeroExtendedTo64BitAtSource, "zeroExtendTo64BitAtSource");
+    FLAG(isNodeRegSignExtendedTo64Bit, "nodeRegSignExtendedTo64Bit");
     FLAG(needsSignExtension, "NeedsSignExt");
     FLAG(skipSignExtension, "SkipSignExt");
     FLAG(useSignExtensionMode, "SignExtMode");

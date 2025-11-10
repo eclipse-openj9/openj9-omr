@@ -3776,15 +3776,15 @@ TR::Register *OMR::Power::TreeEvaluator::vgetelemMemoryMoveHelper(TR::Node *node
 
 TR::Register *OMR::Power::TreeEvaluator::visetelemHelper(TR::Node *node, TR::CodeGenerator *cg)
 {
-    TR::Node *firstChild = node->getFirstChild();
+    TR::Node *vectorChild = node->getFirstChild();
 
-    TR_ASSERT_FATAL_WITH_NODE(node, firstChild->getDataType().getVectorLength() == TR::VectorLength128,
+    TR_ASSERT_FATAL_WITH_NODE(node, vectorChild->getDataType().getVectorLength() == TR::VectorLength128,
         "Only 128-bit vectors are supported %s", node->getDataType().toString());
 
-    TR::Node *secondChild = node->getSecondChild();
-    TR::Node *thirdChild = node->getThirdChild();
-    TR::Register *vectorReg = cg->evaluate(firstChild);
-    TR::Register *valueReg = cg->evaluate(thirdChild);
+    TR::Node *indexChild = node->getSecondChild();
+    TR::Node *valueChild = node->getThirdChild();
+    TR::Register *vectorReg = cg->evaluate(vectorChild);
+    TR::Register *valueReg = cg->evaluate(valueChild);
     TR::Register *resReg = node->setRegister(cg->allocateRegister(TR_VRF));
 
     TR::Register *addrReg = cg->allocateRegister();
@@ -3795,15 +3795,15 @@ TR::Register *OMR::Power::TreeEvaluator::visetelemHelper(TR::Node *node, TR::Cod
     generateMemSrc1Instruction(cg, TR::InstOpCode::stxvw4x, node,
         TR::MemoryReference::createWithIndexReg(cg, NULL, addrReg, 16), vectorReg);
 
-    if (secondChild->getOpCode().isLoadConst()) {
-        int elem = secondChild->getInt();
+    if (indexChild->getOpCode().isLoadConst()) {
+        int elem = indexChild->getInt();
         TR_ASSERT(elem >= 0 && elem <= 3, "Element can only be 0 to 3\n");
 
         generateMemSrc1Instruction(cg, TR::InstOpCode::stw, node,
             TR::MemoryReference::createWithDisplacement(cg, addrReg, elem * 4, 4), valueReg);
 
     } else {
-        TR::Register *idxReg = cg->evaluate(secondChild);
+        TR::Register *idxReg = cg->evaluate(indexChild);
         TR::Register *offsetReg = cg->allocateRegister();
         generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::mulli, node, offsetReg, idxReg, 4);
         generateMemSrc1Instruction(cg, TR::InstOpCode::stw, node,
@@ -3814,9 +3814,9 @@ TR::Register *OMR::Power::TreeEvaluator::visetelemHelper(TR::Node *node, TR::Cod
     generateTrg1MemInstruction(cg, TR::InstOpCode::lxvw4x, node, resReg,
         TR::MemoryReference::createWithIndexReg(cg, NULL, addrReg, 16));
     cg->stopUsingRegister(addrReg);
-    cg->decReferenceCount(firstChild);
-    cg->decReferenceCount(secondChild);
-    cg->decReferenceCount(thirdChild);
+    cg->decReferenceCount(vectorChild);
+    cg->decReferenceCount(indexChild);
+    cg->decReferenceCount(valueChild);
     return resReg;
 }
 

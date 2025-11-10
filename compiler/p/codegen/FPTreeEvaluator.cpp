@@ -470,24 +470,23 @@ TR::Register *OMR::Power::TreeEvaluator::vsplatsEvaluator(TR::Node *node, TR::Co
 
 TR::Register *OMR::Power::TreeEvaluator::vdsetelemHelper(TR::Node *node, TR::CodeGenerator *cg)
 {
-    TR::Node *firstChild = node->getFirstChild();
-    TR::Node *secondChild = node->getSecondChild();
-    TR::Node *thirdChild = node->getThirdChild();
-    TR::Register *vectorReg = cg->evaluate(firstChild);
+    TR::Node *vectorChild = node->getFirstChild();
+    TR::Node *indexChild = node->getSecondChild();
+    TR::Node *valueChild = node->getThirdChild();
+    TR::Register *vectorReg = cg->evaluate(vectorChild);
     TR::Register *resReg = node->setRegister(cg->allocateRegister(TR_VSX_VECTOR));
 
-    if (thirdChild->getOpCode().isLoadConst()) {
-        int elem = thirdChild->getInt();
+    if (indexChild->getOpCode().isLoadConst()) {
+        int elem = indexChild->getInt();
         TR_ASSERT(elem == 0 || elem == 1, "Element can only be 0 or 1\n");
 
-        if (!secondChild->getRegister() && secondChild->getReferenceCount() == 1
-            && secondChild->getOpCode().isLoadVar()) {
-            TR::LoadStoreHandler::generateLoadNodeSequence(cg, resReg, secondChild, TR::InstOpCode::lxsdx, 8, true);
+        if (!valueChild->getRegister() && valueChild->getReferenceCount() == 1 && valueChild->getOpCode().isLoadVar()) {
+            TR::LoadStoreHandler::generateLoadNodeSequence(cg, resReg, valueChild, TR::InstOpCode::lxsdx, 8, true);
         } else {
-            TR::Register *fprReg = cg->evaluate(secondChild);
+            TR::Register *fprReg = cg->evaluate(valueChild);
             generateTrg1Src2Instruction(cg, TR::InstOpCode::xxlor, node, resReg, fprReg, fprReg);
 
-            cg->decReferenceCount(secondChild);
+            cg->decReferenceCount(valueChild);
         }
 
         if (elem == 0)
@@ -495,14 +494,14 @@ TR::Register *OMR::Power::TreeEvaluator::vdsetelemHelper(TR::Node *node, TR::Cod
         else
             generateTrg1Src2ImmInstruction(cg, TR::InstOpCode::xxpermdi, node, resReg, vectorReg, resReg, 0x0);
 
-        cg->decReferenceCount(firstChild);
-        cg->decReferenceCount(thirdChild);
+        cg->decReferenceCount(vectorChild);
+        cg->decReferenceCount(valueChild);
 
         return resReg;
     }
 
-    TR::Register *idxReg = cg->evaluate(secondChild);
-    TR::Register *valueReg = cg->evaluate(thirdChild);
+    TR::Register *idxReg = cg->evaluate(indexChild);
+    TR::Register *valueReg = cg->evaluate(valueChild);
     TR::Register *condReg = cg->allocateRegister(TR_CCR);
     TR::LabelSymbol *doneLabel = generateLabelSymbol(cg);
     // cmpwi index, 0
@@ -528,9 +527,9 @@ TR::Register *OMR::Power::TreeEvaluator::vdsetelemHelper(TR::Node *node, TR::Cod
 
     cg->stopUsingRegister(condReg);
 
-    cg->decReferenceCount(firstChild);
-    cg->decReferenceCount(secondChild);
-    cg->decReferenceCount(thirdChild);
+    cg->decReferenceCount(vectorChild);
+    cg->decReferenceCount(indexChild);
+    cg->decReferenceCount(valueChild);
 
     return resReg;
 }

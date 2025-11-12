@@ -55,7 +55,7 @@ JitBuilder can generate efficient native code on X86, POWER, and Z platforms.
 Multiple experiments have found the generated JitBuilder code performance
 to be comparable or, in some cases, even better than what LLVM can do!
 Because it's based on the OMR compiler technology at the heart of the
-[Eclipse OpenJ9](https://www.eclipse.org/openj9), it uses memory
+[Eclipse OpenJ9](https://eclipse.dev/openj9), it uses memory
 efficiently and compiles quickly.
 
 # Steps to build

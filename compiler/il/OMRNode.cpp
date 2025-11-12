@@ -3572,6 +3572,15 @@ void OMR::Node::setZeroExtendTo64BitAtSource(bool v)
     }
 }
 
+void OMR::Node::setNodeRegSignExtendedTo64Bit(bool v)
+{
+    TR::Compilation *c = TR::comp();
+    if (performNodeTransformation2(c, "O^O NODE FLAGS: Setting nodeRegSignExtendedTo64Bit flag on node %p to %d\n",
+            self(), v)) {
+        _flags.set(nodeRegSignExtendedTo64Bit);
+    }
+}
+
 /**
  * Misc public functions
  */

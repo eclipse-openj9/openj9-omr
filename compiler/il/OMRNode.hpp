@@ -796,6 +796,11 @@ public:
     bool isZeroExtendedTo64BitAtSource();
 
     /** \brief
+     *     Determines whether the node register when evaluating was sign extended or not
+     */
+    bool isNodeRegSignExtendedTo64Bit() { return _flags.testAny(nodeRegSignExtendedTo64Bit); }
+
+    /** \brief
      *     Marks the load with the zeroExtendTo32BitAtSource flag.
      *
      *  \param b
@@ -810,6 +815,14 @@ public:
      *     Determines whether the respective flag should be active.
      */
     void setZeroExtendTo64BitAtSource(bool b);
+
+    /** \brief
+     *     Marks the node with nodeRegSignExtendedTo64Bit flag.
+     *
+     *  \param
+     *     Determines whether the respective flag should be active.
+     */
+    void setNodeRegSignExtendedTo64Bit(bool b);
 
     /**
      * Node field functions
@@ -2004,6 +2017,8 @@ protected:
         signExtendTo64BitAtSource = 0x00100000, ///< Flag used by TR::xload
         zeroExtendTo32BitAtSource = 0x00200000, ///< Flag used by TR::xload
         zeroExtendTo64BitAtSource = 0x00400000, ///< Flag used by TR::xload
+
+        nodeRegSignExtendedTo64Bit = 0x00800000, ///< Flag used by regStore for sign extending child
 
         // Flag used by TR::xstore
         privatizedInlinerArg = 0x00002000,

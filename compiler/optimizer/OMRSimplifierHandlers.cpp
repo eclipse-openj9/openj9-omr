@@ -14689,9 +14689,6 @@ TR::Node *endBlockSimplifier(TR::Node *node, TR::Block *block, TR::Simplifier *s
     //    Remove the BBStart for the next block
     //    Remove the BBEnd for this block (by returning null from this method)
     //
-    //    if (!nextBlock->isCold())
-    //       block->setIsCold(false);
-    block->inheritBlockInfo(nextBlock, false);
 
     // Ali: i believe this is the correct way of merging
     // it is important to copy the bytecode and frequency information in a consistent manner with
@@ -14712,10 +14709,26 @@ TR::Node *endBlockSimplifier(TR::Node *node, TR::Block *block, TR::Simplifier *s
     if (nextBlock->hasCallToSuperCold())
         block->setHasCallToSuperCold(true);
 
-    block->setIsCold(nextBlock->isCold());
-    block->setIsSuperCold(nextBlock->isSuperCold());
-    if ((nextBlock->getPredecessors().size() == 1) && (block->getFrequency() <= nextBlock->getFrequency()))
+    // If either block was cold or super cold, the merged block should be marked similarly
+    //
+    if (nextBlock->isCold()) {
+        block->setIsCold();
+        if (nextBlock->isSuperCold()) {
+            block->setIsSuperCold();
+        }
+    }
+
+    if (nextBlock->isSpecialized()) {
+        block->setIsSpecialized();
+    }
+
+    // If the merged block is cold, prefer the minimum frequency for the original pair of blocks;
+    // otherwise, prefer the maximum frequency of the original pair
+    //
+    if (block->isCold() && (block->getFrequency() > nextBlock->getFrequency())
+        || !block->isCold() && (block->getFrequency() < nextBlock->getFrequency())) {
         block->setFrequency(nextBlock->getFrequency());
+    }
 
     if (cfg->getStructure()) {
         block->getStructureOf()->setWasHeaderOfCanonicalizedLoop(false);

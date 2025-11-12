@@ -131,13 +131,13 @@ MM_GCExtensionsBase::initialize(MM_EnvironmentBase* env)
 
 	/* Get preferred page parameters for Heap and GC Metadata, then validate them */
 	requestedPageSize = pageSizes[0];
-	requestedPageFlags = OMRPORT_VMEM_PAGE_FLAG_NOT_USED;
+	requestedPageFlags = pageFlags[0];
 
 	gcmetadataPageSize = pageSizes[0];
-	gcmetadataPageFlags = OMRPORT_VMEM_PAGE_FLAG_NOT_USED;
+	gcmetadataPageFlags = pageFlags[0];
 
 	sparseHeapPageSize = pageSizes[0];
-	sparseHeapPageFlags = OMRPORT_VMEM_PAGE_FLAG_NOT_USED;
+	sparseHeapPageFlags = pageFlags[0];
 
 
 #define SIXTY_FOUR_KB	((uintptr_t)64 * 1024)
@@ -153,6 +153,8 @@ MM_GCExtensionsBase::initialize(MM_EnvironmentBase* env)
 #elif defined(J9ZOS390)
 	requestedPageSize = ONE_MB; /* Use 1M PAGEABLE for ZOS-31 and ZOS-64 */
 	requestedPageFlags = OMRPORT_VMEM_PAGE_FLAG_PAGEABLE;
+	sparseHeapPageSize = ONE_MB; /* Use 1M PAGEABLE for ZOS-31 and ZOS-64 */
+	sparseHeapPageFlags = OMRPORT_VMEM_PAGE_FLAG_PAGEABLE;
 #endif /* defined(AIXPPC) */
 
 	if (!validateDefaultPageParameters(requestedPageSize, requestedPageFlags, pageSizes, pageFlags)) {

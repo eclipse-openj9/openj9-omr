@@ -65,7 +65,7 @@ public:
 		uintptr_t slot = ((uintptr_t)objectPtr) - _heapMapBaseDelta;
 		uintptr_t bitIndex = (slot & _heapMapBitMask) >> _heapMapBitShift;
 		if (lowBlock) {
-			*bitMask = (((uintptr_t)-1) >> (J9BITS_BITS_IN_SLOT - 1 - bitIndex));
+			*bitMask = (((uintptr_t)-1) >> (OMRBITS_BITS_IN_SLOT - 1 - bitIndex));
 		} else {
 			*bitMask = (((uintptr_t)-1) << bitIndex);
 		}

@@ -684,6 +684,16 @@ init_spinParameters(omrthread_library_t lib)
 	if (init_threadParam("parkSleepCount", &lib->parkSleepCount)) {
 		return -1;
 	}
+
+	lib->cpuUtilCache = 0;
+	if (init_threadParam("cpuUtilCache", &lib->cpuUtilCache)) {
+		return -1;
+	}
+
+	lib->parkSleepCpuUtilThreshold = 100;
+	if (init_threadParam("parkSleepCpuUtilThreshold", &lib->parkSleepCpuUtilThreshold)) {
+		return -1;
+	}
 #endif
 
 #if defined(OMR_THR_THREE_TIER_LOCKING)
@@ -3302,12 +3312,15 @@ omrthread_park(int64_t millis, intptr_t nanos)
 	intptr_t rc = 0;
 	omrthread_t self = MACRO_SELF();
 #if defined(OMR_THR_YIELD_ALG)
+	omrthread_library_t threadLibrary = self->library;
 	uintptr_t sleptDuration = 0;
 #endif /* defined(OMR_THR_YIELD_ALG) */
 	ASSERT(self);
 
 #if defined(OMR_THR_YIELD_ALG)
-	omrthread_park_spin(self, millis, nanos, &sleptDuration);
+	if (threadLibrary->cpuUtilCache >= threadLibrary->parkSleepCpuUtilThreshold) {
+		omrthread_park_spin(self, millis, nanos, &sleptDuration);
+	}
 #endif /* defined(OMR_THR_YIELD_ALG) */
 
 	THREAD_LOCK(self, CALLER_PARK);

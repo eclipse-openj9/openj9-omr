@@ -29,8 +29,10 @@
 
 #if defined(OMR_ENV_DATA64)
 #define J9BITS_BITS_IN_SLOT 64
+#define OMRBITS_BITS_IN_SLOT 64
 #else
 #define J9BITS_BITS_IN_SLOT 32
+#define OMRBITS_BITS_IN_SLOT 32
 #endif /* defined(OMR_ENV_DATA64) */
 
 class MM_Bits {
@@ -127,7 +129,7 @@ public:
 		_asm {
 			bsr eax, input
 			neg eax
-			add eax, J9BITS_BITS_IN_SLOT - 1
+			add eax, OMRBITS_BITS_IN_SLOT - 1
 		}
 	}
 #pragma warning(default:4035) /* re-enable warning */
@@ -161,7 +163,7 @@ public:
 				" neg %0;"
 				" add %2, %0;"
 				: "=r"(result)
-				: "rm"(input), "g"(J9BITS_BITS_IN_SLOT - 1) );
+				: "rm"(input), "g"(OMRBITS_BITS_IN_SLOT - 1) );
 		return result;
 	}
 
@@ -218,7 +220,7 @@ public:
 
 		result += (work >> 1);
 
-		return J9BITS_BITS_IN_SLOT - 1 - result;
+		return OMRBITS_BITS_IN_SLOT - 1 - result;
 	}
 #endif /* defined(OMR_OS_WINDOWS) && !defined(OMR_ENV_DATA64) */
 };

@@ -159,7 +159,7 @@ public:
 	 */
 	MMINLINE static uintptr_t sizeToIndex(uintptr_t size)
 	{
-		uintptr_t msb = (J9BITS_BITS_IN_SLOT - 1) - MM_Bits::trailingZeroes(size);
+		uintptr_t msb = (OMRBITS_BITS_IN_SLOT - 1) - MM_Bits::trailingZeroes(size);
 		uintptr_t index = 4 * msb + ((size >> (msb - 2)) & 0x3);
 
 		return index;

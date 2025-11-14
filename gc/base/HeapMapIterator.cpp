@@ -101,9 +101,9 @@ MM_HeapMapIterator::nextObject()
 
 			/* Jump over the body of the object */
 			_heapSlotCurrent += J9MODRON_HEAP_SLOTS_PER_HEAPMAP_BIT * sizeInHeapMapBits;
-			uintptr_t heapMapAdvance = (_bitIndexHead + sizeInHeapMapBits) / J9BITS_BITS_IN_SLOT;
+			uintptr_t heapMapAdvance = (_bitIndexHead + sizeInHeapMapBits) / OMRBITS_BITS_IN_SLOT;
 			_heapMapSlotCurrent += heapMapAdvance;
-			_bitIndexHead = ((_bitIndexHead + sizeInHeapMapBits) % J9BITS_BITS_IN_SLOT);
+			_bitIndexHead = ((_bitIndexHead + sizeInHeapMapBits) % OMRBITS_BITS_IN_SLOT);
 
 			/* We need to avoid visiting the heap map to refresh the slot if necessary.  Check if the heap map pointer
 			 * has been advanced - if it has, we need to load the new value and adjust according to the scan index.
@@ -116,7 +116,7 @@ MM_HeapMapIterator::nextObject()
 					_heapMapSlotValue >>= _bitIndexHead;
 				}
 			} else {
-				_heapMapSlotValue >>= (sizeInHeapMapBits % J9BITS_BITS_IN_SLOT);
+				_heapMapSlotValue >>= (sizeInHeapMapBits % OMRBITS_BITS_IN_SLOT);
 			}
 
 			/* Ensure we don't return an object outside the defined range */
@@ -124,7 +124,7 @@ MM_HeapMapIterator::nextObject()
 		}
 
 		/* The termination point may not be at the end of the map slot - adjust accordingly */
-		_heapSlotCurrent += J9MODRON_HEAP_SLOTS_PER_HEAPMAP_BIT * (J9BITS_BITS_IN_SLOT - _bitIndexHead);
+		_heapSlotCurrent += J9MODRON_HEAP_SLOTS_PER_HEAPMAP_BIT * (OMRBITS_BITS_IN_SLOT - _bitIndexHead);
 
 		/* Move to the next mark map slot */
 		_heapMapSlotCurrent += 1;

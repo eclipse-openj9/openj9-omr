@@ -5499,8 +5499,6 @@ TR::Register *OMR::ARM64::TreeEvaluator::unImpOpEvaluator(TR::Node *node, TR::Co
 
 TR::Register *OMR::ARM64::TreeEvaluator::badILOpEvaluator(TR::Node *node, TR::CodeGenerator *cg)
 {
-    // TODO:ARM64: Enable TR::TreeEvaluator::badILOpEvaluator in compiler/aarch64/codegen/TreeEvaluatorTable.hpp when
-    // Implemented.
     return OMR::ARM64::TreeEvaluator::unImpOpEvaluator(node, cg);
 }
 
@@ -5626,8 +5624,6 @@ TR::Register *OMR::ARM64::TreeEvaluator::vloadEvaluator(TR::Node *node, TR::Code
 
 TR::Register *OMR::ARM64::TreeEvaluator::awrtbarEvaluator(TR::Node *node, TR::CodeGenerator *cg)
 {
-    // TODO:ARM64: Enable TR::TreeEvaluator::awrtbarEvaluator in compiler/aarch64/codegen/TreeEvaluatorTable.hpp when
-    // Implemented.
     return OMR::ARM64::TreeEvaluator::unImpOpEvaluator(node, cg);
 }
 
@@ -5806,22 +5802,16 @@ TR::Register *OMR::ARM64::TreeEvaluator::vgetelemEvaluator(TR::Node *node, TR::C
 
 TR::Register *OMR::ARM64::TreeEvaluator::monentEvaluator(TR::Node *node, TR::CodeGenerator *cg)
 {
-    // TODO:ARM64: Enable TR::TreeEvaluator::monentEvaluator in compiler/aarch64/codegen/TreeEvaluatorTable.hpp when
-    // Implemented.
     return OMR::ARM64::TreeEvaluator::unImpOpEvaluator(node, cg);
 }
 
 TR::Register *OMR::ARM64::TreeEvaluator::monexitEvaluator(TR::Node *node, TR::CodeGenerator *cg)
 {
-    // TODO:ARM64: Enable TR::TreeEvaluator::monexitEvaluator in compiler/aarch64/codegen/TreeEvaluatorTable.hpp when
-    // Implemented.
     return OMR::ARM64::TreeEvaluator::unImpOpEvaluator(node, cg);
 }
 
 TR::Register *OMR::ARM64::TreeEvaluator::arraytranslateAndTestEvaluator(TR::Node *node, TR::CodeGenerator *cg)
 {
-    // TODO:ARM64: Enable TR::TreeEvaluator::arraytranslateAndTestEvaluator in
-    // compiler/aarch64/codegen/TreeEvaluatorTable.hpp when Implemented.
     return OMR::ARM64::TreeEvaluator::unImpOpEvaluator(node, cg);
 }
 
@@ -7203,29 +7193,21 @@ TR::Register *OMR::ARM64::TreeEvaluator::arraycopyEvaluator(TR::Node *node, TR::
 
 TR::Register *OMR::ARM64::TreeEvaluator::asynccheckEvaluator(TR::Node *node, TR::CodeGenerator *cg)
 {
-    // TODO:ARM64: Enable TR::TreeEvaluator::asynccheckEvaluator in compiler/aarch64/codegen/TreeEvaluatorTable.hpp when
-    // Implemented.
     return OMR::ARM64::TreeEvaluator::unImpOpEvaluator(node, cg);
 }
 
 TR::Register *OMR::ARM64::TreeEvaluator::instanceofEvaluator(TR::Node *node, TR::CodeGenerator *cg)
 {
-    // TODO:ARM64: Enable TR::TreeEvaluator::instanceofEvaluator in compiler/aarch64/codegen/TreeEvaluatorTable.hpp when
-    // Implemented.
     return OMR::ARM64::TreeEvaluator::unImpOpEvaluator(node, cg);
 }
 
 TR::Register *OMR::ARM64::TreeEvaluator::checkcastEvaluator(TR::Node *node, TR::CodeGenerator *cg)
 {
-    // TODO:ARM64: Enable TR::TreeEvaluator::checkcastEvaluator in compiler/aarch64/codegen/TreeEvaluatorTable.hpp when
-    // Implemented.
     return OMR::ARM64::TreeEvaluator::unImpOpEvaluator(node, cg);
 }
 
 TR::Register *OMR::ARM64::TreeEvaluator::checkcastAndNULLCHKEvaluator(TR::Node *node, TR::CodeGenerator *cg)
 {
-    // TODO:ARM64: Enable TR::TreeEvaluator::checkcastAndNULLCHKEvaluator in
-    // compiler/aarch64/codegen/TreeEvaluatorTable.hpp when Implemented.
     return OMR::ARM64::TreeEvaluator::unImpOpEvaluator(node, cg);
 }
 
@@ -7262,8 +7244,6 @@ TR::Register *OMR::ARM64::TreeEvaluator::treetopEvaluator(TR::Node *node, TR::Co
 
 TR::Register *OMR::ARM64::TreeEvaluator::exceptionRangeFenceEvaluator(TR::Node *node, TR::CodeGenerator *cg)
 {
-    // TODO:ARM64: Enable TR::TreeEvaluator::exceptionRangeFenceEvaluator in
-    // compiler/aarch64/codegen/TreeEvaluatorTable.hpp when Implemented.
     return OMR::ARM64::TreeEvaluator::unImpOpEvaluator(node, cg);
 }
 

@@ -488,8 +488,6 @@ TR::Register *OMR::RV::TreeEvaluator::lcmpEvaluator(TR::Node *node, TR::CodeGene
 
 TR::Register *OMR::RV::TreeEvaluator::acmpeqEvaluator(TR::Node *node, TR::CodeGenerator *cg)
 {
-    // TODO:RV: Enable TR::TreeEvaluator::acmpeqEvaluator in compiler/aarch64/codegen/TreeEvaluatorTable.hpp when
-    // Implemented.
     return OMR::RV::TreeEvaluator::unImpOpEvaluator(node, cg);
 }
 
@@ -544,71 +542,51 @@ TR::Register *OMR::RV::TreeEvaluator::iselectEvaluator(TR::Node *node, TR::CodeG
 
 TR::Register *OMR::RV::TreeEvaluator::lookupEvaluator(TR::Node *node, TR::CodeGenerator *cg)
 {
-    // TODO:RV: Enable TR::TreeEvaluator::lookupEvaluator in compiler/aarch64/codegen/TreeEvaluatorTable.hpp when
-    // Implemented.
     return OMR::RV::TreeEvaluator::unImpOpEvaluator(node, cg);
 }
 
 TR::Register *OMR::RV::TreeEvaluator::tableEvaluator(TR::Node *node, TR::CodeGenerator *cg)
 {
-    // TODO:RV: Enable TR::TreeEvaluator::tableEvaluator in compiler/aarch64/codegen/TreeEvaluatorTable.hpp when
-    // Implemented.
     return OMR::RV::TreeEvaluator::unImpOpEvaluator(node, cg);
 }
 
 TR::Register *OMR::RV::TreeEvaluator::NULLCHKEvaluator(TR::Node *node, TR::CodeGenerator *cg)
 {
-    // TODO:RV: Enable TR::TreeEvaluator::NULLCHKEvaluator in compiler/aarch64/codegen/TreeEvaluatorTable.hpp when
-    // Implemented.
     return OMR::RV::TreeEvaluator::unImpOpEvaluator(node, cg);
 }
 
 TR::Register *OMR::RV::TreeEvaluator::ZEROCHKEvaluator(TR::Node *node, TR::CodeGenerator *cg)
 {
-    // TODO:RV: Enable TR::TreeEvaluator::ZEROCHKEvaluator in compiler/aarch64/codegen/TreeEvaluatorTable.hpp when
-    // Implemented.
     return OMR::RV::TreeEvaluator::unImpOpEvaluator(node, cg);
 }
 
 TR::Register *OMR::RV::TreeEvaluator::ResolveAndNULLCHKEvaluator(TR::Node *node, TR::CodeGenerator *cg)
 {
-    // TODO:RV: Enable TR::TreeEvaluator::ResolveAndNULLCHKEvaluator in compiler/aarch64/codegen/TreeEvaluatorTable.hpp
-    // when Implemented.
     return OMR::RV::TreeEvaluator::unImpOpEvaluator(node, cg);
 }
 
 TR::Register *OMR::RV::TreeEvaluator::DIVCHKEvaluator(TR::Node *node, TR::CodeGenerator *cg)
 {
-    // TODO:RV: Enable TR::TreeEvaluator::DIVCHKEvaluator in compiler/aarch64/codegen/TreeEvaluatorTable.hpp when
-    // Implemented.
     return OMR::RV::TreeEvaluator::unImpOpEvaluator(node, cg);
 }
 
 TR::Register *OMR::RV::TreeEvaluator::BNDCHKEvaluator(TR::Node *node, TR::CodeGenerator *cg)
 {
-    // TODO:RV: Enable TR::TreeEvaluator::BNDCHKEvaluator in compiler/aarch64/codegen/TreeEvaluatorTable.hpp when
-    // Implemented.
     return OMR::RV::TreeEvaluator::unImpOpEvaluator(node, cg);
 }
 
 TR::Register *OMR::RV::TreeEvaluator::ArrayCopyBNDCHKEvaluator(TR::Node *node, TR::CodeGenerator *cg)
 {
-    // TODO:RV: Enable TR::TreeEvaluator::ArrayCopyBNDCHKEvaluator in compiler/aarch64/codegen/TreeEvaluatorTable.hpp
-    // when Implemented.
     return OMR::RV::TreeEvaluator::unImpOpEvaluator(node, cg);
 }
 
 TR::Register *OMR::RV::TreeEvaluator::ArrayStoreCHKEvaluator(TR::Node *node, TR::CodeGenerator *cg)
 {
-    // TODO:RV: Enable TR::TreeEvaluator::ArrayStoreCHKEvaluator in compiler/aarch64/codegen/TreeEvaluatorTable.hpp when
-    // Implemented.
     return OMR::RV::TreeEvaluator::unImpOpEvaluator(node, cg);
 }
 
 TR::Register *OMR::RV::TreeEvaluator::ArrayCHKEvaluator(TR::Node *node, TR::CodeGenerator *cg)
 {
-    // TODO:RV: Enable TR::TreeEvaluator::ArrayCHKEvaluator in compiler/aarch64/codegen/TreeEvaluatorTable.hpp when
-    // Implemented.
     return OMR::RV::TreeEvaluator::unImpOpEvaluator(node, cg);
 }
 

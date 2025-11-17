@@ -35,7 +35,6 @@ OMR::RV::MemoryReference::MemoryReference(TR::CodeGenerator *cg)
     , _baseNode(NULL)
     , _unresolvedSnippet(NULL)
     , _flag(0)
-    , _length(0)
     , _scale(0)
 {
     _symbolReference = new (cg->trHeapMemory()) TR::SymbolReference(cg->comp()->getSymRefTab());
@@ -47,7 +46,6 @@ OMR::RV::MemoryReference::MemoryReference(TR::Register *br, TR::CodeGenerator *c
     , _baseNode(NULL)
     , _unresolvedSnippet(NULL)
     , _flag(0)
-    , _length(0)
     , _scale(0)
 {
     _symbolReference = new (cg->trHeapMemory()) TR::SymbolReference(cg->comp()->getSymRefTab());
@@ -59,19 +57,17 @@ OMR::RV::MemoryReference::MemoryReference(TR::Register *br, int32_t disp, TR::Co
     , _baseNode(NULL)
     , _unresolvedSnippet(NULL)
     , _flag(0)
-    , _length(0)
     , _scale(0)
     , _offset(disp)
 {
     _symbolReference = new (cg->trHeapMemory()) TR::SymbolReference(cg->comp()->getSymRefTab());
 }
 
-OMR::RV::MemoryReference::MemoryReference(TR::Node *rootLoadOrStore, uint32_t len, TR::CodeGenerator *cg)
+OMR::RV::MemoryReference::MemoryReference(TR::Node *rootLoadOrStore, TR::CodeGenerator *cg)
     : _baseRegister(NULL)
     , _baseNode(NULL)
     , _unresolvedSnippet(NULL)
     , _flag(0)
-    , _length(len)
     , _scale(0)
     , _offset(0)
     , _symbolReference(rootLoadOrStore->getSymbolReference())
@@ -104,13 +100,11 @@ OMR::RV::MemoryReference::MemoryReference(TR::Node *rootLoadOrStore, uint32_t le
     }
 }
 
-OMR::RV::MemoryReference::MemoryReference(TR::Node *node, TR::SymbolReference *symRef, uint32_t len,
-    TR::CodeGenerator *cg)
+OMR::RV::MemoryReference::MemoryReference(TR::Node *node, TR::SymbolReference *symRef, TR::CodeGenerator *cg)
     : _baseRegister(NULL)
     , _baseNode(NULL)
     , _unresolvedSnippet(NULL)
     , _flag(0)
-    , _length(len)
     , _scale(0)
     , _offset(0)
     , _symbolReference(symRef)

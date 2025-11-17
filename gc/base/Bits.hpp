@@ -28,10 +28,8 @@
 #include "modronbase.h"
 
 #if defined(OMR_ENV_DATA64)
-#define J9BITS_BITS_IN_SLOT 64
 #define OMRBITS_BITS_IN_SLOT 64
-#else
-#define J9BITS_BITS_IN_SLOT 32
+#else /* defined(OMR_ENV_DATA64) */
 #define OMRBITS_BITS_IN_SLOT 32
 #endif /* defined(OMR_ENV_DATA64) */
 

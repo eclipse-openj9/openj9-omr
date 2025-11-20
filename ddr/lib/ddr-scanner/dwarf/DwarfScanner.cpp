@@ -41,6 +41,10 @@
 #include <stack>
 #include <utility>
 
+#if defined(J9ZOS390) && defined(__open_xl__) && !defined(OMR_EBCDIC)
+#include "atoe.h" /* a2e_string() */
+#endif /* defined(J9ZOS390) && defined(__open_xl__) && !defined(OMR_EBCDIC) */
+
 #define DW_LIBDWARF_MAKE_VERSION(major, minor) (((major) * 100) + (minor))
 
 #if defined(DW_LIBDWARF_VERSION_MAJOR) && defined(DW_LIBDWARF_VERSION_MINOR)
@@ -68,6 +72,7 @@ ddr_dw_finish(
 static int
 ddr_dw_init(
 	int           fd,
+	const char   *filepath,
 	Dwarf_Handler errhand,
 	Dwarf_Ptr     errarg,
 	Dwarf_Debug  *dbg,
@@ -138,14 +143,27 @@ ddr_dw_finish(
 static int
 ddr_dw_init(
 	int           fd,
+	const char   *filepath,
 	Dwarf_Handler errhand,
 	Dwarf_Ptr     errarg,
 	Dwarf_Debug  *dbg,
 	Dwarf_Error  *error)
 {
+#if defined(J9ZOS390) && defined(__open_xl__) && !defined(OMR_EBCDIC)
+	int result = DW_DLV_ERROR;
+	char *e_filepath = a2e_string(filepath);
+
+	if (NULL != e_filepath) {
+		result = dwarf_goff_init_with_GOFF_filename(e_filepath, errhand, errarg, 0, dbg, error);
+		free(e_filepath);
+	}
+
+	return result;
+#else /* defined(J9ZOS390) && defined(__open_xl__) && !defined(OMR_EBCDIC) */
 	Dwarf_Unsigned access = DW_DLC_READ;
 
 	return dwarf_init(fd, access, errhand, errarg, dbg, error);
+#endif /* defined(J9ZOS390) && defined(__open_xl__) && !defined(OMR_EBCDIC) */
 }
 
 static int
@@ -1814,7 +1832,17 @@ DwarfScanner::scanFile(OMRPortLibrary *portLibrary, Symbol_IR *ir, const char *f
 		Dwarf_Ptr errarg = NULL;
 		intptr_t native_fd = omrfile_convert_omrfile_fd_to_native_fd(fd);
 		DwarfScanner::scanFileName = filepath;
-		res = ddr_dw_init((int)native_fd, errhand, errarg, &_debug, &error);
+		res = ddr_dw_init((int)native_fd, filepath, errhand, errarg, &_debug, &error);
+
+#if defined(J9ZOS390) && defined(__open_xl__) && !defined(OMR_EBCDIC)
+		if (DW_DLV_NO_ENTRY == res) {
+			if (NULL != error) {
+				dwarf_dealloc(_debug, error, DW_DLA_ERROR);
+			}
+			goto done;
+		}
+#endif /* defined(J9ZOS390) && defined(__open_xl__) && !defined(OMR_EBCDIC) */
+
 		if (DW_DLV_OK != res) {
 			ERRMSG("Failed to initialize libDwarf scanning %s: %s\nExiting...\n", filepath, dwarf_errmsg(error));
 			if (NULL != error) {
@@ -1842,6 +1870,9 @@ DwarfScanner::scanFile(OMRPortLibrary *portLibrary, Symbol_IR *ir, const char *f
 		}
 	}
 
+#if defined(J9ZOS390) && defined(__open_xl__) && !defined(OMR_EBCDIC)
+done:
+#endif /* defined(J9ZOS390) && defined(__open_xl__) && !defined(OMR_EBCDIC) */
 	if (fd >= 0) {
 		DEBUGPRINTF("Closing file: fd");
 

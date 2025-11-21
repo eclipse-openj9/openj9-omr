@@ -7915,7 +7915,7 @@ omrsysinfo_get_process_name(struct OMRPortLibrary *portLibrary, uintptr_t pid)
 		close(fd);
 		if (size >= minsize) {
 			uintptr_t len = strlen(name);
-			char *exename = portLibrary->mem_allocate_memory(portLibrary, len, OMR_GET_CALLSITE(), OMRMEM_CATEGORY_PORT_LIBRARY);
+			char *exename = portLibrary->mem_allocate_memory(portLibrary, len + 1, OMR_GET_CALLSITE(), OMRMEM_CATEGORY_PORT_LIBRARY);
 			strcpy(exename, name);
 			return exename;
 		}

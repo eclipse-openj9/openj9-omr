@@ -359,7 +359,11 @@ JavaSupersetGenerator::printType(Type *type, Type *superClass)
 	string superFormatted;
 
 	if (NULL != superClass) {
-		superFormatted = replaceAll(superClass->getFullName(), "::", "$");
+		Type *baseType = superClass->getOpaqueType();
+		if (NULL == baseType) {
+			baseType = superClass;
+		}
+		superFormatted = replaceAll(baseType->getFullName(), "::", "$");
 	}
 
 	_pendingTypeHeading = "S|" + nameFormatted + "|" + nameFormatted + "Pointer|" + superFormatted + "\n";

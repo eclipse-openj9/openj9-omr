@@ -582,7 +582,11 @@ BlobBuildVisitor::visitClass(ClassUDT *cu) const
 				string superName;
 
 				if (NULL != cu->_superClass) {
-					superName = getBlobFullName(cu->_superClass);
+					Type *baseType = cu->_superClass->getOpaqueType();
+					if (NULL == baseType) {
+						baseType = cu->_superClass;
+					}
+					superName = getBlobFullName(baseType);
 				}
 
 				rc = _gen->addBlobStruct(nameFormatted, superName, constCount, fieldCount, (uint32_t)cu->_sizeOf);

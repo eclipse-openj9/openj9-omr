@@ -462,7 +462,7 @@ enum TR_CompilationOptions {
     TR_DisablePrexistenceDuringGracePeriod                   = 0x02000000 + 11,
     TR_EnableITableIterationsAfterLastITableCacheCheckAtWarm = 0x04000000 + 11,
     TR_DisableInlineWriteBarriersRT                          = 0x08000000 + 11, // RTJ
-    // Available                                             = 0x10000000 + 11,
+    TR_DisableWarmCallGraphTooBigHeuristic                   = 0x10000000 + 11,
     TR_DisableNewInliningInfrastructure                      = 0x20000000 + 11,
     // Available                                             = 0x40000000 + 11,
     // Available                                             = 0x80000000 + 11,

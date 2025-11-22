@@ -984,6 +984,8 @@ TR::OptionTable OMR::Options::_jitOptions[] = {
      NOT_IN_SUBSET },
     { "disableVSSStackCompaction", "O\tdisable VariableSizeSymbol stack compaction",
      SET_OPTION_BIT(TR_DisableVSSStackCompaction), "F" },
+    { "disableWarmCallGraphTooBigHeuristic", "O\tdisable heuristic related to warm-call-graph-too-big logic",
+     SET_OPTION_BIT(TR_DisableWarmCallGraphTooBigHeuristic), "F" },
     { "disableWriteBarriersRangeCheck", "O\tdisable adding range check to write barriers",
      SET_OPTION_BIT(TR_DisableWriteBarriersRangeCheck), "F" },
     { "disableZ10", "O\tdisable z10 support", SET_OPTION_BIT(TR_DisableZ10), "F" },

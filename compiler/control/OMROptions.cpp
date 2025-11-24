@@ -4669,8 +4669,9 @@ OMR::Logger *OMR::Options::createLoggerForLogFile(TR::FILE *file)
     }
 
     if (_traceFileLengthInMiB > 0) {
-        // Wrap the logger in a CircularLogger if requested
+        // Wrap the logger in a CircularLogger if requested. The wrapped logger must be enabled first.
         //
+        logger->setEnabled_DEPRECATED(true);
         logger = OMR::CircularLogger::create(logger, _traceFileLengthInMiB << 20);
     }
 

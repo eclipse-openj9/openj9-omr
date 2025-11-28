@@ -161,34 +161,6 @@ TR::Instruction *generateConditionalBranchInstruction(TR::CodeGenerator *cg, TR:
     TR::ARM64ConditionCode cc, TR::RegisterDependencyConditions *cond, TR::Instruction *preced = NULL);
 
 /*
- * @brief Generates conditional branch instruction
- * @param[in] cg : CodeGenerator
- * @param[in] op : instruction opcode
- * @param[in] node : node
- * @param[in] sym : label symbol
- * @param[in] cc : branch condition code
- * @param[in] preced : preceding instruction
- * @return generated instruction
- */
-TR::Instruction *generateConditionalBranchInstruction(TR::CodeGenerator *cg, TR::InstOpCode::Mnemonic op,
-    TR::Node *node, TR::LabelSymbol *sym, TR::ARM64ConditionCode cc, TR::Instruction *preced = NULL);
-
-/*
- * @brief Generates conditional branch instruction with register dependency
- * @param[in] cg : CodeGenerator
- * @param[in] op : instruction opcode
- * @param[in] node : node
- * @param[in] sym : label symbol
- * @param[in] cc : branch condition code
- * @param[in] cond : register dependency condition
- * @param[in] preced : preceding instruction
- * @return generated instruction
- */
-TR::Instruction *generateConditionalBranchInstruction(TR::CodeGenerator *cg, TR::InstOpCode::Mnemonic op,
-    TR::Node *node, TR::LabelSymbol *sym, TR::ARM64ConditionCode cc, TR::RegisterDependencyConditions *cond,
-    TR::Instruction *preced = NULL);
-
-/*
  * @brief Generates compare and branch instruction
  * @param[in] cg : CodeGenerator
  * @param[in] op : instruction opcode

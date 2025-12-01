@@ -404,7 +404,7 @@ enum TR_CompilationOptions {
     TR_DisableNoServerDuringStartup                           = 0x04000000 + 9, // set TR_NoOptServer during startup and insert GCR trees
     TR_BreakOnNew                                             = 0x08000000 + 9,
     TR_DisableInliningUnrecognizedIntrinsics                  = 0x10000000 + 9,
-    TR_EnableVectorAPIExpansion                               = 0x20000000 + 9,
+    // Available                                              = 0x20000000 + 9,
     TR_MoveOOLInstructionsToWarmCode                          = 0x40000000 + 9,
     TR_MoveSnippetsToWarmCode                                 = 0x80000000 + 9,
 

@@ -1354,9 +1354,6 @@ TR::OptionTable OMR::Options::_jitOptions[] = {
      "F" },
     { "enableVectorAPIBoxing", "M\tenable boxing/unboxing during VectorAPIExpansion",
      SET_OPTION_BIT(TR_EnableVectorAPIBoxing), "F" },
-    { "enableVectorAPIExpansion",
-     "M\tenable expansion of Vector API, disableVectorAPIExpansion option takes precedence", SET_OPTION_BIT(TR_EnableVectorAPIExpansion), "F" },
-
     { "enableVirtualPersistentMemory", "M\tenable persistent memory to be allocated using virtual memory allocators",
      SET_OPTION_BIT(TR_EnableVirtualPersistentMemory), "F", NOT_IN_SUBSET },
     { "enableVpicForResolvedVirtualCalls", "O\tenable PIC for resolved virtual calls",

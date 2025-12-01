@@ -1487,12 +1487,6 @@ static const char *getFieldSignature(OMR::ValuePropagation *vp, TR::Node *node, 
  */
 static bool addKnownObjectConstraints(OMR::ValuePropagation *vp, TR::Node *node, bool isGlobal)
 {
-    // 'addKnownObjectConstraints` has a large overhead for remote compilations
-    // due to the messages exchanged between client and server. However, constraints
-    // are needed for VectorAPIExpansion optimization in OpenJ9 downstream project.
-    if (vp->comp()->isOutOfProcessCompilation() && !vp->comp()->getOption(TR_EnableVectorAPIExpansion))
-        return false;
-
     TR::SymbolReference *symRef = node->getSymbolReference();
     if (symRef->isUnresolved())
         return false;
@@ -1500,41 +1494,37 @@ static bool addKnownObjectConstraints(OMR::ValuePropagation *vp, TR::Node *node,
     if (!vp->comp()->getKnownObjectTable())
         return false;
 
-    uintptr_t *objectReferenceLocation = NULL;
-    if (symRef->hasKnownObjectIndex()) {
-        objectReferenceLocation = symRef->getKnownObjectReferenceLocation(vp->comp());
-    }
+    TR::KnownObjectTable::Index knotIndex = symRef->getKnownObjectIndex();
 
 #ifdef J9_PROJECT_SPECIFIC
-    if (objectReferenceLocation) {
-        TR_J9VMBase::ObjectClassInfo ci = vp->comp()->fej9()->getObjectClassInfoFromObjectReferenceLocation(vp->comp(),
-            (uintptr_t)objectReferenceLocation);
+    if (knotIndex != TR::KnownObjectTable::UNKNOWN) {
+        TR::KnownObjectTable::ObjectInfo objInfo
+            = vp->comp()->fej9()->getObjClassInfoFromKnotIndex(vp->comp(), knotIndex);
 
         TR::VPConstraint *constraint = NULL;
-        if (ci.isString && symRef->getSymbol()->isStatic()) {
+        if (objInfo._isString && symRef->getSymbol()->isStatic()) {
             // There's a lot of machinery around optimizing const strings.  Even
             // though we lose object identity info this way, it's likely better to
             // engage the const string optimizations.
             //
             constraint = TR::VPClass::create(vp, TR::VPConstString::create(vp, symRef), TR::VPNonNullObject::create(vp),
                 NULL, NULL, TR::VPObjectLocation::create(vp, TR::VPObjectLocation::HeapObject));
-        } else if (ci.jlClass) // without a jlClass, we can't tell what kind of constraint to add
+        } else if (objInfo._jlClass) // without a jlClass, we can't tell what kind of constraint to add
         {
-            const char *classSig = TR::Compiler->cls.classSignature(vp->comp(), ci.clazz, vp->trMemory());
-            if (ci.isFixedJavaLangClass) {
+            const char *classSig = TR::Compiler->cls.classSignature(vp->comp(), objInfo._clazz, vp->trMemory());
+            if (objInfo._isFixedJavaLangClass) {
                 if (performTransformation(vp->comp(),
                         "%sAdd ClassObject constraint to %p based on known java/lang/Class %s =obj%d\n", OPT_DETAILS,
-                        node, classSig, ci.knownObjectIndex)) {
-                    constraint
-                        = TR::VPClass::create(vp, TR::VPKnownObject::createForJavaLangClass(vp, ci.knownObjectIndex),
-                            TR::VPNonNullObject::create(vp), NULL, NULL,
-                            TR::VPObjectLocation::create(vp, TR::VPObjectLocation::JavaLangClassObject));
+                        node, classSig, knotIndex)) {
+                    constraint = TR::VPClass::create(vp, TR::VPKnownObject::createForJavaLangClass(vp, knotIndex),
+                        TR::VPNonNullObject::create(vp), NULL, NULL,
+                        TR::VPObjectLocation::create(vp, TR::VPObjectLocation::JavaLangClassObject));
                 }
             } else {
                 if (performTransformation(vp->comp(),
                         "%sAdd known-object constraint to %p based on known object obj%d of class %s\n", OPT_DETAILS,
-                        node, ci.knownObjectIndex, classSig)) {
-                    constraint = TR::VPClass::create(vp, TR::VPKnownObject::create(vp, ci.knownObjectIndex),
+                        node, knotIndex, classSig)) {
+                    constraint = TR::VPClass::create(vp, TR::VPKnownObject::create(vp, knotIndex),
                         TR::VPNonNullObject::create(vp), NULL, NULL,
                         TR::VPObjectLocation::create(vp, TR::VPObjectLocation::HeapObject));
                 }

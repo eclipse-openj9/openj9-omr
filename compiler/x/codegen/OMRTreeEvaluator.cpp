@@ -5937,11 +5937,28 @@ TR::Register *OMR::X86::TreeEvaluator::iexpandbitsEvaluator(TR::Node *node, TR::
         TR::InstOpCode::PDEP4RegRegMem);
 }
 
+static bool isMSplatsConstTrue(TR::Node *node)
+{
+    if (node && node->getOpCode().getVectorOperation() == TR::msplats) {
+        TR::Node *splatsNode = node->getFirstChild();
+        if (splatsNode->getOpCode().isLoadConst() && (splatsNode->getByte() || splatsNode->isNonZero())) {
+            return true;
+        }
+    }
+
+    return false;
+}
+
 // mask evaluators
 TR::Register *OMR::X86::TreeEvaluator::mAnyTrueEvaluator(TR::Node *node, TR::CodeGenerator *cg)
 {
     TR::Node *maskNode = node->getFirstChild();
+    TR::Node *cmpMaskNode = node->getNumChildren() > 1 ? node->getChild(1) : NULL;
+    bool cmpMaskIsConstTrue = cmpMaskNode && isMSplatsConstTrue(cmpMaskNode);
+
+    TR::DataType maskType = node->getOpCode().getVectorDataType();
     TR::Register *maskReg = cg->evaluate(maskNode);
+    TR::Register *cmpMaskReg = cmpMaskNode && !cmpMaskIsConstTrue ? cg->evaluate(cmpMaskNode) : maskReg;
     TR::Register *resultReg = cg->allocateRegister();
     TR::CPU *cpu = &cg->comp()->target().cpu;
 
@@ -5951,26 +5968,65 @@ TR::Register *OMR::X86::TreeEvaluator::mAnyTrueEvaluator(TR::Node *node, TR::Cod
 
     if (maskReg->getKind() == TR_VMR && cpu->supportsFeature(OMR_FEATURE_X86_AVX512BW)) {
         TR_ASSERT_FATAL(cpu->supportsFeature(OMR_FEATURE_X86_AVX512F), "Mask registers require AVX-512");
-        generateRegRegInstruction(TR::InstOpCode::KTESTQRegReg, node, maskReg, maskReg, cg);
+        generateRegRegInstruction(TR::InstOpCode::KTESTQRegReg, node, maskReg, cmpMaskReg, cg);
     } else if (maskReg->getKind() == TR_VMR) {
         TR_ASSERT_FATAL(cpu->supportsFeature(OMR_FEATURE_X86_AVX512F), "Mask registers require AVX-512");
 
-        if (cpu->supportsFeature(OMR_FEATURE_X86_AVX512DQ)) {
-            generateRegRegInstruction(TR::InstOpCode::KTESTWRegReg, node, maskReg, maskReg, cg);
+        if (cpu->supportsFeature(OMR_FEATURE_X86_AVX512DQ)
+            && maskNode->getOpCode().getVectorDataType().getVectorNumLanes() <= 16) {
+            generateRegRegInstruction(TR::InstOpCode::KTESTWRegReg, node, maskReg, cmpMaskReg, cg);
         } else {
             TR::InstOpCode::Mnemonic opcode = TR::InstOpCode::KMOVWRegMask;
+            TR::Register *cmpMaskGPR = cmpMaskReg && !cmpMaskIsConstTrue ? cg->allocateRegister() : resultReg;
 
             // Rare case; move mask into GPR
             generateRegRegInstruction(opcode, node, resultReg, maskReg, cg);
-            generateRegRegInstruction(TR::InstOpCode::TESTRegReg(), node, resultReg, resultReg, cg);
+
+            if (cmpMaskReg && !cmpMaskIsConstTrue)
+                generateRegRegInstruction(opcode, node, cmpMaskGPR, cmpMaskReg, cg);
+
+            generateRegRegInstruction(TR::InstOpCode::TESTRegReg(), node, resultReg, cmpMaskGPR, cg);
+
+            if (cmpMaskReg && !cmpMaskIsConstTrue)
+                cg->stopUsingRegister(cmpMaskReg);
         }
     } else {
-        TR::TreeEvaluator::vectorMaskToGPRHelper(node, maskNode->getDataType(), resultReg, maskReg, cg);
+        if (cmpMaskNode && !cmpMaskIsConstTrue) {
+            TR::Register *tmpVRF = cg->allocateRegister(TR_VRF);
+            TR::InstOpCode andOpcode = TR::InstOpCode::PANDRegReg;
+            OMR::X86::Encoding andEncoding
+                = andOpcode.getSIMDEncoding(&cg->comp()->target().cpu, maskType.getVectorLength());
+
+            if (andEncoding != OMR::X86::Legacy) {
+                generateRegRegRegInstruction(andOpcode.getMnemonic(), node, tmpVRF, maskReg, cmpMaskReg, cg,
+                    andEncoding);
+            } else {
+                TR::InstOpCode movOpcode = TR::InstOpCode::MOVDQURegReg;
+                OMR::X86::Encoding movEncoding
+                    = movOpcode.getSIMDEncoding(&cg->comp()->target().cpu, maskType.getVectorLength());
+
+                generateRegRegInstruction(movOpcode.getMnemonic(), node, tmpVRF, maskReg, cg, movEncoding);
+                generateRegRegInstruction(andOpcode.getMnemonic(), node, tmpVRF, cmpMaskReg, cg, andEncoding);
+            }
+
+            TR::TreeEvaluator::vectorMaskToGPRHelper(node, maskNode->getDataType(), resultReg, tmpVRF, cg);
+            cg->stopUsingRegister(tmpVRF);
+        } else {
+            TR::TreeEvaluator::vectorMaskToGPRHelper(node, maskNode->getDataType(), resultReg, maskReg, cg);
+        }
+
         generateRegRegInstruction(TR::InstOpCode::TESTRegReg(), node, resultReg, resultReg, cg);
     }
 
     generateRegInstruction(TR::InstOpCode::SETNE1Reg, node, resultReg, cg);
     generateRegRegInstruction(TR::InstOpCode::MOVZXReg8Reg1, node, resultReg, resultReg, cg);
+
+    if (cmpMaskNode && cmpMaskNode->getRegister()) // Evaluation was skipped
+    {
+        cg->decReferenceCount(cmpMaskNode);
+    } else if (cmpMaskNode) {
+        cg->recursivelyDecReferenceCount(cmpMaskNode);
+    }
 
     cg->decReferenceCount(maskNode);
     node->setRegister(resultReg);
@@ -5981,9 +6037,12 @@ TR::Register *OMR::X86::TreeEvaluator::mAnyTrueEvaluator(TR::Node *node, TR::Cod
 TR::Register *OMR::X86::TreeEvaluator::mAllTrueEvaluator(TR::Node *node, TR::CodeGenerator *cg)
 {
     TR::Node *maskNode = node->getFirstChild();
+    TR::Node *cmpMaskNode = node->getNumChildren() > 1 ? node->getChild(1) : NULL;
+
     TR::Register *maskReg = cg->evaluate(maskNode);
     TR::Register *resultReg = cg->allocateRegister();
-    TR::Register *cmpReg = cg->allocateRegister();
+    TR::Register *cmpGPRReg = cg->allocateRegister();
+    TR::Register *cmpMaskReg = cmpMaskNode && !isMSplatsConstTrue(cmpMaskNode) ? cg->evaluate(cmpMaskNode) : NULL;
     int32_t numLanes = maskNode->getDataType().getVectorNumLanes();
     TR::TreeEvaluator::vectorMaskToGPRHelper(node, maskNode->getDataType(), resultReg, maskReg, cg);
 
@@ -5991,15 +6050,26 @@ TR::Register *OMR::X86::TreeEvaluator::mAllTrueEvaluator(TR::Node *node, TR::Cod
     TR_ASSERT_FATAL(false, "mAllTrueEvaluator is only supported on 64-bit");
 #endif
 
-    TR_RematerializableTypes rematType = numLanes > 32 ? TR_RematerializableLong : TR_RematerializableInt;
-    int64_t mask = numLanes == 64 ? -1 : (1ll << numLanes) - 1;
-    TR::TreeEvaluator::loadConstant(node, mask, rematType, cg, cmpReg);
+    if (cmpMaskReg) {
+        TR::TreeEvaluator::vectorMaskToGPRHelper(node, maskNode->getDataType(), cmpGPRReg, cmpMaskReg, cg);
+    } else {
+        TR_RematerializableTypes rematType = numLanes > 32 ? TR_RematerializableLong : TR_RematerializableInt;
+        int64_t mask = numLanes == 64 ? -1 : (1ll << numLanes) - 1;
+        TR::TreeEvaluator::loadConstant(node, mask, rematType, cg, cmpGPRReg);
+    }
 
-    generateRegRegInstruction(TR::InstOpCode::CMPRegReg(), node, resultReg, cmpReg, cg);
+    generateRegRegInstruction(TR::InstOpCode::CMPRegReg(), node, resultReg, cmpGPRReg, cg);
+
     generateRegInstruction(TR::InstOpCode::SETE1Reg, node, resultReg, cg);
     generateRegRegInstruction(TR::InstOpCode::MOVZXReg8Reg1, node, resultReg, resultReg, cg);
 
-    cg->stopUsingRegister(cmpReg);
+    cg->stopUsingRegister(cmpGPRReg);
+
+    if (cmpMaskReg)
+        cg->decReferenceCount(cmpMaskNode);
+    else if (cmpMaskNode)
+        cg->recursivelyDecReferenceCount(cmpMaskNode);
+
     cg->decReferenceCount(maskNode);
     node->setRegister(resultReg);
 
@@ -6008,12 +6078,12 @@ TR::Register *OMR::X86::TreeEvaluator::mAllTrueEvaluator(TR::Node *node, TR::Cod
 
 TR::Register *OMR::X86::TreeEvaluator::mmAnyTrueEvaluator(TR::Node *node, TR::CodeGenerator *cg)
 {
-    return TR::TreeEvaluator::unImpOpEvaluator(node, cg);
+    return TR::TreeEvaluator::mAnyTrueEvaluator(node, cg);
 }
 
 TR::Register *OMR::X86::TreeEvaluator::mmAllTrueEvaluator(TR::Node *node, TR::CodeGenerator *cg)
 {
-    return TR::TreeEvaluator::unImpOpEvaluator(node, cg);
+    return TR::TreeEvaluator::mAllTrueEvaluator(node, cg);
 }
 
 TR::Register *OMR::X86::TreeEvaluator::mloadEvaluator(TR::Node *node, TR::CodeGenerator *cg)

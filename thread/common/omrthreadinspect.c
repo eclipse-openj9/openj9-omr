@@ -230,7 +230,7 @@ omrthread_get_flags(omrthread_t thread, omrthread_monitor_t *blocker)
  * @return void
  */
 void
-omrthread_get_state(omrthread_t thread, omrthread_state_t *const state)
+omrthread_get_state(omrthread_t thread, omrthread_state_t *state)
 {
 	if (!thread) {
 		return;

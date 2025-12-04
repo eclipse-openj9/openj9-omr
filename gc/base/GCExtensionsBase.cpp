@@ -360,10 +360,10 @@ MM_GCExtensionsBase::usingSATBBarrier()
 	return false;
 }
 
-UDATA
+uintptr_t
 MM_GCExtensionsBase::getUniqueGCCycleCount()
 {
-	UDATA result = 0;
+	uintptr_t result = 0;
 
 	switch (configurationOptions._gcPolicy) {
 	case OMR_GC_POLICY_OPTTHRUPUT:

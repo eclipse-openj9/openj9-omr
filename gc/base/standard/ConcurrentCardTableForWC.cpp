@@ -212,7 +212,14 @@ MM_ConcurrentCardTableForWC::getExclusiveCardTableAccess(MM_EnvironmentBase *env
 	bool phaseChangeCompleted = false;
 
 	env->acquireExclusiveVMAccess();
-	if ((gcCount != _extensions->globalGCStats.gcCount) || (currentPhase != _cardCleanPhase)) {
+	/* While being blocked on acquiring exclusive VM access, other threads might have progressed further.
+	 * In which case we skip this phase.
+	 * Possible cases and their matching conditions:
+	 * - Still in the same GC cycle, but no longer in the card cleaning phase: currentPhase != _cardCleanPhase
+	 * - The cycle completed and at least one other one started: gcCount != _gcCount
+	 * - The cycle completed but no other cycle started, in which case gcCount will remain the same: executionMode <= CONCURRENT_INIT_COMPLETE
+	 */
+	if ((gcCount != _extensions->globalGCStats.gcCount) || (currentPhase != _cardCleanPhase) || (CONCURRENT_INIT_COMPLETE >= _collector->getConcurrentGCStats()->getExecutionMode())) {
 		/* Nothing to do so get out  */
 		phaseChangeCompleted = true;
 	}

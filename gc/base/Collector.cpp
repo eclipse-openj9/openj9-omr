@@ -289,7 +289,7 @@ MM_Collector::checkForExcessiveGC(MM_EnvironmentBase* env, MM_Collector *collect
 	Assert_MM_true(extensions->excessiveGCEnabled._valueSpecified);
 
 	/* Get gc count now collect has happened */
-	UDATA gcCount = extensions->getUniqueGCCycleCount();
+	uintptr_t gcCount = extensions->getUniqueGCCycleCount();
 
 	OMRPORT_ACCESS_FROM_ENVIRONMENT(env);
 	TRIGGER_J9HOOK_MM_PRIVATE_EXCESSIVEGC_CHECK_GC_ACTIVITY(extensions->privateHookInterface,

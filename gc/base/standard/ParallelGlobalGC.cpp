@@ -1085,6 +1085,8 @@ MM_ParallelGlobalGC::internalPreCollect(MM_EnvironmentBase *env, MM_MemorySubSpa
 	env->_cycleState->_type = _cycleType;
 	env->_cycleState->_activeSubSpace = subSpace;
 	env->_cycleState->_collectionStatistics = &_collectionStatistics;
+	_extensions->globalGCStats.gcCount += 1;
+	env->_cycleState->_currentCycleID = _extensions->getUniqueGCCycleCount();
 
 	/* If we are in an excessiveGC level beyond normal then an aggressive GC is
 	 * conducted to free up as much space as possible
@@ -1270,8 +1272,6 @@ MM_ParallelGlobalGC::setupForGC(MM_EnvironmentBase *env)
 bool
 MM_ParallelGlobalGC::internalGarbageCollect(MM_EnvironmentBase *env, MM_MemorySubSpace *subSpace, MM_AllocateDescription *allocDescription)
 {
-	_extensions->globalGCStats.gcCount += 1;
-
 	/* only try to expand heap instead of garbage collection in -Xgcpolicy:nogc */
 	if (_disableGC) {
 		env->_cycleState->_activeSubSpace->checkResize(env, allocDescription, false);

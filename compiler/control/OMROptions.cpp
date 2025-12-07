@@ -4761,9 +4761,11 @@ void OMR::Options::closeLogFile(TR_FrontEnd *fe, TR::FILE *file, OMR::Logger *lo
     if (file != NULL)
         log->prints("</jitlog>\n");
 
-    trfclose(file);
-
+    // The Logger must be closed before the TR::FILE stream because it may flush the stream
+    //
     log->close();
+
+    trfclose(file);
 }
 
 void OMR::Options::printOptions(const char *options, const char *envOptions)

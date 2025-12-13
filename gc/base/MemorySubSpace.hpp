@@ -145,6 +145,7 @@ public:
 		ALLOCATION_TYPE_OBJECT,
 		ALLOCATION_TYPE_LEAF,
 		ALLOCATION_TYPE_TLH,
+		ALLOCATION_TYPE_SHARED_RESERVED
 	};
 
 	MMINLINE MM_PhysicalSubArena *getPhysicalSubArena() const { return _physicalSubArena; }

@@ -9078,14 +9078,14 @@
     /* }, */
 
     {
-    /* .mnemonic    = */ OMR::InstOpCode::vpksdus,
-    /* .name        = */ "vpksdus",
-    /* .description =    "Vector Pack Signed Dword Unsigned Saturate", */
-    /* .prefix      = */ 0x00000000,
-    /* .opcode      = */ 0x1000054E,
-    /* .format      = */ FORMAT_VRT_VRA_VRB,
-    /* .minimumALS  = */ OMR_PROCESSOR_PPC_P8,
-    /* .properties  = */ PPCOpProp_IsVMX | PPCOpProp_SyncSideEffectFree,
+        /* .mnemonic    = */ OMR::InstOpCode::vpksdus,
+        /* .name        = */ "vpksdus",
+        /* .description =    "Vector Pack Signed Dword Unsigned Saturate", */
+        /* .prefix      = */ 0x00000000,
+        /* .opcode      = */ 0x1000054E,
+        /* .format      = */ FORMAT_VRT_VRA_VRB,
+        /* .minimumALS  = */ OMR_PROCESSOR_PPC_P8,
+        /* .properties  = */ PPCOpProp_IsVMX | PPCOpProp_SyncSideEffectFree,
     },
 
     {

@@ -182,6 +182,9 @@ omrsysinfo_get_processor_feature_string(struct OMRPortLibrary *portLibrary, OMRP
 	size_t numberOfBits = 0;
 	size_t bufferLength = 0;
 
+	if (length < 1) {
+		return -1;
+	}
 	memset(buffer, 0, length);
 
 	for (i = 0; i < OMRPORT_SYSINFO_FEATURES_SIZE; i++) {
@@ -195,14 +198,17 @@ omrsysinfo_get_processor_feature_string(struct OMRPortLibrary *portLibrary, OMRP
 				if ((4 == featureLength) && (0 == strncmp("null", featureName, 4))) {
 					continue;
 				}
-				if (start == FALSE) {
+				if (!start) {
+					if ((length - bufferLength - 1) < 1) {
+						return -1;
+					}
 					strncat(buffer, " ", length - bufferLength - 1);
 					bufferLength += 1;
 				} else {
 					start = FALSE;
 				}
 
-				if (length - bufferLength - 1 < featureLength) {
+				if ((length - bufferLength - 1) < featureLength) {
 					return -1;
 				}
 

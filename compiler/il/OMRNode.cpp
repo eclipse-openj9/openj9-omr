@@ -74,6 +74,7 @@
 #include "optimizer/LoadExtensions.hpp"
 #include "optimizer/Optimizer.hpp"
 #include "optimizer/ValueNumberInfo.hpp"
+#include "optimizer/TransformUtil.hpp"
 #include "ras/Debug.hpp"
 #include "ras/Logger.hpp"
 
@@ -3345,6 +3346,18 @@ TR::TreeTop *OMR::Node::createStoresForVar(TR::SymbolReference *&nodeRef, TR::Tr
             insertBefore = origInsertBefore->insertBefore(newStoreTree);
 
             arrayLoadNode = TR::Node::createLoad(firstChild, newArrayRef);
+#if defined(OMR_GC_SPARSE_HEAP_ALLOCATION)
+        } else if (!firstChild->getOpCode().isArrayRef() && firstChild->isDataAddrPointer()) {
+            // Special case when firstChild is dataAddr load internal-pointer
+            // Store base array and insert loading the dataAddr when loading the temp
+            TR::SymbolReference *newArrayRef
+                = comp->getSymRefTab()->createTemporary(comp->getMethodSymbol(), TR::Address);
+            TR::Node *newStore = TR::Node::createStore(newArrayRef, firstChild->getFirstChild());
+            TR::TreeTop *newStoreTree = TR::TreeTop::create(comp, newStore);
+            insertBefore = origInsertBefore->insertBefore(newStoreTree);
+            arrayLoadNode = TR::Node::createLoad(firstChild, newArrayRef);
+            arrayLoadNode = TR::TransformUtil::generateDataAddrLoadTrees(comp, arrayLoadNode);
+#endif /* OMR_GC_SPARSE_HEAP_ALLOCATION */
         } else
             storesNeedToBeCreated = true;
 

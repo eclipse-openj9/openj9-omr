@@ -3294,8 +3294,14 @@ bool OMR::Options::jitLatePostProcess(TR::OptionSet *optionSet, void *jitConfig)
             if (_debug) {
                 _logFile = _debug->findLogFile(TR::Options::getAOTCmdLineOptions(), TR::Options::getJITCmdLineOptions(),
                     optionSet, _logFileName, _logger);
-                if (_logFile == NULL)
+                if (_logFile == NULL) {
                     self()->openLogFileCreateLogger();
+                    if (!_logger) { // openLogFileCreateLogger failed
+                        fprintf(stderr, "Unable to open log file %s\n", _logFileName);
+                        _logger = TR::Options::getDefaultLogger();
+                    }
+                }
+
                 else
                     OMR::Options::_dualLogging = true; // a log file is used in two different option sets, or in
                                                        // in the main TR::Options object and in an option set

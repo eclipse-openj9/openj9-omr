@@ -3268,7 +3268,8 @@ TR::Node *OMR::Node::createLongIfNeeded()
 /**
  * @return the top (first) inserted tree or null
  */
-TR::TreeTop *OMR::Node::createStoresForVar(TR::SymbolReference *&nodeRef, TR::TreeTop *insertBefore, bool simpleRef)
+TR::TreeTop *OMR::Node::createStoresForVar(TR::SymbolReference *&nodeRef, TR::TreeTop *insertBefore, bool simpleRef,
+    bool dontUseInternalPointers)
 {
     TR::Compilation *comp = TR::comp();
     TR::TreeTop *storeTree = NULL;
@@ -3324,7 +3325,8 @@ TR::TreeTop *OMR::Node::createStoresForVar(TR::SymbolReference *&nodeRef, TR::Tr
     }
 
     if (isInternalPointer && self()->getOpCode().isArrayRef()
-        && (comp->getSymRefTab()->getNumInternalPointers() >= (comp->maxInternalPointers() / 2)
+        && (dontUseInternalPointers
+            || comp->getSymRefTab()->getNumInternalPointers() >= (comp->maxInternalPointers() / 2)
             || comp->cg()->supportsComplexAddressing())
         && (self()->getReferenceCount() == 1)) {
         storesNeedToBeCreated = false;

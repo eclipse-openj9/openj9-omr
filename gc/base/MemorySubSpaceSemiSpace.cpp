@@ -831,7 +831,6 @@ MM_MemorySubSpaceSemiSpace::checkSubSpaceMemoryPostCollectResize(MM_EnvironmentB
 {
 	MM_GCExtensionsBase *extensions = MM_GCExtensionsBase::getExtensions(env->getOmrVM());
 	uintptr_t regionSize = extensions->getHeap()->getHeapRegionManager()->getRegionSize();
-	MM_Scavenger *scavenger = (MM_Scavenger *)_collector;
 
 	if (extensions->dynamicNewSpaceSizing) {
 		bool doDynamicNewSpaceSizing = true;
@@ -850,7 +849,7 @@ MM_MemorySubSpaceSemiSpace::checkSubSpaceMemoryPostCollectResize(MM_EnvironmentB
 		}
 
 		/* the wall clock might be shifted backwards externally */
-		if (scavenger->_cycleTimes.cycleStart < _lastGCEndTime) {
+		if (env->_cycleState->_startTime < _lastGCEndTime) {
 			/* clock has been shifted backwards between scavenges */
 			if (debug) {
 				omrtty_printf("\tClock shifted backwards between scavenges - ABORTING\n");
@@ -858,7 +857,7 @@ MM_MemorySubSpaceSemiSpace::checkSubSpaceMemoryPostCollectResize(MM_EnvironmentB
 			doDynamicNewSpaceSizing = false;
 		}
 
-		if (scavenger->_cycleTimes.cycleEnd < scavenger->_cycleTimes.cycleStart) {
+		if (env->_cycleState->_endTime < env->_cycleState->_startTime) {
 			/* clock has been shifted backwards at the time of the scavenge */
 			if (debug) {
 				omrtty_printf("\tClock shifted backwards at the time of the scavenge - ABORTING\n");
@@ -866,7 +865,7 @@ MM_MemorySubSpaceSemiSpace::checkSubSpaceMemoryPostCollectResize(MM_EnvironmentB
 			doDynamicNewSpaceSizing = false;
 		}
 
-		uint64_t intervalTime = omrtime_hires_delta(_lastGCEndTime, scavenger->_cycleTimes.cycleEnd, OMRPORT_TIME_DELTA_IN_MICROSECONDS);
+		uint64_t intervalTime = omrtime_hires_delta(_lastGCEndTime, env->_cycleState->_endTime, OMRPORT_TIME_DELTA_IN_MICROSECONDS);
 
 		if (0 == intervalTime) {
 			if (debug) {
@@ -875,7 +874,7 @@ MM_MemorySubSpaceSemiSpace::checkSubSpaceMemoryPostCollectResize(MM_EnvironmentB
 			doDynamicNewSpaceSizing = false;
 		}
 
-		uint64_t scavengeTime = omrtime_hires_delta(scavenger->_cycleTimes.cycleStart, scavenger->_cycleTimes.cycleEnd, OMRPORT_TIME_DELTA_IN_MICROSECONDS );
+		uint64_t scavengeTime = omrtime_hires_delta(env->_cycleState->_startTime, env->_cycleState->_endTime, OMRPORT_TIME_DELTA_IN_MICROSECONDS );
 
 		if (0 == scavengeTime) {
 			if (debug) {
@@ -884,7 +883,7 @@ MM_MemorySubSpaceSemiSpace::checkSubSpaceMemoryPostCollectResize(MM_EnvironmentB
 			doDynamicNewSpaceSizing = false;
 		}
 
-		_lastGCEndTime = scavenger->_cycleTimes.cycleEnd;
+		_lastGCEndTime = env->_cycleState->_endTime;
 
 		if (doDynamicNewSpaceSizing) {
 			double expectedTimeRatio = (extensions->dnssExpectedRatioMaximum._valueSpecified + extensions->dnssExpectedRatioMinimum._valueSpecified) / 2;

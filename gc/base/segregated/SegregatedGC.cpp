@@ -249,7 +249,7 @@ void
 MM_SegregatedGC::internalPreCollect(MM_EnvironmentBase *env, MM_MemorySubSpace *subSpace, MM_AllocateDescription *allocDescription, uint32_t gcCode)
 {
 	/* MM_GlobalCollector::internalPreCollect(env, subSpace, allocDescription, gcCode); */
-
+	OMRPORT_ACCESS_FROM_OMRPORT(env->getPortLibrary());
 	_cycleState = MM_CycleState();
 	env->_cycleState = &_cycleState;
 	env->_cycleState->_collectionStatistics = &_collectionStatistics;
@@ -275,6 +275,7 @@ MM_SegregatedGC::internalPreCollect(MM_EnvironmentBase *env, MM_MemorySubSpace *
 	/* Flush the caches for gc */
 	GC_OMRVMInterface::flushCachesForGC(env);
 
+	env->_cycleState->_startTime = omrtime_hires_clock();
 	reportGCCycleStart(env);
 	reportGCStart(env);
 	reportGCIncrementStart(env);
@@ -297,6 +298,8 @@ MM_SegregatedGC::internalPostCollect(MM_EnvironmentBase *env, MM_MemorySubSpace 
 	_markingScheme->setLiveObjectsAsValidObjects();
 #endif
 
+	OMRPORT_ACCESS_FROM_OMRPORT(env->getPortLibrary());
+	env->_cycleState->_endTime = omrtime_hires_clock();
 	reportGCCycleFinalIncrementEnding(env);
 	reportGCIncrementEnd(env);
 	reportGCEnd(env);
@@ -310,13 +313,11 @@ MM_SegregatedGC::internalPostCollect(MM_EnvironmentBase *env, MM_MemorySubSpace 
 void
 MM_SegregatedGC::reportGCCycleFinalIncrementEnding(MM_EnvironmentBase *env)
 {
-	OMRPORT_ACCESS_FROM_OMRPORT(env->getPortLibrary());
-
 	MM_CommonGCData commonData;
 	TRIGGER_J9HOOK_MM_OMR_GC_CYCLE_END(
 		_extensions->omrHookInterface,
 		env->getOmrVMThread(),
-		omrtime_hires_clock(),
+		env->_cycleState->_endTime,
 		J9HOOK_MM_OMR_GC_CYCLE_END,
 		_extensions->getHeap()->initializeCommonGCData(env, &commonData),
 		env->_cycleState->_type,
@@ -327,7 +328,6 @@ MM_SegregatedGC::reportGCCycleFinalIncrementEnding(MM_EnvironmentBase *env)
 void
 MM_SegregatedGC::reportGCCycleStart(MM_EnvironmentBase *env)
 {
-	OMRPORT_ACCESS_FROM_ENVIRONMENT(env);
 	MM_CollectionStatisticsStandard *stats = (MM_CollectionStatisticsStandard *)env->_cycleState->_collectionStatistics;
 
 	/* Clear STW pause stats for this cycle. */
@@ -338,7 +338,7 @@ MM_SegregatedGC::reportGCCycleStart(MM_EnvironmentBase *env)
 	TRIGGER_J9HOOK_MM_OMR_GC_CYCLE_START(
 		_extensions->omrHookInterface,
 		env->getOmrVMThread(),
-		omrtime_hires_clock(),
+		env->_cycleState->_startTime,
 		J9HOOK_MM_OMR_GC_CYCLE_START,
 		_extensions->getHeap()->initializeCommonGCData(env, &commonData),
 		env->_cycleState->_type
@@ -348,13 +348,12 @@ MM_SegregatedGC::reportGCCycleStart(MM_EnvironmentBase *env)
 void
 MM_SegregatedGC::reportGCCycleEnd(MM_EnvironmentBase *env)
 {
-	OMRPORT_ACCESS_FROM_ENVIRONMENT(env);
 	MM_CommonGCData commonData;
 
 	TRIGGER_J9HOOK_MM_PRIVATE_GC_POST_CYCLE_END(
 		_extensions->privateHookInterface,
 		env->getOmrVMThread(),
-		omrtime_hires_clock(),
+		env->_cycleState->_endTime,
 		J9HOOK_MM_PRIVATE_GC_POST_CYCLE_END,
 		_extensions->getHeap()->initializeCommonGCData(env, &commonData),
 		env->_cycleState->_type,

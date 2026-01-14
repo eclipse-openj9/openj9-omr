@@ -1591,6 +1591,8 @@ MM_ConcurrentGC::acquireExclusiveVMAccessAndSignalThreadsToActivateWriteBarrier(
 			env->_cycleState->_collectionStatistics = &_collectionStatistics;
 			_extensions->globalGCStats.gcCount += 1;
 			env->_cycleState->_currentCycleID = _extensions->getUniqueGCCycleCount();
+			OMRPORT_ACCESS_FROM_OMRPORT(env->getPortLibrary());
+			env->_cycleState->_startTime = omrtime_hires_clock();
 			reportGCCycleStart(env);
 			env->_cycleState = previousCycleState;
 

@@ -617,13 +617,16 @@ void OMR::Power::MemoryReference::populateMemoryReference(TR::Node *subTree, TR:
                 //    iconst(lconst)
                 {
                     self()->addToOffset(subTree, subTree->getFirstChild()->getFirstChild()->getInt() << amount, cg);
-                    cg->decReferenceCount(subTree->getFirstChild()->getFirstChild());
+                    if (subTree->getFirstChild()->getReferenceCount() == 1
+                        && subTree->getFirstChild()->getRegister() == NULL)
+                        cg->decReferenceCount(subTree->getFirstChild()->getFirstChild());
                 }
             } else
                 self()->addToOffset(subTree, subTree->getFirstChild()->getInt() << subTree->getSecondChild()->getInt(),
                     cg);
             cg->decReferenceCount(subTree->getFirstChild());
             cg->decReferenceCount(subTree->getSecondChild());
+            cg->decReferenceCount(subTree);
         } else if ((subTree->getOpCodeValue() == TR::loadaddr) && !cg->comp()->compileRelocatableCode()) {
             TR::SymbolReference *ref = subTree->getSymbolReference();
             TR::Symbol *symbol = ref->getSymbol();
@@ -663,6 +666,7 @@ void OMR::Power::MemoryReference::populateMemoryReference(TR::Node *subTree, TR:
             subTree->getOpCodeValue() == TR::lconst) {
             int64_t amount = (subTree->getOpCodeValue() == TR::iconst) ? subTree->getInt() : subTree->getLongInt();
             self()->addToOffset(subTree, amount, cg);
+            cg->decReferenceCount(subTree);
         } else {
             if (_baseRegister != NULL) {
                 self()->consolidateRegisters(cg->evaluate(subTree), subTree, cg->canClobberNodesRegister(subTree), cg);

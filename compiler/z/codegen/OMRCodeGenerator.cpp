@@ -4372,9 +4372,13 @@ bool OMR::Z::CodeGenerator::getSupportsOpCodeForAutoSIMD(TR::CPU *cpu, TR::ILOpC
         case TR::vstore:
         case TR::vstorei:
         case TR::vneg:
+        case TR::vmneg:
         case TR::vsplats:
         case TR::msplats:
         case TR::vabs:
+        case TR::vmabs:
+        case TR::vpopcnt:
+        case TR::vmpopcnt:
             return true;
         case TR::vmul:
             if (et == TR::Int8 || et == TR::Int16 || et == TR::Int32 || et == TR::Float || et == TR::Double)
@@ -4384,6 +4388,7 @@ bool OMR::Z::CodeGenerator::getSupportsOpCodeForAutoSIMD(TR::CPU *cpu, TR::ILOpC
         case TR::vdiv:
         case TR::vfma:
         case TR::vsqrt:
+        case TR::vmsqrt:
             if (et == TR::Float || et == TR::Double)
                 return true;
             else
@@ -4393,6 +4398,8 @@ bool OMR::Z::CodeGenerator::getSupportsOpCodeForAutoSIMD(TR::CPU *cpu, TR::ILOpC
         case TR::vand:
         case TR::vnotz:
         case TR::vnolz:
+        case TR::vmnotz:
+        case TR::vmnolz:
             if (et == TR::Int8 || et == TR::Int16 || et == TR::Int32 || et == TR::Int64)
                 return true;
             else

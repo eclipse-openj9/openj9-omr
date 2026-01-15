@@ -1484,7 +1484,7 @@ TR::Register *OMR::Z::TreeEvaluator::vfirstNonZeroEvaluator(TR::Node *node, TR::
 
 TR::Register *OMR::Z::TreeEvaluator::vmabsEvaluator(TR::Node *node, TR::CodeGenerator *cg)
 {
-    return TR::TreeEvaluator::unImpOpEvaluator(node, cg);
+    return TR::TreeEvaluator::vabsEvaluator(node, cg);
 }
 
 TR::Register *OMR::Z::TreeEvaluator::vmaddEvaluator(TR::Node *node, TR::CodeGenerator *cg)
@@ -1564,7 +1564,7 @@ TR::Register *OMR::Z::TreeEvaluator::vmmulEvaluator(TR::Node *node, TR::CodeGene
 
 TR::Register *OMR::Z::TreeEvaluator::vmnegEvaluator(TR::Node *node, TR::CodeGenerator *cg)
 {
-    return TR::TreeEvaluator::unImpOpEvaluator(node, cg);
+    return TR::TreeEvaluator::vnegEvaluator(node, cg);
 }
 
 TR::Register *OMR::Z::TreeEvaluator::vmnotEvaluator(TR::Node *node, TR::CodeGenerator *cg)
@@ -1629,7 +1629,7 @@ TR::Register *OMR::Z::TreeEvaluator::vmreductionXorEvaluator(TR::Node *node, TR:
 
 TR::Register *OMR::Z::TreeEvaluator::vmsqrtEvaluator(TR::Node *node, TR::CodeGenerator *cg)
 {
-    return TR::TreeEvaluator::unImpOpEvaluator(node, cg);
+    return TR::TreeEvaluator::vsqrtEvaluator(node, cg);
 }
 
 TR::Register *OMR::Z::TreeEvaluator::vmstoreiEvaluator(TR::Node *node, TR::CodeGenerator *cg)
@@ -1654,12 +1654,12 @@ TR::Register *OMR::Z::TreeEvaluator::vmfirstNonZeroEvaluator(TR::Node *node, TR:
 
 TR::Register *OMR::Z::TreeEvaluator::vpopcntEvaluator(TR::Node *node, TR::CodeGenerator *cg)
 {
-    return TR::TreeEvaluator::unImpOpEvaluator(node, cg);
+    return inlineVectorUnaryOp(node, cg, TR::InstOpCode::VPOPCT);
 }
 
 TR::Register *OMR::Z::TreeEvaluator::vmpopcntEvaluator(TR::Node *node, TR::CodeGenerator *cg)
 {
-    return TR::TreeEvaluator::unImpOpEvaluator(node, cg);
+    return TR::TreeEvaluator::vpopcntEvaluator(node, cg);
 }
 
 TR::Register *OMR::Z::TreeEvaluator::vcompressEvaluator(TR::Node *node, TR::CodeGenerator *cg)
@@ -1719,12 +1719,12 @@ TR::Register *OMR::Z::TreeEvaluator::mcompressEvaluator(TR::Node *node, TR::Code
 
 TR::Register *OMR::Z::TreeEvaluator::vmnotzEvaluator(TR::Node *node, TR::CodeGenerator *cg)
 {
-    return TR::TreeEvaluator::unImpOpEvaluator(node, cg);
+    return TR::TreeEvaluator::vnotzEvaluator(node, cg);
 }
 
 TR::Register *OMR::Z::TreeEvaluator::vmnolzEvaluator(TR::Node *node, TR::CodeGenerator *cg)
 {
-    return TR::TreeEvaluator::unImpOpEvaluator(node, cg);
+    return TR::TreeEvaluator::vnolzEvaluator(node, cg);
 }
 
 TR::Register *OMR::Z::TreeEvaluator::vbitswapEvaluator(TR::Node *node, TR::CodeGenerator *cg)
@@ -14018,12 +14018,18 @@ TR::Register *OMR::Z::TreeEvaluator::tryToReuseInputVectorRegs(TR::Node *node, T
 TR::Register *OMR::Z::TreeEvaluator::inlineVectorUnaryOp(TR::Node *node, TR::CodeGenerator *cg,
     TR::InstOpCode::Mnemonic op)
 {
-    TR_ASSERT(node->getNumChildren() <= 1, "Unary node must only contain 1 or less children");
+    /* Unary operations can optionally use a mask. When a mask is present, it is provided as the second child. The
+    operation is applied only to the lanes where the mask is set; lanes that are not masked retain their original value
+    from the first operand. */
+    bool isMasked = node->getOpCode().isVectorMasked();
+    TR_ASSERT(node->getNumChildren() == (isMasked ? 2 : 1), "Unary node must have 1 child, or 2 if a mask is present.");
     TR_ASSERT_FATAL_WITH_NODE(node, node->getDataType().getVectorLength() == TR::VectorLength128,
         "Only 128-bit vectors are supported %s", node->getDataType().toString());
 
     TR::Node *firstChild = node->getFirstChild();
-    TR::Register *returnReg = TR::TreeEvaluator::tryToReuseInputVectorRegs(node, cg);
+    // For masked operations, both the mask register and the source register must remain unchanged.
+    TR::Register *returnReg
+        = isMasked ? cg->allocateRegister(TR_VRF) : TR::TreeEvaluator::tryToReuseInputVectorRegs(node, cg);
     TR::Register *sourceReg1 = cg->evaluate(firstChild);
 
     switch (op) {
@@ -14034,6 +14040,7 @@ TR::Register *OMR::Z::TreeEvaluator::inlineVectorUnaryOp(TR::Node *node, TR::Cod
         case TR::InstOpCode::VLP:
         case TR::InstOpCode::VCTZ:
         case TR::InstOpCode::VCLZ:
+        case TR::InstOpCode::VPOPCT:
             generateVRRaInstruction(cg, op, node, returnReg, sourceReg1, 0, 0, getVectorElementSizeMask(node));
             break;
         case TR::InstOpCode::VFPSO: {
@@ -14052,7 +14059,10 @@ TR::Register *OMR::Z::TreeEvaluator::inlineVectorUnaryOp(TR::Node *node, TR::Cod
                 "VFPSO is only supported for VectorElementDataType TR::Double on z13 and onwards and TR::Float on z14 "
                 "onwards");
             TR::ILOpCode opcode = node->getOpCode();
-            uint8_t mask5 = opcode.isVectorOpCode() && opcode.getVectorOperation() == TR::vabs ? 2 : 0;
+            uint8_t mask5 = opcode.isVectorOpCode()
+                    && (opcode.getVectorOperation() == TR::vabs || opcode.getVectorOperation() == TR::vmabs)
+                ? 2
+                : 0;
             breakInst = generateVRRaInstruction(cg, op, node, returnReg, sourceReg1, mask5, 0,
                 getVectorElementSizeMask(node));
             break;
@@ -14069,6 +14079,14 @@ TR::Register *OMR::Z::TreeEvaluator::inlineVectorUnaryOp(TR::Node *node, TR::Cod
         default:
             TR_ASSERT_FATAL_WITH_NODE(node, false, "Unary Vector IL evaluation unimplemented for node\n");
             break;
+    }
+
+    if (isMasked) {
+        TR::Node *maskChild = node->getSecondChild();
+        // Copy the source to the result if the lane is not masked.
+        generateVRReInstruction(cg, TR::InstOpCode::VSEL, node, returnReg, returnReg, sourceReg1,
+            cg->evaluate(maskChild), 0, 0);
+        cg->decReferenceCount(maskChild);
     }
 
     node->setRegister(returnReg);

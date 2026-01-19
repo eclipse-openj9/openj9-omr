@@ -930,9 +930,9 @@ omrsock_get_pollfd_info(struct OMRPortLibrary *portLibrary, omrsock_pollfd_t han
 int32_t
 omrsock_poll(struct OMRPortLibrary *portLibrary, omrsock_pollfd_t fds, uint32_t nfds, int32_t timeoutMs)
 {
+#define MAX_NUM_POLL_FD 8
 	int32_t numPollFdSet = 0;
-	const uint32_t maxNumPollFd = 8;
-	struct pollfd pfdsArray[maxNumPollFd];
+	struct pollfd pfdsArray[MAX_NUM_POLL_FD];
 	struct pollfd *pfds = NULL;
 	int32_t i = 0;
 
@@ -946,7 +946,7 @@ omrsock_poll(struct OMRPortLibrary *portLibrary, omrsock_pollfd_t fds, uint32_t 
 		return OMRPORT_ERROR_INVALID_ARGUMENTS;
 	}
 
-	if (maxNumPollFd >= nfds) {
+	if (MAX_NUM_POLL_FD >= nfds) {
 		/* Use statically allocated array if nfds less than or equal to 8. */
 		pfds = pfdsArray;
 	} else {
@@ -966,7 +966,7 @@ omrsock_poll(struct OMRPortLibrary *portLibrary, omrsock_pollfd_t fds, uint32_t 
 	numPollFdSet = poll(pfds, nfds, timeoutMs);
 
 	if (0 > numPollFdSet) {
-		if (nfds > maxNumPollFd) {
+		if (nfds > MAX_NUM_POLL_FD) {
 			portLibrary->mem_free_memory(portLibrary, pfds);
 		}
 		return portLibrary->error_set_last_error(portLibrary, errno, get_omr_error(errno));
@@ -984,9 +984,10 @@ omrsock_poll(struct OMRPortLibrary *portLibrary, omrsock_pollfd_t fds, uint32_t 
 #endif /* defined (LINUX) */
 	}
 
-	if (maxNumPollFd < nfds) {
+	if (MAX_NUM_POLL_FD < nfds) {
 		portLibrary->mem_free_memory(portLibrary, pfds);
 	}
+#undef MAX_NUM_POLL_FD
 
 #if defined (AIXPPC) || defined (J9ZOS390)
 	return numPollFdSet & 0x0000FFFF;

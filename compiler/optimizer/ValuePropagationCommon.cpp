@@ -2158,10 +2158,10 @@ TR::TreeTop *createStoresForArraycopyChildren(TR::Compilation *comp, TR::TreeTop
     storeTree = len->createStoresForVar(lenRef, insertBefore);
     if (storeTree)
         insertBefore = storeTree;
-    storeTree = dst->createStoresForVar(dstRef, insertBefore);
+    storeTree = dst->createStoresForVar(dstRef, insertBefore, false, true);
     if (storeTree)
         insertBefore = storeTree;
-    storeTree = src->createStoresForVar(srcRef, insertBefore);
+    storeTree = src->createStoresForVar(srcRef, insertBefore, false, true);
     if (storeTree)
         insertBefore = storeTree;
 

@@ -70,6 +70,37 @@ void TR::PPCHelperCallSnippet::print(OMR::Logger *log, TR_Debug *debug)
     printInner(log, debug, cursor);
 }
 
+void TR_Debug::print(OMR::Logger *log, TR::PPCHelperCallSnippet *snippet)
+{
+    uint8_t *cursor = snippet->getSnippetLabel()->getCodeLocation();
+    TR::LabelSymbol *restartLabel = snippet->getRestartLabel();
+
+    if (snippet->getKind() == TR::Snippet::IsArrayCopyCall) {
+        cursor = print(log, (TR::PPCArrayCopyCallSnippet *)snippet, cursor);
+    } else {
+        printSnippetLabel(log, snippet->getSnippetLabel(), cursor, "Helper Call Snippet");
+    }
+
+    const char *info = "";
+    int32_t distance;
+    if (isBranchToTrampoline(snippet->getDestination(), cursor, distance))
+        info = " Through trampoline";
+
+    printPrefix(log, NULL, cursor, 4);
+    distance = *((int32_t *)cursor) & 0x03fffffc;
+    distance = (distance << 6) >> 6; // sign extend
+    log->printf("%s \t" POINTER_PRINTF_FORMAT "\t\t; %s %s", restartLabel ? "bl" : "b", (intptr_t)cursor + distance,
+        getName(snippet->getDestination()), info);
+
+    if (restartLabel) {
+        cursor += 4;
+        printPrefix(log, NULL, cursor, 4);
+        distance = *((int32_t *)cursor) & 0x03fffffc;
+        distance = (distance << 6) >> 6; // sign extend
+        log->printf("b \t" POINTER_PRINTF_FORMAT "\t\t; Restart", (intptr_t)cursor + distance);
+    }
+}
+
 void TR::PPCHelperCallSnippet::printInner(OMR::Logger *log, TR_Debug *debug, uint8_t *cursor)
 {
     TR::LabelSymbol *restartLabel = getRestartLabel();

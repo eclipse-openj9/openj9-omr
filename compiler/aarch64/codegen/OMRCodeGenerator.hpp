@@ -636,6 +636,8 @@ public:
 
     bool internalPointerSupportImplemented() { return true; }
 
+    bool mulDecompositionCostIsJustified(int numOfOperations, char bitPosition[], char operationType[], int64_t value);
+
     bool considerTypeForGRA(TR::Node *node);
     bool considerTypeForGRA(TR::DataType dt);
     bool considerTypeForGRA(TR::SymbolReference *symRef);

@@ -961,3 +961,9 @@ bool OMR::ARM64::CodeGenerator::canTransformUnsafeCopyToArrayCopy()
 {
     return !self()->comp()->getOption(TR_DisableArrayCopyOpts);
 }
+
+bool OMR::ARM64::CodeGenerator::mulDecompositionCostIsJustified(int numOfOperations, char bitPosition[],
+    char operationType[], int64_t value)
+{
+    return numOfOperations <= 2 && numOfOperations != 0;
+}

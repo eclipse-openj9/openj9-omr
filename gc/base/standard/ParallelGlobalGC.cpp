@@ -1079,6 +1079,7 @@ MM_ParallelGlobalGC::internalPreCollect(MM_EnvironmentBase *env, MM_MemorySubSpa
 	}
 #endif /* defined(OMR_ENV_DATA64) && defined(OMR_GC_FULL_POINTERS) */
 
+	OMRPORT_ACCESS_FROM_OMRPORT(env->getPortLibrary());
 	_cycleState = MM_CycleState();
 	env->_cycleState = &_cycleState;
 	env->_cycleState->_gcCode = MM_GCCode(gcCode);
@@ -1106,6 +1107,7 @@ MM_ParallelGlobalGC::internalPreCollect(MM_EnvironmentBase *env, MM_MemorySubSpa
 		processLargeAllocateStatsBeforeGC(env);
 	}
 
+	env->_cycleState->_startTime = omrtime_hires_clock();
 	reportGCCycleStart(env);
 	reportGCStart(env);
 	reportGCIncrementStart(env);
@@ -1136,6 +1138,9 @@ MM_ParallelGlobalGC::internalPostCollect(MM_EnvironmentBase *env, MM_MemorySubSp
 	if (env->_cycleState->_gcCode.shouldClearHeap()) {
 		clearHeap(env, clearFreeEntry);
 	}
+
+	OMRPORT_ACCESS_FROM_OMRPORT(env->getPortLibrary());
+	env->_cycleState->_endTime = omrtime_hires_clock();
 	reportGCCycleFinalIncrementEnding(env);
 	reportGlobalGCIncrementEnd(env);
 	reportGCIncrementEnd(env);
@@ -1244,13 +1249,12 @@ MM_ParallelGlobalGC::processLargeAllocateStatsAfterSweep(MM_EnvironmentBase *env
 void 
 MM_ParallelGlobalGC::reportGCCycleFinalIncrementEnding(MM_EnvironmentBase *env)
 {
-	OMRPORT_ACCESS_FROM_OMRPORT(env->getPortLibrary());
 	MM_CommonGCData commonData;
 
 	TRIGGER_J9HOOK_MM_OMR_GC_CYCLE_END(
 		_extensions->omrHookInterface,
 		env->getOmrVMThread(),
-		omrtime_hires_clock(),
+		env->_cycleState->_endTime,
 		J9HOOK_MM_OMR_GC_CYCLE_END,
 		_extensions->getHeap()->initializeCommonGCData(env, &commonData),
 		env->_cycleState->_type,
@@ -1651,7 +1655,6 @@ MM_ParallelGlobalGC::notifyAcquireExclusiveVMAccess(MM_EnvironmentBase *env)
 void
 MM_ParallelGlobalGC::reportGCCycleStart(MM_EnvironmentBase *env)
 {
-	OMRPORT_ACCESS_FROM_ENVIRONMENT(env);
 	MM_CollectionStatisticsStandard *stats = (MM_CollectionStatisticsStandard *)env->_cycleState->_collectionStatistics;
 
 	/* Clear STW pause stats for this cycle. */
@@ -1662,7 +1665,7 @@ MM_ParallelGlobalGC::reportGCCycleStart(MM_EnvironmentBase *env)
 	TRIGGER_J9HOOK_MM_OMR_GC_CYCLE_START(
 		_extensions->omrHookInterface,
 		env->getOmrVMThread(),
-		omrtime_hires_clock(),
+		env->_cycleState->_startTime,
 		J9HOOK_MM_OMR_GC_CYCLE_START,
 		_extensions->getHeap()->initializeCommonGCData(env, &commonData),
 		env->_cycleState->_type);
@@ -1671,13 +1674,12 @@ MM_ParallelGlobalGC::reportGCCycleStart(MM_EnvironmentBase *env)
 void
 MM_ParallelGlobalGC::reportGCCycleEnd(MM_EnvironmentBase *env)
 {
-	OMRPORT_ACCESS_FROM_ENVIRONMENT(env);
 	MM_CommonGCData commonData;
 
 	TRIGGER_J9HOOK_MM_PRIVATE_GC_POST_CYCLE_END(
 		_extensions->privateHookInterface,
 		env->getOmrVMThread(),
-		omrtime_hires_clock(),
+		env->_cycleState->_endTime,
 		J9HOOK_MM_PRIVATE_GC_POST_CYCLE_END,
 		_extensions->getHeap()->initializeCommonGCData(env, &commonData),
 		env->_cycleState->_type,

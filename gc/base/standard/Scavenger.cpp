@@ -541,8 +541,8 @@ MM_Scavenger::calculateRecommendedWorkingThreads(MM_EnvironmentStandard *env)
 
 	/* Calculate the average time it takes the worker threads to start collection and avgerage time workers are idle waiting for task cleanup
 	 * Calculated as (Sum_WorkerStartTime(t1 + t2 + ... + tn) - (n * collection_start)) / n  */
-	uint64_t avgTimeToStartCollection =  omrtime_hires_delta((_cycleTimes.cycleStart * totalThreads), _extensions->scavengerStats._startTime, OMRPORT_TIME_DELTA_IN_MICROSECONDS) / totalThreads;
-	uint64_t avgTimeIdleAfterCollection =  omrtime_hires_delta(_extensions->scavengerStats._endTime, (_cycleTimes.cycleEnd * totalThreads), OMRPORT_TIME_DELTA_IN_MICROSECONDS) / totalThreads;
+	uint64_t avgTimeToStartCollection =  omrtime_hires_delta((env->_cycleState->_startTime * totalThreads), _extensions->scavengerStats._startTime, OMRPORT_TIME_DELTA_IN_MICROSECONDS) / totalThreads;
+	uint64_t avgTimeIdleAfterCollection =  omrtime_hires_delta(_extensions->scavengerStats._endTime, (env->_cycleState->_endTime * totalThreads), OMRPORT_TIME_DELTA_IN_MICROSECONDS) / totalThreads;
 
 	/* Calculate average stall times */
 	uint64_t avgScanStallTime =  omrtime_hires_delta(0, (_extensions->scavengerStats._workStallTime + _extensions->scavengerStats._completeStallTime), OMRPORT_TIME_DELTA_IN_MICROSECONDS) / totalThreads;
@@ -552,7 +552,7 @@ MM_Scavenger::calculateRecommendedWorkingThreads(MM_EnvironmentStandard *env)
 	Trc_MM_Scavenger_calculateRecommendedWorkingThreads_averageStallBreakDown(env->getLanguageVMThread(), totalThreads, avgTimeToStartCollection, avgTimeIdleAfterCollection, avgScanStallTime, avgSyncStallTime, avgNotifyStallTime);
 
 	uint64_t totalStallTime =  avgTimeToStartCollection + avgTimeIdleAfterCollection + avgScanStallTime + avgSyncStallTime + avgNotifyStallTime;
-	uint64_t scavengeTotalTime = omrtime_hires_delta(_cycleTimes.cycleStart, _cycleTimes.cycleEnd, OMRPORT_TIME_DELTA_IN_MICROSECONDS);
+	uint64_t scavengeTotalTime = omrtime_hires_delta(env->_cycleState->_startTime, env->_cycleState->_endTime, OMRPORT_TIME_DELTA_IN_MICROSECONDS);
 
 	/* This Adaptive Threading Model aims to determine the efficiency of a cycle and predict the optimal GC thread count based on current number of threads,
 	 * directly proportional to busy time and inversely proportional to idle times.
@@ -652,8 +652,8 @@ MM_Scavenger::reportScavengeEnd(MM_EnvironmentStandard *env, bool lastIncrement)
 		J9HOOK_MM_PRIVATE_SCAVENGE_END,
 		env->_cycleState->_activeSubSpace,
 		lastIncrement,
-		_cycleTimes.incrementStart,
-		_cycleTimes.incrementEnd
+		_incrementStart,
+		_incrementEnd
 	);
 }
 
@@ -763,8 +763,8 @@ MM_Scavenger::reportGCEnd(MM_EnvironmentStandard *env)
 		(_extensions->largeObjectArea ? _extensions->heap->getActiveLOAMemorySize(MEMORY_TYPE_OLD) :0),
 		_extensions->incrementScavengerStats._tenureAge,
 		_extensions->heap->getMemorySize(),
-		_cycleTimes.incrementStart,
-		_cycleTimes.incrementEnd
+		_incrementStart,
+		_incrementEnd
 	);
 }
 
@@ -778,18 +778,12 @@ void
 MM_Scavenger::clearIncrementGCStats(MM_EnvironmentBase *env, bool firstIncrement)
 {
 	_extensions->incrementScavengerStats.clear(firstIncrement);
-
-	/* Increment start time doesn't need to be cleared, it was set prior to calling this method */
-	_cycleTimes.incrementEnd = 0;
 }
 
 void
 MM_Scavenger::clearCycleGCStats(MM_EnvironmentBase *env)
 {
 	_extensions->scavengerStats.clear(true);
-
-	/* Cycle start time doesn't need to be cleared, it was set prior to calling this method */
-	_cycleTimes.cycleEnd = 0;
 }
 
 void
@@ -899,7 +893,7 @@ MM_Scavenger::mergeThreadGCStats(MM_EnvironmentBase *env)
 	/* Merge language specific statistics. No known interesting data per increment - they are merged directly to aggregate cycle stats */
 	_delegate.mergeGCStats_mergeLangStats(env);
 
-	uint64_t timeToStartCollection =  omrtime_hires_delta(_cycleTimes.cycleStart, scavStats->_startTime, OMRPORT_TIME_DELTA_IN_MICROSECONDS);
+	uint64_t timeToStartCollection =  omrtime_hires_delta(env->_cycleState->_startTime, scavStats->_startTime, OMRPORT_TIME_DELTA_IN_MICROSECONDS);
 	uint64_t scanStall =  omrtime_hires_delta(0, (scavStats->_workStallTime + scavStats->_completeStallTime), OMRPORT_TIME_DELTA_IN_MICROSECONDS);
 	uint64_t syncStall = omrtime_hires_delta(0, (scavStats->_adjustedSyncStallTime), OMRPORT_TIME_DELTA_IN_MICROSECONDS);
 	uint64_t notifyStallTime = omrtime_hires_delta(0, (scavStats->_notifyStallTime), OMRPORT_TIME_DELTA_IN_MICROSECONDS);
@@ -4321,8 +4315,8 @@ MM_Scavenger::mainThreadGarbageCollect(MM_EnvironmentBase *envBase, MM_AllocateD
 			processLargeAllocateStatsBeforeGC(env);
 		}
 		env->_cycleState->_currentCycleID = _extensions->getUniqueGCCycleCount();
+		env->_cycleState->_startTime = omrtime_hires_clock();
 		reportGCCycleStart(env);
-		_cycleTimes.cycleStart = omrtime_hires_clock();
 		mainSetupForGC(env);
 
 		/* Restart the allocation caches associated to all threads */
@@ -4337,7 +4331,7 @@ MM_Scavenger::mainThreadGarbageCollect(MM_EnvironmentBase *envBase, MM_AllocateD
 	reportGCStart(env);
 	reportGCIncrementStart(env);
 	reportScavengeStart(env);
-	_cycleTimes.incrementStart = omrtime_hires_clock();
+	_incrementStart = omrtime_hires_clock();
 
 #if defined(OMR_GC_CONCURRENT_SCAVENGER)
 	if (IS_CONCURRENT_ENABLED) {
@@ -4354,7 +4348,7 @@ MM_Scavenger::mainThreadGarbageCollect(MM_EnvironmentBase *envBase, MM_AllocateD
 	bool lastIncrement = true;
 #endif
 
-	_cycleTimes.incrementEnd = omrtime_hires_clock();
+	_incrementEnd = omrtime_hires_clock();
 
 	/* merge stats from this increment/phase to aggregate cycle stats */
 	mergeIncrementGCStats(env, lastIncrement);
@@ -4369,7 +4363,8 @@ MM_Scavenger::mainThreadGarbageCollect(MM_EnvironmentBase *envBase, MM_AllocateD
 		 */
 		_activeSubSpace->setResizable(_cachedSemiSpaceResizableFlag);
 
-		_cycleTimes.cycleEnd = omrtime_hires_clock();
+		/* Early snapshot for heap size euristics. */
+		env->_cycleState->_endTime = omrtime_hires_clock();
 
 		if(scavengeCompletedSuccessfully(env)) {
 
@@ -4428,7 +4423,8 @@ MM_Scavenger::mainThreadGarbageCollect(MM_EnvironmentBase *envBase, MM_AllocateD
 		if (_extensions->processLargeAllocateStats) {
 			processLargeAllocateStatsAfterGC(env);
 		}
-
+		/* Snapshot update for use in reporting and hooks. */
+		env->_cycleState->_endTime = omrtime_hires_clock();
 		reportGCCycleFinalIncrementEnding(env);
 
 	} // if lastIncrement
@@ -4507,7 +4503,6 @@ MM_Scavenger::processLargeAllocateStatsAfterGC(MM_EnvironmentBase *env)
 void
 MM_Scavenger::reportGCCycleFinalIncrementEnding(MM_EnvironmentStandard *env)
 {
-	OMRPORT_ACCESS_FROM_OMRPORT(env->getPortLibrary());
 	uintptr_t cycleType = env->_cycleState->_type;
 	/* set OMR_GC_CYCLE_TYPE_STATE_UNSUCCESSFUL bit in the cycleType of CycleEnd event in scavenge backout case */
 	if (env->getExtensions()->isScavengerBackOutFlagRaised()) {
@@ -4519,7 +4514,7 @@ MM_Scavenger::reportGCCycleFinalIncrementEnding(MM_EnvironmentStandard *env)
 	TRIGGER_J9HOOK_MM_OMR_GC_CYCLE_END(
 		_extensions->omrHookInterface,
 		env->getOmrVMThread(),
-		omrtime_hires_clock(),
+		env->_cycleState->_endTime,
 		J9HOOK_MM_OMR_GC_CYCLE_END,
 		_extensions->getHeap()->initializeCommonGCData(env, &commonData),
 		cycleType,
@@ -4970,7 +4965,6 @@ MM_Scavenger::globalCollectionComplete(MM_EnvironmentBase *env)
 void
 MM_Scavenger::reportGCCycleStart(MM_EnvironmentStandard *env)
 {
-	OMRPORT_ACCESS_FROM_ENVIRONMENT(env);
 	MM_CollectionStatisticsStandard *stats = (MM_CollectionStatisticsStandard *)env->_cycleState->_collectionStatistics;
 
 	/* Clear STW pause stats for this cycle. */
@@ -4983,7 +4977,7 @@ MM_Scavenger::reportGCCycleStart(MM_EnvironmentStandard *env)
 	TRIGGER_J9HOOK_MM_OMR_GC_CYCLE_START(
 		_extensions->omrHookInterface,
 		env->getOmrVMThread(),
-		omrtime_hires_clock(),
+		env->_cycleState->_startTime,
 		J9HOOK_MM_OMR_GC_CYCLE_START,
 		_extensions->getHeap()->initializeCommonGCData(env, &commonData),
 		env->_cycleState->_type);
@@ -4992,7 +4986,6 @@ MM_Scavenger::reportGCCycleStart(MM_EnvironmentStandard *env)
 void
 MM_Scavenger::reportGCCycleEnd(MM_EnvironmentStandard *env)
 {
-	OMRPORT_ACCESS_FROM_ENVIRONMENT(env);
 	MM_GCExtensionsBase* extensions = env->getExtensions();
 	MM_CommonGCData commonData;
 
@@ -5001,7 +4994,7 @@ MM_Scavenger::reportGCCycleEnd(MM_EnvironmentStandard *env)
 	TRIGGER_J9HOOK_MM_PRIVATE_GC_POST_CYCLE_END(
 		extensions->privateHookInterface,
 		env->getOmrVMThread(),
-		omrtime_hires_clock(),
+		env->_cycleState->_endTime,
 		J9HOOK_MM_PRIVATE_GC_POST_CYCLE_END,
 		extensions->getHeap()->initializeCommonGCData(env, &commonData),
 		env->_cycleState->_type,
@@ -5901,16 +5894,16 @@ void MM_Scavenger::preConcurrentInitializeStatsAndReport(MM_EnvironmentBase *env
 			J9HOOK_MM_PRIVATE_CONCURRENT_PHASE_START,
 			stats);
 
-	_cycleTimes.incrementStart = omrtime_hires_clock();
-	stats->_startTime = _cycleTimes.incrementStart;
+	_incrementStart = omrtime_hires_clock();
+	stats->_startTime = _incrementStart;
 }
 
 void MM_Scavenger::postConcurrentUpdateStatsAndReport(MM_EnvironmentBase *env, MM_ConcurrentPhaseStatsBase *stats, UDATA bytesConcurrentlyScanned)
 {
 	OMRPORT_ACCESS_FROM_OMRPORT(env->getPortLibrary());
 
-	_cycleTimes.incrementEnd = omrtime_hires_clock();
-	stats->_endTime = _cycleTimes.incrementEnd;
+	_incrementEnd = omrtime_hires_clock();
+	stats->_endTime = _incrementEnd;
 
 	TRIGGER_J9HOOK_MM_PRIVATE_CONCURRENT_PHASE_END(
 		_extensions->privateHookInterface,

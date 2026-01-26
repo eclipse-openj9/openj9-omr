@@ -75,8 +75,8 @@ public:
 
 	uintptr_t _currentIncrement; /**< The index of the current increment within the cycle, starting at 0 (used for event reporting) */
 	uintptr_t _currentCycleID; /**< The index of the current cycle (used for event reporting) */
-	uintptr_t _startTime; /**< The start time of the collection cycle */
-	uintptr_t _endTime; /**< The end time of the collection cycle */
+	uint64_t _startTime; /**< The start time of the collection cycle */
+	uint64_t _endTime; /**< The end time of the collection cycle */
 
 	bool _shouldRunCopyForward; /**< True if this cycle is to run a copy-forward-based attempt at reclaiming memory, false if mark-compact is to be used */
 

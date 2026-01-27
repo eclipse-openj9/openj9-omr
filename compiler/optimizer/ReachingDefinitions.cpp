@@ -126,22 +126,22 @@ void TR_ReachingDefinitions::initializeGenAndKillSetInfo()
             log->printf("  Block %d:\n", blockNum);
             log->prints("     Gen set ");
             if (_regularGenSetInfo[blockNum])
-                _regularGenSetInfo[blockNum]->print(comp());
+                _regularGenSetInfo[blockNum]->print(log, comp());
             else
                 log->prints("{}");
             log->prints("\n     Kill set ");
             if (_regularKillSetInfo[blockNum])
-                _regularKillSetInfo[blockNum]->print(comp());
+                _regularKillSetInfo[blockNum]->print(log, comp());
             else
                 log->prints("{}");
             log->prints("\n     Exception Gen set ");
             if (_exceptionGenSetInfo[blockNum])
-                _exceptionGenSetInfo[blockNum]->print(comp());
+                _exceptionGenSetInfo[blockNum]->print(log, comp());
             else
                 log->prints("{}");
             log->prints("\n     Exception Kill set ");
             if (_exceptionKillSetInfo[blockNum])
-                _exceptionKillSetInfo[blockNum]->print(comp());
+                _exceptionKillSetInfo[blockNum]->print(log, comp());
             else
                 log->prints("{}");
             continue;

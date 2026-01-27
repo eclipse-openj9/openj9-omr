@@ -235,10 +235,10 @@ void TR_InterferenceGraph::partitionNodesIntoDegreeSets(TR_BitVector *workingSet
         diagnostic("-----------------\n");
 
         diagnostic("\n[%4d] degree < %-10d : ", colourableDegreeSet->elementCount(), getNumColours());
-        colourableDegreeSet->print(comp());
+        colourableDegreeSet->print(comp()->log(), comp());
 
         diagnostic("\n[%4d] degree < MAX_DEGREE : ", notColourableDegreeSet->elementCount());
-        notColourableDegreeSet->print(comp());
+        notColourableDegreeSet->print(comp()->log(), comp());
         diagnostic("\n\n");
     }
 #endif

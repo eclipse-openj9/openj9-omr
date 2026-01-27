@@ -1681,7 +1681,7 @@ void OMR::X86::CodeGenerator::doBackwardsRegisterAssignment(TR_RegisterKinds kin
 #ifdef DEBUG
         if (dumpPreGP) {
             origNextInstruction = instructionCursor->getNext();
-            self()->dumpPreGPRegisterAssignment(instructionCursor);
+            self()->dumpPreGPRegisterAssignment(comp->log(), instructionCursor);
         }
 #endif
         self()->tracePreRAInstruction(instructionCursor);
@@ -1705,7 +1705,7 @@ void OMR::X86::CodeGenerator::doBackwardsRegisterAssignment(TR_RegisterKinds kin
 
 #ifdef DEBUG
         if (dumpPostGP)
-            self()->dumpPostGPRegisterAssignment(instructionCursor, origNextInstruction);
+            self()->dumpPostGPRegisterAssignment(comp->log(), instructionCursor, origNextInstruction);
 #endif
         self()->tracePostRAInstruction(instructionCursor);
         TR::ClobberingInstruction *clobInst;

@@ -2509,6 +2509,8 @@ TR::Register *intOrderEvaluator(TR::Node *node, const CompareInfo &compareInfo, 
 
     if (cg->comp()->target().cpu.isAtLeast(OMR_PROCESSOR_PPC_P10)) {
         generateCompareSetBoolean(trgReg, node, firstChild, secondChild, compareInfo, cg);
+    } else if (cg->comp()->target().is32Bit() && compareInfo.type == TR::Int64) {
+        generateCompareBranchSequence(trgReg, node, firstChild, secondChild, compareInfo, cg);
     } else if (cg->comp()->target().cpu.isAtLeast(OMR_PROCESSOR_PPC_P9)) {
         CompareCondition cond = compareInfo.cond;
         TR::Register *condReg = cg->allocateRegister(TR_CCR);

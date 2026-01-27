@@ -43,6 +43,7 @@ JIT_PRODUCT_BACKEND_SOURCES+=\
     $(JIT_OMR_DIRTY_DIR)/infra/OMRMonitorTable.cpp \
     $(JIT_OMR_DIRTY_DIR)/infra/Random.cpp \
     $(JIT_OMR_DIRTY_DIR)/infra/Timer.cpp \
+    $(JIT_OMR_DIRTY_DIR)/infra/String.cpp \
     $(JIT_OMR_DIRTY_DIR)/infra/TreeServices.cpp \
     $(JIT_OMR_DIRTY_DIR)/infra/OMRCfg.cpp \
     $(JIT_OMR_DIRTY_DIR)/infra/SimpleRegex.cpp \
@@ -64,6 +65,14 @@ JIT_PRODUCT_BACKEND_SOURCES+=\
     $(JIT_OMR_DIRTY_DIR)/il/OMRIL.cpp \
     $(JIT_OMR_DIRTY_DIR)/il/OMRSymbolReference.cpp \
     $(JIT_OMR_DIRTY_DIR)/il/Aliases.cpp \
+    $(JIT_OMR_DIRTY_DIR)/compile/OSRData.cpp \
+    $(JIT_OMR_DIRTY_DIR)/compile/OMRMethod.cpp \
+    $(JIT_OMR_DIRTY_DIR)/compile/ResolvedMethod.cpp \
+    $(JIT_OMR_DIRTY_DIR)/compile/VirtualGuard.cpp \
+    $(JIT_OMR_DIRTY_DIR)/compile/OMRSymbolReferenceTable.cpp \
+    $(JIT_OMR_DIRTY_DIR)/compile/OMRAliasBuilder.cpp \
+    $(JIT_OMR_DIRTY_DIR)/compile/OMRCompilation.cpp \
+    $(JIT_OMR_DIRTY_DIR)/compile/TLSCompilationManager.cpp \
     $(JIT_OMR_DIRTY_DIR)/compile/OMRCompilation.cpp \
     $(JIT_OMR_DIRTY_DIR)/compile/TLSCompilationManager.cpp \
     $(JIT_OMR_DIRTY_DIR)/env/OMRCPU.cpp \
@@ -71,6 +80,7 @@ JIT_PRODUCT_BACKEND_SOURCES+=\
     $(JIT_OMR_DIRTY_DIR)/env/OMRArithEnv.cpp \
     $(JIT_OMR_DIRTY_DIR)/env/OMRClassEnv.cpp \
     $(JIT_OMR_DIRTY_DIR)/env/OMRDebugEnv.cpp \
+    $(JIT_OMR_DIRTY_DIR)/env/OMRRetainedMethodSet.cpp \
     $(JIT_OMR_DIRTY_DIR)/env/OMRVMEnv.cpp \
     $(JIT_OMR_DIRTY_DIR)/env/OMRVMMethodEnv.cpp \
     $(JIT_OMR_DIRTY_DIR)/env/SegmentProvider.cpp \
@@ -93,8 +103,11 @@ JIT_PRODUCT_BACKEND_SOURCES+=\
     $(JIT_OMR_DIRTY_DIR)/ras/CFGChecker.cpp \
     $(JIT_OMR_DIRTY_DIR)/ras/Debug.cpp \
     $(JIT_OMR_DIRTY_DIR)/ras/DebugCounter.cpp \
+    $(JIT_OMR_DIRTY_DIR)/ras/ILValidationRules.cpp \
+    $(JIT_OMR_DIRTY_DIR)/ras/ILValidator.cpp \
     $(JIT_OMR_DIRTY_DIR)/ras/IgnoreLocale.cpp \
     $(JIT_OMR_DIRTY_DIR)/ras/LimitFile.cpp \
+    $(JIT_OMR_DIRTY_DIR)/ras/Logger.cpp \
     $(JIT_OMR_DIRTY_DIR)/ras/LogTracer.cpp \
     $(JIT_OMR_DIRTY_DIR)/ras/OptionsDebug.cpp \
     $(JIT_OMR_DIRTY_DIR)/ras/Tree.cpp \
@@ -218,6 +231,8 @@ JIT_PRODUCT_BACKEND_SOURCES+=\
     $(JIT_OMR_DIRTY_DIR)/control/CompilationController.cpp \
     $(JIT_OMR_DIRTY_DIR)/control/OMRCompilationStrategy.cpp \
     $(JIT_OMR_DIRTY_DIR)/optimizer/FEInliner.cpp \
+    $(JIT_OMR_DIRTY_DIR)/optimizer/BenefitInliner.cpp \
+    $(JIT_OMR_DIRTY_DIR)/optimizer/UnsafeSubexpressionRemover.cpp \
     $(JIT_OMR_DIRTY_DIR)/runtime/Runtime.cpp \
     $(JIT_OMR_DIRTY_DIR)/runtime/Trampoline.cpp \
     $(JIT_OMR_DIRTY_DIR)/control/CompileMethod.cpp \

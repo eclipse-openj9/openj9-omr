@@ -772,10 +772,10 @@ public:
     bool nopsAlsoProcessedByRelocations() { return false; }
 
 #if defined(DEBUG)
-    void dumpPreFPRegisterAssignment(TR::Instruction *);
-    void dumpPostFPRegisterAssignment(TR::Instruction *, TR::Instruction *);
-    void dumpPreGPRegisterAssignment(TR::Instruction *);
-    void dumpPostGPRegisterAssignment(TR::Instruction *, TR::Instruction *);
+    void dumpPreFPRegisterAssignment(OMR::Logger *log, TR::Instruction *);
+    void dumpPostFPRegisterAssignment(OMR::Logger *log, TR::Instruction *, TR::Instruction *);
+    void dumpPreGPRegisterAssignment(OMR::Logger *log, TR::Instruction *);
+    void dumpPostGPRegisterAssignment(OMR::Logger *log, TR::Instruction *, TR::Instruction *);
 #endif
 
     void dumpDataSnippets(OMR::Logger *log);

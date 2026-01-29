@@ -49,6 +49,7 @@ extern "C" {
 intptr_t
 initializeMutatorModel(OMR_VMThread *omrVMThread)
 {
+	// TODO: remove lowTenureAddress, highTenureAddress, heapBaseForBarrierRange0, heapSizeForBarrierRange0
 	MM_GCExtensionsBase* extensions = MM_GCExtensionsBase::getExtensions(omrVMThread->_vm);
 	omrVMThread->_gcOmrVMThreadExtensions = extensions->configuration->createEnvironment(extensions, omrVMThread);
 	if (NULL != omrVMThread->_gcOmrVMThreadExtensions) {

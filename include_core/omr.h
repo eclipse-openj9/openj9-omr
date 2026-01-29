@@ -179,6 +179,7 @@ typedef struct OMR_VMThread {
 	} _trace;
 #endif /* OMR_RAS_TDF_TRACE */
 
+	// TODO: remove lowTenureAddress, highTenureAddress, heapBaseForBarrierRange0, heapSizeForBarrierRange0
 	/* todo: dagar these are temporarily duplicated and should be removed from J9VMThread */
 	void *lowTenureAddress;
 	void *highTenureAddress;

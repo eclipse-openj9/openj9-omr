@@ -1328,6 +1328,7 @@ public:
 	 */
 	virtual void setTenureAddressRange(void* base, uintptr_t size)
 	{
+		// TODO: make this empty
 		_tenureBase = base;
 		_tenureSize = size;
 

@@ -4427,7 +4427,8 @@ TR::Register *OMR::X86::TreeEvaluator::passThroughEvaluator(TR::Node *node, TR::
             && srcReg->getKind() == TR_GPR)) {
         TR::Register *copyReg;
         TR_RegisterKinds kind = srcReg->getKind();
-        TR_ASSERT(kind == TR_GPR, "passThrough does not work for this type of register\n");
+        TR_ASSERT_FATAL(kind == TR_GPR || kind == TR_FPR || kind == TR_VRF || kind == TR_VMR,
+            "passThrough does not work for this type of register\n");
 
         if (srcReg->containsInternalPointer() || !srcReg->containsCollectedReference()) {
             copyReg = cg->allocateRegister(kind);
@@ -4445,7 +4446,45 @@ TR::Register *OMR::X86::TreeEvaluator::passThroughEvaluator(TR::Node *node, TR::
             generateRegRegInstruction(TR::InstOpCode::MOVRegReg(), node, copyRegLow, srcReg->getLowOrder(), cg);
             copyReg = cg->allocateRegisterPair(copyRegLow, copyReg);
         } else {
-            generateRegRegInstruction(TR::InstOpCode::MOVRegReg(), node, copyReg, srcReg, cg);
+            TR::InstOpCode::Mnemonic op = TR::InstOpCode::bad;
+            switch (kind) {
+                case TR_GPR:
+                    op = TR::InstOpCode::MOVRegReg();
+                    break;
+                case TR_FPR:
+                    copyReg->setIsSinglePrecision(srcReg->isSinglePrecision());
+                    op = srcReg->isSinglePrecision() ? TR::InstOpCode::MOVSSRegReg : TR::InstOpCode::MOVSDRegReg;
+                    break;
+                case TR_VRF:
+                    switch (child->getType().getVectorLength()) {
+                        case TR::VectorLength128:
+                            op = TR::InstOpCode::MOVDQURegReg;
+                            break;
+                        case TR::VectorLength256:
+                            op = TR::InstOpCode::VMOVDQUYmmYmm;
+                            break;
+                        case TR::VectorLength512:
+                            op = TR::InstOpCode::VMOVDQUZmmZmm;
+                            break;
+
+                        default:
+                            TR_ASSERT_FATAL(false, "passThrough does not work for %d bit vectors\n",
+                                8 * child->getType().getVectorSize());
+                            break;
+                    }
+                    break;
+                case TR_VMR:
+                    op = cg->comp()->target().cpu.supportsFeature(OMR_FEATURE_X86_AVX512BW)
+                        ? TR::InstOpCode::KMOVQMaskMask
+                        : TR::InstOpCode::KMOVWMaskMask;
+                    break;
+
+                default:
+                    // unreachable
+                    break;
+            }
+
+            generateRegRegInstruction(op, node, copyReg, srcReg, cg);
         }
 
         srcReg = copyReg;

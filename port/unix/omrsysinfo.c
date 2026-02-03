@@ -263,13 +263,18 @@ static intptr_t omrsysinfo_get_aix_ppc_description(struct OMRPortLibrary *portLi
 #define __power_11() (_system_configuration.implementation == POWER_11)
 #endif /* !defined(__power_11) */
 
+#if !defined(__power_next)
+#define POWER_Next 0x100000 /* Power Next class CPU */
+#define __power_next() (_system_configuration.implementation == POWER_Next)
+#endif /* !defined(__power_next) */
+
 /*
  * Please update the macro below to stay in sync with the latest POWER processor known to OMR,
  * ensuring CPU recognition is more robust than in the past. As the macro currently stands, any
- * later processors are recognized as at least POWER11.
+ * later processors are recognized as at least POWER Next.
  */
-#define POWER11_OR_ABOVE (0xFFFFFFFF << 19)
-#define __power_latestKnownAndUp() OMR_ARE_ANY_BITS_SET(_system_configuration.implementation, POWER11_OR_ABOVE)
+#define POWERNext_OR_ABOVE (0xFFFFFFFF << 20)
+#define __power_latestKnownAndUp() OMR_ARE_ANY_BITS_SET(_system_configuration.implementation, POWERNext_OR_ABOVE)
 
 #if defined(J9OS_I5_V6R1) /* vmx_version id only available since TL4 */
 #define __power_vsx() (_system_configuration.vmx_version > 1)
@@ -1164,7 +1169,7 @@ omrsysinfo_map_ppc_processor(const char *processorName)
 	} else if (0 == strncasecmp(processorName, "power1", 6)) {
 		/* Defer the long-term anticipated cases to the latest known state. */
 		if ((processorName[6] >= '2') && (processorName[6] <= '9')) {
-			rc = OMR_PROCESSOR_PPC_P11;
+			rc = OMR_PROCESSOR_PPC_PNext;
 		}
 	}
 
@@ -1219,8 +1224,10 @@ omrsysinfo_get_aix_ppc_description(struct OMRPortLibrary *portLibrary, OMRProces
 		desc->processor = OMR_PROCESSOR_PPC_P9;
 	} else if (__power_10()) {
 		desc->processor = OMR_PROCESSOR_PPC_P10;
-	} else if (__power_latestKnownAndUp()) {
+	} else if (__power_11()) {
 		desc->processor = OMR_PROCESSOR_PPC_P11;
+	} else if (__power_latestKnownAndUp()) {
+		desc->processor = OMR_PROCESSOR_PPC_PNext;
 	} else {
 		desc->processor = OMR_PROCESSOR_PPC_P7;
 	}

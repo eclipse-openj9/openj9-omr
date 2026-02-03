@@ -157,6 +157,8 @@ TR_Processor OMR::Power::CPU::getOldProcessorTypeFromNewProcessorType(OMRProcess
             return TR_PPCp10;
         case OMR_PROCESSOR_PPC_P11:
             return TR_PPCp11;
+        case OMR_PROCESSOR_PPC_PNext:
+            return TR_PPCpNext;
         default:
             TR_ASSERT_FATAL(false, "Unknown processor!");
     }
@@ -205,6 +207,10 @@ const char *OMR::Power::CPU::getProcessorName()
 
         case OMR_PROCESSOR_PPC_P11:
             returnString = "PPCp11";
+            break;
+
+        case OMR_PROCESSOR_PPC_PNext:
+            returnString = "PPCpNext";
             break;
 
         case OMR_PROCESSOR_PPC_PULSAR:

@@ -209,15 +209,16 @@ OMR::X86::RegisterDependencyConditions::RegisterDependencyConditions(TR::Node *n
             } else if (globalReg->getKind() == TR_VRF) {
                 generateRegcopyDebugCounter(cg, "vrf");
                 copyReg = cg->allocateRegister(TR_VRF);
-                TR::InstOpCode::Mnemonic op
-                    = cg->comp()->target().cpu.supportsAVX() ? InstOpCode::VMOVDQUYmmYmm : TR::InstOpCode::MOVDQURegReg;
-                op = cg->comp()->target().cpu.supportsFeature(OMR_FEATURE_X86_AVX512F) ? InstOpCode::VMOVDQUZmmZmm : op;
+                TR::InstOpCode::Mnemonic op = cg->comp()->target().cpu.supportsAVX() ? TR::InstOpCode::VMOVDQUYmmYmm
+                                                                                     : TR::InstOpCode::MOVDQURegReg;
+                op = cg->comp()->target().cpu.supportsFeature(OMR_FEATURE_X86_AVX512F) ? TR::InstOpCode::VMOVDQUZmmZmm
+                                                                                       : op;
                 generateRegRegInstruction(op, node, copyReg, child->getRegister(), cg);
             } else if (globalReg->getKind() == TR_VMR) {
                 generateRegcopyDebugCounter(cg, "vmr");
                 copyReg = cg->allocateRegister(TR_VMR);
                 TR::InstOpCode::Mnemonic op = cg->comp()->target().cpu.supportsFeature(OMR_FEATURE_X86_AVX512BW)
-                    ? InstOpCode::KMOVQMaskMask
+                    ? TR::InstOpCode::KMOVQMaskMask
                     : TR::InstOpCode::KMOVWMaskMask;
                 generateRegRegInstruction(op, node, copyReg, child->getRegister(), cg);
             }
@@ -659,10 +660,10 @@ void OMR::X86::RegisterDependencyGroup::assignRegisters(TR::Instruction *current
                             op = TR::InstOpCode::KMOVQMaskMem;
                         }
                     } else if (assignedReg->getKind() == TR_VRF) {
-                        op = cg->comp()->target().cpu.supportsAVX() ? InstOpCode::VMOVDQUYmmMem
+                        op = cg->comp()->target().cpu.supportsAVX() ? TR::InstOpCode::VMOVDQUYmmMem
                                                                     : TR::InstOpCode::MOVDQURegMem;
                         op = cg->comp()->target().cpu.supportsFeature(OMR_FEATURE_X86_AVX512F)
-                            ? InstOpCode::VMOVDQUZmmMem
+                            ? TR::InstOpCode::VMOVDQUZmmMem
                             : op;
                     } else {
                         op = TR::InstOpCode::LRegMem();

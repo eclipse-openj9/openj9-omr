@@ -846,10 +846,11 @@ done:
             op = (bestRegister->isSinglePrecision()) ? TR::InstOpCode::MOVSSRegMem
                                                      : (self()->cg()->getXMMDoubleLoadOpCode());
         } else if (bestRegister->getKind() == TR_VRF) {
-            op = self()->cg()->comp()->target().cpu.supportsAVX() ? InstOpCode::VMOVDQUYmmMem
+            op = self()->cg()->comp()->target().cpu.supportsAVX() ? TR::InstOpCode::VMOVDQUYmmMem
                                                                   : TR::InstOpCode::MOVDQURegMem;
-            op = self()->cg()->comp()->target().cpu.supportsFeature(OMR_FEATURE_X86_AVX512F) ? InstOpCode::VMOVDQUZmmMem
-                                                                                             : op;
+            op = self()->cg()->comp()->target().cpu.supportsFeature(OMR_FEATURE_X86_AVX512F)
+                ? TR::InstOpCode::VMOVDQUZmmMem
+                : op;
         } else if (bestRegister->getKind() == TR_VMR) {
             op = vmrSpillOpcode;
         } else {
@@ -948,10 +949,10 @@ TR::RealRegister *OMR::X86::Machine::reverseGPRSpillState(TR::Instruction *curre
         }
     } else if (spilledRegister->getKind() == TR_VRF) {
         TR::InstOpCode::Mnemonic movOpcode;
-        movOpcode = self()->cg()->comp()->target().cpu.supportsAVX() ? InstOpCode::VMOVDQUMemYmm
+        movOpcode = self()->cg()->comp()->target().cpu.supportsAVX() ? TR::InstOpCode::VMOVDQUMemYmm
                                                                      : TR::InstOpCode::MOVDQUMemReg;
         movOpcode = self()->cg()->comp()->target().cpu.supportsFeature(OMR_FEATURE_X86_AVX512F)
-            ? InstOpCode::VMOVDQUMemZmm
+            ? TR::InstOpCode::VMOVDQUMemZmm
             : movOpcode;
         instr = new (self()->cg()->trHeapMemory())
             TR::X86MemRegInstruction(currentInstruction, movOpcode, tempMR, targetRegister, self()->cg());
@@ -1116,10 +1117,10 @@ void OMR::X86::Machine::coerceXMMRegisterAssignment(TR::Instruction *currentInst
         } else {
             if (virtualRegister->getKind() == TR_VRF) {
                 TR::InstOpCode::Mnemonic movOpcode;
-                movOpcode = self()->cg()->comp()->target().cpu.supportsAVX() ? InstOpCode::VMOVDQUYmmYmm
+                movOpcode = self()->cg()->comp()->target().cpu.supportsAVX() ? TR::InstOpCode::VMOVDQUYmmYmm
                                                                              : TR::InstOpCode::MOVDQURegReg;
                 movOpcode = self()->cg()->comp()->target().cpu.supportsFeature(OMR_FEATURE_X86_AVX512F)
-                    ? InstOpCode::VMOVDQUZmmZmm
+                    ? TR::InstOpCode::VMOVDQUZmmZmm
                     : movOpcode;
 
                 instr = new (self()->cg()->trHeapMemory()) TR::X86RegRegInstruction(currentInstruction, movOpcode,
@@ -1150,10 +1151,10 @@ void OMR::X86::Machine::coerceXMMRegisterAssignment(TR::Instruction *currentInst
             if (virtualRegister->getKind() == TR_FPR && virtualRegister->isSinglePrecision()) {
                 xchgOp = TR::InstOpCode::XORPSRegReg;
             } else if (virtualRegister->getKind() == TR_VRF) {
-                xchgOp = self()->cg()->comp()->target().cpu.supportsAVX() ? InstOpCode::VXORPDYmmYmm
+                xchgOp = self()->cg()->comp()->target().cpu.supportsAVX() ? TR::InstOpCode::VXORPDYmmYmm
                                                                           : TR::InstOpCode::XORPDRegReg;
                 xchgOp = self()->cg()->comp()->target().cpu.supportsFeature(OMR_FEATURE_X86_AVX512F)
-                    ? InstOpCode::VPXORDZmmZmm
+                    ? TR::InstOpCode::VPXORDZmmZmm
                     : xchgOp;
             } else {
                 xchgOp = TR::InstOpCode::XORPDRegReg;
@@ -1190,10 +1191,10 @@ void OMR::X86::Machine::coerceXMMRegisterAssignment(TR::Instruction *currentInst
             if (targetRegister != candidate) {
                 if (virtualRegister->getKind() == TR_VRF) {
                     TR::InstOpCode::Mnemonic movOpcode;
-                    movOpcode = self()->cg()->comp()->target().cpu.supportsAVX() ? InstOpCode::VMOVDQUYmmYmm
+                    movOpcode = self()->cg()->comp()->target().cpu.supportsAVX() ? TR::InstOpCode::VMOVDQUYmmYmm
                                                                                  : TR::InstOpCode::MOVDQURegReg;
                     movOpcode = self()->cg()->comp()->target().cpu.supportsFeature(OMR_FEATURE_X86_AVX512F)
-                        ? InstOpCode::VMOVDQUZmmZmm
+                        ? TR::InstOpCode::VMOVDQUZmmZmm
                         : movOpcode;
                     instr = new (self()->cg()->trHeapMemory()) TR::X86RegRegInstruction(currentInstruction, movOpcode,
                         targetRegister, candidate, self()->cg());
@@ -1230,10 +1231,10 @@ void OMR::X86::Machine::coerceXMMRegisterAssignment(TR::Instruction *currentInst
             if (virtualRegister->getKind() == TR_FPR && virtualRegister->isSinglePrecision()) {
                 xchgOp = TR::InstOpCode::XORPSRegReg;
             } else if (virtualRegister->getKind() == TR_VRF) {
-                xchgOp = self()->cg()->comp()->target().cpu.supportsAVX() ? InstOpCode::VXORPDYmmYmm
+                xchgOp = self()->cg()->comp()->target().cpu.supportsAVX() ? TR::InstOpCode::VXORPDYmmYmm
                                                                           : TR::InstOpCode::XORPDRegReg;
                 xchgOp = self()->cg()->comp()->target().cpu.supportsFeature(OMR_FEATURE_X86_AVX512F)
-                    ? InstOpCode::VPXORDZmmZmm
+                    ? TR::InstOpCode::VPXORDZmmZmm
                     : xchgOp;
             } else {
                 xchgOp = TR::InstOpCode::XORPDRegReg;
@@ -1269,10 +1270,10 @@ void OMR::X86::Machine::coerceXMMRegisterAssignment(TR::Instruction *currentInst
             if (targetRegister != candidate) {
                 if (virtualRegister->getKind() == TR_VRF) {
                     TR::InstOpCode::Mnemonic movOpcode;
-                    movOpcode = self()->cg()->comp()->target().cpu.supportsAVX() ? InstOpCode::VMOVDQUYmmYmm
+                    movOpcode = self()->cg()->comp()->target().cpu.supportsAVX() ? TR::InstOpCode::VMOVDQUYmmYmm
                                                                                  : TR::InstOpCode::MOVDQURegReg;
                     movOpcode = self()->cg()->comp()->target().cpu.supportsFeature(OMR_FEATURE_X86_AVX512F)
-                        ? InstOpCode::VMOVDQUZmmZmm
+                        ? TR::InstOpCode::VMOVDQUZmmZmm
                         : movOpcode;
                     instr = new (self()->cg()->trHeapMemory()) TR::X86RegRegInstruction(currentInstruction, movOpcode,
                         targetRegister, candidate, self()->cg());

@@ -198,10 +198,10 @@ void TR::S390zOSSystemLinkage::createEpilogue(TR::Instruction *cursor)
     cursor = fillGPRsInEpilogue(node, cursor);
 
     if (comp()->target().is64Bit()) {
-        cursor = generateRXInstruction(cg(), InstOpCode::BC, node, getRealRegister(TR::RealRegister::GPR15),
+        cursor = generateRXInstruction(cg(), TR::InstOpCode::BC, node, getRealRegister(TR::RealRegister::GPR15),
             generateS390MemoryReference(getReturnAddressRealRegister(), 2, cg()), cursor);
     } else {
-        cursor = generateRXInstruction(cg(), InstOpCode::BC, node, getRealRegister(TR::RealRegister::GPR15),
+        cursor = generateRXInstruction(cg(), TR::InstOpCode::BC, node, getRealRegister(TR::RealRegister::GPR15),
             generateS390MemoryReference(getReturnAddressRealRegister(), 4, cg()), cursor);
     }
 }
@@ -511,7 +511,7 @@ void TR::S390zOSSystemLinkage::generateInstructionsForCall(TR::Node *callNode, T
 
         generateRSInstruction(cg(), TR::InstOpCode::getLoadMultipleOpCode(), callNode, aeReg, epReg,
             generateS390MemoryReference(targetAddress, 0, cg()));
-        generateRRInstruction(cg(), InstOpCode::BASR, callNode, raReg, epReg, preDeps);
+        generateRRInstruction(cg(), TR::InstOpCode::BASR, callNode, raReg, epReg, preDeps);
         callType = TR_XPLinkCallType_BASR;
     } else {
         TR::SymbolReference *callSymRef = callNode->getSymbolReference();
@@ -599,7 +599,7 @@ TR::Instruction *TR::S390zOSSystemLinkage::genCallNOPAndDescriptor(TR::Instructi
         cg()->addRelocation(
             new (cg()->trHeapMemory()) XPLINKCallDescriptorRelocation(cursor, xplinkCallDescriptorBeginLabel));
 
-        cursor = generateS390BranchInstruction(cg(), InstOpCode::BRC, InstOpCode::COND_BRC, node,
+        cursor = generateS390BranchInstruction(cg(), TR::InstOpCode::BRC, TR::InstOpCode::COND_BRC, node,
             xplinkCallDescriptorEndLabel, cursor);
         cursor = generateAlignmentNopInstruction(cg(), node, 8, cursor);
         cursor
@@ -1103,7 +1103,7 @@ TR::Instruction *TR::S390zOSSystemLinkage::spillGPRsInPrologue(TR::Node *node, T
                 bosOffset = 64; // 64=offset in LAA to BOS
                 int32_t laaLowMemAddress = 1208; // LAA address
                 laaRef = generateS390MemoryReference(gpr0Real, laaLowMemAddress, cg());
-                cursor = generateRXInstruction(cg(), InstOpCode::LLGT, node, gpr3Real, laaRef, cursor);
+                cursor = generateRXInstruction(cg(), TR::InstOpCode::LLGT, node, gpr3Real, laaRef, cursor);
                 bosRef = generateS390MemoryReference(gpr3Real, bosOffset, cg());
                 cursor = generateRXInstruction(cg(), TR::InstOpCode::getCmpOpCode(), node, spReg, bosRef,
                     cursor); // C R4,bos(tempreg)
@@ -1113,7 +1113,7 @@ TR::Instruction *TR::S390zOSSystemLinkage::spillGPRsInPrologue(TR::Node *node, T
                 cursor = generateRXInstruction(cg(), TR::InstOpCode::getCmpOpCode(), node, spReg, bosRef,
                     cursor); // C R4,bos(R12)
             }
-            cursor = generateS390BranchInstruction(cg(), InstOpCode::BRC, InstOpCode::COND_BNM, node, stmLabel,
+            cursor = generateS390BranchInstruction(cg(), TR::InstOpCode::BRC, TR::InstOpCode::COND_BNM, node, stmLabel,
                 cursor); // BNM stmLabel
 
             //------------------------------
@@ -1137,7 +1137,7 @@ TR::Instruction *TR::S390zOSSystemLinkage::spillGPRsInPrologue(TR::Node *node, T
                 cursor = generateRXInstruction(cg(), TR::InstOpCode::getLoadOpCode(), node, gpr3Real, extenderRef,
                     cursor); //  L R3,extender(R12)
             }
-            cursor = generateRRInstruction(cg(), InstOpCode::BASR, node, gpr3Real, gpr3Real, cursor);
+            cursor = generateRRInstruction(cg(), TR::InstOpCode::BASR, node, gpr3Real, gpr3Real, cursor);
             cursor = genCallNOPAndDescriptor(cursor, node, NULL, TR_XPLinkCallType_BASR33);
 
             if (!needAddTempReg) { // LR R3,R0

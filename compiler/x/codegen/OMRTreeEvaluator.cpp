@@ -6124,16 +6124,16 @@ TR::Register *OMR::X86::TreeEvaluator::msplatsEvaluator(TR::Node *node, TR::Code
         if (boolNode->getInt() != 0) {
             switch (numLanes) {
                 case 8:
-                    maskOpcode = InstOpCode::KXNORBRegRegReg;
+                    maskOpcode = TR::InstOpCode::KXNORBRegRegReg;
                     break;
                 case 16:
-                    maskOpcode = InstOpCode::KXNORWRegRegReg;
+                    maskOpcode = TR::InstOpCode::KXNORWRegRegReg;
                     break;
                 case 32:
-                    maskOpcode = InstOpCode::KXNORDRegRegReg;
+                    maskOpcode = TR::InstOpCode::KXNORDRegRegReg;
                     break;
                 case 64:
-                    maskOpcode = InstOpCode::KXNORQRegRegReg;
+                    maskOpcode = TR::InstOpCode::KXNORQRegRegReg;
                     break;
                 default:
                     TR_ASSERT_FATAL(false, "msplatsEvaluator: unexpected number of lanes");

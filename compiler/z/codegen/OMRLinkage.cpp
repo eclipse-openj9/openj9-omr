@@ -1366,7 +1366,7 @@ TR::Register *OMR::Z::Linkage::pushArg(TR::Node *callNode, TR::Node *child, int3
             TR::Register *stackRegister = self()->getStackRegisterForOutgoingArguments(callNode,
                 dependencies); // delay (possibly) creating this till needed
             if (storeHelperImmediateInstruction(child, self()->cg(), false,
-                    (storeOp == TR::InstOpCode::ST) ? InstOpCode::MVHI : InstOpCode::MVGHI, callNode,
+                    (storeOp == TR::InstOpCode::ST) ? TR::InstOpCode::MVHI : TR::InstOpCode::MVGHI, callNode,
                     generateS390MemoryReference(stackRegister, *stackOffsetPtr, self()->cg()))) {
                 argRegister = self()->cg()->evaluate(child);
                 // no need to call copyArgRegister if dependence is not created
@@ -1919,7 +1919,7 @@ TR::Instruction *OMR::Z::Linkage::storeLongDoubleArgumentOnStack(TR::Node *callN
     TR::InstOpCode::Mnemonic opCode, TR::Register *argReg, int32_t *stackOffsetPtr, TR::Register *stackRegister)
 {
     TR::Instruction *cursor;
-    int32_t size = (opCode == InstOpCode::STE) ? 4 : 8;
+    int32_t size = (opCode == TR::InstOpCode::STE) ? 4 : 8;
     int32_t storeOffset = *stackOffsetPtr;
 
     TR::MemoryReference *argMemRef = generateS390MemoryReference(stackRegister, storeOffset, self()->cg());

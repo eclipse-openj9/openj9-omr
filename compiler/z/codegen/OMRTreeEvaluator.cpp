@@ -15460,7 +15460,7 @@ TR::Register *OMR::Z::TreeEvaluator::vDivOrRemHelper(TR::Node *node, TR::CodeGen
                     32);
 
             generateRRInstruction(cg, divOp, node, dividendGPR, divisorGPR);
-            generateS390PseudoInstruction(cg, InstOpCode::DEPEND, node, dependencies);
+            generateS390PseudoInstruction(cg, TR::InstOpCode::DEPEND, node, dependencies);
 
             // Store result GPR into VRF
             generateVRSbInstruction(cg, TR::InstOpCode::VLVG, node, resultVRF,

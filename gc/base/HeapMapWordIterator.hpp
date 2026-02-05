@@ -50,14 +50,14 @@ public:
 	/* Member Functions */
 private:
 protected:
-public:	
+public:
 	MMINLINE omrobjectptr_t nextObject()
 	{
 		omrobjectptr_t nextObject = NULL;
 		if (0 != _cache) {
-			uintptr_t leadingZeroes = MM_Bits::leadingZeroes(_cache);
-			_heapSlotCurrent += J9MODRON_HEAP_SLOTS_PER_HEAPMAP_BIT * leadingZeroes;
-			_cache >>= leadingZeroes;
+			uintptr_t trailingZeros = MM_Bits::trailingZeros(_cache);
+			_heapSlotCurrent += J9MODRON_HEAP_SLOTS_PER_HEAPMAP_BIT * trailingZeros;
+			_cache >>= trailingZeros;
 			nextObject = (omrobjectptr_t) _heapSlotCurrent;
 			/* skip to the next bit in _heapSlotCurrent and in _cache */
 			_heapSlotCurrent += J9MODRON_HEAP_SLOTS_PER_HEAPMAP_BIT;
@@ -65,7 +65,7 @@ public:
 		}
 		return nextObject;
 	}
-	
+
 	MMINLINE MM_HeapMapWordIterator(MM_HeapMap *heapMap, void *heapCardAddress)
 	{
 		uintptr_t heapOffsetInBytes = (uintptr_t)heapCardAddress - (uintptr_t)heapMap->getHeapBase();
@@ -78,7 +78,7 @@ public:
 		_cache = *mapPointer;
 		_heapSlotCurrent = (uintptr_t *)heapCardAddress;
 	}
-	
+
 	MMINLINE MM_HeapMapWordIterator(uintptr_t heapMapWord, void *heapCardAddress)
 	{
 		_cache = heapMapWord;

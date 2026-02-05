@@ -34,7 +34,7 @@ class MM_Math
 {
 public:
 	static uintptr_t saturatingSubtract(uintptr_t minuend, uintptr_t subtrahend);
-	
+
 	static float weightedAverage(float currentAverage, float newValue, float weight);
 
 	static double weightedAverage(double currentAverage, double newValue, double weight);
@@ -43,7 +43,7 @@ public:
 	static MMINLINE uintptr_t roundToCeiling(uintptr_t granularity, uintptr_t number) {
 		return number + ((number % granularity) ? (granularity - (number % granularity)) : 0);
 	}
-	
+
 	/* Round value up */
 	static MMINLINE uint64_t roundToCeilingU64(uint64_t granularity, uint64_t number) {
 		return number + ((number % granularity) ? (granularity - (number % granularity)) : 0);
@@ -53,7 +53,7 @@ public:
 	static MMINLINE uintptr_t roundToFloor(uintptr_t granularity, uintptr_t number) {
 		return number - (number % granularity);
 	}
-	
+
 	/* Round value down */
 	static MMINLINE uint64_t roundToFloorU64(uint64_t granularity, uint64_t number) {
 		return number - (number % granularity);
@@ -63,7 +63,7 @@ public:
 	static MMINLINE uintptr_t roundToSizeofUDATA(uintptr_t number) {
 		return (number + (sizeof(uintptr_t) - 1)) & (~(sizeof(uintptr_t) - 1));
 	}
-	
+
 	/* Round value to nearlest uint32_t aligned */
 	static MMINLINE uintptr_t roundToSizeofU32(uintptr_t number) {
 		return (number + (sizeof(uint32_t) - 1)) & (~(sizeof(uint32_t) - 1));
@@ -87,10 +87,10 @@ public:
 	 * 			 2 for [4, 8)
 	 *			...
 	 * 			30 for [U32_MAX/4, U32_MAX/2)
-	 * 			31 for [U32_MAX/2, U32_MAX] 
+	 * 			31 for [U32_MAX/2, U32_MAX]
 	 * 			...
 	 * 			62 for [U64_MAX/4, U64_MAX/2)
-	 * 			63 for [U64_MAX/2, U64_MAX] 
+	 * 			63 for [U64_MAX/2, U64_MAX]
 	 */
 	static uintptr_t floorLog2(uintptr_t n) {
 		uintptr_t pos = 0;
@@ -103,7 +103,7 @@ public:
 		if (n >= (1<< 16)) {
 			n >>=  16;
 			pos +=  16;
-		}		
+		}
 		if (n >= (1<< 8)) {
 			n >>=  8;
 			pos +=  8;
@@ -139,28 +139,26 @@ public:
 		return number;
 	}
 
-
 	/**
 	 * Helper function to convert size to index using integers.
 	 * In general conversion looks like index = logBase(size).
 	 * Using log2(), this conversion can be written as index = log2(size)*(1/log2(base)).
-	 * This function is hard coded to use 4 as 1/log2(base). It is corresponds with base = 1.18920712.
+	 * This function is hard-coded to use 4 as 1/log2(base). It is corresponds with base = 1.18920712.
 	 * Such selected value allows to use approximated log2() * 4 value as an index.
 	 * Calculation of log2() is approximated:
 	 * - integer part of log2() is calculated as MSB position;
 	 * - next two bits are used for fractional part calculation (0,0.25,0.5,0.75).
 	 * MSB position is calculated as topBit position minus number of leading zeroes.
-	 * Number of leading zeroes is returned by MM_Bits::trailingZeroes().
 	 * Please note, there is limitation for input size >= 8. Caller sites should control this.
 	 * Please note this function supports 64 and 32 bit platforms.
 	 *
-	 * @param size needs to be converted to the index.
-	 * @return index correspondent to the size.
+	 * @param size needs to be converted to the index
+	 * @return index correspondent to the size
 	 */
 	MMINLINE static uintptr_t sizeToIndex(uintptr_t size)
 	{
-		uintptr_t msb = (OMRBITS_BITS_IN_SLOT - 1) - MM_Bits::trailingZeroes(size);
-		uintptr_t index = 4 * msb + ((size >> (msb - 2)) & 0x3);
+		uintptr_t msb = (OMRBITS_BITS_IN_SLOT - 1) - MM_Bits::leadingZeros(size);
+		uintptr_t index = (4 * msb) + ((size >> (msb - 2)) & 0x3);
 
 		return index;
 	}

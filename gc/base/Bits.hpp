@@ -67,10 +67,10 @@ public:
 	 */
 	MMINLINE static uintptr_t populationCount(uintptr_t input)
 	{
-		uintptr_t work, temp;
+		uintptr_t work = input;
+		uintptr_t temp = 0;
 
-		work = input;
-		if(0 == work) {
+		if (0 == work) {
 			return 0;
 		}
 
@@ -82,7 +82,7 @@ public:
 		work = work + (work << 8);
 		work = work + (work << 16);
 		return work >> 24;
-#else
+#else /* !defined(OMR_ENV_DATA64) */
 		work = work - ((work >> 1) & ((uintptr_t)0x5555555555555555));
 		temp = ((work >> 2) & ((uintptr_t)0x3333333333333333));
 		work = (work & ((uintptr_t)0x3333333333333333)) + temp;
@@ -96,33 +96,28 @@ public:
 
 #if defined(OMR_OS_WINDOWS) && !defined(OMR_ENV_DATA64)
 	/**
-	 * Return the number of bits set to 0 before the first bit set to one starting at the lowest
-	 * significant bit.
+	 * Return the number of zero bits following the least-significant one bit.
 	 * @note If the input is 0, the result is undefined.
-	 * @return Number of non-zero bits starting at the lowest significant bit.
+	 * @return Number of zero bits following the least-significant one bit
 	 */
-#if defined(OMR_OS_WINDOWS)
 	/* Implicit return in eax, not seen by compiler.  Disable compile warning C4035: no return value */
 #pragma warning(disable:4035)
-	MMINLINE static uintptr_t leadingZeroes(uintptr_t input)
+	MMINLINE static uintptr_t trailingZeros(uintptr_t input)
 	{
 		_asm {
 			bsf eax, input
 		}
 	}
 #pragma warning(default:4035) /* re-enable warning */
-#endif /* defined(OMR_OS_WINDOWS) */
 
 	/**
-	 * Return the number of bits set to 0 before the first bit set to one starting at the highest
-	 * significant bit.
+	 * Return the number of zero bits that precede the most significant one bit.
 	 * @note If the input is 0, the result is undefined.
-	 * @return Number of non-zero bits starting at the highest significant bit.
+	 * @return Number of zero bits that precede the most significant one bit.
 	 */
-#if defined(OMR_OS_WINDOWS)
 	/* Implicit return in eax, not seen by compiler.  Disable compile warning C4035: no return value */
 #pragma warning(disable:4035)
-	MMINLINE static uintptr_t trailingZeroes(uintptr_t input)
+	MMINLINE static uintptr_t leadingZeros(uintptr_t input)
 	{
 		_asm {
 			bsr eax, input
@@ -131,16 +126,14 @@ public:
 		}
 	}
 #pragma warning(default:4035) /* re-enable warning */
-#endif /* defined(OMR_OS_WINDOWS) */
 
 #elif defined(LINUX) && defined(J9HAMMER)
 	/**
-	 * Return the number of bits set to 0 before the first bit set to one starting at the lowest
-	 * significant bit.
+	 * Return the number of zero bits following the least-significant one bit.
 	 * @note If the input is 0, the result is undefined.
-	 * @return Number of non-zero bits starting at the lowest significant bit.
+	 * @return Number of zero bits following the least-significant one bit
 	 */
-	MMINLINE static uintptr_t leadingZeroes(uintptr_t input)
+	MMINLINE static uintptr_t trailingZeros(uintptr_t input)
 	{
 		uintptr_t result;
 		asm volatile(" bsfq %1, %0": "=r"(result): "rm"(input) );
@@ -148,12 +141,11 @@ public:
 	}
 
 	/**
-	 * Return the number of bits set to 0 before the first bit set to one starting at the highest
-	 * significant bit.
+	 * Return the number of zero bits that precede the most significant one bit.
 	 * @note If the input is 0, the result is undefined.
-	 * @return Number of non-zero bits starting at the highest significant bit.
+	 * @return Number of zero bits that precede the most significant one bit.
 	 */
-	MMINLINE static uintptr_t trailingZeroes(uintptr_t input)
+	MMINLINE static uintptr_t leadingZeros(uintptr_t input)
 	{
 		uintptr_t result;
 		asm volatile(
@@ -167,32 +159,31 @@ public:
 
 #else /* defined(LINUX) && defined(J9HAMMER) */
 
-
 	/**
-	 * Return the number of bits set to 0 before the first bit set to one starting at the lowest
-	 * significant bit.
+	 * Return the number of zero bits following the least-significant one bit.
 	 * @note If the input is 0, the result is undefined.
-	 * @return Number of non-zero bits starting at the lowest significant bit.
+	 * @return Number of zero bits following the least-significant one bit
 	 */
-	MMINLINE static uintptr_t leadingZeroes(uintptr_t input)
+	MMINLINE static uintptr_t trailingZeros(uintptr_t input)
 	{
 		return populationCount(~(input | (0 - input)));
 	}
 
 	/**
-	 * Return the number of bits set to 0 before the first bit set to one starting at the highest
-	 * significant bit.
+	 * Return the number of zero bits that precede the most significant one bit.
+	 *
 	 * Use a binary search style divide and conquer algorithm.  The check constantly splits the group
 	 * in half, and reduces the working set to either the upper or lower half of the remaining value,
 	 * depending on whether bits still exist in the upper half or not.
+	 *
 	 * @note If the input is 0, the result is undefined.
-	 * @return Number of non-zero bits starting at the highest significant bit.
+	 * @return Number of zero bits that precede the most significant one bit.
 	 */
-	MMINLINE static uintptr_t trailingZeroes(uintptr_t input)
+	MMINLINE static uintptr_t leadingZeros(uintptr_t input)
 	{
-		uintptr_t work, carry, result;
-		work = input;
-		result = 0;
+		uintptr_t work = input;
+		uintptr_t carry = 0;
+		uintptr_t result = 0;
 
 #if defined(OMR_ENV_DATA64)
 		carry = (work < (((uintptr_t)1) << 32)) ? 0 : 32;
@@ -221,6 +212,19 @@ public:
 		return OMRBITS_BITS_IN_SLOT - 1 - result;
 	}
 #endif /* defined(OMR_OS_WINDOWS) && !defined(OMR_ENV_DATA64) */
+
+#if 1 /* temporary */
+	/* Temporary redirection for old, misleadingly named functions. */
+
+	MMINLINE static uintptr_t leadingZeroes(uintptr_t input) {
+		return trailingZeros(input);
+	}
+
+	MMINLINE static uintptr_t trailingZeroes(uintptr_t input) {
+		return leadingZeros(input);
+	}
+#endif /* temporary */
+
 };
 
-#endif /*BITS_HPP_*/
+#endif /* !defined(BITS_HPP_) */

@@ -366,13 +366,12 @@ MM_ParallelSweepScheme::sweepMarkMapHead(
 	uintptr_t * &heapSlotFreeHead,
 	uintptr_t &heapSlotFreeCount )
 {
-	uintptr_t markMapHeadValue;
-	uintptr_t markMapFreeBitIndexHead;
+	if (markMapFreeHead > markMapChunkBase) {
+		uintptr_t markMapHeadValue = *(markMapFreeHead - 1);
+		/* Leading bits in mark map slot represent higher address heap slots. */
+		uintptr_t markMapFreeBitIndexHead = J9MODRON_HEAP_SLOTS_PER_MARK_BIT * MM_Bits::leadingZeros(markMapHeadValue);
 
-	if(markMapFreeHead > markMapChunkBase) {
-		markMapHeadValue = *(markMapFreeHead - 1);
-		markMapFreeBitIndexHead = J9MODRON_HEAP_SLOTS_PER_MARK_BIT * MM_Bits::trailingZeroes(markMapHeadValue);
-		if(markMapFreeBitIndexHead) {
+		if (0 != markMapFreeBitIndexHead) {
 			heapSlotFreeHead -= markMapFreeBitIndexHead;
 			heapSlotFreeCount += markMapFreeBitIndexHead;
 		}
@@ -385,14 +384,12 @@ MM_ParallelSweepScheme::sweepMarkMapTail(
 	uintptr_t *markMapChunkTop,
 	uintptr_t &heapSlotFreeCount )
 {
-	uintptr_t markMapTailValue;
-	uintptr_t markMapFreeBitIndexTail;
+	if (markMapCurrent < markMapChunkTop) {
+		uintptr_t markMapTailValue = *markMapCurrent;
+		/* Trailing bits in mark map slot represent lower address heap slots. */
+		uintptr_t markMapFreeBitIndexTail = J9MODRON_HEAP_SLOTS_PER_MARK_BIT * MM_Bits::trailingZeros(markMapTailValue);
 
-	if(markMapCurrent < markMapChunkTop) {
-		markMapTailValue = *markMapCurrent;
-		markMapFreeBitIndexTail = J9MODRON_HEAP_SLOTS_PER_MARK_BIT * MM_Bits::leadingZeroes(markMapTailValue);
-
-		if(markMapFreeBitIndexTail) {
+		if (0 != markMapFreeBitIndexTail) {
 			heapSlotFreeCount += markMapFreeBitIndexTail;
 		}
 	}

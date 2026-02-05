@@ -28,6 +28,7 @@
 #include "omrport.h"
 
 #include "Bits.hpp"
+#include "OMR/Bytes.hpp"
 #include "Forge.hpp"
 #include "EnvironmentBase.hpp"
 #include "HeapRegionDescriptor.hpp"
@@ -80,8 +81,8 @@ MM_HeapRegionManager::initialize(MM_EnvironmentBase* env)
 		return false;
 	}
 
-	_regionShift = MM_Bits::leadingZeroes(_regionSize);
-	Assert_MM_true(((uintptr_t)1 << _regionShift) == _regionSize);
+	_regionShift = MM_Bits::trailingZeros(_regionSize);
+	Assert_MM_true(OMR::isPow2(_regionSize));
 
 	return true;
 }

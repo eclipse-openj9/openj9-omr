@@ -33,6 +33,7 @@
 #include "ilgen/IlGeneratorMethodDetails_inlines.hpp"
 #include "ilgen/MethodBuilder.hpp"
 #include "runtime/CodeCache.hpp"
+#include "runtime/CodeCacheManager.hpp"
 #include "runtime/Runtime.hpp"
 #include "control/CompilationController.hpp"
 

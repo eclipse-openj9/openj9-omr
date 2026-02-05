@@ -127,8 +127,6 @@ protected:
 public:
     CodeCacheManager(TR::RawAllocator rawAllocator);
 
-    void *operator new(size_t s, TR::CodeCacheManager *m) { return m; }
-
     static TR::CodeCacheManager *instance() { return _codeCacheManager; }
 
     class CacheListCriticalSection : public CriticalSection {

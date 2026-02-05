@@ -7446,10 +7446,44 @@ TR::Register *OMR::ARM64::TreeEvaluator::BBEndEvaluator(TR::Node *node, TR::Code
 TR::Register *OMR::ARM64::TreeEvaluator::passThroughEvaluator(TR::Node *node, TR::CodeGenerator *cg)
 {
     TR::Node *child = node->getFirstChild();
-    TR::Register *trgReg = cg->evaluate(child);
-    node->setRegister(trgReg);
+    TR::Register *srcReg = cg->evaluate(child);
+    TR_RegisterKinds kind = srcReg->getKind();
+
+    if ((child->getReferenceCount() > 1 && node->getOpCodeValue() != TR::PassThrough)
+        || (node->getOpCodeValue() == TR::PassThrough && node->isCopyToNewVirtualRegister() && kind == TR_GPR)) {
+        TR::Register *copyReg;
+
+        if (srcReg->containsInternalPointer() || !srcReg->containsCollectedReference()) {
+            copyReg = cg->allocateRegister(kind);
+            if (srcReg->containsInternalPointer()) {
+                copyReg->setPinningArrayPointer(srcReg->getPinningArrayPointer());
+                copyReg->setContainsInternalPointer();
+            }
+        } else {
+            copyReg = cg->allocateCollectedReferenceRegister();
+        }
+
+        switch (kind) {
+            case TR_GPR:
+                generateMovInstruction(cg, node, copyReg, srcReg);
+                break;
+            case TR_FPR:
+                generateTrg1Src1Instruction(cg, TR::InstOpCode::fmovd, node, copyReg, srcReg);
+                break;
+            case TR_VRF:
+                generateTrg1Src2Instruction(cg, TR::InstOpCode::vorr16b, node, copyReg, srcReg, srcReg);
+                break;
+            default:
+                TR_ASSERT_FATAL(false, "Unsupported RegisterKind.");
+                break;
+        }
+
+        srcReg = copyReg;
+    }
+
+    node->setRegister(srcReg);
     cg->decReferenceCount(child);
-    return trgReg;
+    return srcReg;
 }
 
 TR::Register *OMR::ARM64::TreeEvaluator::PrefetchEvaluator(TR::Node *node, TR::CodeGenerator *cg)

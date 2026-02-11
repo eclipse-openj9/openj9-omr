@@ -2254,22 +2254,48 @@ public:
 
     void setLmmdFailed() { _lmmdFailed = true; }
 
+    /**
+     * @brief Assign const ref label based on the node's known object index
+     *
+     * @param[in] node the aload TR::Node* from which known object index is obtained
+     * @return TR::LabelSymbol* the label symbol for the node if const ref label assignment successful;
+     * NULL if unsuccessful, either because node is not a TR::aload node, or missing symbol or object
+     * index, etc.
+     */
     TR::LabelSymbol *assignConstRefLabel(TR::Node *node);
 
     void assignKeepaliveConstRefLabels() {}
 
-#if defined(J9VM_OPT_OPENJDK_METHODHANDLE)
+    /**
+     * @brief Assign const ref label for a known object index
+     *
+     * @param[in] koi the known object index based on which the label symbol is to be assigned
+     * @return TR::LabelSymbol* the label symbol if successful in label generation or is already generated
+     */
     TR::LabelSymbol *assignConstRefLabel(TR::KnownObjectTable::Index koi)
     {
         return assignConstRefLabelImpl(koi, false);
     }
 
+    /**
+     * @brief Generate and assign new const ref label for a known object index. This function should only
+     * ever be used when we know an object has not already been assigned a const ref label, otherwise
+     * a fatal assertion will be triggered.
+     *
+     * @param[in] koi the known object index based on which the label symbol is to be generated
+     * @return TR::LabelSymbol* the label symbol if successful in label generation
+     */
     TR::LabelSymbol *assignNewConstRefLabel(TR::KnownObjectTable::Index koi)
     {
         return assignConstRefLabelImpl(koi, true);
     }
-#endif
 
+    /**
+     * @brief Get ConstRef Label Symbol corresponding to a known object index
+     *
+     * @param[in] koi the known object index
+     * @return TR::LabelSymbol* the label symbol if a corresponding label symbol is found; NULL otherwise
+     */
     TR::LabelSymbol *getConstRefLabel(TR::KnownObjectTable::Index koi)
     {
         return 0 <= koi && koi < _constRefLabels.size() ? _constRefLabels[koi] : NULL;
@@ -2277,14 +2303,29 @@ public:
 
     bool hasConstRefs() { return _hasConstRefs; }
 
+    /**
+     * @brief Sort const refs in _constRefSortOrder according to an order that is appropriate for the downstream
+     * project. This function is not implemented, and is meant to be overriden by downstream projects to reorder the
+     * const refs that were added to _constRefSortOrder during label assignment. An example would be sorting the const
+     * refs by owning classes (determined based on reachability in the const provenance graphs), which can minimize GC
+     * bookkeeping.
+     */
     void sortConstRefs() {}
 
     const TR::vector<TR::KnownObjectTable::Index, TR::Region &> &getConstRefSortOrder() { return _constRefSortOrder; }
 
-#if defined(J9VM_OPT_OPENJDK_METHODHANDLE)
 private:
+    /**
+     * @brief Helper function used by assign(New)ConstRefLabel functions to implement the lookup/generation
+     * of label symbol for a given Known Object Index.
+     *
+     * @param[in] koi the known object index
+     * @param[in] mustBeNew boolean indicating whether the label symbol should not have already been generated.
+     * mustBeNew should only ever be true if the object has not already been assigned a const ref label, otherwise
+     * a fatal assertion will be triggered.
+     * @return TR::LabelSymbol* the label symbol if successful in label generation or is already generated
+     */
     TR::LabelSymbol *assignConstRefLabelImpl(TR::KnownObjectTable::Index koi, bool mustBeNew);
-#endif
 
 protected:
     enum // _flags1

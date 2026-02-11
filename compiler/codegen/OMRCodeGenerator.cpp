@@ -3182,7 +3182,6 @@ void OMR::CodeGenerator::getMethodStats(MethodStats &methodStats)
 
 TR::LabelSymbol *OMR::CodeGenerator::assignConstRefLabel(TR::Node *node)
 {
-#if defined(J9VM_OPT_OPENJDK_METHODHANDLE)
     if (!self()->comp()->useConstRefs()) {
         return NULL;
     }
@@ -3206,14 +3205,11 @@ TR::LabelSymbol *OMR::CodeGenerator::assignConstRefLabel(TR::Node *node)
     TR_ASSERT_FATAL_WITH_NODE(node, symRef == knot->constSymRef(koi), "unexpected known object symref");
 
     return assignConstRefLabel(koi);
-#else
-    return NULL;
-#endif
 }
 
-#if defined(J9VM_OPT_OPENJDK_METHODHANDLE)
 TR::LabelSymbol *OMR::CodeGenerator::assignConstRefLabelImpl(TR::KnownObjectTable::Index koi, bool mustBeNew)
 {
+    TR_ASSERT_FATAL(self()->comp()->useConstRefs(), "Expected useConstRefs() to return true");
     TR::KnownObjectTable *knot = self()->comp()->getKnownObjectTable();
     TR::KnownObjectTable::Index numKnobs = knot->getEndIndex();
     TR_ASSERT_FATAL(0 <= koi && (size_t)koi < numKnobs, "known object index %d out of bounds (%d)", koi, numKnobs);
@@ -3233,4 +3229,3 @@ TR::LabelSymbol *OMR::CodeGenerator::assignConstRefLabelImpl(TR::KnownObjectTabl
 
     return label;
 }
-#endif

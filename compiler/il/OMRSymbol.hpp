@@ -549,9 +549,6 @@ public:
     inline void setDummyResolvedMethod();
     inline bool isDummyResolvedMethod();
 
-    inline void setStaticDefaultValueInstance();
-    inline bool isStaticDefaultValueInstance();
-
     /**
      * Enum values for _flags field.
      */
@@ -703,10 +700,7 @@ public:
          * and invokehandle bytecodes.
          */
         DummyResolvedMethod = 0x00010000,
-        /**
-         * This flag is used to identify the value type default value instance slot address
-         */
-        StaticDefaultValueInstance = 0x00020000,
+        // Available = 0x00020000,
         CatchBlockCounter = 0x00040000,
         EnterEventHookAddress = 0x00080000,
         ExitEventHookAddress = 0x00100000,

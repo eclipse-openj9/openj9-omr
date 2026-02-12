@@ -2786,8 +2786,7 @@ void TR::AMD64RegImm64SymInstruction::addMetaDataForCodeAddress(uint8_t *cursor)
                     __FILE__, __LINE__, getNode());
                 break;
 
-            case TR_DataAddress:
-            case TR_StaticDefaultValueInstance: {
+            case TR_DataAddress: {
                 if (cg()->needRelocationsForStatics()) {
                     cg()->addExternalRelocation(TR::ExternalRelocation::create(cursor, (uint8_t *)getSymbolReference(),
                                                     (uint8_t *)getNode()
@@ -2798,6 +2797,7 @@ void TR::AMD64RegImm64SymInstruction::addMetaDataForCodeAddress(uint8_t *cursor)
                 }
                 break;
             }
+
             case TR_NativeMethodAbsolute: {
                 if (cg()->comp()->getOption(TR_EmitRelocatableELFFile)) {
                     TR_ResolvedMethod *target

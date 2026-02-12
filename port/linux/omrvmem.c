@@ -80,7 +80,7 @@
 #endif
 
 #define INVALID_KEY -1
-#define FILE_NAME_SIZE 64
+#define FILE_NAME_SIZE 128
 
 #if 0
 #define OMRVMEM_DEBUG
@@ -1160,15 +1160,42 @@ reserve_memory_with_mmap(struct OMRPortLibrary *portLibrary, void *address, uint
 		if (OMR_ARE_ANY_BITS_SET(mode, OMRPORT_VMEM_MEMORY_MODE_SHARE_TMP_FILE_OPEN)) {
 			/* Generate a unique temporary filename from template and open the file. */
 			char filename[FILE_NAME_SIZE + 1];
-			snprintf(filename, sizeof(filename), "/tmp/omrvmem_%09d_XXXXXX", getpid());
-			fd = mkostemp(filename, 0);
-			if (OMRPORT_INVALID_FD != fd) {
-				unlink(filename);
-				/* Set the file size with fallocate . */
-				if (OMRPORT_INVALID_FD == fallocate(fd, 0, 0, byteAmount)) {
-					close(fd);
-					fd = OMRPORT_INVALID_FD;
+			const char *tmpdir = NULL;
+			size_t filenameLen = 0;
+			char *filenameBuf = filename;
+			int dynamicAlloc = 0;
+
+			/* Check for user-specified temporary directory */
+#if defined(PPG_vmem_tmpdir_path)
+			tmpdir = PPG_vmem_tmpdir_path;
+#endif
+			/* Fall back to /tmp if not set. */
+			if (NULL == tmpdir) {
+				tmpdir = "/tmp";
+			}
+			filenameLen = strlen(tmpdir) + 1 + 8 + 9 + 7 + 1; /* +1 for '/', +8 for "omrvmem_", +9 for PID, +7 for "_XXXXXX", +1 for '\0' */
+			if (filenameLen > sizeof(filename)) {
+				/* Static buffer is not big enough. Must allocate buffer dynamically. */
+				filenameBuf = portLibrary->mem_allocate_memory(portLibrary, filenameLen, OMR_GET_CALLSITE(), OMRMEM_CATEGORY_PORT_LIBRARY);
+				dynamicAlloc = 1;
+			}
+			if (filenameBuf) {
+				snprintf(filenameBuf, filenameLen, "%s/omrvmem_%09d_XXXXXX", tmpdir, getpid());
+				fd = mkostemp(filename, 0);
+				if (OMRPORT_INVALID_FD != fd) {
+					unlink(filename);
+					/* Set the file size with fallocate. */
+					if (OMRPORT_INVALID_FD == fallocate(fd, 0, 0, byteAmount)) {
+						close(fd);
+						fd = OMRPORT_INVALID_FD;
+					}
 				}
+				/* If the filename buffer was allocated dynamically, free it. */
+				if (dynamicAlloc)
+					portLibrary->mem_free_memory(portLibrary, filenameBuf);
+			} else {
+				/* Memory allocation failed, fall back to anonymous mapping. */
+				fd = OMRPORT_INVALID_FD;
 			}
 			if (OMRPORT_INVALID_FD == fd) {
 				Trc_PRT_vmem_reserve_tempfile_not_created(filename, byteAmount);

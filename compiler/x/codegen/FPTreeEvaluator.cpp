@@ -1278,9 +1278,9 @@ TR::Register *OMR::X86::TreeEvaluator::generateBranchOrSetOnFPCompare(TR::Node *
                 deps1->setNumPostConditions(0, cg->trMemory());
                 deps->setNumPreConditions(0, cg->trMemory());
             }
-            generateLabelInstruction(TR::InstOpCode::JPE4, node, node->getBranchDestination()->getNode()->getLabel(),
-                deps1, cg);
             generateLabelInstruction(TR::InstOpCode::JNE4, node, node->getBranchDestination()->getNode()->getLabel(),
+                deps1, cg);
+            generateLabelInstruction(TR::InstOpCode::JPE4, node, node->getBranchDestination()->getNode()->getLabel(),
                 deps, cg);
         } else {
             TR::Register *tempRegister = cg->allocateRegister();

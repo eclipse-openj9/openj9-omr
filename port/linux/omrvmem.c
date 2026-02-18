@@ -1163,12 +1163,11 @@ reserve_memory_with_mmap(struct OMRPortLibrary *portLibrary, void *address, uint
 			const char *tmpdir = NULL;
 			size_t filenameLen = 0;
 			char *filenameBuf = filename;
-			int dynamicAlloc = 0;
 
-			/* Check for user-specified temporary directory */
-#if defined(PPG_vmem_tmpdir_path)
-			tmpdir = PPG_vmem_tmpdir_path;
-#endif
+			/* Check for user-specified temporary directory. */
+#if defined(PPG_vmemTmpDirPath)
+			tmpdir = PPG_vmemTmpDirPath;
+#endif /* defined(PPG_vmemTmpDirPath) */
 			/* Fall back to /tmp if not set. */
 			if (NULL == tmpdir) {
 				tmpdir = "/tmp";
@@ -1177,13 +1176,12 @@ reserve_memory_with_mmap(struct OMRPortLibrary *portLibrary, void *address, uint
 			if (filenameLen > sizeof(filename)) {
 				/* Static buffer is not big enough. Must allocate buffer dynamically. */
 				filenameBuf = portLibrary->mem_allocate_memory(portLibrary, filenameLen, OMR_GET_CALLSITE(), OMRMEM_CATEGORY_PORT_LIBRARY);
-				dynamicAlloc = 1;
 			}
-			if (filenameBuf) {
+			if (NULL != filenameBuf) {
 				snprintf(filenameBuf, filenameLen, "%s/omrvmem_%09d_XXXXXX", tmpdir, getpid());
-				fd = mkostemp(filename, 0);
+				fd = mkostemp(filenameBuf, 0);
 				if (OMRPORT_INVALID_FD != fd) {
-					unlink(filename);
+					unlink(filenameBuf);
 					/* Set the file size with fallocate. */
 					if (OMRPORT_INVALID_FD == fallocate(fd, 0, 0, byteAmount)) {
 						close(fd);
@@ -1191,14 +1189,15 @@ reserve_memory_with_mmap(struct OMRPortLibrary *portLibrary, void *address, uint
 					}
 				}
 				/* If the filename buffer was allocated dynamically, free it. */
-				if (dynamicAlloc)
+				if (filenameBuf != filename) {
 					portLibrary->mem_free_memory(portLibrary, filenameBuf);
+				}
 			} else {
 				/* Memory allocation failed, fall back to anonymous mapping. */
 				fd = OMRPORT_INVALID_FD;
 			}
 			if (OMRPORT_INVALID_FD == fd) {
-				Trc_PRT_vmem_reserve_tempfile_not_created(filename, byteAmount);
+				Trc_PRT_vmem_reserve_tempfile_not_created(filenameBuf, byteAmount);
 				/* The main reason for allocating memory with mmap and backed by
 				 * a file is to be able to "disclaim" infrequently accessed memory
 				 * blocks to the backing file, thus reducing physical memory usage.

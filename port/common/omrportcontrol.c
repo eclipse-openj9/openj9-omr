@@ -344,7 +344,7 @@ omrport_control(struct OMRPortLibrary *portLibrary, const char *key, uintptr_t v
 	}
 #endif /* defined(PPG_mem32BitFlags) */
 
-#if defined(PPG_vmem_tmpdir_path)
+#if defined(PPG_vmemTmpDirPath)
 	if (0 == strcmp(OMRPORT_CTLDATA_VMEM_TMPDIR_PATH, key)) {
 		const char *tmpdir = (const char *)value;
 		if (NULL != tmpdir) {
@@ -354,23 +354,23 @@ omrport_control(struct OMRPortLibrary *portLibrary, const char *key, uintptr_t v
 			if (NULL != newPath) {
 				strcpy(newPath, tmpdir);
 				/* Free old path if it exists */
-				if (NULL != PPG_vmem_tmpdir_path) {
-					portLibrary->mem_free_memory(portLibrary, PPG_vmem_tmpdir_path);
+				if (NULL != PPG_vmemTmpDirPath) {
+					portLibrary->mem_free_memory(portLibrary, PPG_vmemTmpDirPath);
 				}
-				PPG_vmem_tmpdir_path = newPath;
+				PPG_vmemTmpDirPath = newPath;
 				return 0;
 			}
 			return 1; /* allocation failed */
 		} else {
 			/* NULL value means reset to default */
-			if (NULL != PPG_vmem_tmpdir_path) {
-				portLibrary->mem_free_memory(portLibrary, PPG_vmem_tmpdir_path);
-				PPG_vmem_tmpdir_path = NULL;
+			if (NULL != PPG_vmemTmpDirPath) {
+				portLibrary->mem_free_memory(portLibrary, PPG_vmemTmpDirPath);
+				PPG_vmemTmpDirPath = NULL;
 			}
 			return 0;
 		}
 	}
-#endif /* defined(PPG_vmem_tmpdir_path) */
+#endif /* defined(PPG_vmemTmpDirPath) */
 
 	return 1;
 }

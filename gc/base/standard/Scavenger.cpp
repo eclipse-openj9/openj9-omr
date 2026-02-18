@@ -4646,6 +4646,9 @@ MM_Scavenger::internalPreCollect(MM_EnvironmentBase *env, MM_MemorySubSpace *sub
 		_cycleState._type = _cycleType;
 		_cycleState._collectionStatistics = &_collectionStatistics;
 
+		/* Transfer collection reason from environment to cycle state */
+		_cycleState._collectionReason = env->_collectionReason;
+
 		/* If we are in an excessiveGC level beyond normal then an aggressive GC is
 		 * conducted to free up as much space as possible
 		 */

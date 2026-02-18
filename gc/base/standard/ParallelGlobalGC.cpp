@@ -1086,6 +1086,8 @@ MM_ParallelGlobalGC::internalPreCollect(MM_EnvironmentBase *env, MM_MemorySubSpa
 	env->_cycleState->_type = _cycleType;
 	env->_cycleState->_activeSubSpace = subSpace;
 	env->_cycleState->_collectionStatistics = &_collectionStatistics;
+	/* Transfer collection reason from environment to cycle state */
+	env->_cycleState->_collectionReason = env->_collectionReason;
 	_extensions->globalGCStats.gcCount += 1;
 	env->_cycleState->_currentCycleID = _extensions->getUniqueGCCycleCount();
 

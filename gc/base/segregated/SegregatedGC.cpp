@@ -256,6 +256,8 @@ MM_SegregatedGC::internalPreCollect(MM_EnvironmentBase *env, MM_MemorySubSpace *
 	env->_cycleState->_gcCode = MM_GCCode(gcCode);
 	env->_cycleState->_type = _cycleType;
 	env->_cycleState->_activeSubSpace = subSpace;
+	/* Transfer collection reason from environment to cycle state */
+	env->_cycleState->_collectionReason = env->_collectionReason;
 	_extensions->globalGCStats.clear();
 	_extensions->globalGCStats.gcCount++;
 	env->_cycleState->_currentCycleID = env->getExtensions()->getUniqueGCCycleCount();

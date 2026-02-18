@@ -134,6 +134,9 @@ public:
 
 	ThreadType  _threadType;
 	MM_CycleState *_cycleState;	/**< The current GC cycle that this thread is operating on */
+
+	MM_CycleState::CollectionReason _collectionReason; /**< The reason for the collection (used for event reporting) */
+
 	bool _isInNoGCAllocationCall;	/**< NOTE:  this is a "best-efforts" flag, only, for use by an assertion in the collector.  If this is true, the owning thread is attempting to perform a NoGC allocation.  If it is false, nothing can be implied about the owning thread's state. */
 	bool _failAllocOnExcessiveGC;
 
@@ -734,6 +737,7 @@ public:
 		,_workStack()
 		,_threadType(MUTATOR_THREAD)
 		,_cycleState(NULL)
+		,_collectionReason(MM_CycleState::gc_reason_other)
 		,_isInNoGCAllocationCall(false)
 		,_failAllocOnExcessiveGC(false)
 		,_currentTask(NULL)
@@ -791,6 +795,7 @@ public:
 		,_workStack()
 		,_threadType(MUTATOR_THREAD)
 		,_cycleState(NULL)
+		,_collectionReason(MM_CycleState::gc_reason_other)
 		,_isInNoGCAllocationCall(false)
 		,_failAllocOnExcessiveGC(false)
 		,_currentTask(NULL)

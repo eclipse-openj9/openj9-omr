@@ -2580,7 +2580,7 @@ void OMR::ValuePropagation::replaceByConstant(TR::Node *node, TR::VPConstraint *
     if (!isGlobal && !lastTimeThrough())
         return;
 
-    if (!performTransformation(comp(), "%sConstant folding %s [" POINTER_PRINTF_FORMAT "]", OPT_DETAILS,
+    if (!performTransformation(comp(), "%sConstant folding %s [" POINTER_PRINTF_FORMAT "]\n", OPT_DETAILS,
             node->getOpCode().getName(), node))
         return;
 
@@ -2635,15 +2635,33 @@ void OMR::ValuePropagation::replaceByConstant(TR::Node *node, TR::VPConstraint *
             node->setLongInt(constraint->asLongConst()->getLong());
             dumpOptDetails(comp(), " to dconst [double const]\n");
             break;
-        case TR::Address:
+
+        case TR::Address: {
             if (node->getOpCode().isLoadDirect()) {
                 node->setIsDontMoveUnderBranch(false);
             }
-            TR::Node::recreate(node, TR::aconst);
-            node->setAddress(0);
-            TR_ASSERT(constraint->isNullObject(), "Only null address constant supported");
-            dumpOptDetails(comp(), " to aconst " UINT64_PRINTF_FORMAT_HEX "\n", (uint64_t)node->getAddress());
+
+            if (constraint->isNullObject()) {
+                TR::Node::recreate(node, TR::aconst);
+                node->setAddress(0);
+                dumpOptDetails(comp(), " to aconst null\n");
+                break;
+            }
+
+            TR_ASSERT_FATAL_WITH_NODE(node, comp()->useConstRefs(), "Only null address constant supported");
+
+            TR::VPKnownObject *knownObject = constraint->getKnownObject();
+            TR_ASSERT_FATAL_WITH_NODE(node, knownObject != NULL && constraint->isNonNullObject(),
+                "constant address must be either null or a non-null known object");
+
+            TR::SymbolReference *symRef = comp()->getKnownObjectTable()->constSymRef(knownObject->getIndex());
+
+            TR::Node::recreateWithSymRef(node, TR::aload, symRef);
+            node->setIsNull(false);
+            node->setIsNonNull(true);
             break;
+        }
+
         default:
             TR_ASSERT(0, "Bad type for convert to constant");
             break;

@@ -376,8 +376,20 @@ TR::Node *TR_VirtualGuard::createMutableCallSiteTargetGuard(TR::Compilation *com
     TR::TreeTop *destination, TR::KnownObjectTable::Index mcsObject, TR::KnownObjectTable::Index mcsEpoch)
 {
     TR::SymbolReferenceTable *symRefTab = comp->getSymRefTab();
-    TR::SymbolReference *addressSymRef = symRefTab->createKnownStaticDataSymbolRef(0, TR::Address, mcsEpoch);
-    addressSymRef->setSideEffectInfo();
+    TR::SymbolReference *addressSymRef = NULL;
+    if (comp->useConstRefs()) {
+        TR::KnownObjectTable *knot = comp->getKnownObjectTable();
+        TR_ASSERT_FATAL_WITH_NODE(node, knot != NULL, "mcs guard missing known object table");
+
+        addressSymRef = knot->constSymRef(mcsEpoch);
+    }
+#ifdef TR_ALLOW_NON_CONST_KNOWN_OBJECTS
+    else {
+        addressSymRef = symRefTab->createKnownStaticDataSymbolRef(0, TR::Address, mcsEpoch);
+        addressSymRef->setSideEffectInfo();
+    }
+#endif
+
     TR::Node *receiver = node->getArgument(0);
     TR::Node *load = TR::Node::createWithSymRef(node, TR::aload, 0, addressSymRef);
     TR::Node *guard = TR::Node::createif(TR::ifacmpne, node, load,

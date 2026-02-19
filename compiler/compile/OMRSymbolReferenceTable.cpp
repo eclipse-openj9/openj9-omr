@@ -113,6 +113,7 @@ OMR::SymbolReferenceTable::SymbolReferenceTable(size_t sizeHint, TR::Compilation
     , _hasUserField(false)
     , _sharedAliasMap(NULL)
     , _originalUnimprovedSymRefs(std::less<int32_t>(), comp->allocator())
+    , _constRefSymRefs(comp->region())
 {
     _numHelperSymbols = TR_numRuntimeHelpers + 1;
     ;
@@ -612,6 +613,46 @@ TR::SymbolReference *OMR::SymbolReferenceTable::findOrCreateCurrentTimeMaxPrecis
     return element(currentTimeMaxPrecisionSymbol);
 }
 
+TR::SymbolReference *OMR::SymbolReferenceTable::findOrCreateConstRefSymbolRef(TR::KnownObjectTable::Index index)
+{
+    TR_ASSERT_FATAL(comp()->useConstRefs(), "findOrCreateConstRefSymbolRef: const refs must be enabled");
+
+    TR::KnownObjectTable *knot = comp()->getKnownObjectTable();
+    TR_ASSERT_FATAL(knot != NULL, "findOrCreateConstRefSymbolRef(%d): known object table must exist", index);
+
+    TR_ASSERT_FATAL(0 <= index && index < knot->getEndIndex(),
+        "findOrCreateConstRefSymbolRef(%d): index must be in range 0..%d", index, knot->getEndIndex());
+
+    TR_ASSERT_FATAL(!knot->isNull(index), "findOrCreateConstRefSymbolRef(%d): null index", index);
+
+    TR::SymbolReference *symRef = NULL;
+    if (index < _constRefSymRefs.size()) {
+        symRef = _constRefSymRefs[index];
+        if (symRef != NULL) {
+            return symRef;
+        }
+    }
+
+    // This address is only useful for dereferencing at compile-time.
+    // Code generation will allocate the slot amongst the snippets.
+    void *addr = knot->getPointerLocation(index);
+    TR::Symbol *sym = TR::StaticSymbol::createWithAddress(comp()->trHeapMemory(), TR::Address, addr);
+
+    sym->setFinal();
+    self()->flagConstRefSymbol(addr, sym);
+
+    symRef = TR::SymbolReference::create(self(), sym, TR::SymbolReference::ConstRefIndex(index));
+
+    if (index >= _constRefSymRefs.size()) {
+        _constRefSymRefs.resize(index + 1, NULL);
+    }
+
+    _constRefSymRefs[index] = symRef;
+    return symRef;
+}
+
+void OMR::SymbolReferenceTable::flagConstRefSymbol(void *addr, TR::Symbol *sym) { sym->setNonSpecificConstObject(); }
+
 TR::SymbolReference *OMR::SymbolReferenceTable::createKnownStaticDataSymbolRef(void *dataAddress, TR::DataType type)
 {
     TR::StaticSymbol *sym = TR::StaticSymbol::create(trHeapMemory(), type);
@@ -619,6 +660,8 @@ TR::SymbolReference *OMR::SymbolReferenceTable::createKnownStaticDataSymbolRef(v
     sym->setNotCollected();
     return new (trHeapMemory()) TR::SymbolReference(self(), sym);
 }
+
+#ifdef TR_ALLOW_NON_CONST_KNOWN_OBJECTS
 
 TR::SymbolReference *OMR::SymbolReferenceTable::createKnownStaticDataSymbolRef(void *dataAddress, TR::DataType type,
     TR::KnownObjectTable::Index knownObjectIndex)
@@ -641,6 +684,8 @@ TR::SymbolReference *OMR::SymbolReferenceTable::createKnownStaticReferenceSymbol
     TR::StaticSymbol *sym = TR::StaticSymbol::createNamed(trHeapMemory(), TR::Address, dataAddress, name);
     return TR::SymbolReference::create(self(), sym, knownObjectIndex);
 }
+
+#endif // TR_ALLOW_NON_CONST_KNOWN_OBJECTS
 
 TR::SymbolReference *OMR::SymbolReferenceTable::createIsOverriddenSymbolRef(TR::ResolvedMethodSymbol *calleeSymbol)
 {
@@ -891,6 +936,8 @@ TR::SymbolReference *OMR::SymbolReferenceTable::methodSymRefFromName(TR::Resolve
     return result;
 }
 
+#ifdef TR_ALLOW_NON_CONST_KNOWN_OBJECTS
+
 TR::SymbolReference *OMR::SymbolReferenceTable::findOrCreateSymRefWithKnownObject(TR::SymbolReference *original,
     uintptr_t *referenceLocation)
 {
@@ -907,6 +954,8 @@ TR::SymbolReference *OMR::SymbolReferenceTable::findOrCreateSymRefWithKnownObjec
     TR::KnownObjectTable::Index objectIndex = knot->getOrCreateIndexAt(referenceLocation, isArrayWithConstantElements);
     return findOrCreateSymRefWithKnownObject(original, objectIndex);
 }
+
+#endif // TR_ALLOW_NON_CONST_KNOWN_OBJECTS
 
 TR::SymbolReference *OMR::SymbolReferenceTable::findTempSymRefWithKnownObject(
     TR::KnownObjectTable::Index knownObjectIndex)
@@ -933,6 +982,8 @@ TR::SymbolReference *OMR::SymbolReferenceTable::findSymRefWithKnownObject(TR::Sy
     }
     return NULL;
 }
+
+#ifdef TR_ALLOW_NON_CONST_KNOWN_OBJECTS
 
 TR::SymbolReference *OMR::SymbolReferenceTable::findOrCreateSymRefWithKnownObject(TR::SymbolReference *originalSymRef,
     TR::KnownObjectTable::Index knownObjectIndex)
@@ -965,6 +1016,8 @@ TR::SymbolReference *OMR::SymbolReferenceTable::findOrCreateSymRefWithKnownObjec
     return result;
 }
 
+#endif // TR_ALLOW_NON_CONST_KNOWN_OBJECTS
+
 TR::SymbolReference *OMR::SymbolReferenceTable::createTempSymRefWithKnownObject(TR::Symbol *symbol,
     mcount_t owningMethodIndex, int32_t slot, TR::KnownObjectTable::Index knownObjectIndex)
 {
@@ -976,8 +1029,11 @@ TR::SymbolReference *OMR::SymbolReferenceTable::createTempSymRefWithKnownObject(
             TR_BitVector(baseArray.size(), trMemory(), heapAlloc, growable, TR_MemoryBase::SymbolReference);
         _knownObjectSymrefsByObjectIndex[knownObjectIndex] = bucket;
     }
-    TR::SymbolReference *symRef = new (trHeapMemory())
-        TR::SymbolReference(self(), symbol, owningMethodIndex, slot, 0 /*unresolvedIndex*/, knownObjectIndex);
+
+    TR::SymbolReference *symRef = new (trHeapMemory()) TR::SymbolReference(self(), symbol, owningMethodIndex, slot,
+        0, // unresolvedIndex
+        TR::SymbolReference::KnownTempIndex(knownObjectIndex)); // this is a temp
+
     bucket->set(symRef->getReferenceNumber());
     return symRef;
 }
@@ -1227,8 +1283,12 @@ TR::SymbolReference *OMR::SymbolReferenceTable::findOrCreateClassSymbol(TR::Reso
 }
 
 TR::SymbolReference *OMR::SymbolReferenceTable::findOrCreateCPSymbol(TR::ResolvedMethodSymbol *owningMethodSymbol,
-    int32_t cpIndex, TR::DataType dataType, bool resolved, void *dataAddress,
-    TR::KnownObjectTable::Index knownObjectIndex)
+    int32_t cpIndex, TR::DataType dataType, bool resolved, void *dataAddress
+#ifdef TR_ALLOW_NON_CONST_KNOWN_OBJECTS
+    ,
+    TR::KnownObjectTable::Index knownObjectIndex
+#endif
+)
 {
     TR::StaticSymbol *sym;
     TR_SymRefIterator i(aliasBuilder.cpConstantSymRefs(), self());
@@ -1256,8 +1316,13 @@ TR::SymbolReference *OMR::SymbolReferenceTable::findOrCreateCPSymbol(TR::Resolve
     sym = TR::StaticSymbol::create(trHeapMemory(), dataType);
     int32_t unresolvedIndex = resolved ? 0 : _numUnresolvedSymbols++;
 
-    symRef = new (trHeapMemory()) TR::SymbolReference(self(), sym, owningMethodSymbol->getResolvedMethodIndex(),
-        cpIndex, unresolvedIndex, knownObjectIndex);
+    symRef = new (trHeapMemory())
+        TR::SymbolReference(self(), sym, owningMethodSymbol->getResolvedMethodIndex(), cpIndex, unresolvedIndex
+#ifdef TR_ALLOW_NON_CONST_KNOWN_OBJECTS
+            ,
+            knownObjectIndex
+#endif
+        );
 
     if (resolved)
         sym->setStaticAddress(dataAddress);
@@ -1374,7 +1439,7 @@ TR::SymbolReference *OMR::SymbolReferenceTable::findOrCreateAutoSymbol(TR::Resol
     size_t size)
 {
     return findOrCreateAutoSymbolImpl(owningMethodSymbol, slot, type, isReference, isInternalPointer, reuseAuto,
-        isAdjunct, size, TR::KnownObjectTable::UNKNOWN);
+        isAdjunct, size);
 }
 
 TR::SymbolReference *OMR::SymbolReferenceTable::findOrCreateAutoSymbolImpl(TR::ResolvedMethodSymbol *owningMethodSymbol,

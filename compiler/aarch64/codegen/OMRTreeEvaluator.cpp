@@ -5572,6 +5572,14 @@ TR::Register *OMR::ARM64::TreeEvaluator::aloadEvaluator(TR::Node *node, TR::Code
 
     node->setRegister(tempReg);
 
+    TR::LabelSymbol *constRefLabel = cg->assignConstRefLabel(node);
+    if (constRefLabel != NULL) {
+        // Load from the const ref slot using ldr literal (ldrx), which has a range of +/- 1MB.
+        // We may eventually need to handle farther slots for splitWarmAndColdBlocks, e.g. with adrp + ldrimmx.
+        generateTrg1ImmSymInstruction(cg, TR::InstOpCode::ldrx, node, tempReg, 0, constRefLabel);
+        return tempReg;
+    }
+
     TR::InstOpCode::Mnemonic op;
     int32_t size;
 

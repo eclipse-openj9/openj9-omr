@@ -327,6 +327,13 @@ public:
     TR::KnownObjectTable *getOrCreateKnownObjectTable();
     void freeKnownObjectTable();
 
+    // Determine whether to use constant references.
+#ifdef TR_ALLOW_NON_CONST_KNOWN_OBJECTS
+    bool useConstRefs() { return _options->getOption(TR_EnableConstRefs); }
+#else
+    bool useConstRefs() { return true; }
+#endif
+
     // Is this compilation producing relocatable code?  This should generally
     // return true, for example, for ahead-of-time compilations.
     //

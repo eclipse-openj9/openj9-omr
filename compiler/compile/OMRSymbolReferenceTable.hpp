@@ -751,9 +751,14 @@ public:
 
     bool isVtableEntrySymbolRef(TR::SymbolReference *s) { return _vtableEntrySymbolRefs.find(s); }
 
+    TR::SymbolReference *findOrCreateConstRefSymbolRef(TR::KnownObjectTable::Index index);
+    void flagConstRefSymbol(void *addr, TR::Symbol *sym);
+
     TR::SymbolReference *createKnownStaticDataSymbolRef(void *counterAddress, TR::DataType type);
+#ifdef TR_ALLOW_NON_CONST_KNOWN_OBJECTS
     TR::SymbolReference *createKnownStaticDataSymbolRef(void *counterAddress, TR::DataType type,
         TR::KnownObjectTable::Index knownObjectIndex);
+#endif
     TR::SymbolReference *findOrCreateTransactionEntrySymbolRef(TR::ResolvedMethodSymbol *owningMethodSymbol);
     TR::SymbolReference *findOrCreateTransactionExitSymbolRef(TR::ResolvedMethodSymbol *owningMethodSymbol);
     TR::SymbolReference *findOrCreateTransactionAbortSymbolRef(TR::ResolvedMethodSymbol *owningMethodSymbol);
@@ -804,9 +809,10 @@ public:
     TR::SymbolReference *findClassIsArraySymbolRef();
 
     TR::SymbolReference *findHeaderFlagsSymbolRef() { return element(headerFlagsSymbol); }
-
+#ifdef TR_ALLOW_NON_CONST_KNOWN_OBJECTS
     TR::SymbolReference *createKnownStaticReferenceSymbolRef(void *address,
         TR::KnownObjectTable::Index knownObjectIndex = TR::KnownObjectTable::UNKNOWN);
+#endif
 
     TR::SymbolReference *findOrCreateArrayTranslateSymbol();
     TR::SymbolReference *findOrCreateSinglePrecisionSQRTSymbol();
@@ -823,11 +829,14 @@ public:
     // CG, optimizer
     TR::SymbolReference *findThisRangeExtensionSymRef(TR::ResolvedMethodSymbol *owningMethodSymbol = 0);
 
+#ifdef TR_ALLOW_NON_CONST_KNOWN_OBJECTS
     TR::SymbolReference *findOrCreateSymRefWithKnownObject(TR::SymbolReference *original, uintptr_t *referenceLocation);
     TR::SymbolReference *findOrCreateSymRefWithKnownObject(TR::SymbolReference *original, uintptr_t *referenceLocation,
         bool isArrayWithConstantElements);
     TR::SymbolReference *findOrCreateSymRefWithKnownObject(TR::SymbolReference *original,
         TR::KnownObjectTable::Index objectIndex);
+#endif
+
     /*
      * The public API that should be used when the caller needs a temp to hold a known object
      *
@@ -835,6 +844,7 @@ public:
      */
     TR::SymbolReference *findOrCreateTemporaryWithKnowObjectIndex(TR::ResolvedMethodSymbol *owningMethodSymbol,
         TR::KnownObjectTable::Index knownObjectIndex);
+
     TR::SymbolReference *findOrCreateThisRangeExtensionSymRef(TR::ResolvedMethodSymbol *owningMethodSymbol = 0);
     TR::SymbolReference *findOrCreateContiguousArraySizeSymbolRef();
 #if defined(OMR_GC_SPARSE_HEAP_ALLOCATION)
@@ -962,8 +972,14 @@ protected:
      * For finding symbol reference with known object index for a temp
      */
     TR::SymbolReference *findTempSymRefWithKnownObject(TR::KnownObjectTable::Index knownObjectIndex);
-    TR::SymbolReference *findOrCreateCPSymbol(TR::ResolvedMethodSymbol *, int32_t, TR::DataType, bool, void *,
-        TR::KnownObjectTable::Index knownObjectIndex = TR::KnownObjectTable::UNKNOWN);
+
+    TR::SymbolReference *findOrCreateCPSymbol(TR::ResolvedMethodSymbol *, int32_t, TR::DataType, bool, void *
+#ifdef TR_ALLOW_NON_CONST_KNOWN_OBJECTS
+        ,
+        TR::KnownObjectTable::Index knownObjectIndex = TR::KnownObjectTable::UNKNOWN
+#endif
+    );
+
     TR::SymbolReference *findOrCreateAutoSymbolImpl(TR::ResolvedMethodSymbol *owningMethodSymbol, int32_t slot,
         TR::DataType, bool isReference = true, bool isInternalPointer = false, bool reuseAuto = true,
         bool isAdjunct = false, size_t size = 0,
@@ -1020,6 +1036,8 @@ protected:
     typedef TR::typed_allocator<std::pair<const int32_t, int32_t>, TR::Allocator> OriginalUnimprovedMapAlloc;
     typedef std::map<int32_t, int32_t, std::less<int32_t>, OriginalUnimprovedMapAlloc> OriginalUnimprovedMap;
     OriginalUnimprovedMap _originalUnimprovedSymRefs;
+
+    TR::vector<TR::SymbolReference *, TR::Region &> _constRefSymRefs;
 
     TR_FrontEnd *_fe;
     TR::Compilation *_compilation;

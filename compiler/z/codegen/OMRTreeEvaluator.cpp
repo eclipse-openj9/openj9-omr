@@ -2541,6 +2541,11 @@ TR::Instruction *genLoadLongConstant(TR::CodeGenerator *cg, TR::Node *node, int6
 TR::Instruction *genLoadAddressConstant(TR::CodeGenerator *cg, TR::Node *node, uintptr_t value,
     TR::Register *targetRegister, TR::Instruction *cursor, TR::RegisterDependencyConditions *cond, TR::Register *base)
 {
+    TR::LabelSymbol *constRefLabel = cg->assignConstRefLabel(node);
+    if (constRefLabel != NULL) {
+        return generateRILInstruction(cg, TR::InstOpCode::LARL, node, targetRegister, constRefLabel);
+    }
+
     TR::Compilation *comp = cg->comp();
     bool isPicSite = false;
     bool assumeUnload = false;
@@ -6636,6 +6641,14 @@ TR::Register *aloadHelper(TR::Node *node, TR::CodeGenerator *cg, TR::MemoryRefer
         node->setRegister(tempReg);
         cg->recursivelyDecReferenceCount(node->getFirstChild());
         cg->stopUsingRegister(tempReg);
+        return tempReg;
+    }
+
+    TR::LabelSymbol *constRefLabel = cg->assignConstRefLabel(node);
+    if (constRefLabel != NULL) {
+        tempReg = cg->allocateCollectedReferenceRegister();
+        generateRILInstruction(cg, TR::InstOpCode::LGRL, node, tempReg, constRefLabel);
+        node->setRegister(tempReg);
         return tempReg;
     }
 

@@ -104,8 +104,12 @@ OMR::Node::Node()
     , _visitCount(0)
     , _localIndex(0)
     , _referenceCount(0)
-    , _knownObjectIndex(TR::KnownObjectTable::UNKNOWN)
-    , _byteCodeInfo()
+    ,
+#ifdef TR_ALLOW_NON_CONST_KNOWN_OBJECTS
+    _knownObjectIndex(TR::KnownObjectTable::UNKNOWN)
+    ,
+#endif
+    _byteCodeInfo()
     , _unionBase()
     , _unionPropertyA()
 {}
@@ -126,8 +130,12 @@ OMR::Node::Node(TR::Node *originatingByteCodeNode, TR::ILOpCodes op, uint16_t nu
     , _visitCount(0)
     , _localIndex(0)
     , _referenceCount(0)
-    , _knownObjectIndex(TR::KnownObjectTable::UNKNOWN)
-    , _byteCodeInfo()
+    ,
+#ifdef TR_ALLOW_NON_CONST_KNOWN_OBJECTS
+    _knownObjectIndex(TR::KnownObjectTable::UNKNOWN)
+    ,
+#endif
+    _byteCodeInfo()
     , _unionBase()
     , _unionPropertyA()
 {
@@ -152,7 +160,10 @@ OMR::Node::Node(TR::Node *originatingByteCodeNode, TR::ILOpCodes op, uint16_t nu
     self()->setReferenceCount(0);
     self()->setVisitCount(0);
     self()->setLocalIndex(0);
-    self()->setKnownObjectIndex(TR::KnownObjectTable::UNKNOWN), memset(&(_unionA), 0, sizeof(_unionA));
+#ifdef TR_ALLOW_NON_CONST_KNOWN_OBJECTS
+    self()->setKnownObjectIndex(TR::KnownObjectTable::UNKNOWN);
+#endif
+    memset(&(_unionA), 0, sizeof(_unionA));
     if (self()->getGlobalIndex() == MAX_NODE_COUNT) {
         TR_ASSERT(0, "getGlobalIndex() == MAX_NODE_COUNT");
         comp->failCompilation<TR::ExcessiveComplexity>("Global index equal to max node count");
@@ -210,8 +221,12 @@ OMR::Node::Node(TR::Node *from, uint16_t numChildren)
     , _visitCount(0)
     , _localIndex(0)
     , _referenceCount(0)
-    , _knownObjectIndex(TR::KnownObjectTable::UNKNOWN)
-    , _byteCodeInfo()
+    ,
+#ifdef TR_ALLOW_NON_CONST_KNOWN_OBJECTS
+    _knownObjectIndex(TR::KnownObjectTable::UNKNOWN)
+    ,
+#endif
+    _byteCodeInfo()
     , _unionBase()
     , _unionPropertyA()
 {
@@ -231,7 +246,9 @@ OMR::Node::Node(TR::Node *from, uint16_t numChildren)
     self()->setReferenceCount(from->getReferenceCount());
     self()->setVisitCount(from->getVisitCount());
     self()->setLocalIndex(from->getLocalIndex());
+#ifdef TR_ALLOW_NON_CONST_KNOWN_OBJECTS
     self()->setKnownObjectIndex(from->getKnownObjectIndex());
+#endif
     _unionA = from->_unionA;
 
     if (self()->getGlobalIndex() == MAX_NODE_COUNT) {
@@ -546,7 +563,9 @@ TR::Node *OMR::Node::createInternal(TR::Node *originatingByteCodeNode, TR::ILOpC
         vcount_t visitCount = originalNode->getVisitCount();
         scount_t localIndex = originalNode->getLocalIndex();
         rcount_t referenceCount = originalNode->getReferenceCount();
+#ifdef TR_ALLOW_NON_CONST_KNOWN_OBJECTS
         TR::KnownObjectTable::Index knownObjectIndex = originalNode->getKnownObjectIndex();
+#endif
         UnionA unionA = originalNode->_unionA;
         const TR_ByteCodeInfo byteCodeInfo
             = originalNode->getByteCodeInfo(); // copy bytecode info into temporary variable
@@ -558,7 +577,9 @@ TR::Node *OMR::Node::createInternal(TR::Node *originatingByteCodeNode, TR::ILOpC
         node->setVisitCount(visitCount);
         node->setLocalIndex(localIndex);
         node->setReferenceCount(referenceCount);
+#ifdef TR_ALLOW_NON_CONST_KNOWN_OBJECTS
         node->setKnownObjectIndex(knownObjectIndex);
+#endif
         node->_unionA = unionA;
 
         return node;
@@ -6616,8 +6637,10 @@ static void resetFlagsAndPropertiesForCodeMotionHelper(TR::Node *node, TR::NodeC
     if (node->chkIsReferenceNonNull())
         node->setReferenceIsNonNull(false);
 
+#ifdef TR_ALLOW_NON_CONST_KNOWN_OBJECTS
     if (node->hasKnownObjectIndex())
         node->setKnownObjectIndex(TR::KnownObjectTable::UNKNOWN);
+#endif
 
     if (node->isTheVirtualGuardForAGuardedInlinedCall())
         node->setVFTEntryIsInBounds(false);

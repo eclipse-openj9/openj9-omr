@@ -26,6 +26,8 @@
 #endif
 #include "compile/Compilation.hpp"
 #include "env/CompilerEnv.hpp"
+#include "il/StaticSymbol.hpp"
+#include "il/SymbolReference.hpp"
 #include "ras/Logger.hpp"
 
 OMR::KnownObjectTable::KnownObjectTable(TR::Compilation *comp)
@@ -142,4 +144,9 @@ uintptr_t OMR::KnownObjectTable::getPointer(Index index)
         return 0; // Assumes host and target representations of null match each other
     else
         return *self()->getPointerLocation(index);
+}
+
+TR::SymbolReference *OMR::KnownObjectTable::constSymRef(Index index)
+{
+    return comp()->getSymRefTab()->findOrCreateConstRefSymbolRef(index);
 }

@@ -109,13 +109,26 @@ OMR::SymbolReference::SymbolReference(TR::SymbolReferenceTable *symRefTab, TR::S
 }
 
 OMR::SymbolReference::SymbolReference(TR::SymbolReferenceTable *symRefTab, TR::Symbol *sym, mcount_t owningMethodIndex,
-    int32_t cpIndex, int32_t unresolvedIndex, TR::KnownObjectTable::Index knownObjectIndex)
+    int32_t cpIndex, int32_t unresolvedIndex, KnownTempIndex knownObjectIndex)
 {
     self()->init(symRefTab, symRefTab->assignSymRefNumber(self()), sym,
         0, // Offset 0
         owningMethodIndex, cpIndex, unresolvedIndex);
 
+#ifdef TR_ALLOW_NON_CONST_KNOWN_OBJECTS
     _knownObjectIndex = knownObjectIndex;
+#else
+    _knownObjectIndex = knownObjectIndex._koi;
+#endif
+
+    TR::Compilation *comp = symRefTab->comp();
+    if (_knownObjectIndex != TR::KnownObjectTable::UNKNOWN && comp->useConstRefs()) {
+        TR_ASSERT_FATAL(sym->isAuto(), "known object temp is not an auto");
+        auto *owningMethodSym = self()->getOwningMethodSymbol(comp);
+        int32_t tempsStart = owningMethodSym->getFirstJitTempIndex();
+        int32_t slot = cpIndex;
+        TR_ASSERT_FATAL(slot >= tempsStart, "known object temp is not a temp");
+    }
 
     if (sym->isResolvedMethod())
         symRefTab->comp()->registerResolvedMethodSymbolReference(self());
@@ -231,10 +244,14 @@ const char *OMR::SymbolReference::getName(TR_Debug *debug)
 }
 
 TR::SymbolReference *OMR::SymbolReference::create(TR::SymbolReferenceTable *symRefTab, TR::Symbol *sym,
-    TR::KnownObjectTable::Index koi)
+    ConstRefIndex koi)
 {
     TR::SymbolReference *result = new (symRefTab->trHeapMemory()) TR::SymbolReference(symRefTab, sym);
+#ifdef TR_ALLOW_NON_CONST_KNOWN_OBJECTS
     result->_knownObjectIndex = koi;
+#else
+    result->_knownObjectIndex = koi._koi;
+#endif
     return result;
 }
 

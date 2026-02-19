@@ -91,6 +91,31 @@ class OMR_EXTENSIBLE SymbolReference {
 public:
     TR_ALLOC(TR_Memory::SymbolReference)
 
+#ifdef TR_ALLOW_NON_CONST_KNOWN_OBJECTS
+    typedef TR::KnownObjectTable::Index ConstRefIndex;
+    typedef TR::KnownObjectTable::Index KnownTempIndex;
+#else
+    // Caller promises they're creating a const known object symref (if index is
+    // not UNKNOWN).
+    struct ConstRefIndex {
+        explicit ConstRefIndex(TR::KnownObjectTable::Index koi)
+            : _koi(koi)
+        {}
+
+        const TR::KnownObjectTable::Index _koi;
+    };
+
+    // Caller promises they're creating a known object temp (if index is not
+    // UNKNOWN).
+    struct KnownTempIndex {
+        explicit KnownTempIndex(TR::KnownObjectTable::Index koi)
+            : _koi(koi)
+        {}
+
+        const TR::KnownObjectTable::Index _koi;
+    };
+#endif
+
     void init(TR::SymbolReferenceTable *symRefTab, uint32_t refNumber, TR::Symbol *sym = 0, intptr_t offset = 0,
         mcount_t owningMethodIndex = JITTED_METHOD_INDEX, int32_t cpIndex = -1, int32_t unresolvedIndex = 0,
         bool checkNoNamedShadow = true);
@@ -107,15 +132,18 @@ public:
         TR::Symbol *ps, intptr_t offset = 0);
 
     SymbolReference(TR::SymbolReferenceTable *symRefTab, TR::Symbol *sym, mcount_t owningMethodIndex, int32_t cpIndex,
-        int32_t unresolvedIndex = 0, TR::KnownObjectTable::Index knownObjectIndex = TR::KnownObjectTable::UNKNOWN);
+        int32_t unresolvedIndex = 0, KnownTempIndex knownObjectIndex = KnownTempIndex(TR::KnownObjectTable::UNKNOWN));
 
-    SymbolReference(TR::SymbolReferenceTable *symRefTab, TR::SymbolReference &sr, intptr_t offset,
-        TR::KnownObjectTable::Index knownObjectIndex = TR::KnownObjectTable::UNKNOWN);
+    SymbolReference(TR::SymbolReferenceTable *symRefTab, TR::SymbolReference &sr, intptr_t offset
+#ifdef TR_ALLOW_NON_CONST_KNOWN_OBJECTS
+        ,
+        TR::KnownObjectTable::Index knownObjectIndex = TR::KnownObjectTable::UNKNOWN
+#endif
+    );
 
     void copyFlags(TR::SymbolReference *sr);
 
-    static TR::SymbolReference *create(TR::SymbolReferenceTable *symRefTab, TR::Symbol *sym,
-        TR::KnownObjectTable::Index koi);
+    static TR::SymbolReference *create(TR::SymbolReferenceTable *symRefTab, TR::Symbol *sym, ConstRefIndex koi);
 
     void *getMethodAddress();
 

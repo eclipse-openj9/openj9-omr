@@ -208,4 +208,20 @@
    and the guarded code permanently enabled */
 #define BITVECTOR_BIT_NUMBERING_MSB 1
 
+// If TR_ALLOW_NON_CONST_KNOWN_OBJECTS is defined, then it's possible to
+// disable const refs (using the disableConstRefs option), in which case known
+// object indices will be used in the trees in the same way they were used
+// prior to const refs. That is, static and shadow symrefs will be "improved"
+// with known object indices, and (to a more limited extent) individual nodes
+// will have known object indices set on them.
+//
+// Remove this definition to statically disallow "improved" symrefs and
+// per-node known object indices at build time. This is useful to ensure that
+// const refs has an alternative for every usage of those techniques. It should
+// also eventually be useful for identifying code that's no longer necessary
+// once const refs are sufficiently well established that the old way can be
+// removed.
+//
+#define TR_ALLOW_NON_CONST_KNOWN_OBJECTS
+
 #endif /* OMR_DEFINES_H */

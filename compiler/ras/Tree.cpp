@@ -1304,8 +1304,11 @@ void TR_Debug::printNodeInfo(TR::Node *node, TR_PrettyPrinterString &output, boo
         }
     }
 
-    if (node->hasKnownObjectIndex())
+#ifdef TR_ALLOW_NON_CONST_KNOWN_OBJECTS
+    if (node->hasKnownObjectIndex()) {
         output.appendf(" (node obj%d)", node->getKnownObjectIndex());
+    }
+#endif
 
     if (node->getOpCode().isNullCheck()) {
         if (node->getNullCheckReference())

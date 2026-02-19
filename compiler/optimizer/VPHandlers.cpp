@@ -504,16 +504,23 @@ static bool findConstant(OMR::ValuePropagation *vp, TR::Node *node)
             case TR::Address:
                 if (constraint->isNullObject()) {
                     vp->replaceByConstant(node, constraint, isGlobal);
-                    node->setIsNull(true);
                     return true;
                 } else if (constraint->isNonNullObject()) {
                     node->setIsNonNull(true);
-                    if (constraint->getKnownObject()) {
-                        TR::VPKnownObject *knownObject = constraint->getKnownObject();
+                    TR::VPKnownObject *knownObject = constraint->getKnownObject();
+                    if (knownObject != NULL) {
+                        TR::KnownObjectTable *knot = vp->comp()->getKnownObjectTable();
+                        TR_ASSERT_FATAL(knot != NULL,
+                            "Can't have a known-object constraint without a known-object table");
+
+                        if (vp->comp()->useConstRefs()) {
+                            vp->replaceByConstant(node, constraint, isGlobal);
+                            return true;
+                        }
+
+#ifdef TR_ALLOW_NON_CONST_KNOWN_OBJECTS
                         // Don't do direct loads here till we get the aliasing right
                         if (node->getOpCode().isLoadIndirect() && !node->getSymbolReference()->hasKnownObjectIndex()) {
-                            TR::KnownObjectTable *knot = vp->comp()->getKnownObjectTable();
-                            TR_ASSERT(knot, "Can't have a known-object constraint without a known-object table");
                             TR::SymbolReference *improvedSymRef
                                 = vp->comp()->getSymRefTab()->findOrCreateSymRefWithKnownObject(
                                     node->getSymbolReference(), knownObject->getIndex());
@@ -532,6 +539,7 @@ static bool findConstant(OMR::ValuePropagation *vp, TR::Node *node)
                                     OPT_DETAILS, knownObject->getIndex(), node))
                                 node->setKnownObjectIndex(knownObject->getIndex());
                         }
+#endif // TR_ALLOW_NON_CONST_KNOWN_OBJECTS
                     }
                 }
                 break;
@@ -1570,8 +1578,28 @@ TR::Node *constrainAload(OMR::ValuePropagation *vp, TR::Node *node)
         }
 
         // Constraints based on known object info from the symref should be non-global.
-        if (addKnownObjectConstraints(vp, node, false))
+        //
+        // However, it is OK to create a global constraint in the case of a const ref load.
+        // Const ref loads are represented using static symrefs, and static loads get fresh
+        // value numbers. Even if that weren't the case, any potential sharing at the point
+        // of origin would have to be only with other loads of the same const ref symref,
+        // which have the same value.
+        //
+        // VP does fold some nodes by transmuting them into const ref loads, but this will
+        // not result in inappropriate global constraints because, just like for folding to
+        // iconst, if the original constraint was local, then VP will delay folding until
+        // the last time the node is processed.
+        //
+        // Check for a static symref to rule out known object temps here, which could
+        // conceivably share a value number with other nodes that are not necessarily the
+        // same known object. For instance, a known object temp could conceivably be
+        // defined as a copy of another auto that is path-sensitively known to be the known
+        // object at the point of the copy, but not at *its* definition(s).
+        //
+        bool globalKnownObjOk = vp->comp()->useConstRefs() && symRef->getSymbol()->isStatic();
+        if (addKnownObjectConstraints(vp, node, globalKnownObjOk)) {
             return node;
+        }
 
         if (!symRef->getSymbol()->isArrayShadowSymbol()) {
             TR::Symbol *sym = symRef->getSymbol();
@@ -1946,7 +1974,14 @@ TR::Node *constrainAloadi(OMR::ValuePropagation *vp, TR::Node *node)
                                         = TR::VPClass::create(vp, TR::VPKnownObject::create(vp, fieldObjectKnotIndex),
                                             TR::VPNonNullObject::create(vp), NULL, NULL,
                                             TR::VPObjectLocation::create(vp, TR::VPObjectLocation::HeapObject));
-                                    vp->addGlobalConstraint(node, constraint);
+
+                                    if (vp->comp()->useConstRefs()) {
+                                        bool isConstGlobal = true;
+                                        vp->replaceByConstant(node, constraint, isConstGlobal);
+                                        return node;
+                                    } else {
+                                        vp->addGlobalConstraint(node, constraint);
+                                    }
                                 } else {
                                     int32_t arrLength
                                         = TR::Compiler->om.getArrayLengthInElements(vp->comp(), fieldObject);
@@ -2076,6 +2111,8 @@ TR::Node *constrainAloadi(OMR::ValuePropagation *vp, TR::Node *node)
                     node->setIsNonNull(true);
                 }
                 break;
+
+#ifdef TR_ALLOW_NON_CONST_KNOWN_OBJECTS
             case TR::Symbol::Java_lang_invoke_MutableCallSite_target: {
                 if (!vp->comp()->getOption(TR_DisableMCSBypass) && vp->comp()->getMethodHotness() >= hot) {
                     TR::VPConstraint *callSiteConstraint = vp->getConstraint(node->getFirstChild(), isGlobal);
@@ -2134,6 +2171,8 @@ TR::Node *constrainAloadi(OMR::ValuePropagation *vp, TR::Node *node)
                     }
                 }
             } break;
+#endif // TR_ALLOW_NON_CONST_KNOWN_OBJECTS
+
             default:
                 break;
         }

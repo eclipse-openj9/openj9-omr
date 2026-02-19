@@ -71,10 +71,10 @@ MM_HeapMapIterator::reset(MM_HeapMap *heapMap, uintptr_t *heapChunkBase, uintptr
 omrobjectptr_t
 MM_HeapMapIterator::nextObject()
 {
-	uintptr_t leadingZeroes = 0;
+	uintptr_t trailingZeros = 0;
 
 	/* NOTE: Two overriding goals in this algorithm are:
-	 * 1) To avoid looping (hence the use of leadingZeroes())
+	 * 1) To avoid looping (hence the use of trailingZeros())
 	 * 2) To avoid fetching memory where possible.
 	 * The second goal we accomplish in part by caching the heap map slot value.  This may seem like unnecessary work but in
 	 * fact avoids polluting the memory hierarchy and results in a net performance win.  Be aware when changing this code that
@@ -82,15 +82,15 @@ MM_HeapMapIterator::nextObject()
 	 */
 	while (_heapSlotCurrent < _heapChunkTop) {
 		/* By using the heap map slot value and shifting it to examine only the LSB, we are effectively also using a
-		 * form of trailingZeroes().
+		 * form of leadingZeros().
 		 */
 		if (_heapMapSlotValue != J9MODRON_HMI_SLOT_EMPTY) {
-			leadingZeroes = MM_Bits::leadingZeroes(_heapMapSlotValue);
+			trailingZeros = MM_Bits::trailingZeros(_heapMapSlotValue);
 
-			if(0 != leadingZeroes) {
-				_heapSlotCurrent += J9MODRON_HEAP_SLOTS_PER_HEAPMAP_BIT * leadingZeroes;
-				_heapMapSlotValue >>= leadingZeroes;
-				_bitIndexHead += leadingZeroes;
+			if (0 != trailingZeros) {
+				_heapSlotCurrent += J9MODRON_HEAP_SLOTS_PER_HEAPMAP_BIT * trailingZeros;
+				_heapMapSlotValue >>= trailingZeros;
+				_bitIndexHead += trailingZeros;
 			}
 
 			omrobjectptr_t nextObject = (omrobjectptr_t)_heapSlotCurrent;

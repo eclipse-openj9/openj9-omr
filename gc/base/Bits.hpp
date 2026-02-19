@@ -212,19 +212,6 @@ public:
 		return OMRBITS_BITS_IN_SLOT - 1 - result;
 	}
 #endif /* defined(OMR_OS_WINDOWS) && !defined(OMR_ENV_DATA64) */
-
-#if 1 /* temporary */
-	/* Temporary redirection for old, misleadingly named functions. */
-
-	MMINLINE static uintptr_t leadingZeroes(uintptr_t input) {
-		return trailingZeros(input);
-	}
-
-	MMINLINE static uintptr_t trailingZeroes(uintptr_t input) {
-		return leadingZeros(input);
-	}
-#endif /* temporary */
-
 };
 
 #endif /* !defined(BITS_HPP_) */

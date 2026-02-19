@@ -109,6 +109,7 @@ typedef struct OMRPortPlatformGlobals {
 	OMRCgroupEntry *cgroupEntryList; /**< head of the circular linked list, each element contains information about cgroup of the process for a subsystem */
 	uintptr_t performFullMemorySearch; /**< Always perform full range memory search even smart address can not be established */
 	BOOLEAN syscallNotAllowed; /**< Assigned True if the mempolicy syscall is failed due to security opts (Can be seen in case of docker) */
+	char *vmemTmpDirPath; /**< Directory to store temporary files used for memory disclaiming */
 #endif /* defined(LINUX) */
 	OMRSTFLECache stfleCache;
 #if defined(AIXPPC)
@@ -166,6 +167,7 @@ typedef struct OMRPortPlatformGlobals {
 #define PPG_performFullMemorySearch (portLibrary->portGlobals->platformGlobals.performFullMemorySearch)
 #define PPG_huge_pages_mmap_enabled (portLibrary->portGlobals->platformGlobals.huge_pages_mmap_enabled)
 #define PPG_memfd_function (portLibrary->portGlobals->platformGlobals.memfd_function)
+#define PPG_vmemTmpDirPath (portLibrary->portGlobals->platformGlobals.vmemTmpDirPath)
 #endif /* defined(LINUX) */
 
 #define PPG_stfleCache (portLibrary->portGlobals->platformGlobals.stfleCache)

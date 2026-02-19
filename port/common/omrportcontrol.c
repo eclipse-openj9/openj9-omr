@@ -344,5 +344,33 @@ omrport_control(struct OMRPortLibrary *portLibrary, const char *key, uintptr_t v
 	}
 #endif /* defined(PPG_mem32BitFlags) */
 
+#if defined(PPG_vmemTmpDirPath)
+	if (0 == strcmp(OMRPORT_CTLDATA_VMEM_TMPDIR_PATH, key)) {
+		const char *tmpdir = (const char *)value;
+		if (NULL != tmpdir) {
+			size_t len = strlen(tmpdir);
+			/* Allocate memory for the path */
+			char *newPath = portLibrary->mem_allocate_memory(portLibrary, len + 1, OMR_GET_CALLSITE(), OMRMEM_CATEGORY_PORT_LIBRARY);
+			if (NULL != newPath) {
+				strcpy(newPath, tmpdir);
+				/* Free old path if it exists */
+				if (NULL != PPG_vmemTmpDirPath) {
+					portLibrary->mem_free_memory(portLibrary, PPG_vmemTmpDirPath);
+				}
+				PPG_vmemTmpDirPath = newPath;
+				return 0;
+			}
+			return 1; /* allocation failed */
+		} else {
+			/* NULL value means reset to default */
+			if (NULL != PPG_vmemTmpDirPath) {
+				portLibrary->mem_free_memory(portLibrary, PPG_vmemTmpDirPath);
+				PPG_vmemTmpDirPath = NULL;
+			}
+			return 0;
+		}
+	}
+#endif /* defined(PPG_vmemTmpDirPath) */
+
 	return 1;
 }

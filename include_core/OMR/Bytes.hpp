@@ -23,7 +23,7 @@
 #if !defined(OMR_BYTES_HPP_)
 #define OMR_BYTES_HPP_
 
-#include <omrcfg.h>
+#include <omrcomp.h>
 #include <assert.h>
 #include <stddef.h>
 #include <stdint.h>
@@ -62,6 +62,14 @@ isPow2(size_t x)
 {
 	return x && ((x & (x - 1)) == 0);
 }
+
+#if defined(SIZE_MAX)
+/* The compiler provided a definition of SIZE_MAX as expected. */
+#elif defined(OMR_ENV_DATA64) /* defined(SIZE_MAX) */
+#define SIZE_MAX U_64_MAX
+#else /* defined(OMR_ENV_DATA64) */
+#define SIZE_MAX U_32_MAX
+#endif /* defined(SIZE_MAX) */
 
 /// The maximum safe alignment, when aligning sizes up to UNALIGNED_SIZE_MAX.
 static const size_t ALIGNMENT_MAX = (SIZE_MAX >> 1) + 1;

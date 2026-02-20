@@ -895,6 +895,12 @@ omrvmem_supported_page_flags(struct OMRPortLibrary *portLibrary)
 	return PPG_vmem_pageFlags;
 }
 
+const char *
+omrvmem_disclaim_dir(struct OMRPortLibrary *portLibrary)
+{
+	return NULL;
+}
+
 static uintptr_t
 get_hugepages_info(struct OMRPortLibrary *portLibrary,
 		vmem_hugepage_info_t *page_info)

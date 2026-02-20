@@ -585,11 +585,16 @@ findAvailableMemoryBlockNoMalloc(struct OMRPortLibrary *portLibrary, ADDRESS sta
 void
 omrvmem_shutdown(struct OMRPortLibrary *portLibrary)
 {
-#if defined(OMR_PORT_NUMA_SUPPORT)
 	if (NULL != portLibrary->portGlobals) {
+#if defined(OMR_PORT_NUMA_SUPPORT)
 		PPG_numa_platform_supports_numa = 0;
+#endif /* defined(OMR_PORT_NUMA_SUPPORT) */
+
+		if (NULL != PPG_vmemTmpDirPath) {
+			portLibrary->mem_free_memory(portLibrary, PPG_vmemTmpDirPath);
+			PPG_vmemTmpDirPath = NULL;
+		}
 	}
-#endif
 }
 
 int32_t
@@ -999,6 +1004,13 @@ omrvmem_supported_page_flags(struct OMRPortLibrary *portLibrary)
 	return PPG_vmem_pageFlags;
 }
 
+const char *
+omrvmem_disclaim_dir(struct OMRPortLibrary *portLibrary)
+{
+	return PPG_vmemTmpDirPath;
+}
+
+
 /* Get the state of Transparent HugePage (THP) from OS
  *
  * return 0 if THP is set to never/always
@@ -1160,14 +1172,11 @@ reserve_memory_with_mmap(struct OMRPortLibrary *portLibrary, void *address, uint
 		if (OMR_ARE_ANY_BITS_SET(mode, OMRPORT_VMEM_MEMORY_MODE_SHARE_TMP_FILE_OPEN)) {
 			/* Generate a unique temporary filename from template and open the file. */
 			char filename[FILE_NAME_SIZE + 1];
-			const char *tmpdir = NULL;
 			size_t filenameLen = 0;
 			char *filenameBuf = filename;
 
 			/* Check for user-specified temporary directory. */
-#if defined(PPG_vmemTmpDirPath)
-			tmpdir = PPG_vmemTmpDirPath;
-#endif /* defined(PPG_vmemTmpDirPath) */
+			const char *tmpdir = omrvmem_disclaim_dir(portLibrary);
 			/* Fall back to /tmp if not set. */
 			if (NULL == tmpdir) {
 				tmpdir = "/tmp";

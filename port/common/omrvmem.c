@@ -433,3 +433,23 @@ omrvmem_get_process_memory_size(struct OMRPortLibrary *portLibrary, J9VMemMemory
 {
 	return OMRPORT_ERROR_VMEM_NOT_SUPPORTED;
 }
+
+/**
+ * Get the name of the directory used to store backing files of disclaimed memory.
+ *
+ * The name of the directory is set via omr_portcontrol() with a key of OMRPORT_CTLDATA_VMEM_TMPDIR_PATH.
+ * In some scenarios this could be null. If that is the case, reserve_memory_with_mmap()
+ * (which calls this function) will use /tmp to store backing files.
+ * Note that omrvmem_disclaim_dir() is only relevant for Linux, since memory disclaiming
+ * is only implemented on that platform. On all other platforms, omrvmem_disclaim_dir()
+ * always returns null.
+ *
+ * @param[in] portLibrary The port library.
+ *
+ * @return A 0 terminated char array with the name of the directory, or null.
+ */
+const char *
+omrvmem_disclaim_dir(struct OMRPortLibrary *portLibrary)
+{
+	return NULL;
+}

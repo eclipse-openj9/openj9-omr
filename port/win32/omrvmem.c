@@ -623,6 +623,12 @@ omrvmem_supported_page_flags(struct OMRPortLibrary *portLibrary)
 	return PPG_vmem_pageFlags;
 }
 
+const char *
+omrvmem_disclaim_dir(struct OMRPortLibrary *portLibrary)
+{
+	return NULL;
+}
+
 /**
  * @internal
  * Update J9PortVmIdentifier structure

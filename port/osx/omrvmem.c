@@ -437,6 +437,12 @@ omrvmem_supported_page_flags(struct OMRPortLibrary *portLibrary)
 	return PPG_vmem_pageFlags;
 }
 
+const char *
+omrvmem_disclaim_dir(struct OMRPortLibrary *portLibrary)
+{
+	return NULL;
+}
+
 void *
 reserveMemory(struct OMRPortLibrary *portLibrary, void *address, uintptr_t byteAmount, struct J9PortVmemIdentifier *identifier, uintptr_t mode, uintptr_t pageSize, uintptr_t pageFlags, OMRMemCategory *category)
 {

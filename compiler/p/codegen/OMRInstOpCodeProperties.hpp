@@ -4933,6 +4933,54 @@
     },
 
     {
+        /* .mnemonic    = */ OMR::InstOpCode::subfus4,
+        /* .name        = */ "subfus4",
+        /* .description =    "Subtract from unsigned saturate word", */
+        /* .prefix      = */ 0x00000000,
+        /* .opcode      = */ 0x7C000090,
+        /* .format      = */ FORMAT_RT_RA_RB,
+        /* .minimumALS  = */ OMR_PROCESSOR_PPC_PNext,
+        /* .properties  = */ PPCOpProp_HasRecordForm | PPCOpProp_SyncSideEffectFree,
+    },
+
+    {
+        /* .mnemonic    = */ OMR::InstOpCode::subfus4_r,
+        /* .name        = */ "subfus4.",
+        /* .description =    "Subtract from unsigned saturate word Rc=1", */
+        /* .prefix      = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::subfus4].prefix,
+        /* .opcode      = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::subfus4].opcode + 1,
+        /* .format      = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::subfus4].format,
+        /* .minimumALS  = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::subfus4].minimumALS,
+        /* .properties  = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::subfus4].properties
+                & ~PPCOpProp_HasRecordForm
+            | PPCOpProp_IsRecordForm,
+    },
+
+    {
+        /* .mnemonic    = */ OMR::InstOpCode::subfus8,
+        /* .name        = */ "subfus8",
+        /* .description =    "Subtract from unsigned saturate doubleWord", */
+        /* .prefix      = */ 0x00000000,
+        /* .opcode      = */ 0x7C000490,
+        /* .format      = */ FORMAT_RT_RA_RB,
+        /* .minimumALS  = */ OMR_PROCESSOR_PPC_PNext,
+        /* .properties  = */ PPCOpProp_HasRecordForm | PPCOpProp_SyncSideEffectFree,
+    },
+
+    {
+        /* .mnemonic    = */ OMR::InstOpCode::subfus8_r,
+        /* .name        = */ "subfus8.",
+        /* .description =    "Subtract from unsigned saturate doubleWord Rc=1", */
+        /* .prefix      = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::subfus8].prefix,
+        /* .opcode      = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::subfus8].opcode + 1,
+        /* .format      = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::subfus8].format,
+        /* .minimumALS  = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::subfus8].minimumALS,
+        /* .properties  = */ OMR::Power::InstOpCode::metadata[OMR::InstOpCode::subfus8].properties
+                & ~PPCOpProp_HasRecordForm
+            | PPCOpProp_IsRecordForm,
+    },
+
+    {
         /* .mnemonic    = */ OMR::InstOpCode::subfze,
         /* .name        = */ "subfze",
         /* .description =    "Subtract from zero extended", */
@@ -12369,6 +12417,28 @@
     },
 
     {
+        /* .mnemonic    = */ OMR::InstOpCode::lxvprl,
+        /* .name        = */ "lxvprl",
+        /* .description =    "Load VSX Vector Paired With Right Length", */
+        /* .prefix      = */ 0x00000000,
+        /* .opcode      = */ 0x00000000,
+        /* .format      = */ FORMAT_UNKNOWN,
+        /* .minimumALS  = */ OMR_PROCESSOR_PPC_PNext,
+        /* .properties  = */ PPCOpProp_IsVSX | PPCOpProp_IsLoad | PPCOpProp_ExcludeR0ForRA,
+    },
+
+    {
+        /* .mnemonic    = */ OMR::InstOpCode::lxvprll,
+        /* .name        = */ "lxvprll",
+        /* .description =    "Load VSX Vector Paired With Right Length Left-justified", */
+        /* .prefix      = */ 0x00000000,
+        /* .opcode      = */ 0x00000000,
+        /* .format      = */ FORMAT_UNKNOWN,
+        /* .minimumALS  = */ OMR_PROCESSOR_PPC_PNext,
+        /* .properties  = */ PPCOpProp_IsVSX | PPCOpProp_IsLoad | PPCOpProp_ExcludeR0ForRA,
+    },
+
+    {
         /* .mnemonic    = */ OMR::InstOpCode::lxvpx,
         /* .name        = */ "lxvpx",
         /* .description =    "Load VSX Vector Paired Indexed", */
@@ -12413,6 +12483,32 @@
     },
 
     {
+        /* .mnemonic    = */ OMR::InstOpCode::lxvrl,
+        /* .name        = */ "lxvrl",
+        /* .description =    "Load VSX Vector With Right Length", */
+        /* .prefix      = */ 0x00000000,
+        /* .opcode      = */ 0x7C00041A,
+        // Even though lxvrl is a memory instruction, its RB register is *not* an index register, so it
+        // should not be used with a TR::MemoryReference.
+        /* .format      = */ FORMAT_XT_RA_RB,
+        /* .minimumALS  = */ OMR_PROCESSOR_PPC_PNext,
+        /* .properties  = */ PPCOpProp_IsVSX | PPCOpProp_IsLoad | PPCOpProp_ExcludeR0ForRA,
+    },
+
+    {
+        /* .mnemonic    = */ OMR::InstOpCode::lxvrll,
+        /* .name        = */ "lxvrll",
+        /* .description =    "Load VSX Vector With Right Length Left-justified", */
+        /* .prefix      = */ 0x00000000,
+        /* .opcode      = */ 0x7C00045A,
+        // Even though lxvrll is a memory instruction, its RB register is *not* an index register, so it
+        // should not be used with a TR::MemoryReference.
+        /* .format      = */ FORMAT_XT_RA_RB,
+        /* .minimumALS  = */ OMR_PROCESSOR_PPC_PNext,
+        /* .properties  = */ PPCOpProp_IsVSX | PPCOpProp_IsLoad | PPCOpProp_ExcludeR0ForRA,
+    },
+
+    {
         /* .mnemonic    = */ OMR::InstOpCode::lxvrwx,
         /* .name        = */ "lxvrwx",
         /* .description =    "Load VSX Vector Rightmost Word Indexed", */
@@ -12431,6 +12527,17 @@
         /* .opcode      = */ 0x38000000,
         /* .format      = */ FORMAT_RT_D34_RA_R,
         /* .minimumALS  = */ OMR_PROCESSOR_PPC_P10,
+        /* .properties  = */ PPCOpProp_SyncSideEffectFree | PPCOpProp_ExcludeR0ForRA,
+    },
+
+    {
+        /* .mnemonic    = */ OMR::InstOpCode::paddis,
+        /* .name        = */ "paddis",
+        /* .description =    "Prefixed Add Immediate shifted", */
+        /* .prefix      = */ 0x06000000,
+        /* .opcode      = */ 0x3C000000,
+        /* .format      = */ FORMAT_RT_D32_RA_R,
+        /* .minimumALS  = */ OMR_PROCESSOR_PPC_PNext,
         /* .properties  = */ PPCOpProp_SyncSideEffectFree | PPCOpProp_ExcludeR0ForRA,
     },
 
@@ -12803,6 +12910,28 @@
     },
 
     {
+        /* .mnemonic    = */ OMR::InstOpCode::stxvprl,
+        /* .name        = */ "stxvprl",
+        /* .description =    "Store VSX Vector Paired With Right Length", */
+        /* .prefix      = */ 0x00000000,
+        /* .opcode      = */ 0x00000000,
+        /* .format      = */ FORMAT_UNKNOWN,
+        /* .minimumALS  = */ OMR_PROCESSOR_PPC_PNext,
+        /* .properties  = */ PPCOpProp_IsVSX | PPCOpProp_IsStore | PPCOpProp_ExcludeR0ForRA,
+    },
+
+    {
+        /* .mnemonic    = */ OMR::InstOpCode::stxvprll,
+        /* .name        = */ "stxvprll",
+        /* .description =    "Store VSX Vector Paired With Right Length Left-justified", */
+        /* .prefix      = */ 0x00000000,
+        /* .opcode      = */ 0x00000000,
+        /* .format      = */ FORMAT_UNKNOWN,
+        /* .minimumALS  = */ OMR_PROCESSOR_PPC_PNext,
+        /* .properties  = */ PPCOpProp_IsVSX | PPCOpProp_IsStore | PPCOpProp_ExcludeR0ForRA,
+    },
+
+    {
         /* .mnemonic    = */ OMR::InstOpCode::stxvpx,
         /* .name        = */ "stxvpx",
         /* .description =    "Store VSX Vector Paired Indexed", */
@@ -12843,6 +12972,32 @@
         /* .opcode      = */ 0x00000000,
         /* .format      = */ FORMAT_UNKNOWN,
         /* .minimumALS  = */ OMR_PROCESSOR_PPC_P10,
+        /* .properties  = */ PPCOpProp_IsVSX | PPCOpProp_IsStore | PPCOpProp_ExcludeR0ForRA,
+    },
+
+    {
+        /* .mnemonic    = */ OMR::InstOpCode::stxvrl,
+        /* .name        = */ "stxvrl",
+        /* .description =    "Store VSX Vector with Right Length", */
+        /* .prefix      = */ 0x00000000,
+        /* .opcode      = */ 0x7C00051A,
+        // Even though stxvrl is a memory instruction, its RB register is *not* an index register, so it
+        // should not be used with a TR::MemoryReference.
+        /* .format      = */ FORMAT_XS_RA_RB,
+        /* .minimumALS  = */ OMR_PROCESSOR_PPC_PNext,
+        /* .properties  = */ PPCOpProp_IsVSX | PPCOpProp_IsStore | PPCOpProp_ExcludeR0ForRA,
+    },
+
+    {
+        /* .mnemonic    = */ OMR::InstOpCode::stxvrll,
+        /* .name        = */ "stxvrll",
+        /* .description =    "Store VSX Vector with Right Length Left-justified", */
+        /* .prefix      = */ 0x00000000,
+        /* .opcode      = */ 0x7C00055A,
+        // Even though stxvrll is a memory instruction, its RB register is *not* an index register, so it
+        // should not be used with a TR::MemoryReference.
+        /* .format      = */ FORMAT_XS_RA_RB,
+        /* .minimumALS  = */ OMR_PROCESSOR_PPC_PNext,
         /* .properties  = */ PPCOpProp_IsVSX | PPCOpProp_IsStore | PPCOpProp_ExcludeR0ForRA,
     },
 

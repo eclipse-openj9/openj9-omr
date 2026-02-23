@@ -782,6 +782,11 @@ enum PPCInstructionFormat : uint8_t {
     // to indicate the use of PC-relative addressing:
     //
     // +-------------+----+------+------------------------------------+
+    // |             | R  |         |d0                               |
+    // | 0           | 11 | 12      |16                               |
+    // +-------------+----+------+------------------------------------+
+    // or,
+    // +-------------+----+------+------------------------------------+
     // |             | R  |      | d0                                 |
     // | 0           | 11 | 12   | 14                                 |
     // +-------------+----+------+------------------------------------+
@@ -790,6 +795,7 @@ enum PPCInstructionFormat : uint8_t {
     // | 0    | 6        | 11       | 16                              |
     // +------+----------+----------+---------------------------------+
     FORMAT_RT_D34_RA_R,
+    FORMAT_RT_D32_RA_R,
 
     // Format for load instructions for loading into a GPR pair with an MLS/8LS prefix word and a
     // D-form instruction word. An RTp field encodes the target register pair, a D field (split between

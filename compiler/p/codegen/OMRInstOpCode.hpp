@@ -202,6 +202,7 @@ public:
                 return FORMAT_NONE;
             case FORMAT_DIRECT_PREFIXED:
             case FORMAT_RT_D34_RA_R:
+            case FORMAT_RT_D32_RA_R:
             case FORMAT_RTP_D34_RA_R:
             case FORMAT_FRT_D34_RA_R:
             case FORMAT_VRT_D34_RA_R:

@@ -2079,7 +2079,55 @@ TR::Register *OMR::Z::TreeEvaluator::vmrolEvaluator(TR::Node *node, TR::CodeGene
 
 TR::Register *OMR::Z::TreeEvaluator::mcompressEvaluator(TR::Node *node, TR::CodeGenerator *cg)
 {
-    return TR::TreeEvaluator::unImpOpEvaluator(node, cg);
+    /*
+     * Algorithm:
+     * The mCompress opcode compacts all elements corresponding to true mask bits
+     * to the left side of the destination register.
+     *
+     * This implementation performs the following steps:
+     *  a) Count the number of bits set to 1 in the left and right halves of the source register.
+     *  b) Initialize the result register with all bits set to 1.
+     *  c) Perform a logical right shift of the result register by the number of set bits
+     *     in the left half of the source register.
+     *  d) Perform an additional logical right shift by the number of set bits
+     *     in the right half of the source register.
+     *  e) At this stage, the left side of the result register contains as many 0 bits
+     *     as there are 1 bits in the source register. Invert the result to produce
+     *     the final expected output.
+     */
+    TR_ASSERT_FATAL_WITH_NODE(node, node->getDataType().getVectorLength() == TR::VectorLength128,
+        "Only 128-bit vectors are supported %s", node->getDataType().toString());
+
+    TR::Register *resultReg = cg->allocateRegister(TR_VRF);
+    TR::Register *sourceReg = cg->gprClobberEvaluate(node->getFirstChild());
+
+    // Compute the population count of each doubleword in the source vector.
+    generateVRRaInstruction(cg, TR::InstOpCode::VPOPCT, node, sourceReg, sourceReg, 0, 0, 3);
+
+    // Initialize the result register to all 1 bits.
+    generateVRRcInstruction(cg, TR::InstOpCode::VOC, node, resultReg, resultReg, resultReg, 0);
+
+    // VSRLB derives the shift count from bits 1–4 of the 7th byte in the third operand,
+    // which effectively divides the 7th byte value by 8 to determine the byte shift amount.
+    // The destination register is initialized to all ones; right-shifting it inserts
+    // zeros equal to the number of ones present in the lower half of the source register.
+    generateVRRcInstruction(cg, TR::InstOpCode::VSRLB, node, resultReg, resultReg, sourceReg, 0);
+
+    // To process the second half of the source register, it must first be shifted
+    // into the position corresponding to the first half.
+    generateVRIdInstruction(cg, TR::InstOpCode::VSLDB, node, sourceReg, sourceReg, sourceReg, 8, 0);
+
+    // Shift zeros to account for the number of set bits in the second half of the source register.
+    // After this instruction, the result register will contain a corresponding number of leading zeros
+    // equal to the number of ones present in the source register.
+    generateVRRcInstruction(cg, TR::InstOpCode::VSRLB, node, resultReg, resultReg, sourceReg, 0);
+
+    // Since zeros were shifted in, invert the register so zero bits become ones.
+    generateVRRcInstruction(cg, TR::InstOpCode::VNN, node, resultReg, resultReg, resultReg, 0);
+
+    node->setRegister(resultReg);
+    cg->decReferenceCount(node->getFirstChild());
+    return resultReg;
 }
 
 TR::Register *OMR::Z::TreeEvaluator::vmnotzEvaluator(TR::Node *node, TR::CodeGenerator *cg)

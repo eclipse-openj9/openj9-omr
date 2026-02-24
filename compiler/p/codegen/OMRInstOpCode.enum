@@ -445,6 +445,10 @@
    subfme_r,         // Subtract from minus one extended Rc=1
    subfmeo,          // Subtract from minus one extended setting overflow
    subfmeo_r,        // Subtract from minus one extended setting overflow Rc=1
+   subfus4,          // Subtract from unsigned saturate word
+   subfus4_r,        // Subtract from unsigned saturate word Rc=1
+   subfus8,          // Subtract from unsigned saturate doubleWord
+   subfus8_r,        // Subtract from unsigned saturate doubleWord Rc=1
    subfze,           // Subtract from zero extended
    subfze_r,         // Subtract from zero extended Rc=1
    subfzeo,          // Subtract from zero extended setting overflow
@@ -1090,12 +1094,17 @@
    lxvkq,            // Load VSX Vector Special Value Quadword
    lxvl,             // Load VSX Vector with Length
    lxvp,             // Load VSX Vector Paired
+   lxvprl,           // Load VSX Vector Paired With Right Length
+   lxvprll,          // Load VSX Vector Paired With Right Length Left-justified
    lxvpx,            // Load VSX Vector Paired Indexed
    lxvrbx,           // Load VSX Vector Rightmost Byte Indexed
    lxvrdx,           // Load VSX Vector Rightmost Doubleword Indexed
    lxvrhx,           // Load VSX Vector Rightmost Halfword Indexed
+   lxvrl,            // Load VSX Vector With Right Length
+   lxvrll,           // Load VSX Vector With Right Lengtg Left-justified
    lxvrwx,           // Load VSX Vector Rightmost Word Indexed
    paddi,            // Prefixed Add Immediate
+   paddis,           // Prefixed Add Immediate Shifted
    pdepd,            // Parallel Bits Deposit Doubleword
    pextd,            // Parallel Bits Extract Doubleword
    plbz,             // Prefixed Load Byte and Zero
@@ -1129,10 +1138,14 @@
    setnbcr,          // Set Negative Boolean Condition Reverse
    stxvl,            // Store VSX Vector with Length
    stxvp,            // Store VSX Vector Paired
+   stxvprl,          // Store VSX Vector Paired With Right Length
+   stxvprll,         // Store VSX Vector Paired With Right Length Left-justified
    stxvpx,           // Store VSX Vector Paired Indexed
    stxvrbx,          // Store VSX Rightmost Byte Indexed
    stxvrdx,          // Store VSX Rightmost Doubleword Indexed
    stxvrhx,          // Store VSX Rightmost Halfword Indexed
+   stxvrl,           // Store VSX Vector With Right Length
+   stxvrll,          // Store VSX Vector With Right Length Left-justified
    stxvrwx,          // Store VSX Rightmost Word Indexed
    vcfuged,          // Vector Centrifuge Doubleword
    vclzdm,           // Vector Count Leading Zeros Doubleword under Mask

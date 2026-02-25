@@ -345,6 +345,7 @@ public:
     static TR::Register *vmulFloatHelper(TR::Node *node, TR::CodeGenerator *cg);
     static TR::Register *vmulDoubleHelper(TR::Node *node, TR::CodeGenerator *cg);
     static TR::Register *vdivInt32Helper(TR::Node *node, TR::CodeGenerator *cg);
+    static TR::Register *vdivInt64Helper(TR::Node *node, TR::CodeGenerator *cg);
     static TR::Register *vdivFloatHelper(TR::Node *node, TR::CodeGenerator *cg);
     static TR::Register *vdivDoubleHelper(TR::Node *node, TR::CodeGenerator *cg);
     static TR::Register *vnegIntHelper(TR::Node *node, TR::CodeGenerator *cg, TR::DataType type);

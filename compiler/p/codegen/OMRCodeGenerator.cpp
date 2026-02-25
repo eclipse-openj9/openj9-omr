@@ -1658,7 +1658,8 @@ bool OMR::Power::CodeGenerator::getSupportsOpCodeForAutoSIMD(TR::CPU *cpu, TR::I
                 return false;
         case TR::vdiv:
         case TR::vmdiv:
-            if (et == TR::Int32 || et == TR::Float || et == TR::Double)
+            if (et == TR::Int32 || (et == TR::Int64 && cpu->isAtLeast(OMR_PROCESSOR_PPC_P10)) || et == TR::Float
+                || et == TR::Double)
                 return true;
             else
                 return false;

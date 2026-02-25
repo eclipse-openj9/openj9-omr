@@ -4696,6 +4696,8 @@ TR::Register *OMR::Power::TreeEvaluator::vdivEvaluator(TR::Node *node, TR::CodeG
     switch (node->getDataType().getVectorElementType()) {
         case TR::Int32:
             return TR::TreeEvaluator::vdivInt32Helper(node, cg);
+        case TR::Int64:
+            return TR::TreeEvaluator::vdivInt64Helper(node, cg);
         case TR::Float:
             return TR::TreeEvaluator::vdivFloatHelper(node, cg);
         case TR::Double:
@@ -4720,6 +4722,9 @@ TR::Register *OMR::Power::TreeEvaluator::vdivInt32Helper(TR::Node *node, TR::Cod
 {
     TR_ASSERT_FATAL_WITH_NODE(node, node->getDataType().getVectorLength() == TR::VectorLength128,
         "Only 128-bit vectors are supported %s", node->getDataType().toString());
+
+    if (cg->comp()->target().cpu.isAtLeast(OMR_PROCESSOR_PPC_P10))
+        return TR::TreeEvaluator::inlineVectorBinaryOp(node, cg, TR::InstOpCode::vdivsw);
 
     TR::Node *firstChild = node->getFirstChild();
     TR::Node *secondChild = node->getSecondChild();
@@ -4783,6 +4788,14 @@ TR::Register *OMR::Power::TreeEvaluator::vdivInt32Helper(TR::Node *node, TR::Cod
         cg->decReferenceCount(maskNode);
 
     return resReg;
+}
+
+TR::Register *OMR::Power::TreeEvaluator::vdivInt64Helper(TR::Node *node, TR::CodeGenerator *cg)
+{
+    TR_ASSERT_FATAL_WITH_NODE(node, cg->comp()->target().cpu.isAtLeast(OMR_PROCESSOR_PPC_P10),
+        "vdiv for LongVector is only supported on P10 and higher");
+
+    return TR::TreeEvaluator::inlineVectorBinaryOp(node, cg, TR::InstOpCode::vdivsd);
 }
 
 TR::Register *OMR::Power::TreeEvaluator::vfmaEvaluator(TR::Node *node, TR::CodeGenerator *cg)

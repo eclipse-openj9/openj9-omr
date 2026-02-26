@@ -131,13 +131,14 @@ static const char *getExtraVFPInstrSpecifiers(TR::InstOpCode *opCode)
 
 char *TR_Debug::fullOpCodeName(TR::Instruction *instr)
 {
-    static char nameBuf[64];
+    const size_t nameBufSize = 64;
+    static char nameBuf[nameBufSize];
 #if defined(__VFP_FP__) && !defined(__SOFTFP__)
-    sprintf(nameBuf, "%s%s%s", getOpCodeName(&instr->getOpCode()),
+    snprintf(nameBuf, nameBufSize, "%s%s%s", getOpCodeName(&instr->getOpCode()),
         (instr->getConditionCode() != ARMConditionCodeAL) ? ARMConditionNames[instr->getConditionCode()] : "",
         instr->getOpCode().isVFPOp() ? getExtraVFPInstrSpecifiers(&instr->getOpCode()) : "");
 #else
-    sprintf(nameBuf, "%s%s", getOpCodeName(&instr->getOpCode()),
+    snprintf(nameBuf, nameBufSize, "%s%s", getOpCodeName(&instr->getOpCode()),
         (instr->getConditionCode() != ARMConditionCodeAL) ? ARMConditionNames[instr->getConditionCode()] : "");
 #endif
     return nameBuf;
@@ -1448,8 +1449,9 @@ void TR_Debug::printARMDelayedOffsetInstructions(OMR::Logger *log, TR::ARMMemIns
     TR::RealRegister *base = toRealRegister(instr->getMemoryReference()->getBaseRegister());
 
     intParts localVal(offset);
-    char *regName = (char *)_comp->trMemory()->allocateHeapMemory(6);
-    sprintf(regName, "gr%d", (*(uint32_t *)bufferPos >> TR::RealRegister::pos_RD) & 0xf);
+    const size_t regNameSize = 6;
+    char *regName = (char *)_comp->trMemory()->allocateHeapMemory(regNameSize);
+    snprintf(regName, regNameSize, "gr%d", (*(uint32_t *)bufferPos >> TR::RealRegister::pos_RD) & 0xf);
 
     if (op == TR::InstOpCode::str || op == TR::InstOpCode::strh || op == TR::InstOpCode::strb
         || toRealRegister(instr->getMemoryDataRegister())->getRegisterNumber() == base->getRegisterNumber()) {

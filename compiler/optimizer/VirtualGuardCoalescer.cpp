@@ -708,8 +708,9 @@ void TR_VirtualGuardTailSplitter::remergeGuard(TR_BlockCloner &cloner, VGInfo *i
     block->getLastRealTreeTop()->getNode()->setBranchDestination(cloneB->getEntry());
 
 #if 0
-   char fileName[20];
-   sprintf(fileName, "split%d.vcg", block->getNumber());
+   const size_t fileNameSize = 20;
+   char fileName[fileNameSize];
+   snprintf(fileName, fileNameSize, "split%d.vcg", block->getNumber());
    FILE *file = fopen(fileName, "w");
    OMR::Logger *vcgLog = OMR::CStdIOStreamLogger::create(file);
    comp->getDebug()->printVCG(vcgLog, _cfg, fileName);

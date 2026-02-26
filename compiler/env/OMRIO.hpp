@@ -44,7 +44,7 @@ typedef OMR::IO IOConnector;
 /* All compilers now use the same format string for signed/unsigned 64-bit values.
  *
  * NOTE: this applies to only those "printf" functions that are handled by the port
- *       library.  If you call a C runtime "printf" or "sprintf", for example, then
+ *       library.  If you call a C runtime "printf" or "snprintf", for example, then
  *       that runtime may dictate the format specifiers you may use.
  */
 #define INT64_PRINTF_FORMAT "%" OMR_PRId64

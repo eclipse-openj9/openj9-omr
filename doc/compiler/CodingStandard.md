@@ -52,6 +52,13 @@ docker run -v $PWD:/src clang-format:latest clang-format -style=file:compiler/.c
 mv <FILE>.formatted <FILE>
 ```
 
+## `clang-format` binary
+
+Alternatively, you may want to use the `clang-format` binary directly. To
+acquire the correct version of the binary, look at the URL in the Dockerfile
+and either use that if you are running on x86, or download the exact version
+specified in the URL.
+
 ## Rebase Helper
 
 The rebase helper script helps prepare commits created prior to the

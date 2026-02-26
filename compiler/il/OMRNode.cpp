@@ -5088,13 +5088,7 @@ bool OMR::Node::isPreparedForDirectJNI()
         && self()->getOpCodeValue() != TR::arraycopy;
 }
 
-void OMR::Node::setPreparedForDirectJNI()
-{
-    _flags.set(preparedForDirectToJNI, true);
-#if defined(TR_TARGET_X86)
-    self()->getSymbol()->castToMethodSymbol()->setLinkage(TR_J9JNILinkage);
-#endif
-}
+void OMR::Node::setPreparedForDirectJNI() { _flags.set(preparedForDirectToJNI, true); }
 
 bool OMR::Node::isSafeForCGToFastPathUnsafeCall()
 {

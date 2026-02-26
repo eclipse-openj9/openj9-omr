@@ -7681,14 +7681,12 @@ TR::Register *OMR::Z::TreeEvaluator::performCall(TR::Node *node, bool isIndirect
     TR::MethodSymbol *callSymbol = symRef->getSymbol()->castToMethodSymbol();
 
     TR::Register *returnRegister;
+    TR::Linkage *linkage = cg->deriveCallingLinkage(node, isIndirect);
+
     if (isIndirect) {
-        returnRegister = (cg->getLinkage(callSymbol->getLinkageConvention()))->buildIndirectDispatch(node);
+        returnRegister = linkage->buildIndirectDispatch(node);
     } else {
-        // Generate Fast JNI direct call
-        if (callSymbol->isJNI() && node->isPreparedForDirectJNI())
-            returnRegister = (cg->getLinkage(TR_J9JNILinkage))->buildDirectDispatch(node);
-        else
-            returnRegister = (cg->getLinkage(callSymbol->getLinkageConvention()))->buildDirectDispatch(node);
+        returnRegister = linkage->buildDirectDispatch(node);
     }
 
     return returnRegister;

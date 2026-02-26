@@ -7223,10 +7223,7 @@ TR::Register *OMR::ARM64::TreeEvaluator::directCallEvaluator(TR::Node *node, TR:
 {
     TR::Register *resultReg;
     if (!cg->inlineDirectCall(node, resultReg)) {
-        TR::SymbolReference *symRef = node->getSymbolReference();
-        TR::MethodSymbol *callee = symRef->getSymbol()->castToMethodSymbol();
-        TR::Linkage *linkage = cg->getLinkage(callee->getLinkageConvention());
-
+        TR::Linkage *linkage = cg->deriveCallingLinkage(node, false /* isIndirect */);
         resultReg = linkage->buildDirectDispatch(node);
     }
     return resultReg;
@@ -7235,10 +7232,7 @@ TR::Register *OMR::ARM64::TreeEvaluator::directCallEvaluator(TR::Node *node, TR:
 // handles calli, icalli, lcalli, fcalli, dcalli, acalli
 TR::Register *OMR::ARM64::TreeEvaluator::indirectCallEvaluator(TR::Node *node, TR::CodeGenerator *cg)
 {
-    TR::SymbolReference *symRef = node->getSymbolReference();
-    TR::MethodSymbol *callee = symRef->getSymbol()->castToMethodSymbol();
-    TR::Linkage *linkage = cg->getLinkage(callee->getLinkageConvention());
-
+    TR::Linkage *linkage = cg->deriveCallingLinkage(node, true /* isIndirect */);
     return linkage->buildIndirectDispatch(node);
 }
 
@@ -7515,9 +7509,7 @@ TR::Register *OMR::ARM64::TreeEvaluator::PrefetchEvaluator(TR::Node *node, TR::C
 
 TR::Register *OMR::ARM64::TreeEvaluator::performCall(TR::Node *node, bool isIndirect, TR::CodeGenerator *cg)
 {
-    TR::SymbolReference *symRef = node->getSymbolReference();
-    TR::MethodSymbol *callee = symRef->getSymbol()->castToMethodSymbol();
-    TR::Linkage *linkage = cg->getLinkage(callee->getLinkageConvention());
+    TR::Linkage *linkage = cg->deriveCallingLinkage(node, isIndirect);
     TR::Register *returnRegister;
 
     if (isIndirect)

@@ -3542,18 +3542,13 @@ TR::Register *OMR::ARM::TreeEvaluator::multianewArrayEvaluator(TR::Node *node, T
 // handles: TR::call, TR::acall, TR::icall, TR::lcall, TR::fcall, TR::dcall
 TR::Register *OMR::ARM::TreeEvaluator::directCallEvaluator(TR::Node *node, TR::CodeGenerator *cg)
 {
-    TR::SymbolReference *symRef = node->getSymbolReference();
-    TR::MethodSymbol *callee = symRef->getSymbol()->castToMethodSymbol();
-    TR::Linkage *linkage = cg->getLinkage(callee->getLinkageConvention());
-
+    TR::Linkage *linkage = cg->deriveCallingLinkage(node, false /* isIndirect */);
     return linkage->buildDirectDispatch(node);
 }
 
 TR::Register *OMR::ARM::TreeEvaluator::performCall(TR::Node *node, bool isIndirect, TR::CodeGenerator *cg)
 {
-    TR::SymbolReference *symRef = node->getSymbolReference();
-    TR::MethodSymbol *callee = symRef->getSymbol()->castToMethodSymbol();
-    TR::Linkage *linkage = cg->getLinkage(callee->getLinkageConvention());
+    TR::Linkage *linkage = cg->deriveCallingLinkage(node, isIndirect);
     TR::Register *returnRegister;
 
     if (isIndirect)
@@ -3567,10 +3562,7 @@ TR::Register *OMR::ARM::TreeEvaluator::performCall(TR::Node *node, bool isIndire
 // handles: TR::icalli, TR::acalli, TR::fcalli, TR::dcalli, TR::lcalli, TR::calli
 TR::Register *OMR::ARM::TreeEvaluator::indirectCallEvaluator(TR::Node *node, TR::CodeGenerator *cg)
 {
-    TR::SymbolReference *symRef = node->getSymbolReference();
-    TR::MethodSymbol *callee = symRef->getSymbol()->castToMethodSymbol();
-    TR::Linkage *linkage = cg->getLinkage(callee->getLinkageConvention());
-
+    TR::Linkage *linkage = cg->deriveCallingLinkage(node, true /* isIndirect */);
     return linkage->buildIndirectDispatch(node);
 }
 

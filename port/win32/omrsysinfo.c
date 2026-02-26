@@ -2171,3 +2171,21 @@ omrsysinfo_get_process_name(struct OMRPortLibrary *portLibrary, uintptr_t pid)
 {
 	return NULL;
 }
+
+int32_t
+omrsysinfo_get_block_device_stats(struct OMRPortLibrary *portLibrary, const char *device, struct OMRBlockDeviceStats *stats)
+{
+	return OMRPORT_ERROR_NOT_SUPPORTED_ON_THIS_PLATFORM;
+}
+
+char*
+omrsysinfo_get_block_device_for_path(struct OMRPortLibrary *portLibrary, const char *path)
+{
+	return NULL;
+}
+
+char*
+omrsysinfo_get_block_device_for_swap(struct OMRPortLibrary *portLibrary)
+{
+	return NULL;
+}

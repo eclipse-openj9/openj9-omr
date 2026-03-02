@@ -546,7 +546,6 @@ bool TR::ARM64MemInstruction::defsRealRegister(TR::Register *reg) { return false
 
 void TR::ARM64MemInstruction::assignRegisters(TR_RegisterKinds kindToBeAssigned)
 {
-    TR::Machine *machine = cg()->machine();
     TR::MemoryReference *mref = getMemoryReference();
 
     if (getDependencyConditions())

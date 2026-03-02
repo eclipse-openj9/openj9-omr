@@ -312,8 +312,6 @@ void OMR::ARM64::Linkage::setParameterLinkageRegisterIndex(TR::ResolvedMethodSym
 TR::MemoryReference *OMR::ARM64::Linkage::getOutgoingArgumentMemRef(TR::Register *baseReg, int32_t offset,
     TR::Register *argReg, TR::InstOpCode::Mnemonic opCode, TR::ARM64MemoryArgument &memArg)
 {
-    const TR::ARM64LinkageProperties &properties = self()->getProperties();
-
     TR::MemoryReference *result = TR::MemoryReference::createWithDisplacement(cg(), baseReg, offset);
     memArg.argRegister = argReg;
     memArg.argMemory = result;

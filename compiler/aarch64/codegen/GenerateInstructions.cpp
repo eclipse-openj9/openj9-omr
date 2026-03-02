@@ -457,7 +457,6 @@ TR::Instruction *generateLogicalShiftLeftImmInstruction(TR::CodeGenerator *cg, T
 TR::Instruction *generateLogicalImmInstruction(TR::CodeGenerator *cg, TR::InstOpCode::Mnemonic op, TR::Node *node,
     TR::Register *treg, TR::Register *s1reg, bool N, uint32_t imm, TR::Instruction *preced)
 {
-    TR::ARM64Trg1Src1ImmInstruction *intr;
     if (preced)
         return new (cg->trHeapMemory()) TR::ARM64Trg1Src1ImmInstruction(op, node, treg, s1reg, N, imm, preced, cg);
     return new (cg->trHeapMemory()) TR::ARM64Trg1Src1ImmInstruction(op, node, treg, s1reg, N, imm, cg);

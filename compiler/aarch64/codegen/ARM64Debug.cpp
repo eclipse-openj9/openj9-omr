@@ -1994,7 +1994,6 @@ void TR_Debug::print(OMR::Logger *log, TR::ARM64ZeroSrc1ImmInstruction *instr)
 void TR_Debug::print(OMR::Logger *log, TR::ARM64Trg1Src2Instruction *instr)
 {
     printPrefix(log, instr);
-    TR::InstOpCode::Mnemonic op = instr->getOpCodeValue();
     log->printf("%s \t", getOpCodeName(&instr->getOpCode()));
     print(log, instr->getTargetRegister(), TR_WordReg);
     log->prints(", ");
@@ -2034,7 +2033,6 @@ void TR_Debug::print(OMR::Logger *log, TR::ARM64ZeroSrc2Instruction *instr)
 void TR_Debug::print(OMR::Logger *log, TR::ARM64Src1ImmCondInstruction *instr)
 {
     printPrefix(log, instr);
-    TR::InstOpCode::Mnemonic op = instr->getOpCodeValue();
 
     log->printf("%s \t", getOpCodeName(&instr->getOpCode()));
 
@@ -2049,7 +2047,6 @@ void TR_Debug::print(OMR::Logger *log, TR::ARM64Src1ImmCondInstruction *instr)
 void TR_Debug::print(OMR::Logger *log, TR::ARM64Src2CondInstruction *instr)
 {
     printPrefix(log, instr);
-    TR::InstOpCode::Mnemonic op = instr->getOpCodeValue();
 
     log->printf("%s \t", getOpCodeName(&instr->getOpCode()));
 
@@ -2199,7 +2196,6 @@ void TR_Debug::print(OMR::Logger *log, TR::ARM64Trg1Src2IndexedElementInstructio
     log->prints(", ");
     print(log, instr->getSource2Register(), TR_WordReg);
 
-    TR::InstOpCode::Mnemonic op = instr->getOpCodeValue();
     log->printf(".[%d]", instr->getIndex());
     log->flush();
 }

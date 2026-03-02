@@ -293,7 +293,7 @@ void OMR::ARM64::CodeGenerator::doBinaryEncoding()
     if (!constantIsSignedImm21(data.estimate)) {
         // Workaround for huge code
         // Range of conditional branch instruction is +/- 1MB
-        self()->comp()->failCompilation<TR::AssertionFailure>("Generated code is too large");
+        comp->failCompilation<TR::AssertionFailure>("Generated code is too large");
     }
 
     data.cursorInstruction = self()->getFirstInstruction();
@@ -312,13 +312,8 @@ void OMR::ARM64::CodeGenerator::doBinaryEncoding()
 
         if (data.cursorInstruction == data.i2jEntryInstruction) {
             self()->setPrePrologueSize(self()->getBinaryBufferCursor() - self()->getBinaryBufferStart());
-            self()
-                ->comp()
-                ->getSymRefTab()
-                ->findOrCreateStartPCSymbolRef()
-                ->getSymbol()
-                ->getStaticSymbol()
-                ->setStaticAddress(self()->getBinaryBufferCursor());
+            comp->getSymRefTab()->findOrCreateStartPCSymbolRef()->getSymbol()->getStaticSymbol()->setStaticAddress(
+                self()->getBinaryBufferCursor());
         }
 
         data.cursorInstruction = data.cursorInstruction->getNext();
@@ -842,8 +837,6 @@ TR::Instruction *OMR::ARM64::CodeGenerator::generateDebugCounterBump(TR::Instruc
         TR::MemoryReference::createWithDisplacement(self(), addrReg, 0), counterReg, cursor);
 
     if (cond) {
-        uint32_t preCondCursor = cond->getAddCursorForPre();
-        uint32_t postCondCursor = cond->getAddCursorForPost();
         TR::addDependency(cond, addrReg, TR::RealRegister::NoReg, TR_GPR, self());
         TR::addDependency(cond, counterReg, TR::RealRegister::NoReg, TR_GPR, self());
     }
@@ -872,8 +865,6 @@ TR::Instruction *OMR::ARM64::CodeGenerator::generateDebugCounterBump(TR::Instruc
         TR::MemoryReference::createWithDisplacement(self(), addrReg, 0), counterReg, cursor);
 
     if (cond) {
-        uint32_t preCondCursor = cond->getAddCursorForPre();
-        uint32_t postCondCursor = cond->getAddCursorForPost();
         TR::addDependency(cond, addrReg, TR::RealRegister::NoReg, TR_GPR, self());
         TR::addDependency(cond, counterReg, TR::RealRegister::NoReg, TR_GPR, self());
     }

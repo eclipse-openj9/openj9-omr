@@ -4171,8 +4171,6 @@ static TR::Register *vectorRotateHelper(TR::Node *node, TR::Register *resultReg,
         = static_cast<TR::InstOpCode::Mnemonic>(TR::InstOpCode::vcmlt16b_zero + (elementType - TR::Int8));
     TR::InstOpCode::Mnemonic addOp
         = static_cast<TR::InstOpCode::Mnemonic>(TR::InstOpCode::vadd16b + (elementType - TR::Int8));
-    TR::InstOpCode::Mnemonic negOp
-        = static_cast<TR::InstOpCode::Mnemonic>(TR::InstOpCode::vneg16b + (elementType - TR::Int8));
     TR::InstOpCode::Mnemonic shiftOp
         = static_cast<TR::InstOpCode::Mnemonic>(TR::InstOpCode::vushl16b + (elementType - TR::Int8));
     TR::InstOpCode::Mnemonic subOp
@@ -5117,7 +5115,6 @@ TR::Instruction *loadAddressConstantInSnippet(TR::CodeGenerator *cg, TR::Node *n
     TR::Register *targetRegister, TR_ExternalRelocationTargetKind reloKind, bool isClassUnloadingConst,
     TR::Instruction *cursor)
 {
-    TR::Compilation *comp = cg->comp();
     // We use LDR literal to load a value from the snippet. Offset to PC will be patched by LabelRelative24BitRelocation
     auto snippet = cg->findOrCreate8ByteConstant(node, address);
     auto labelSym = snippet->getSnippetLabel();
@@ -5452,7 +5449,6 @@ static void addMetaDataForLoadAddressConstantFixed(TR::CodeGenerator *cg, TR::No
 static TR::Instruction *loadAddressConstantRelocatable(TR::CodeGenerator *cg, TR::Node *node, intptr_t value,
     TR::Register *trgReg, TR::Instruction *cursor = NULL, int16_t typeAddress = -1)
 {
-    TR::Compilation *comp = cg->comp();
     // load a 64-bit constant into a register with a fixed 4 instruction sequence
     TR::Instruction *temp = cursor;
     TR::Instruction *firstInstruction;
@@ -5741,7 +5737,7 @@ TR::Register *OMR::ARM64::TreeEvaluator::bstoreEvaluator(TR::Node *node, TR::Cod
                 TR::Register *tempReg = cg->allocateRegister();
                 deps->addPostCondition(tempMR->getBaseRegister(), TR::RealRegister::x0);
                 deps->addPostCondition(tempReg, TR::RealRegister::x1);
-                TR::Instruction *blInstruction = generateImmSymInstruction(cg, TR::InstOpCode::bl, node,
+                generateImmSymInstruction(cg, TR::InstOpCode::bl, node,
                     reinterpret_cast<uintptr_t>(patchGCRHelperRef->getMethodAddress()), deps, patchGCRHelperRef, NULL);
 
                 cg->stopUsingRegister(tempReg);
@@ -6000,8 +5996,7 @@ TR::Register *OMR::ARM64::TreeEvaluator::arraysetEvaluator(TR::Node *node, TR::C
                         generateTrg1Src2Instruction(cg, TR::InstOpCode::addx, node, dstEndReg, dstReg, dstEndReg);
                     }
                     // N = true, immr:imms = 0xf3b for immediate value ~(0xf)
-                    auto dstAdjustmentInstr
-                        = generateLogicalImmInstruction(cg, TR::InstOpCode::andimmx, node, dstReg, dstReg, true, 0xf3b);
+                    generateLogicalImmInstruction(cg, TR::InstOpCode::andimmx, node, dstReg, dstReg, true, 0xf3b);
                     bool useLoop = (length - 32) > constLoopLen * 2;
                     if (useLoop) {
                         TR::Register *countReg = srm->findOrCreateScratchRegister();
@@ -6518,8 +6513,7 @@ static TR::Register *arraycmpEvaluatorHelper(TR::Node *node, TR::CodeGenerator *
         }
         generateConditionalCompareInstruction(cg, node, data3Reg, data4Reg, 0, TR::CC_EQ, true);
         auto branchToNotEqual16LabelInstr2 = generateConditionalBranchInstruction(cg, node, notEqual16Label, TR::CC_NE);
-        auto subtractLengthInstr
-            = generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::subsimmx, node, lengthReg, lengthReg, 16);
+        generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::subsimmx, node, lengthReg, lengthReg, 16);
         auto branchBacktoLoop16LabelInstr = generateConditionalBranchInstruction(cg, node, loop16Label, TR::CC_CS);
         if (debugObj) {
             debugObj->addInstructionComment(loop16LabelInstr, "loop16Label");
@@ -7258,7 +7252,6 @@ TR::Register *OMR::ARM64::TreeEvaluator::loadaddrEvaluator(TR::Node *node, TR::C
 {
     TR::Register *resultReg;
     TR::Symbol *sym = node->getSymbol();
-    TR::Compilation *comp = cg->comp();
     TR::MemoryReference *mref = TR::MemoryReference::createWithSymRef(cg, node, node->getSymbolReference());
 
     if (mref->getUnresolvedSnippet() != NULL) {
@@ -7415,7 +7408,6 @@ TR::Register *OMR::ARM64::TreeEvaluator::BBStartEvaluator(TR::Node *node, TR::Co
 TR::Register *OMR::ARM64::TreeEvaluator::BBEndEvaluator(TR::Node *node, TR::CodeGenerator *cg)
 {
     TR::Block *block = node->getBlock();
-    TR::Compilation *comp = cg->comp();
     TR::Node *fenceNode
         = TR::Node::createRelative32BitFenceNode(node, &node->getBlock()->getInstructionBoundaries()._endPC);
 
@@ -7498,7 +7490,6 @@ TR::Register *OMR::ARM64::TreeEvaluator::PrefetchEvaluator(TR::Node *node, TR::C
 {
     TR_ASSERT(node->getNumChildren() == 4, "TR::Prefetch should contain 4 child nodes");
 
-    TR::Compilation *comp = cg->comp();
     TR::Node *firstChild = node->getFirstChild();
     TR::Node *secondChild = node->getChild(1);
     TR::Node *sizeChild = node->getChild(2);

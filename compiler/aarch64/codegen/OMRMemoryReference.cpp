@@ -170,7 +170,6 @@ OMR::ARM64::MemoryReference::MemoryReference(TR::Node *rootLoadOrStore, TR::Code
     , _offset(0)
     , _symbolReference(rootLoadOrStore->getSymbolReference())
 {
-    TR::Compilation *comp = cg->comp();
     TR::SymbolReference *ref = rootLoadOrStore->getSymbolReference();
     TR::Symbol *symbol = ref->getSymbol();
     bool isStore = rootLoadOrStore->getOpCode().isStore();
@@ -1276,8 +1275,7 @@ TR::Instruction *OMR::ARM64::MemoryReference::expandInstruction(TR::Instruction 
                                  * for trampolines. */
                                 TR::RealRegister *x16 = cg->machine()->getRealRegister(TR::RealRegister::x16);
                                 TR::Instruction *prev = currentInstruction->getPrev();
-                                TR::Instruction *tmp
-                                    = loadConstant32(cg, currentInstruction->getNode(), displacement, x16, prev);
+                                loadConstant32(cg, currentInstruction->getNode(), displacement, x16, prev);
                                 TR::InstOpCode::Mnemonic newOp = getEquivalentRegisterOffsetMnemonic(op.getMnemonic());
 
                                 if (trace && debugObj) {
@@ -1305,8 +1303,7 @@ TR::Instruction *OMR::ARM64::MemoryReference::expandInstruction(TR::Instruction 
                         /* cannot encode the unaligned offset in the load/store instruction */
                         TR::RealRegister *x16 = cg->machine()->getRealRegister(TR::RealRegister::x16);
                         TR::Instruction *prev = currentInstruction->getPrev();
-                        TR::Instruction *tmp
-                            = loadConstant32(cg, currentInstruction->getNode(), displacement, x16, prev);
+                        loadConstant32(cg, currentInstruction->getNode(), displacement, x16, prev);
                         TR::InstOpCode::Mnemonic newOp = getEquivalentRegisterOffsetMnemonic(op.getMnemonic());
 
                         if (trace && debugObj) {
@@ -1339,8 +1336,7 @@ TR::Instruction *OMR::ARM64::MemoryReference::expandInstruction(TR::Instruction 
                              * trampolines. */
                             TR::RealRegister *x16 = cg->machine()->getRealRegister(TR::RealRegister::x16);
                             TR::Instruction *prev = currentInstruction->getPrev();
-                            TR::Instruction *tmp
-                                = loadConstant32(cg, currentInstruction->getNode(), displacement, x16, prev);
+                            loadConstant32(cg, currentInstruction->getNode(), displacement, x16, prev);
                             TR::InstOpCode::Mnemonic newOp = getEquivalentRegisterOffsetMnemonic(op.getMnemonic());
 
                             if (trace && debugObj) {

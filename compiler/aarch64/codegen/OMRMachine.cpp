@@ -161,8 +161,6 @@ TR::RealRegister *OMR::ARM64::Machine::findBestFreeRegister(TR::Instruction *cur
     // If no association or assoc fails, find any other free register
     int32_t iOld = 0, iNew;
     for (int32_t i = first; i <= last; i++) {
-        uint32_t tRegMask = _registerFile[i]->getRealRegisterMask();
-
         iNew = interference & (1 << (i - maskI));
 
         if ((_registerFile[i]->getState() == TR::RealRegister::Free
@@ -194,7 +192,6 @@ TR::RealRegister *OMR::ARM64::Machine::freeBestRegister(TR::Instruction *current
     TR::CodeGenerator *cg = self()->cg();
     TR::RealRegister *best;
     TR::Instruction *cursor;
-    TR::Node *currentNode = currentInstruction->getNode();
     TR_RegisterKinds rk = (virtualRegister == NULL) ? TR_GPR : virtualRegister->getKind();
     int numCandidates = 0;
 
@@ -297,8 +294,8 @@ void OMR::ARM64::Machine::spillRegister(TR::Instruction *currentInstruction, TR:
                     cg->traceRegisterAssignment("\nOOL: Reuse backing store (%p) for %R inside OOL\n", location,
                         registerToSpill);
             } else if (!containsInternalPointer) {
-                location = cg->allocateSpill(TR::Compiler->om.sizeofReferenceAddress(),
-                    registerToSpill->containsCollectedReference(), NULL);
+                location
+                    = cg->allocateSpill(TR::Compiler->om.sizeofReferenceAddress(), containsCollectedReference, NULL);
 
                 if (debugObj)
                     cg->traceRegisterAssignment("\nSpilling %R to (%p)\n", registerToSpill, location);
@@ -397,7 +394,6 @@ TR::RealRegister *OMR::ARM64::Machine::reverseSpillState(TR::Instruction *curren
 {
     TR::Compilation *comp = self()->cg()->comp();
     TR::MemoryReference *tmemref;
-    TR::RealRegister *sameReg;
     TR_BackingStore *location = spilledRegister->getBackingStorage();
     TR::Node *currentNode = currentInstruction->getNode();
     TR_RegisterKinds rk = spilledRegister->getKind();
@@ -545,7 +541,6 @@ TR::RealRegister *OMR::ARM64::Machine::assignOneRegister(TR::Instruction *curren
     TR_RegisterKinds rk = virtualRegister->getKind();
     TR::RealRegister *assignedRegister = virtualRegister->getAssignedRealRegister();
     TR::CodeGenerator *cg = self()->cg();
-    TR::Compilation *comp = cg->comp();
 
     if (assignedRegister == NULL) {
         cg->clearRegisterAssignmentFlags();
@@ -765,7 +760,6 @@ void OMR::ARM64::Machine::spillAllVectorRegisters(TR::Instruction *currentInstru
 {
     int32_t first = TR::RealRegister::FirstFPR;
     int32_t last = TR::RealRegister::LastFPR;
-    TR::Node *node = currentInstruction->getNode();
 
     for (int32_t i = first; i <= last; i++) {
         TR::Register *virtReg = NULL;
@@ -987,7 +981,6 @@ void OMR::ARM64::Machine::setRegisterWeightsFromAssociations()
 {
     TR::ARM64LinkageProperties linkageProperties = self()->cg()->getProperties();
     int32_t first = TR::RealRegister::FirstGPR;
-    TR::Compilation *comp = self()->cg()->comp();
     int32_t last = TR::RealRegister::LastAssignableFPR;
 
     for (int32_t i = first; i <= last; ++i) {
@@ -1017,7 +1010,6 @@ void OMR::ARM64::Machine::setRegisterWeightsFromAssociations()
 
 void OMR::ARM64::Machine::createRegisterAssociationDirective(TR::Instruction *cursor)
 {
-    TR::Compilation *comp = self()->cg()->comp();
     int32_t first = TR::RealRegister::FirstGPR;
     int32_t last = TR::RealRegister::LastAssignableFPR;
     TR::RegisterDependencyConditions *associations
@@ -1126,7 +1118,6 @@ TR::RegisterDependencyConditions *OMR::ARM64::Machine::createCondForLiveAndSpill
     // Calculate number of register dependencies required. This step is not really necessary, but
     // it is space conscious
     //
-    TR::Compilation *comp = self()->cg()->comp();
     for (i = TR::RealRegister::FirstGPR; i <= TR::RealRegister::LastAssignableFPR; i++) {
         TR::RealRegister *realReg = self()->getRealRegister(static_cast<TR::RealRegister::RegNum>(i));
 

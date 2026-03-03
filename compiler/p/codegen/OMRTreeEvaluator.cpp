@@ -981,23 +981,100 @@ TR::Register *OMR::Power::TreeEvaluator::mLastTrueEvaluator(TR::Node *node, TR::
 
 TR::Register *OMR::Power::TreeEvaluator::mToLongBitsEvaluator(TR::Node *node, TR::CodeGenerator *cg)
 {
-    TR::Node *firstChild = node->getFirstChild();
+    TR_ASSERT_FATAL_WITH_NODE(node, cg->comp()->target().cpu.isAtLeast(OMR_PROCESSOR_PPC_P9),
+        "mToLongBits is only supported on P9 and higher");
 
+    TR::Node *firstChild = node->getFirstChild();
     TR_ASSERT_FATAL_WITH_NODE(node, firstChild->getDataType().getVectorLength() == TR::VectorLength128,
         "Only 128-bit vectors are supported but type %s was requested", node->getDataType().toString());
 
-    TR_ASSERT_FATAL_WITH_NODE(node, firstChild->getDataType().getVectorNumLanes() == 16,
-        "Unsupported vector type %s for mToLongBits\n", firstChild->getDataType().toString());
+    switch (firstChild->getDataType().getVectorElementType()) {
+        case (TR::Int8):
+            return mToLongBitsHelper(node, cg, TR::InstOpCode::vextractbm, TR::InstOpCode::vspltisb, 16);
+        case (TR::Int16):
+            return mToLongBitsHelper(node, cg, TR::InstOpCode::vextracthm, TR::InstOpCode::vspltish, 8);
+        case (TR::Int32):
+        case (TR::Float):
+            return mToLongBitsHelper(node, cg, TR::InstOpCode::vextractwm, TR::InstOpCode::vspltisw, 4);
+        case (TR::Int64):
+        case (TR::Double):
+            return mToLongBitsHelper(node, cg, TR::InstOpCode::vextractdm, TR::InstOpCode::bad, 2);
+        default:
+            TR_ASSERT_FATAL(false, "Unsupported vector type %s for mToLongBits\n", firstChild->getDataType().toString());
+            return NULL;
+    }
+}
+
+TR::Register *OMR::Power::TreeEvaluator::mToLongBitsHelper(TR::Node *node, TR::CodeGenerator *cg, TR::InstOpCode::Mnemonic extractOp, TR::InstOpCode::Mnemonic splatOp, int numElements)
+{
+    TR::Node *firstChild = node->getFirstChild();
 
     TR::Register *srcReg = cg->evaluate(firstChild);
-    TR::Register *tmpReg = cg->allocateRegister(TR_VRF);
     TR::Register *resReg = cg->allocateRegister(TR_GPR);
 
-    generateTrg1Src1Instruction(cg, OMR::InstOpCode::xxbrq, node, tmpReg, srcReg);
-    generateTrg1Src1Instruction(cg, OMR::InstOpCode::vextractbm, node, resReg, tmpReg);
+    TR::Register *tmp1Reg = cg->allocateRegister(TR_VRF);
+    TR::Register *tmp2Reg = NULL;
+    TR::Register *tmpGPR = NULL;
 
-    cg->stopUsingRegister(tmpReg);
     node->setRegister(resReg);
+
+    // reverse byte order (needed since long bits are packed in reverse order)
+    generateTrg1Src1Instruction(cg, OMR::InstOpCode::xxbrq, node, tmp1Reg, srcReg);
+
+    if (cg->comp()->target().cpu.isAtLeast(OMR_PROCESSOR_PPC_P10)) // vextract instructions are only available on P10+
+        generateTrg1Src1Instruction(cg, extractOp, node, resReg, tmp1Reg);
+    else {
+        tmp2Reg = cg->allocateRegister(TR_VRF);
+
+        // set all but least significant bit of each vector element to 0
+        if (numElements == 2) {
+            // since there is no splat immediate doubleword instruction, need to handle Long/DoubleVector mask separately
+            generateTrg1ImmInstruction(cg, TR::InstOpCode::li, node, resReg, 1);
+            generateTrg1Src1Instruction(cg, TR::InstOpCode::mtvsrd, node, tmp2Reg, resReg);
+            generateTrg1Src2ImmInstruction(cg, TR::InstOpCode::xxpermdi, node, tmp2Reg, tmp2Reg, tmp2Reg, 0);
+        } else
+            generateTrg1ImmInstruction(cg, splatOp, node, tmp2Reg, 1);
+
+        generateTrg1Src2Instruction(cg, TR::InstOpCode::xxland, node, tmp1Reg, tmp1Reg, tmp2Reg);
+
+        // pack doubleword-length elements into word-length elements (for Long/DoubleVector mask)
+        if (numElements <= 2)
+            generateTrg1Src2Instruction(cg, TR::InstOpCode::vpksdus, node, tmp1Reg, tmp1Reg, tmp1Reg);
+
+        // pack word-length elements into halfword-length elements (for Int/Float and Long/DoubleVector mask)
+        if (numElements <= 4)
+            generateTrg1Src2Instruction(cg, TR::InstOpCode::vpkuwum, node, tmp1Reg, tmp1Reg, tmp1Reg);
+
+        // pack halfworld-length elements into byte-length elements (for Short, Int/Float, and Long/DoubleVector mask)
+        if (numElements <= 8)
+            generateTrg1Src2Instruction(cg, TR::InstOpCode::vpkuhum, node, tmp1Reg, tmp1Reg, tmp1Reg);
+
+        // for each doubleword element, put the least significant bit of each byte element into its last byte element
+        generateTrg1Src1Instruction(cg, TR::InstOpCode::vgbbd, node, tmp1Reg, tmp1Reg);
+
+        // move to GPR
+        if (numElements > 8) {
+            tmpGPR = cg->allocateRegister(TR_GPR);
+
+            // move lower doubleword element into GPR and concatenate least significant byte elements of both doubleword
+            // elements into a single value (ByteVector mask only, since it's the only vector type with more than 8
+            // lanes)
+            generateTrg1Src1Instruction(cg, TR::InstOpCode::mfvsrd, node, tmpGPR, tmp1Reg);
+            generateTrg1Src1Instruction(cg, TR::InstOpCode::mfvsrld, node, resReg, tmp1Reg);
+            generateTrg1Src1Imm2Instruction(cg, TR::InstOpCode::rldimi, node, resReg, tmpGPR, 8, 0x000000000000FF00);
+        } else
+            generateTrg1Src1Instruction(cg, TR::InstOpCode::mfvsrd, node, resReg, tmp1Reg);
+
+        // set extra bits to 0 (Int/Float and Long/DoubleVector only, since they have less than 8 lanes)
+        if (numElements < 8)
+            generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::andi_r, node, resReg, resReg, (1 << numElements) - 1);
+    }
+
+    cg->stopUsingRegister(tmp1Reg);
+    if (tmp2Reg)
+        cg->stopUsingRegister(tmp2Reg);
+    if (tmpGPR)
+        cg->stopUsingRegister(tmpGPR);
     cg->decReferenceCount(firstChild);
 
     return resReg;

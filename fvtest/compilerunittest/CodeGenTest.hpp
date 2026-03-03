@@ -19,6 +19,12 @@
  * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0 OR GPL-2.0-only WITH Classpath-exception-2.0 OR GPL-2.0-only WITH OpenJDK-assembly-exception-1.0
  *******************************************************************************/
 
+#if defined(AIXPPC)
+// setting MAX_INSTRUCTION_LENGTH to 64 causes a COMPILER LIMIT EXCEEDED message,
+// so need to increase the spill to at least 1776
+#pragma options spill=1776
+#endif
+
 #ifndef CODEGENTEST_HPP
 #define CODEGENTEST_HPP
 
@@ -26,7 +32,7 @@
 #include "codegen/Instruction.hpp"
 #include "include_core/OMR/Bytes.hpp"
 
-#define INSTRUCTION_MAX_LENGTH 32
+#define INSTRUCTION_MAX_LENGTH 64
 
 
 namespace TRTest {

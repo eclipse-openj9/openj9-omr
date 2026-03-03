@@ -1536,7 +1536,8 @@ void TR_Debug::print(OMR::Logger *log, TR::MemoryReference *mr, TR::Instruction 
     int32_t extraBump = alignmentBump + sizeIncreaseBump;
     bool fullyMapped = true;
     bool sawWcodeName = false;
-    char comments[1024];
+    const size_t commentsSize = 1024;
+    char comments[commentsSize];
     bool firstPrint = true;
     bool useTobeyFormat = true;
 
@@ -1558,9 +1559,9 @@ void TR_Debug::print(OMR::Logger *log, TR::MemoryReference *mr, TR::Instruction 
 
         if (sym->isSpillTempAuto()) {
             if (sym->getDataType() == TR::Float || sym->getDataType() == TR::Double)
-                sprintf(comments, "FPRSpill");
+                snprintf(comments, commentsSize, "FPRSpill");
             else
-                sprintf(comments, "GPRSpill");
+                snprintf(comments, commentsSize, "GPRSpill");
         }
 
         switch (sym->getKind()) {

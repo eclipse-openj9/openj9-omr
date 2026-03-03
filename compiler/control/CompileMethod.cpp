@@ -115,15 +115,16 @@ static void writePerfToolEntry(void *start, uint32_t size, const char *name)
 
 static void generatePerfToolEntry(uint8_t *startPC, uint8_t *endPC, const char *sig, const char *hotness)
 {
-    char buffer[1024];
-    char *name;
-    if (strlen(sig) + 1 + strlen(hotness) + 1 < 1024) {
-        sprintf(buffer, "%s_%s (compiled code)", sig, hotness);
-        name = buffer;
-    } else
-        name = "(compiled code)";
+    const char *compiledCodeString = "(compiled code)";
+    const int bufferSize = 1024;
+    char buffer[bufferSize];
 
-    writePerfToolEntry(startPC, static_cast<uint32_t>(endPC - startPC), name);
+    // figure out how much signature can be written before "_<hotness> <compiledCodeString>\0"
+    const int hotnessLen = (int)strlen(hotness);
+    const int compiledCodeStringLen = (int)strlen(compiledCodeString);
+    const int maxSigLen = bufferSize - 1 - hotnessLen - 1 - compiledCodeStringLen - 1;
+    snprintf(buffer, (size_t)bufferSize, "%.*s_%s %s", maxSigLen, sig, hotness, compiledCodeString);
+    writePerfToolEntry(startPC, static_cast<uint32_t>(endPC - startPC), buffer);
 }
 
 #if defined(TR_TARGET_POWER)

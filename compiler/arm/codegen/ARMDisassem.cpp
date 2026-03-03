@@ -204,37 +204,37 @@ const char *singleRegStr(uint32_t regNum, bool W)
 }
 #endif
 
-void constant32(int32_t *instrPtr, char *mBuf, char *iBuf)
+void constant32(int32_t *instrPtr, char *mBuf, size_t mBufSize, char *iBuf, size_t iBufSize)
 {
 #ifdef LINUX
-    sprintf(mBuf, ".long");
+    snprintf(mBuf, mBufSize, ".long");
 #else
-    sprintf(mBuf, "DCD");
+    snprintf(mBuf, mBufSize, "DCD");
 #endif
-    sprintf(iBuf, "0x%08x", *instrPtr);
+    snprintf(iBuf, iBufSize, "0x%08x", *instrPtr);
 }
 
-void branchExchange(int32_t *instrPtr, char *mBuf, char *iBuf)
+void branchExchange(int32_t *instrPtr, char *mBuf, size_t mBufSize, char *iBuf, size_t iBufSize)
 {
     BranchExchangeInstruction *instr = (BranchExchangeInstruction *)instrPtr;
 
     if (instr->SBO == 0xfff) {
-        sprintf(mBuf, "b%sx%s", instr->L ? "l" : "", condName[instr->cond]);
-        sprintf(iBuf, "%s", regStr(instr->Rm, false));
+        snprintf(mBuf, mBufSize, "b%sx%s", instr->L ? "l" : "", condName[instr->cond]);
+        snprintf(iBuf, iBufSize, "%s", regStr(instr->Rm, false));
     } else {
-        constant32(instrPtr, mBuf, iBuf);
+        constant32(instrPtr, mBuf, mBufSize, iBuf, iBufSize);
     }
 }
 
-void branch(int32_t *instrPtr, char *mBuf, char *iBuf)
+void branch(int32_t *instrPtr, char *mBuf, size_t mBufSize, char *iBuf, size_t iBufSize)
 {
     BranchInstruction *instr = (BranchInstruction *)instrPtr;
 
-    sprintf(mBuf, "b%s%s", instr->L ? "l" : "", condName[instr->cond]);
-    sprintf(iBuf, "0x%08x", instrPtr + instr->offset + 2);
+    snprintf(mBuf, mBufSize, "b%s%s", instr->L ? "l" : "", condName[instr->cond]);
+    snprintf(iBuf, iBufSize, "0x%08x", instrPtr + instr->offset + 2);
 }
 
-void moveStatusReg(int32_t *instrPtr, char *mBuf, char *iBuf)
+void moveStatusReg(int32_t *instrPtr, char *mBuf, size_t mBufSize, char *iBuf, size_t iBufSize)
 {
     MSRInstruction *instr = (MSRInstruction *)instrPtr;
     InstructionBits *instrBits = (InstructionBits *)instrPtr;
@@ -242,80 +242,81 @@ void moveStatusReg(int32_t *instrPtr, char *mBuf, char *iBuf)
     if (!instr->to) // Move from status register
     {
         if (!instr->c || !instr->x || !instr->s || !instr->f || instr->rotate_imm || instr->immLo4) {
-            constant32(instrPtr, mBuf, iBuf);
+            constant32(instrPtr, mBuf, mBufSize, iBuf, iBufSize);
             return;
         }
 
-        sprintf(mBuf, "mrs%s", condName[instr->cond]);
-        sprintf(iBuf, "%s, %cPSR", regStr(instr->Rd, true), instrBits->bit22 ? 'S' : 'C');
+        snprintf(mBuf, mBufSize, "mrs%s", condName[instr->cond]);
+        snprintf(iBuf, iBufSize, "%s, %cPSR", regStr(instr->Rd, true), instrBits->bit22 ? 'S' : 'C');
     } else // Move to status register
     {
         if (instr->Rd != 0xf) {
-            constant32(instrPtr, mBuf, iBuf);
+            constant32(instrPtr, mBuf, mBufSize, iBuf, iBufSize);
             return;
         }
-        sprintf(mBuf, "msr%s", condName[instr->cond]);
-        char last_oprnd[11];
+        snprintf(mBuf, mBufSize, "msr%s", condName[instr->cond]);
+        const size_t last_oprndSize = 11;
+        char last_oprnd[last_oprndSize];
         if (!instr->immForm) {
             if (instr->rotate_imm) {
-                constant32(instrPtr, mBuf, iBuf);
+                constant32(instrPtr, mBuf, mBufSize, iBuf, iBufSize);
                 return;
             }
-            sprintf(last_oprnd, "%s", regStr(instr->immLo4, false));
+            snprintf(last_oprnd, last_oprndSize, "%s", regStr(instr->immLo4, false));
         } else {
-            sprintf(last_oprnd, "0x%x",
+            snprintf(last_oprnd, last_oprndSize, "0x%x",
                 rotateRight(concatImm4Imm4(instr->immHi4, instr->immLo4), instr->rotate_imm * 2));
         }
-        sprintf(iBuf, "%cPSR_%s%s%s%s, %s", instr->R ? 'S' : 'C', instr->c ? "c" : "", instr->x ? "x" : "",
+        snprintf(iBuf, iBufSize, "%cPSR_%s%s%s%s, %s", instr->R ? 'S' : 'C', instr->c ? "c" : "", instr->x ? "x" : "",
             instr->s ? "s" : "", instr->f ? "f" : "", last_oprnd);
     }
 }
 
-void miscInstr(int32_t *instrPtr, char *mBuf, char *iBuf)
+void miscInstr(int32_t *instrPtr, char *mBuf, size_t mBufSize, char *iBuf, size_t iBufSize)
 {
     MiscellaneousInstruction *instr = (MiscellaneousInstruction *)instrPtr;
     InstructionBits *instrBits = (InstructionBits *)instrPtr;
 
     switch (instr->groupOpcode) {
         case 0:
-            moveStatusReg(instrPtr, mBuf, iBuf);
+            moveStatusReg(instrPtr, mBuf, mBufSize, iBuf, iBufSize);
             break;
         case 1:
             if (!instrBits->bit22) {
-                branchExchange(instrPtr, mBuf, iBuf);
+                branchExchange(instrPtr, mBuf, mBufSize, iBuf, iBufSize);
             } else {
                 if (instr->SBO1 == 0xf && instr->SBO2 == 0xf) {
-                    sprintf(mBuf, "clz%s", condName[instr->cond]);
-                    sprintf(iBuf, "%s, %s", regStr(instr->Rd, true), regStr(instr->Rm, false));
+                    snprintf(mBuf, mBufSize, "clz%s", condName[instr->cond]);
+                    snprintf(iBuf, iBufSize, "%s, %s", regStr(instr->Rd, true), regStr(instr->Rm, false));
                 } else {
-                    constant32(instrPtr, mBuf, iBuf);
+                    constant32(instrPtr, mBuf, mBufSize, iBuf, iBufSize);
                 }
             }
             break;
         case 3:
-            branchExchange(instrPtr, mBuf, iBuf);
+            branchExchange(instrPtr, mBuf, mBufSize, iBuf, iBufSize);
             break;
         case 5:
-            constant32(instrPtr, mBuf, iBuf); // Enhanced DSP add/substracts
+            constant32(instrPtr, mBuf, mBufSize, iBuf, iBufSize); // Enhanced DSP add/substracts
             break;
         case 7: {
-            sprintf(mBuf, "bkpt");
+            snprintf(mBuf, mBufSize, "bkpt");
             BreakpointInstruction *bkptInstr = (BreakpointInstruction *)instrPtr;
-            sprintf(iBuf, "0x%x%x%s", bkptInstr->immed12, bkptInstr->immed4,
+            snprintf(iBuf, iBufSize, "0x%x%x%s", bkptInstr->immed12, bkptInstr->immed4,
                 bkptInstr->cond != 14 ? "   ; UNPREDICTABLE" : "");
         } break;
         case 8:
         case 10:
         case 12:
         case 14:
-            constant32(instrPtr, mBuf, iBuf); // Enhanced DSP multiplies
+            constant32(instrPtr, mBuf, mBufSize, iBuf, iBufSize); // Enhanced DSP multiplies
             break;
         default:
-            constant32(instrPtr, mBuf, iBuf); // Invalid instruction
+            constant32(instrPtr, mBuf, mBufSize, iBuf, iBufSize); // Invalid instruction
     }
 }
 
-void dataProcessing(int32_t *instrPtr, char *mBuf, char *iBuf)
+void dataProcessing(int32_t *instrPtr, char *mBuf, size_t mBufSize, char *iBuf, size_t iBufSize)
 {
     DataProcessingInstruction *instr = (DataProcessingInstruction *)(uint32_t *)instrPtr;
     InstructionBits *instrBits = (InstructionBits *)(uint32_t *)instrPtr;
@@ -327,62 +328,66 @@ void dataProcessing(int32_t *instrPtr, char *mBuf, char *iBuf)
     bool mov = instrBits->bit21 && (instrBits->bits23_24 == 3); // instr->opcode: 0b1101 || 0b1111 (mov, mvn)
 
     if (test_cmp && instr->Rd || mov && instr->Rn) {
-        constant32(instrPtr, mBuf, iBuf); // This field for these instructions SBZ
+        constant32(instrPtr, mBuf, mBufSize, iBuf, iBufSize); // This field for these instructions SBZ
         return;
     }
 
-    sprintf(mBuf, "%s%s%s", opcodeName[instr->opcode], condName[instr->cond], (!test_cmp && instr->S) ? "s" : "");
+    snprintf(mBuf, mBufSize, "%s%s%s", opcodeName[instr->opcode], condName[instr->cond],
+        (!test_cmp && instr->S) ? "s" : "");
 
-    char dest_src1[9];
+    const size_t dest_src1Size = 9;
+    char dest_src1[dest_src1Size];
     if (test_cmp || mov)
-        sprintf(dest_src1, "%s", regStr(mov ? instr->Rd : instr->Rn, mov));
+        snprintf(dest_src1, dest_src1Size, "%s", regStr(mov ? instr->Rd : instr->Rn, mov));
     else
-        sprintf(dest_src1, "%s, %s", regStr(instr->Rd, true), regStr(instr->Rn, false));
+        snprintf(dest_src1, dest_src1Size, "%s, %s", regStr(instr->Rd, true), regStr(instr->Rn, false));
 
-    char sh_oprnd[13];
+    const size_t sh_oprndSize = 13;
+    char sh_oprnd[sh_oprndSize];
 
     if (instrBits->bit25) // Immediate
     {
         DataProcessingImmedInstruction *instr = (DataProcessingImmedInstruction *)(uint32_t *)instrPtr;
-        sprintf(sh_oprnd, "#0x%x", rotateRight(instr->imm8, instr->rotate_imm * 2));
+        snprintf(sh_oprnd, sh_oprndSize, "#0x%x", rotateRight(instr->imm8, instr->rotate_imm * 2));
     } else if (instr->shifter == 0) //  Register  (bits[4..11] == 0)
     {
-        sprintf(sh_oprnd, "%s", regStr(instr->Rm, false));
+        snprintf(sh_oprnd, sh_oprndSize, "%s", regStr(instr->Rm, false));
     } else if (instr->shifter == 6) //  Rotate right with extend
     {
-        sprintf(sh_oprnd, "%s, RRX", regStr(instr->Rm, false));
+        snprintf(sh_oprnd, sh_oprndSize, "%s, RRX", regStr(instr->Rm, false));
     } else {
         static char *shift_rotate[] = { "LSL", "LSR", "ASR", "ROR" };
         if (instrBits->bit4) // Register shift
         {
             DataProcessingRegShiftInstruction *instr = (DataProcessingRegShiftInstruction *)(uint32_t *)instrPtr;
-            sprintf(sh_oprnd, "%s, %s %s", regStr(instr->Rm, false), shift_rotate[instr->shift],
+            snprintf(sh_oprnd, sh_oprndSize, "%s, %s %s", regStr(instr->Rm, false), shift_rotate[instr->shift],
                 regStr(instr->Rs, false));
         } else // Immediate shift
         {
             DataProcessingImmShiftInstruction *instr = (DataProcessingImmShiftInstruction *)(uint32_t *)instrPtr;
-            sprintf(sh_oprnd, "%s, %s #%u", regStr(instr->Rm, false), shift_rotate[instr->shift],
+            snprintf(sh_oprnd, sh_oprndSize, "%s, %s #%u", regStr(instr->Rm, false), shift_rotate[instr->shift],
                 !instr->shift_imm && (instr->shift == 1 || instr->shift == 2) ? 32 : instr->shift_imm);
         }
     }
 
-    sprintf(iBuf, "%s, %s", dest_src1, sh_oprnd);
+    snprintf(iBuf, iBufSize, "%s, %s", dest_src1, sh_oprnd);
 }
 
-void swap(int32_t *instrPtr, char *mBuf, char *iBuf)
+void swap(int32_t *instrPtr, char *mBuf, size_t mBufSize, char *iBuf, size_t iBufSize)
 {
     SwapInstruction *instr = (SwapInstruction *)instrPtr;
     InstructionBits *instrBits = (InstructionBits *)instrPtr;
 
     if (instr->SBZ) {
-        constant32(instrPtr, mBuf, iBuf); // for swp this field should be zero
+        constant32(instrPtr, mBuf, mBufSize, iBuf, iBufSize); // for swp this field should be zero
     } else {
-        sprintf(mBuf, "swp%s%s", condName[instr->cond], instr->B ? "b" : "");
-        sprintf(iBuf, "%s, %s, [%s]", regStr(instr->Rd, true), regStr(instr->Rm, false), regStr(instr->Rn, false));
+        snprintf(mBuf, mBufSize, "swp%s%s", condName[instr->cond], instr->B ? "b" : "");
+        snprintf(iBuf, iBufSize, "%s, %s, [%s]", regStr(instr->Rd, true), regStr(instr->Rm, false),
+            regStr(instr->Rn, false));
     }
 }
 
-void multiply(int32_t *instrPtr, char *mBuf, char *iBuf)
+void multiply(int32_t *instrPtr, char *mBuf, size_t mBufSize, char *iBuf, size_t iBufSize)
 {
     MultiplyInstruction *instr = (MultiplyInstruction *)instrPtr;
     InstructionBits *instrBits = (InstructionBits *)instrPtr;
@@ -390,60 +395,61 @@ void multiply(int32_t *instrPtr, char *mBuf, char *iBuf)
     if (!instr->L) // MLA and MUL
     {
         if (!instr->A && instr->Rn) {
-            constant32(instrPtr, mBuf, iBuf); // for mul this field should be zero
+            constant32(instrPtr, mBuf, mBufSize, iBuf, iBufSize); // for mul this field should be zero
             return;
         }
-        sprintf(mBuf, "%s%s%s", instr->A ? "mla" : "mul", condName[instr->cond], instr->S ? "s" : "");
-        char accumReg[9];
-        sprintf(accumReg, ", %s", regStr(instr->Rn, false));
-        sprintf(iBuf, "%s, %s, %s%s", regStr(instr->Rd, true), regStr(instr->Rm, false), regStr(instr->Rs, false),
-            instr->A ? accumReg : "");
+        snprintf(mBuf, mBufSize, "%s%s%s", instr->A ? "mla" : "mul", condName[instr->cond], instr->S ? "s" : "");
+        const size_t accumRegSize = 9;
+        char accumReg[accumRegSize];
+        snprintf(accumReg, accumRegSize, ", %s", regStr(instr->Rn, false));
+        snprintf(iBuf, iBufSize, "%s, %s, %s%s", regStr(instr->Rd, true), regStr(instr->Rm, false),
+            regStr(instr->Rs, false), instr->A ? accumReg : "");
     } else // long multiplies: SMLAL, SMULL, UMLAL, UMULL
     {
-        sprintf(mBuf, "%c%sl%s%s", instr->U ? 's' : 'u', instr->A ? "mla" : "mul", condName[instr->cond],
+        snprintf(mBuf, mBufSize, "%c%sl%s%s", instr->U ? 's' : 'u', instr->A ? "mla" : "mul", condName[instr->cond],
             instr->A ? "s" : "");
-        sprintf(iBuf, "%s, %s, %s, %s", regStr(instr->Rn, true), regStr(instr->Rd, true), regStr(instr->Rm, false),
-            regStr(instr->Rs, false));
+        snprintf(iBuf, iBufSize, "%s, %s, %s, %s", regStr(instr->Rn, true), regStr(instr->Rd, true),
+            regStr(instr->Rm, false), regStr(instr->Rs, false));
     }
 }
 
-void loadStore(int32_t *instrPtr, char *mBuf, char *iBuf, bool extra)
+void loadStore(int32_t *instrPtr, char *mBuf, size_t mBufSize, char *iBuf, size_t iBufSize, bool extra)
 {
     InstructionBits *instrBits = (InstructionBits *)instrPtr;
     LoadStoreInstruction *instr = (LoadStoreInstruction *)instrPtr;
 
     if (extra && !instrBits->bit22 && instr->shift_imm != 1) { // this is a register form; bits11..7 should be 00001
-        constant32(instrPtr, mBuf, iBuf);
+        constant32(instrPtr, mBuf, mBufSize, iBuf, iBufSize);
         return;
     }
 
     if (!extra)
-        sprintf(mBuf, "%s%s%s%s", instr->L ? "ldr" : "str", condName[instr->cond], instrBits->bit22 ? "b" : "",
-            (!instr->P && instr->W) ? "t" : "");
+        snprintf(mBuf, mBufSize, "%s%s%s%s", instr->L ? "ldr" : "str", condName[instr->cond],
+            instrBits->bit22 ? "b" : "", (!instr->P && instr->W) ? "t" : "");
     else
-        sprintf(mBuf, "%s%s%s%s", instr->L ? "ldr" : "str", condName[instr->cond], instrBits->bit6 ? "s" : "",
-            (instrBits->bit6 && !instrBits->bit5) ? "b" : "h");
+        snprintf(mBuf, mBufSize, "%s%s%s%s", instr->L ? "ldr" : "str", condName[instr->cond],
+            instrBits->bit6 ? "s" : "", (instrBits->bit6 && !instrBits->bit5) ? "b" : "h");
 
     if ((!extra && !instrBits->bit25) || (extra && instrBits->bit22)) { // Immediate offset
         LoadStoreImmInstruction *instrImm = (LoadStoreImmInstruction *)instrPtr;
         LoadStoreImmMiscInstruction *instrImmMisc = (LoadStoreImmMiscInstruction *)instrPtr;
-        sprintf(iBuf, "%s, [%s%s, #%s%u%s%s", regStr(instr->Rd, instr->L), regStr(instr->Rn, (!instr->P || instr->W)),
-            instr->P ? "" : "]", instr->U ? "" : "-",
+        snprintf(iBuf, iBufSize, "%s, [%s%s, #%s%u%s%s", regStr(instr->Rd, instr->L),
+            regStr(instr->Rn, (!instr->P || instr->W)), instr->P ? "" : "]", instr->U ? "" : "-",
             extra ? concatImm4Imm4(instrImmMisc->immH, instrImmMisc->immL) : instrImm->immed, instr->P ? "]" : "",
             instr->W && instr->P ? "!" : "");
     } else if (extra || (instr->shift == 0 && instr->shift_imm == 0)) { //   Register offset/index
-        sprintf(iBuf, "%s, [%s%s, %s%s%s%s", regStr(instr->Rd, instr->L), regStr(instr->Rn, (!instr->P || instr->W)),
-            instr->P ? "" : "]", instr->U ? "" : "-", regStr(instr->Rm, false), instr->P ? "]" : "",
-            instr->W ? "!" : "");
+        snprintf(iBuf, iBufSize, "%s, [%s%s, %s%s%s%s", regStr(instr->Rd, instr->L),
+            regStr(instr->Rn, (!instr->P || instr->W)), instr->P ? "" : "]", instr->U ? "" : "-",
+            regStr(instr->Rm, false), instr->P ? "]" : "", instr->W ? "!" : "");
     } else // Scaled register offset/index
     {
         if (instr->shift == 3 && instr->shift_imm == 0) {
-            sprintf(iBuf, "%s, [%s%s, %s%s, RRX%s%s", regStr(instr->Rd, instr->L),
+            snprintf(iBuf, iBufSize, "%s, [%s%s, %s%s, RRX%s%s", regStr(instr->Rd, instr->L),
                 regStr(instr->Rn, (!instr->P || instr->W)), instr->P ? "" : "]", instr->U ? "" : "-",
                 regStr(instr->Rm, false), instr->P ? "]" : "", instr->W ? "!" : "");
         } else {
             static char *sh_rot[] = { "LSL", "LSR", "ASR", "ROR" };
-            sprintf(iBuf, "%s, [%s%s, %s%s, %s #%u%s%s", regStr(instr->Rd, instr->L),
+            snprintf(iBuf, iBufSize, "%s, [%s%s, %s%s, %s #%u%s%s", regStr(instr->Rd, instr->L),
                 regStr(instr->Rn, (!instr->P || instr->W)), instr->P ? "" : "]", instr->U ? "" : "-",
                 regStr(instr->Rm, false), sh_rot[instr->shift],
                 (instr->shift_imm == 0 && (instr->shift == 1 || instr->shift == 2)) ? 32 : instr->shift_imm,
@@ -452,7 +458,7 @@ void loadStore(int32_t *instrPtr, char *mBuf, char *iBuf, bool extra)
     }
 }
 
-void mulAndExtraLoadStore(int32_t *instrPtr, char *mBuf, char *iBuf)
+void mulAndExtraLoadStore(int32_t *instrPtr, char *mBuf, size_t mBufSize, char *iBuf, size_t iBufSize)
 {
     InstructionBits *instrBits = (InstructionBits *)instrPtr;
     uint32_t bits5_6 = instrBits->bit6 << 1 | instrBits->bit5;
@@ -460,40 +466,43 @@ void mulAndExtraLoadStore(int32_t *instrPtr, char *mBuf, char *iBuf)
     switch (bits5_6) {
         case 0:
             if (instrBits->bits23_24 == 2)
-                swap(instrPtr, mBuf, iBuf);
+                swap(instrPtr, mBuf, mBufSize, iBuf, iBufSize);
             else
-                multiply(instrPtr, mBuf, iBuf);
+                multiply(instrPtr, mBuf, mBufSize, iBuf, iBufSize);
             break;
         case 1:
-            loadStore(instrPtr, mBuf, iBuf, true);
+            loadStore(instrPtr, mBuf, mBufSize, iBuf, iBufSize, true);
             break;
         case 2:
         case 3:
             if (instrBits->bit20)
-                loadStore(instrPtr, mBuf, iBuf, true);
+                loadStore(instrPtr, mBuf, mBufSize, iBuf, iBufSize, true);
             else
-                constant32(instrPtr, mBuf, iBuf); // Enhanced DSP Extension
+                constant32(instrPtr, mBuf, mBufSize, iBuf, iBufSize); // Enhanced DSP Extension
     }
 }
 
-void loadStoreMultiple(int32_t *instrPtr, char *mBuf, char *iBuf)
+void loadStoreMultiple(int32_t *instrPtr, char *mBuf, size_t mBufSize, char *iBuf, size_t iBufSize)
 {
     MultipleLoadStoreInstruction *instr = (MultipleLoadStoreInstruction *)instrPtr;
 
     static char *addr_mode[] = { "da", "ia", "db", "ib" };
-    char registers[70] = "";
-    char reg[6];
+    const size_t registersSize = 70;
+    char registers[registersSize] = "";
+    const size_t regSize = 6;
+    char reg[regSize];
 
     for (int i = 0, pos = 0; i < 16; i++) {
         if (instr->register_list & (1 << i)) {
-            sprintf(reg, "%s%s", pos ? "," : "", regStr(i, instr->L));
-            sprintf(registers + pos, "%s", reg);
+            snprintf(reg, regSize, "%s%s", pos ? "," : "", regStr(i, instr->L));
+            snprintf(registers + pos, registersSize - pos, "%s", reg);
             pos += strlen(reg);
         }
     }
     int PU = instr->P << 1 | instr->U;
-    sprintf(mBuf, "%s%s%s", instr->L ? "ldm" : "stm", condName[instr->cond], instr->W ? addr_mode[PU] : "");
-    sprintf(iBuf, "%s%s, {%s}%s", regStr(instr->Rn, instr->W), instr->W ? "!" : "", registers, instr->S ? "^" : "");
+    snprintf(mBuf, mBufSize, "%s%s%s", instr->L ? "ldm" : "stm", condName[instr->cond], instr->W ? addr_mode[PU] : "");
+    snprintf(iBuf, iBufSize, "%s%s, {%s}%s", regStr(instr->Rn, instr->W), instr->W ? "!" : "", registers,
+        instr->S ? "^" : "");
 }
 
 #ifdef __VFP_FP__
@@ -503,7 +512,7 @@ static uint32_t getVFPFirstOperand(VFPInstruction *instr) { return (instr->Fn <<
 
 static uint32_t getVFPSecondOperand(VFPInstruction *instr) { return (instr->Fm << 1 | instr->M); }
 
-void vfpTwoRegTransfer(int32_t *instrPtr, char *mBuf, char *iBuf)
+void vfpTwoRegTransfer(int32_t *instrPtr, char *mBuf, size_t mBufSize, char *iBuf, size_t iBufSize)
 {
     VFPInstruction *instr = (VFPInstruction *)instrPtr;
     bool isDouble = (instr->cp == 11); // Coprocessor 11 is double, 10 is float
@@ -513,14 +522,14 @@ void vfpTwoRegTransfer(int32_t *instrPtr, char *mBuf, char *iBuf)
             if (instr->r) // L-bit
             {
                 // MFRRD
-                sprintf(mBuf, "%s%s", "mfrrd", condName[instr->cond]);
-                sprintf(iBuf, "%s, %s, %s", regStr(instr->Fd, true), regStr(instr->Fn, true),
+                snprintf(mBuf, mBufSize, "%s%s", "mfrrd", condName[instr->cond]);
+                snprintf(iBuf, iBufSize, "%s, %s, %s", regStr(instr->Fd, true), regStr(instr->Fn, true),
                     doubleRegStr(getVFPSecondOperand(instr), false));
             } else {
                 // MFDRR
-                sprintf(mBuf, "%s%s", "mfdrr", condName[instr->cond]);
-                sprintf(iBuf, "%s, %s, %s", doubleRegStr(getVFPSecondOperand(instr), true), regStr(instr->Fd, false),
-                    regStr(instr->Fn, false));
+                snprintf(mBuf, mBufSize, "%s%s", "mfdrr", condName[instr->cond]);
+                snprintf(iBuf, iBufSize, "%s, %s, %s", doubleRegStr(getVFPSecondOperand(instr), true),
+                    regStr(instr->Fd, false), regStr(instr->Fn, false));
             }
         } else {
             uint32_t first = getVFPSecondOperand(instr);
@@ -528,31 +537,32 @@ void vfpTwoRegTransfer(int32_t *instrPtr, char *mBuf, char *iBuf)
             if (instr->r) // L-bit
             {
                 // FMRRS
-                sprintf(mBuf, "%s%s", "mfrrs", condName[instr->cond]);
-                sprintf(iBuf, "%s, %s, {%s, %s}", regStr(instr->Fd, true), regStr(instr->Fn, true),
+                snprintf(mBuf, mBufSize, "%s%s", "mfrrs", condName[instr->cond]);
+                snprintf(iBuf, iBufSize, "%s, %s, {%s, %s}", regStr(instr->Fd, true), regStr(instr->Fn, true),
                     singleRegStr(first, false), singleRegStr(next, false));
             } else {
                 // FMSRR
-                sprintf(mBuf, "%s%s", "mfsrr", condName[instr->cond]);
-                sprintf(iBuf, "{%s, %s}, %s, %s", singleRegStr(first, true), singleRegStr(next, true),
+                snprintf(mBuf, mBufSize, "%s%s", "mfsrr", condName[instr->cond]);
+                snprintf(iBuf, iBufSize, "{%s, %s}, %s, %s", singleRegStr(first, true), singleRegStr(next, true),
                     regStr(instr->Fd, false), regStr(instr->Fn, false));
             }
         }
     } else
-        constant32((int32_t *)instrPtr, mBuf, iBuf);
+        constant32((int32_t *)instrPtr, mBuf, mBufSize, iBuf, iBufSize);
 }
 #endif
 
-void loadStoreCoprocessor(int32_t *instrPtr, char *mBuf, char *iBuf)
+void loadStoreCoprocessor(int32_t *instrPtr, char *mBuf, size_t mBufSize, char *iBuf, size_t iBufSize)
 {
     CoprocessorLoadStoreInstruction *instr = (CoprocessorLoadStoreInstruction *)instrPtr;
 #ifdef __VFP_FP__
-    char tempStr[32] = "";
+    const size_t tempStrSize = 32;
+    char tempStr[tempStrSize] = "";
     uint32_t puw = (instr->P << 2 | instr->U << 1 | instr->W);
     bool isDouble = (instr->cp == 11); // Coprocessor 11 is double, 10 is float
     VFPInstruction *vfpInstr = (VFPInstruction *)instrPtr;
     if (puw == 0) {
-        vfpTwoRegTransfer(instrPtr, mBuf, iBuf);
+        vfpTwoRegTransfer(instrPtr, mBuf, mBufSize, iBuf, iBufSize);
         return;
     }
 
@@ -560,10 +570,10 @@ void loadStoreCoprocessor(int32_t *instrPtr, char *mBuf, char *iBuf)
         case 4:
         case 6:
             // FSTS/FSTD/FLDS/FLDD: U=0 negative offset
-            sprintf(mBuf, "%s%s%s", instr->L ? "fld" : "fst", condName[instr->cond], isDouble ? "d" : "s");
+            snprintf(mBuf, mBufSize, "%s%s%s", instr->L ? "fld" : "fst", condName[instr->cond], isDouble ? "d" : "s");
             if (instr->offset8)
-                sprintf(tempStr, ", #%s%d", (instr->U) ? "+" : "-", instr->offset8 * 4);
-            sprintf(iBuf, "%s, [%s%s]",
+                snprintf(tempStr, tempStrSize, ", #%s%d", (instr->U) ? "+" : "-", instr->offset8 * 4);
+            snprintf(iBuf, iBufSize, "%s, [%s%s]",
                 isDouble ? doubleRegStr(getVFPDestination(vfpInstr), instr->L)
                          : singleRegStr(getVFPDestination(vfpInstr), instr->L),
                 regStr(instr->Rn, false), tempStr);
@@ -576,28 +586,31 @@ void loadStoreCoprocessor(int32_t *instrPtr, char *mBuf, char *iBuf)
             // Decrement(101) - FSTMS/FSTMD/FSTMX/FLDMS/FLDMD/FLDMX
             uint32_t start = (instr->CR << 1 | instr->N);
             if (isDouble) {
-                sprintf(mBuf, "%s%s%s%s", instr->L ? "fldm" : "fstm", (puw != 5) ? "ia" : "db",
+                snprintf(mBuf, mBufSize, "%s%s%s%s", instr->L ? "fldm" : "fstm", (puw != 5) ? "ia" : "db",
                     (instr->offset8 % 2 == 0) ? "d" : "x", condName[instr->cond]);
-                sprintf(iBuf, "%s%s {%s%s%s}", (puw == 2) ? regStr(instr->Rn, false) : regStr(instr->Rn, true),
-                    (puw != 2) ? "!," : ",", singleRegStr(start, false), (instr->offset8 >= 2 * 2) ? ".." : "",
+                snprintf(iBuf, iBufSize, "%s%s {%s%s%s}",
+                    (puw == 2) ? regStr(instr->Rn, false) : regStr(instr->Rn, true), (puw != 2) ? "!," : ",",
+                    singleRegStr(start, false), (instr->offset8 >= 2 * 2) ? ".." : "",
                     (instr->offset8 >= 2 * 2) ? singleRegStr(start + (instr->offset8 >> 1), false) : "");
             } else {
-                sprintf(mBuf, "%s%s%s", instr->L ? "fldm" : "fstm", (puw != 5) ? "ias" : "dbs", condName[instr->cond]);
-                sprintf(iBuf, "%s%s {%s%s%s}", (puw == 2) ? regStr(instr->Rn, false) : regStr(instr->Rn, true),
-                    (puw != 2) ? "!," : ",", singleRegStr(start, false), (instr->offset8 >= 2 * 2) ? ".." : "",
+                snprintf(mBuf, mBufSize, "%s%s%s", instr->L ? "fldm" : "fstm", (puw != 5) ? "ias" : "dbs",
+                    condName[instr->cond]);
+                snprintf(iBuf, iBufSize, "%s%s {%s%s%s}",
+                    (puw == 2) ? regStr(instr->Rn, false) : regStr(instr->Rn, true), (puw != 2) ? "!," : ",",
+                    singleRegStr(start, false), (instr->offset8 >= 2 * 2) ? ".." : "",
                     (instr->offset8 >= 2 * 2) ? singleRegStr(start + instr->offset8, false) : "");
             }
             break;
         }
         case 1:
         case 7:
-            constant32(instrPtr, mBuf, iBuf);
+            constant32(instrPtr, mBuf, mBufSize, iBuf, iBufSize);
             break;
             // Case 0 is the two-register transfer instruction, captured at the beginning
     }
 #else
-    sprintf(mBuf, "%s%s%s", instr->L ? "ldc" : "stc", condName[instr->cond], instr->N ? "l" : "");
-    sprintf(iBuf, "p%d, CR%d, [%s%s %s%s%d%s%s%s", instr->cp, instr->CR, regStr(instr->Rn, instr->W),
+    snprintf(mBuf, mBufSize, "%s%s%s", instr->L ? "ldc" : "stc", condName[instr->cond], instr->N ? "l" : "");
+    snprintf(iBuf, iBufSize, "p%d, CR%d, [%s%s %s%s%d%s%s%s", instr->cp, instr->CR, regStr(instr->Rn, instr->W),
         instr->P ? "," : "],", (instr->P || instr->W) ? "#" : "{", (instr->P || instr->W) && !instr->U ? "-" : "",
         (instr->P || instr->W) ? 4 * instr->offset8 : instr->offset8, instr->P ? "]" : "",
         (instr->P && instr->W) ? "!" : "", (instr->P || instr->W) ? "" : "}");
@@ -605,23 +618,24 @@ void loadStoreCoprocessor(int32_t *instrPtr, char *mBuf, char *iBuf)
 }
 
 #ifdef __VFP_FP__
-void vfpExtension(int32_t *instrPtr, char *mBuf, char *iBuf)
+void vfpExtension(int32_t *instrPtr, char *mBuf, size_t mBufSize, char *iBuf, size_t iBufSize)
 {
     VFPInstruction *instr = (VFPInstruction *)instrPtr;
     bool isDouble = (instr->cp == 11); // Coprocessor 11 is double, 10 is float
     switch (instr->Fn) {
         case 0:
             // FABSS/FABSD or FCPYS/FCPYD
-            sprintf(mBuf, "%s%s%s", instr->N ? "fabs" : "fcpy", isDouble ? "d" : "s", condName[instr->cond]);
-            sprintf(iBuf, "%s, %s",
+            snprintf(mBuf, mBufSize, "%s%s%s", instr->N ? "fabs" : "fcpy", isDouble ? "d" : "s", condName[instr->cond]);
+            snprintf(iBuf, iBufSize, "%s, %s",
                 isDouble ? doubleRegStr(getVFPDestination(instr), true) : singleRegStr(getVFPDestination(instr), true),
                 isDouble ? doubleRegStr(getVFPSecondOperand(instr), false)
                          : singleRegStr(getVFPSecondOperand(instr), false));
             break;
         case 1:
             // FNEGS/FNEGD or FSQRTS/FSQRTD
-            sprintf(mBuf, "%s%s%s", instr->N ? "fsqrt" : "fneg", isDouble ? "d" : "s", condName[instr->cond]);
-            sprintf(iBuf, "%s, %s",
+            snprintf(mBuf, mBufSize, "%s%s%s", instr->N ? "fsqrt" : "fneg", isDouble ? "d" : "s",
+                condName[instr->cond]);
+            snprintf(iBuf, iBufSize, "%s, %s",
                 isDouble ? doubleRegStr(getVFPDestination(instr), true) : singleRegStr(getVFPDestination(instr), true),
                 isDouble ? doubleRegStr(getVFPSecondOperand(instr), false)
                          : singleRegStr(getVFPSecondOperand(instr), false));
@@ -634,12 +648,13 @@ void vfpExtension(int32_t *instrPtr, char *mBuf, char *iBuf)
         case 11:
         case 14:
         case 15:
-            constant32(instrPtr, mBuf, iBuf);
+            constant32(instrPtr, mBuf, mBufSize, iBuf, iBufSize);
             break;
         case 4:
             // FCMPS/FCMPD or FCMPES/FCMPED
-            sprintf(mBuf, "%s%s%s", instr->N ? "fcmpe" : "fcmp", isDouble ? "d" : "s", condName[instr->cond]);
-            sprintf(iBuf, "%s, %s",
+            snprintf(mBuf, mBufSize, "%s%s%s", instr->N ? "fcmpe" : "fcmp", isDouble ? "d" : "s",
+                condName[instr->cond]);
+            snprintf(iBuf, iBufSize, "%s, %s",
                 isDouble ? doubleRegStr(getVFPDestination(instr), false)
                          : singleRegStr(getVFPDestination(instr), false),
                 isDouble ? doubleRegStr(getVFPSecondOperand(instr), false)
@@ -647,8 +662,9 @@ void vfpExtension(int32_t *instrPtr, char *mBuf, char *iBuf)
             break;
         case 5:
             // FCMPS/FCMPD or FCMPES/FCMPED
-            sprintf(mBuf, "%s%s%s", instr->N ? "fcmpe" : "fcmp", isDouble ? "d" : "s", condName[instr->cond]);
-            sprintf(iBuf, "%s, %s",
+            snprintf(mBuf, mBufSize, "%s%s%s", instr->N ? "fcmpe" : "fcmp", isDouble ? "d" : "s",
+                condName[instr->cond]);
+            snprintf(iBuf, iBufSize, "%s, %s",
                 isDouble ? doubleRegStr(getVFPDestination(instr), false)
                          : singleRegStr(getVFPDestination(instr), false),
                 isDouble ? doubleRegStr(getVFPSecondOperand(instr), false)
@@ -657,88 +673,97 @@ void vfpExtension(int32_t *instrPtr, char *mBuf, char *iBuf)
         case 7:
             if (instr->N) {
                 // FCVTDS/FCVTSD
-                sprintf(mBuf, "%s%s", isDouble ? "fcvtsd" : "fcvtds", condName[instr->cond]);
-                sprintf(iBuf, "%s, %s",
+                snprintf(mBuf, mBufSize, "%s%s", isDouble ? "fcvtsd" : "fcvtds", condName[instr->cond]);
+                snprintf(iBuf, iBufSize, "%s, %s",
                     isDouble ? singleRegStr(getVFPDestination(instr), true)
                              : singleRegStr(getVFPDestination(instr), true),
                     isDouble ? doubleRegStr(getVFPSecondOperand(instr), false)
                              : singleRegStr(getVFPSecondOperand(instr), false));
             } else
-                constant32(instrPtr, mBuf, iBuf);
+                constant32(instrPtr, mBuf, mBufSize, iBuf, iBufSize);
             break;
         case 8:
             // FUITOS/FUITOD or FSITOS/FSITOD
-            sprintf(mBuf, "%s%s%s", instr->N ? "fsito" : "fuito", isDouble ? "d" : "s", condName[instr->cond]);
-            sprintf(iBuf, "%s, %s",
+            snprintf(mBuf, mBufSize, "%s%s%s", instr->N ? "fsito" : "fuito", isDouble ? "d" : "s",
+                condName[instr->cond]);
+            snprintf(iBuf, iBufSize, "%s, %s",
                 isDouble ? doubleRegStr(getVFPDestination(instr), true) : singleRegStr(getVFPDestination(instr), true),
                 isDouble ? singleRegStr(getVFPSecondOperand(instr), false)
                          : doubleRegStr(getVFPSecondOperand(instr), false));
             break;
         case 12:
             // FTOUIS/FTOUID or FTOUIZS/FTOUIZD
-            sprintf(mBuf, "%s%s%s", instr->N ? "ftouiz" : "ftoui", isDouble ? "d" : "s", condName[instr->cond]);
-            sprintf(iBuf, "%s, %s", singleRegStr(getVFPDestination(instr), true),
+            snprintf(mBuf, mBufSize, "%s%s%s", instr->N ? "ftouiz" : "ftoui", isDouble ? "d" : "s",
+                condName[instr->cond]);
+            snprintf(iBuf, iBufSize, "%s, %s", singleRegStr(getVFPDestination(instr), true),
                 isDouble ? doubleRegStr(getVFPSecondOperand(instr), false)
                          : singleRegStr(getVFPSecondOperand(instr), false));
             break;
         case 13:
             // FTOSIS/FTOSID or FTOSIZS/FTOSIZD
-            sprintf(mBuf, "%s%s%s", instr->N ? "ftosiz" : "ftosi", isDouble ? "d" : "s", condName[instr->cond]);
-            sprintf(iBuf, "%s, %s", singleRegStr(getVFPDestination(instr), true),
+            snprintf(mBuf, mBufSize, "%s%s%s", instr->N ? "ftosiz" : "ftosi", isDouble ? "d" : "s",
+                condName[instr->cond]);
+            snprintf(iBuf, iBufSize, "%s, %s", singleRegStr(getVFPDestination(instr), true),
                 isDouble ? doubleRegStr(getVFPSecondOperand(instr), false)
                          : singleRegStr(getVFPSecondOperand(instr), false));
             break;
     }
 }
 
-void vfpSingleRegTransfer(int32_t *instrPtr, char *mBuf, char *iBuf)
+void vfpSingleRegTransfer(int32_t *instrPtr, char *mBuf, size_t mBufSize, char *iBuf, size_t iBufSize)
 {
     VFPInstruction *instr = (VFPInstruction *)instrPtr;
     uint32_t opCode = (uint32_t)(instr->p << 2 | instr->D << 1 | instr->q);
     bool isDouble = (instr->cp == 11); // Coprocessor 11 is double, 10 is float
     if (opCode == 0) {
-        sprintf(mBuf, "%s%s", isDouble ? (instr->r ? "fmrs" : "fmsr") : (instr->r ? "fmrdl" : "fmdlr"),
+        snprintf(mBuf, mBufSize, "%s%s", isDouble ? (instr->r ? "fmrs" : "fmsr") : (instr->r ? "fmrdl" : "fmdlr"),
             condName[instr->cond]);
         if (isDouble) {
             if (instr->r) // L-bit
-                sprintf(iBuf, "%s, %s[31:0]", regStr(instr->Fd, true), doubleRegStr(getVFPFirstOperand(instr), false));
+                snprintf(iBuf, iBufSize, "%s, %s[31:0]", regStr(instr->Fd, true),
+                    doubleRegStr(getVFPFirstOperand(instr), false));
             else
-                sprintf(iBuf, "%s[31:0], %s", doubleRegStr(getVFPFirstOperand(instr), true), regStr(instr->Fd, false));
+                snprintf(iBuf, iBufSize, "%s[31:0], %s", doubleRegStr(getVFPFirstOperand(instr), true),
+                    regStr(instr->Fd, false));
         } else {
             if (instr->r) // L-bit
-                sprintf(iBuf, "%s, %s", regStr(instr->Fd, true), singleRegStr(getVFPFirstOperand(instr), false));
+                snprintf(iBuf, iBufSize, "%s, %s", regStr(instr->Fd, true),
+                    singleRegStr(getVFPFirstOperand(instr), false));
             else
-                sprintf(iBuf, "%s, %s", singleRegStr(getVFPFirstOperand(instr), true), regStr(instr->Fd, false));
+                snprintf(iBuf, iBufSize, "%s, %s", singleRegStr(getVFPFirstOperand(instr), true),
+                    regStr(instr->Fd, false));
         }
     } else if (opCode == 1) {
         if (isDouble) {
-            sprintf(mBuf, "%s%s", instr->r ? "fmrdh" : "fmdhr", condName[instr->cond]);
+            snprintf(mBuf, mBufSize, "%s%s", instr->r ? "fmrdh" : "fmdhr", condName[instr->cond]);
             if (instr->r) // L-bit
-                sprintf(iBuf, "%s, %s[63:32]", regStr(instr->Fd, true), doubleRegStr(getVFPFirstOperand(instr), false));
+                snprintf(iBuf, iBufSize, "%s, %s[63:32]", regStr(instr->Fd, true),
+                    doubleRegStr(getVFPFirstOperand(instr), false));
             else
-                sprintf(iBuf, "%s[63:32], %s", doubleRegStr(getVFPFirstOperand(instr), true), regStr(instr->Fd, false));
+                snprintf(iBuf, iBufSize, "%s[63:32], %s", doubleRegStr(getVFPFirstOperand(instr), true),
+                    regStr(instr->Fd, false));
         } else
-            constant32(instrPtr, mBuf, iBuf); // Invalid condition
+            constant32(instrPtr, mBuf, mBufSize, iBuf, iBufSize); // Invalid condition
     } else if (opCode == 7) {
         if (!isDouble) {
-            sprintf(mBuf, "%s%s", instr->r ? "fmrx" : "fmxr", condName[instr->cond]);
+            snprintf(mBuf, mBufSize, "%s%s", instr->r ? "fmrx" : "fmxr", condName[instr->cond]);
             if (instr->r) // L-bit
-                sprintf(iBuf, "%s, %%s", regStr(instr->Fd, true),
+                snprintf(iBuf, iBufSize, "%s, %%s", regStr(instr->Fd, true),
                     ((instr->Fn << 1 | instr->N) == 0)       ? "fpsid"
                         : ((instr->Fn << 1 | instr->N) == 1) ? "fpscr"
                                                              : "fpexc");
             else
-                sprintf(iBuf, "%s, %s",
+                snprintf(iBuf, iBufSize, "%s, %s",
                     ((instr->Fn << 1 | instr->N) == 0) ? "fpsid"
                                                        : (((instr->Fn << 1 | instr->N) == 1) ? "fpscr" : "fpexc"),
                     regStr(instr->Fd, false));
         } else
-            constant32(instrPtr, mBuf, iBuf); // Invalid condition
+            constant32(instrPtr, mBuf, mBufSize, iBuf, iBufSize); // Invalid condition
     } else
-        constant32(instrPtr, mBuf, iBuf); // Invalid condition
+        constant32(instrPtr, mBuf, mBufSize, iBuf, iBufSize); // Invalid condition
 }
 
-void vfpDataProcessing(int32_t *instrPtr, char *mBuf, char *iBuf)
+void vfpDataProcessing(int32_t *instrPtr, char *mBuf, size_t mBufSize, char *iBuf, size_t iBufSize)
 {
     VFPInstruction *instr = (VFPInstruction *)instrPtr;
     uint32_t opCode = (uint32_t)(instr->p << 3 | instr->q << 2 | instr->r << 1 | instr->s);
@@ -746,61 +771,61 @@ void vfpDataProcessing(int32_t *instrPtr, char *mBuf, char *iBuf)
 
     if (instr->xfer) {
         // Single Register Transfer Instruction
-        vfpSingleRegTransfer(instrPtr, mBuf, iBuf);
+        vfpSingleRegTransfer(instrPtr, mBuf, mBufSize, iBuf, iBufSize);
         return;
     }
 
     if (isDouble && (instr->D || instr->M)) {
-        constant32(instrPtr, mBuf, iBuf); // Invalid condition
+        constant32(instrPtr, mBuf, mBufSize, iBuf, iBufSize); // Invalid condition
         return;
     }
 
     if (opCode == 15)
         // Extension instruction
-        vfpExtension(instrPtr, mBuf, iBuf);
+        vfpExtension(instrPtr, mBuf, mBufSize, iBuf, iBufSize);
     else if (opCode >= 9 && opCode <= 14)
         // Undefined
-        constant32(instrPtr, mBuf, iBuf);
+        constant32(instrPtr, mBuf, mBufSize, iBuf, iBufSize);
     else {
         switch (opCode) {
             case 0:
                 // FMACS/FMACD
-                sprintf(mBuf, "fmac%s%s", isDouble ? "d" : "s", condName[instr->cond]);
+                snprintf(mBuf, mBufSize, "fmac%s%s", isDouble ? "d" : "s", condName[instr->cond]);
                 break;
             case 1:
                 // FNMACS/FNMACD
-                sprintf(mBuf, "fnmac%s%s", isDouble ? "d" : "s", condName[instr->cond]);
+                snprintf(mBuf, mBufSize, "fnmac%s%s", isDouble ? "d" : "s", condName[instr->cond]);
                 break;
             case 2:
                 // FMSCS/FMSCD
-                sprintf(mBuf, "fmsc%s%s", isDouble ? "d" : "s", condName[instr->cond]);
+                snprintf(mBuf, mBufSize, "fmsc%s%s", isDouble ? "d" : "s", condName[instr->cond]);
                 break;
             case 3:
                 // FNMSCS/FNMSCD
-                sprintf(mBuf, "fnmsc%s%s", isDouble ? "d" : "s", condName[instr->cond]);
+                snprintf(mBuf, mBufSize, "fnmsc%s%s", isDouble ? "d" : "s", condName[instr->cond]);
                 break;
             case 4:
                 // FMULS/FMULD
-                sprintf(mBuf, "fmul%s%s", isDouble ? "d" : "s", condName[instr->cond]);
+                snprintf(mBuf, mBufSize, "fmul%s%s", isDouble ? "d" : "s", condName[instr->cond]);
                 break;
             case 5:
                 // FNMULS/FNMULD
-                sprintf(mBuf, "fnmul%s%s", isDouble ? "d" : "s", condName[instr->cond]);
+                snprintf(mBuf, mBufSize, "fnmul%s%s", isDouble ? "d" : "s", condName[instr->cond]);
                 break;
             case 6:
                 // FADDS/FADDD
-                sprintf(mBuf, "fadd%s%s", isDouble ? "d" : "s", condName[instr->cond]);
+                snprintf(mBuf, mBufSize, "fadd%s%s", isDouble ? "d" : "s", condName[instr->cond]);
                 break;
             case 7:
                 // FSUBS/FSUBD
-                sprintf(mBuf, "fsub%s%s", isDouble ? "d" : "s", condName[instr->cond]);
+                snprintf(mBuf, mBufSize, "fsub%s%s", isDouble ? "d" : "s", condName[instr->cond]);
                 break;
             case 8:
                 // FDIVS/FDIVD
-                sprintf(mBuf, "fdiv%s%s", isDouble ? "d" : "s", condName[instr->cond]);
+                snprintf(mBuf, mBufSize, "fdiv%s%s", isDouble ? "d" : "s", condName[instr->cond]);
                 break;
         }
-        sprintf(iBuf, "%s, %s, %s",
+        snprintf(iBuf, iBufSize, "%s, %s, %s",
             isDouble ? doubleRegStr(getVFPDestination(instr), true) : singleRegStr(getVFPDestination(instr), true),
             isDouble ? singleRegStr(getVFPFirstOperand(instr), false) : doubleRegStr(getVFPFirstOperand(instr), false),
             isDouble ? singleRegStr(getVFPSecondOperand(instr), false)
@@ -811,9 +836,12 @@ void vfpDataProcessing(int32_t *instrPtr, char *mBuf, char *iBuf)
 
 void disassemble(int32_t *instrPtr, char *mBuf, char *iBuf)
 {
+    const size_t mBufSize = MIN_mbuffer;
+    const size_t iBufSize = MIN_ibuffer;
+
     ARMInstruction *instr = (ARMInstruction *)instrPtr;
     if (instr->cond == 15) {
-        constant32(instrPtr, mBuf, iBuf); // Invalid condition
+        constant32(instrPtr, mBuf, mBufSize, iBuf, iBufSize); // Invalid condition
         return;
     }
 
@@ -821,55 +849,55 @@ void disassemble(int32_t *instrPtr, char *mBuf, char *iBuf)
     switch (instr->groupOpcode) {
         case 0:
             if (instrBits->bit4 && instrBits->bit7)
-                mulAndExtraLoadStore(instrPtr, mBuf, iBuf);
+                mulAndExtraLoadStore(instrPtr, mBuf, mBufSize, iBuf, iBufSize);
             else if (!instrBits->bit20 && instrBits->bits23_24 == 2)
-                miscInstr(instrPtr, mBuf, iBuf);
+                miscInstr(instrPtr, mBuf, mBufSize, iBuf, iBufSize);
             else
-                dataProcessing(instrPtr, mBuf, iBuf);
+                dataProcessing(instrPtr, mBuf, mBufSize, iBuf, iBufSize);
             break;
 
         case 1:
             if (instrBits->bit20 || instrBits->bits23_24 != 2)
-                dataProcessing(instrPtr, mBuf, iBuf);
+                dataProcessing(instrPtr, mBuf, mBufSize, iBuf, iBufSize);
             else if (instrBits->bit21)
-                moveStatusReg(instrPtr, mBuf, iBuf);
+                moveStatusReg(instrPtr, mBuf, mBufSize, iBuf, iBufSize);
             else
-                constant32(instrPtr, mBuf, iBuf); // Undefined instruction
+                constant32(instrPtr, mBuf, mBufSize, iBuf, iBufSize); // Undefined instruction
             break;
 
         case 2:
-            loadStore(instrPtr, mBuf, iBuf, false);
+            loadStore(instrPtr, mBuf, mBufSize, iBuf, iBufSize, false);
             break;
 
         case 3:
             if (!instrBits->bit4)
-                loadStore(instrPtr, mBuf, iBuf, false);
+                loadStore(instrPtr, mBuf, mBufSize, iBuf, iBufSize, false);
             else
-                constant32(instrPtr, mBuf, iBuf); // Undefined instruction
+                constant32(instrPtr, mBuf, mBufSize, iBuf, iBufSize); // Undefined instruction
             break;
 
         case 4:
-            loadStoreMultiple(instrPtr, mBuf, iBuf);
+            loadStoreMultiple(instrPtr, mBuf, mBufSize, iBuf, iBufSize);
             break;
 
         case 5:
-            branch(instrPtr, mBuf, iBuf);
+            branch(instrPtr, mBuf, mBufSize, iBuf, iBufSize);
             break;
 
         case 6:
-            loadStoreCoprocessor(instrPtr, mBuf, iBuf);
+            loadStoreCoprocessor(instrPtr, mBuf, mBufSize, iBuf, iBufSize);
             break;
 
         case 7:
             if (instrBits->bits23_24 > 1) // Check bit24 only: 0b10 or 0b11
             {
-                sprintf(mBuf, "swi");
-                sprintf(iBuf, "%u", (*instrPtr) & 0x00FFFFFF);
+                snprintf(mBuf, mBufSize, "swi");
+                snprintf(iBuf, iBufSize, "%u", (*instrPtr) & 0x00FFFFFF);
             } else {
 #ifdef __VFP_FP__
-                vfpDataProcessing(instrPtr, mBuf, iBuf);
+                vfpDataProcessing(instrPtr, mBuf, mBufSize, iBuf, iBufSize);
 #else
-                constant32(instrPtr, mBuf, iBuf); // Coprocessor instruction
+                constant32(instrPtr, mBuf, mBufSize, iBuf, iBufSize); // Coprocessor instruction
 #endif
             }
     }

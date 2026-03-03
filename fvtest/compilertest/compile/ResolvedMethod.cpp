@@ -70,8 +70,9 @@ ResolvedMethod::signature(TR_Memory * trMemory, TR_AllocationKind allocKind)
    {
    if( !_signature )
       {
-      char * s = (char *)trMemory->allocateMemory(strlen(_fileName) + 1 + strlen(_lineNumber) + 1 + strlen(_name) + 1, allocKind);
-      sprintf(s, "%s:%s:%s", _fileName, _lineNumber, _name);
+      const size_t sSize = strlen(_fileName) + 1 + strlen(_lineNumber) + 1 + strlen(_name) + 1;
+      char * s = (char *)trMemory->allocateMemory(sSize, allocKind);
+      snprintf(s, sSize, "%s:%s:%s", _fileName, _lineNumber, _name);
 
       if ( allocKind == heapAlloc)
         _signature = s;
@@ -138,8 +139,9 @@ ResolvedMethod::localName(uint32_t slot,
       }
    else
       {
-      name = (char *) trMemory->allocateHeapMemory(8 * sizeof(char));
-      sprintf(name, "Parm %2d", slot);
+      const size_t nameSize = 8 * sizeof(char);
+      name = (char *) trMemory->allocateHeapMemory(nameSize);
+      snprintf(name, nameSize, "Parm %2d", slot);
       }
 
    nameLength = static_cast<int32_t>(strlen(name));

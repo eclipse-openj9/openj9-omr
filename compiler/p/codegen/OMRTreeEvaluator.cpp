@@ -5148,14 +5148,21 @@ static void inlineArrayCopy(TR::Node *node, int64_t byteLen, TR::Register *src, 
                     break;
                 default:
                     generateTrg1ImmInstruction(cg, TR::InstOpCode::li, node, regs[0], residue64 & 0xF);
-                    generateTrg1Src1Imm2Instruction(cg, TR::InstOpCode::rldicr, node, regs[0], regs[0], 56,
-                        CONSTANT64(0xff00000000000000));
+                    if (!TR::Compiler->target.cpu.isAtLeast(OMR_PROCESSOR_PPC_PNext)) {
+                        generateTrg1Src1Imm2Instruction(cg, TR::InstOpCode::rldicr, node, regs[0], regs[0], 56,
+                            CONSTANT64(0xff00000000000000));
+                    }
                     if (standingOffset != 0) {
                         generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::addi2, node, src, src, standingOffset);
                         generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::addi2, node, dst, dst, standingOffset);
                     }
-                    generateTrg1Src2Instruction(cg, TR::InstOpCode::lxvl, node, regs[1], src, regs[0]);
-                    generateSrc3Instruction(cg, TR::InstOpCode::stxvl, node, regs[1], dst, regs[0]);
+                    if (!TR::Compiler->target.cpu.isAtLeast(OMR_PROCESSOR_PPC_PNext)) {
+                        generateTrg1Src2Instruction(cg, TR::InstOpCode::lxvl, node, regs[1], src, regs[0]);
+                        generateSrc3Instruction(cg, TR::InstOpCode::stxvl, node, regs[1], dst, regs[0]);
+                    } else {
+                        generateTrg1Src2Instruction(cg, TR::InstOpCode::lxvrl, node, regs[1], src, regs[0]);
+                        generateSrc3Instruction(cg, TR::InstOpCode::stxvrl, node, regs[1], dst, regs[0]);
+                    }
                     break;
             }
         }
@@ -5723,11 +5730,21 @@ static TR::Register *inlineArrayCmpP10(TR::Node *node, TR::CodeGenerator *cg, bo
     // residue start
     generateLabelInstruction(cg, TR::InstOpCode::label, node, residueStartLabel);
 
-    generateShiftLeftImmediateLong(cg, node, temp2Reg, returnReg, 56);
+    if (!TR::Compiler->target.cpu.isAtLeast(OMR_PROCESSOR_PPC_PNext)) {
+        generateShiftLeftImmediateLong(cg, node, temp2Reg, returnReg, 56);
+    }
     generateTrg1Src2Instruction(cg, TR::InstOpCode::add, node, tempReg, src1AddrReg, indexReg);
-    generateTrg1Src2Instruction(cg, TR::InstOpCode::lxvll, node, vec0Reg, tempReg, temp2Reg);
+    if (!TR::Compiler->target.cpu.isAtLeast(OMR_PROCESSOR_PPC_PNext)) {
+        generateTrg1Src2Instruction(cg, TR::InstOpCode::lxvll, node, vec0Reg, tempReg, temp2Reg);
+    } else {
+        generateTrg1Src2Instruction(cg, TR::InstOpCode::lxvrll, node, vec0Reg, tempReg, returnReg);
+    }
     generateTrg1Src2Instruction(cg, TR::InstOpCode::add, node, tempReg, src2AddrReg, indexReg);
-    generateTrg1Src2Instruction(cg, TR::InstOpCode::lxvll, node, vec1Reg, tempReg, temp2Reg);
+    if (!TR::Compiler->target.cpu.isAtLeast(OMR_PROCESSOR_PPC_PNext)) {
+        generateTrg1Src2Instruction(cg, TR::InstOpCode::lxvll, node, vec1Reg, tempReg, temp2Reg);
+    } else {
+        generateTrg1Src2Instruction(cg, TR::InstOpCode::lxvrll, node, vec1Reg, tempReg, returnReg);
+    }
     generateTrg1Src2Instruction(cg, TR::InstOpCode::vcmpneb, node, vec0Reg, vec0Reg, vec1Reg);
     // residue end
 
@@ -6664,7 +6681,7 @@ TR::Register *OMR::Power::TreeEvaluator::arraycopyEvaluator(TR::Node *node, TR::
         TR::addDependency(conditions, NULL, TR::RealRegister::vsr33, TR_VSX_VECTOR, cg);
         TR::addDependency(conditions, NULL, TR::RealRegister::vsr8, TR_VSX_VECTOR, cg);
         TR::addDependency(conditions, NULL, TR::RealRegister::vsr9, TR_VSX_VECTOR, cg);
-        if (!node->isForwardArrayCopy()) {
+        if (!node->isForwardArrayCopy() && !TR::Compiler->target.cpu.isAtLeast(OMR_PROCESSOR_PPC_PNext)) {
             TR::addDependency(conditions, NULL, TR::RealRegister::gr5, TR_GPR, cg);
         }
     } else {
@@ -6716,7 +6733,11 @@ TR::Register *OMR::Power::TreeEvaluator::arraycopyEvaluator(TR::Node *node, TR::
 
     if (node->isForwardArrayCopy()) {
         if (postP10Copy) {
-            helper = TR_PPCpostP10ForwardCopy;
+            if (!TR::Compiler->target.cpu.isAtLeast(OMR_PROCESSOR_PPC_PNext)) {
+                helper = TR_PPCpostP10ForwardCopy;
+            } else {
+                helper = TR_PPCpostPNextForwardCopy;
+            }
         } else if (copyUsingVSX) {
             helper = TR_PPCforwardQuadWordArrayCopy_vsx;
         } else if (node->isWordElementArrayCopy()) {
@@ -6739,7 +6760,11 @@ TR::Register *OMR::Power::TreeEvaluator::arraycopyEvaluator(TR::Node *node, TR::
     } else // We are not sure it is forward or we have to do backward
     {
         if (postP10Copy) {
-            helper = TR_PPCpostP10GenericCopy;
+            if (!TR::Compiler->target.cpu.isAtLeast(OMR_PROCESSOR_PPC_PNext)) {
+                helper = TR_PPCpostP10GenericCopy;
+            } else {
+                helper = TR_PPCpostPNextGenericCopy;
+            }
         } else if (copyUsingVSX) {
             helper = TR_PPCquadWordArrayCopy_vsx;
         } else if (node->isWordElementArrayCopy()) {

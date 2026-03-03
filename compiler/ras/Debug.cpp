@@ -3372,6 +3372,10 @@ const char *TR_Debug::getRuntimeHelperName(int32_t index)
                 return "__postP10ForwardCopy";
             case TR_PPCpostP10GenericCopy:
                 return "__postP10GenericCopy";
+            case TR_PPCpostPNextForwardCopy:
+                return "__postPNextForwardCopy";
+            case TR_PPCpostPNextGenericCopy:
+                return "__postPNextGenericCopy";
 
             case TR_PPCP256Multiply:
                 return "ECP256MUL_PPC";

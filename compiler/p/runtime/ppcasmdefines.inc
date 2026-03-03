@@ -511,6 +511,18 @@
         .macro stxvl    vrs, ra, rb
         .int 0x7c00031a | \ra << 16 | \rb << 11 | (\vrs & 31) << 21 | (\vrs & 32) >> 5
         .endm
+        .macro lxvrl    vrt, ra, rb
+        .int 0x7c00041a | \ra << 16 | \rb << 11 | (\vrt & 31) << 21 | (\vrt & 32) >> 5
+        .endm
+        .macro stxvrl   vrs, ra, rb
+        .int 0x7c00051a | \ra << 16 | \rb << 11 | (\vrs & 31) << 21 | (\vrs & 32) >> 5
+        .endm
+        .macro lxvprl   xtp, ra, rb
+        .int 0x7c00049a | \ra << 16 | \rb << 11 | (\xtp & 30) << 21 | (\xtp & 32) << 16
+        .endm
+        .macro stxvprl  xsp, ra, rb
+        .int 0x7c00059a | \ra << 16 | \rb << 11 | (\xsp & 30) << 21 | (\xsp & 32) << 16
+        .endm
 
         .macro isellt   rt, ra, rb, bc
         .int 0x7c00001e | \rt << 21 | \ra << 16 | \rb << 11 | \bc << 8
@@ -563,6 +575,10 @@
 #define STXV(vrs,ra,dq)                 .long 0xf4000005 | ra < 16 | (vrs & 31) < 21 | (vrs & 32) > 2 | ((dq) & 0x0000fff0)
 #define LXVL(vrt,ra,rb)                 .long 0x7c00021a | ra < 16 | rb < 11 | (vrt & 31) < 21 | (vrt & 32) > 5
 #define STXVL(vrs,ra,rb)                .long 0x7c00031a | ra < 16 | rb < 11 | (vrs & 31) < 21 | (vrs & 32) > 5
+#define LXVRL(vrt,ra,rb)                .long 0x7c00041a | ra < 16 | rb < 11 | (vrt & 31) < 21 | (vrt & 32) > 5
+#define STXVRL(vrs,ra,rb)               .long 0x7c00051a | ra < 16 | rb < 11 | (vrs & 31) < 21 | (vrs & 32) > 5
+#define LXVPRL(xtp,ra,rb)               .long 0x7c00049a | ra < 16 | rb < 11 | (xtp & 30) < 21 | (xtp & 32) < 16
+#define STXVPRL(xsp,ra,rb)              .long 0x7c00059a | ra < 16 | rb < 11 | (xsp & 30) < 21 | (xsp & 32) < 16
 #define ISELLT(rt,ra,rb,bc)             .long 0x7c00001e | rt < 21 | ra < 16 | rb < 11 | bc < 8
 #define SLDI(rt, rs, sh)                .long 0x78000004 | rt < 16 | rs < 21 | (sh & 31) < 11 | (sh & 32) > 4 | ((63 - sh) & 31) < 6 | ((63 - sh) & 32)
 #define SRDI(rt, rs, sh)                .long 0x78000000 | rt < 16 | rs < 21 | ((64 - sh) & 31) < 11 | ((64 - sh) & 32) > 4 | (sh & 31) < 6 | (sh & 32)
@@ -600,6 +616,10 @@
 #define STXV(vrs,ra,dq)                 stxv            vrs, ra, dq
 #define LXVL(vrt,ra,rb)                 lxvl            vrt, ra, rb
 #define STXVL(vrs,ra,rb)                stxvl           vrs, ra, rb
+#define LXVRL(vrt,ra,rb)                lxvrl           vrt, ra, rb
+#define STXVRL(vrs,ra,rb)               stxvrl          vrs, ra, rb
+#define LXVPRL(xtp,ra,rb)               lxvprl          xtp, ra, rb
+#define STXVPRL(xsp,ra,rb)              stxvprl         xsp, ra, rb
 #define ISELLT(rt,ra,rb,bc)             isellt          rt, ra, rb, bc
 #define SLDI(rt, rs, sh)                m_sldi          rt, rs, sh
 #define SRDI(rt, rs, sh)                m_srdi          rt, rs, sh

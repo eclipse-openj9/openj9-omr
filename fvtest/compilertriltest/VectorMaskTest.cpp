@@ -501,7 +501,7 @@ TEST_P(ParameterizedUnaryMaskTest, unaryTest) {
       0xF0F0F0F0F0F0F0F0ull
    };
 
-   for (int i = 0; i < sizeof(bitMasks); i++) {
+   for (int i = 0; i < sizeof(bitMasks)/sizeof(uint64_t); i++) {
       bool inputMask[MAX_NUM_LANES] = {};
       longBitsToBoolArray(bitMasks[i], inputMask);
       int64_t refResult = refFunc(inputMask, numLanes);

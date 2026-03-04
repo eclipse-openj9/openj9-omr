@@ -67,6 +67,10 @@
    .globl    __postP10ForwardCopy{DS}
    .globl    .__postP10GenericCopy
    .globl    __postP10GenericCopy{DS}
+   .globl    .__postPNextForwardCopy
+   .globl    __postPNextForwardCopy{DS}
+   .globl    .__postPNextGenericCopy
+   .globl    __postPNextGenericCopy{DS}
 
    .lglobl    .__codeForShortArrayCopy
    .lglobl    L.0copy
@@ -136,6 +140,10 @@
    .type     FUNC_LABEL(__postP10ForwardCopy),@function
    .globl    FUNC_LABEL(__postP10GenericCopy)
    .type     FUNC_LABEL(__postP10GenericCopy),@function
+   .globl    FUNC_LABEL(__postPNextForwardCopy)
+   .type     FUNC_LABEL(__postPNextForwardCopy),@function
+   .globl    FUNC_LABEL(__postPNextGenericCopy)
+   .type     FUNC_LABEL(__postPNextGenericCopy),@function
 
 #elif defined(LINUX)
    .globl    __arrayCopy
@@ -154,6 +162,8 @@
    .globl    __quadWordArrayCopy_vsx
    .globl    __postP10ForwardCopy
    .globl    __postP10GenericCopy
+   .globl    __postPNextForwardCopy
+   .globl    __postPNextGenericCopy
 #endif
 
 

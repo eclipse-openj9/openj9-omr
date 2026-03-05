@@ -3987,11 +3987,9 @@ intptr_t OMR::X86::TreeEvaluator::integerConstNodeValue(TR::Node *node, TR::Code
 TR::Register *OMR::X86::TreeEvaluator::performCall(TR::Node *node, bool isIndirect, bool spillFPRegs,
     TR::CodeGenerator *cg)
 {
-    TR::SymbolReference *symRef = node->getSymbolReference();
-    TR::MethodSymbol *callSymbol = symRef->getSymbol()->castToMethodSymbol();
-
+    TR::Linkage *linkage = cg->deriveCallingLinkage(node, isIndirect);
     TR::Register *returnRegister;
-    TR::Linkage *linkage = cg->getLinkage(callSymbol->getLinkageConvention());
+
     if (isIndirect)
         returnRegister = linkage->buildIndirectDispatch(node);
     else

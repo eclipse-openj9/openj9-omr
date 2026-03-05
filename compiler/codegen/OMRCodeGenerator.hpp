@@ -689,6 +689,16 @@ public:
 
     TR::Linkage *setLinkage(TR_LinkageConventions lc, TR::Linkage *l) { return _linkages[lc] = l; }
 
+    /**
+     * Return the proper linkage for this call, especially for the case when the methodSymbol
+     * doesn't capture the complete information.
+     *
+     * @param[in] node, this calling node
+     * @param[in] isIndirect true if this call is an indirect call
+     * @return    appropriate linkage for this call
+     */
+    TR::Linkage *deriveCallingLinkage(TR::Node *node, bool isIndirect);
+
     // --------------------------------------------------------------------------
     // Optimizer, code generator capabilities
     //

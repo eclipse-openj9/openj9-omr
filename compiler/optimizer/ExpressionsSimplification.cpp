@@ -509,25 +509,43 @@ void TR_ExpressionsSimplification::removeCandidate(TR::Node *node, TR::TreeTop *
                 continue;
             }
 
-            // Summation reduction transforms "x = x + inv" in the loop into a single
-            // preheader update (e.g., x += inv * iters). This transformation is only legal
-            // if the loop body does not observe the intermediate values of x (i.e., x is not
-            // read/used elsewhere in the loop).
             TR::SymbolReference *candidateSymRef
                 = candidateNode->getOpCode().hasSymbolReference() ? candidateNode->getSymbolReference() : NULL;
-            if (candidateSymRef && nextCandidate->isSummationReductionCandidate()) {
-                TR::Symbol *candidateSym = candidateSymRef->getSymbol();
-                bool isNonLocal
-                    = candidateSym->isStatic() || candidateSym->isShadow() || candidateSym->isMethodMetaData();
-                if (node->getOpCode().isCall() && isNonLocal
-                    && (node->mayUse().contains(candidateSymRef, comp())
-                        || node->mayKill(true).contains(candidateSymRef, comp()))) {
+            if (candidateSymRef) {
+                bool mayUseOrKill = (node->mayUse().contains(candidateSymRef, comp())
+                    || node->mayKill(true).contains(candidateSymRef, comp()));
+                // InvariantExpressionCandidate optimization hoists a store out of the loop and deletes the in-loop
+                // store. A store becomes a candidate solely because its operands are loop-invariant (see
+                // setStoreMotionCandidates); therefore correctness depends on invalidating the candidate when any node
+                // inside the loop may observe (mayUse) or modify (mayKill) the stored location. We intentionally use
+                // mayUse/mayKill without restricting to calls, because interference can come from ordinary loads/stores
+                // as well as calls.
+                //
+                if (nextCandidate->isInvariantExpressionCandidate() && mayUseOrKill) {
                     logprintf(trace(), log,
-                        "Removing candidate %p n%dn which may be used or killed by call %p n%dn in the loop\n",
+                        "Removing candidate %p n%dn which may be used or killed by node %p n%dn in the loop\n",
                         candidateNode, candidateNode->getGlobalIndex(), node, node->getGlobalIndex());
 
                     _candidates->remove(nextCandidate);
                     continue;
+                }
+                // Summation reduction transforms "x = x + inv" in the loop into a single
+                // preheader update (e.g., x += inv * iters). This transformation is only legal
+                // if the loop body does not observe the intermediate values of x (i.e., x is not
+                // read/used elsewhere in the loop).
+                //
+                if (nextCandidate->isSummationReductionCandidate()) {
+                    TR::Symbol *candidateSym = candidateSymRef->getSymbol();
+                    bool isNonLocal
+                        = candidateSym->isStatic() || candidateSym->isShadow() || candidateSym->isMethodMetaData();
+                    if (node->getOpCode().isCall() && isNonLocal && mayUseOrKill) {
+                        logprintf(trace(), log,
+                            "Removing candidate %p n%dn which may be used or killed by call %p n%dn in the loop\n",
+                            candidateNode, candidateNode->getGlobalIndex(), node, node->getGlobalIndex());
+
+                        _candidates->remove(nextCandidate);
+                        continue;
+                    }
                 }
             }
         }

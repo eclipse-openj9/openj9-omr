@@ -795,7 +795,7 @@ MM_MemoryPoolSplitAddressOrderedList::expandWithRange(MM_EnvironmentBase* env, u
 	}
 
 	assume0(isMemoryPoolValid(env, true));
-	Assert_GC_true_with_message2(env, reservedFreeEntryConsistencyCheck(), "expandWithRange _previousReservedFreeEntry=%p, _reservedFreeEntrySize=%zu\n", _previousReservedFreeEntry, _reservedFreeEntrySize);
+	Assert_GC_true_with_message(env, reservedFreeEntryConsistencyCheck(), "expandWithRange _previousReservedFreeEntry=%p, _reservedFreeEntrySize=%zu\n", _previousReservedFreeEntry, _reservedFreeEntrySize);
 }
 
 /**
@@ -920,7 +920,7 @@ MM_MemoryPoolSplitAddressOrderedList::contractWithRange(MM_EnvironmentBase* env,
 
 	assume0(isMemoryPoolValid(env, true));
 
-	Assert_GC_true_with_message2(env, reservedFreeEntryConsistencyCheck(), "contractWithRange _previousReservedFreeEntry=%p, _reservedFreeEntrySize=%zu\n", _previousReservedFreeEntry, _reservedFreeEntrySize);
+	Assert_GC_true_with_message(env, reservedFreeEntryConsistencyCheck(), "contractWithRange _previousReservedFreeEntry=%p, _reservedFreeEntrySize=%zu\n", _previousReservedFreeEntry, _reservedFreeEntrySize);
 	return lowAddress;
 }
 
@@ -1041,7 +1041,7 @@ MM_MemoryPoolSplitAddressOrderedList::addFreeEntries(MM_EnvironmentBase* env,
 		_heapFreeLists[previousFreeListIndex]._freeCount += localFreeListMemoryCount;
 	}
 
-	Assert_GC_true_with_message2(env, reservedFreeEntryConsistencyCheck(), "addFreeEntries _previousReservedFreeEntry=%p, _reservedFreeEntrySize=%zu\n", _previousReservedFreeEntry, _reservedFreeEntrySize);
+	Assert_GC_true_with_message(env, reservedFreeEntryConsistencyCheck(), "addFreeEntries _previousReservedFreeEntry=%p, _reservedFreeEntrySize=%zu\n", _previousReservedFreeEntry, _reservedFreeEntrySize);
 }
 
 /**
@@ -1292,7 +1292,7 @@ MM_MemoryPoolSplitAddressOrderedList::removeFreeEntriesWithinRange(MM_Environmen
 		_heapFreeLists[i].clearHints();
 	}
 
-	Assert_GC_true_with_message2(env, reservedFreeEntryConsistencyCheck(), "removeFreeEntriesWithinRange _previousReservedFreeEntry=%p, _reservedFreeEntrySize=%zu\n", _previousReservedFreeEntry, _reservedFreeEntrySize);
+	Assert_GC_true_with_message(env, reservedFreeEntryConsistencyCheck(), "removeFreeEntriesWithinRange _previousReservedFreeEntry=%p, _reservedFreeEntrySize=%zu\n", _previousReservedFreeEntry, _reservedFreeEntrySize);
 	return true;
 }
 

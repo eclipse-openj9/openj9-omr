@@ -267,7 +267,7 @@ MM_MemoryPoolLargeObjects::resizeLOA(MM_EnvironmentBase* env)
 
 			if (newLOAsize < loaMinimumSize){
 
-				Assert_GC_true_with_message2(env, (_loaSize >= loaMinimumSize), "current LOA size(%zu) should not be smaller than minimum LOA size(%zu).\n", _loaSize, loaMinimumSize);
+				Assert_GC_true_with_message(env, (_loaSize >= loaMinimumSize), "current LOA size(%zu) should not be smaller than minimum LOA size(%zu).\n", _loaSize, loaMinimumSize);
 				contractRequired = _loaSize - loaMinimumSize;
 				newLOAsize = _loaSize - contractRequired;
 
@@ -311,7 +311,7 @@ MM_MemoryPoolLargeObjects::resizeLOA(MM_EnvironmentBase* env)
 				assume0(_memoryPoolSmallObjects->isValidListOrdering());
 				assume0(_memoryPoolLargeObjects->isValidListOrdering());
 
-				Assert_GC_true_with_message2(env, (_loaSize >= loaMinimumSize), "resize LOA size(%zu) should not be smaller than minimum LOA size(%zu).\n", _loaSize, loaMinimumSize);
+				Assert_GC_true_with_message(env, (_loaSize >= loaMinimumSize), "resize LOA size(%zu) should not be smaller than minimum LOA size(%zu).\n", _loaSize, loaMinimumSize);
 			}
 		}
 	}
@@ -340,7 +340,7 @@ MM_MemoryPoolLargeObjects::calculateTargetLOARatio(MM_EnvironmentBase* env, uint
 	double newLOARatio = _currentLOARatio;
 	float maxLOAFreeRatio = ((float)_extensions->heapFreeMaximumRatioMultiplier) / ((float)_extensions->heapFreeMinimumRatioDivisor);
 	uintptr_t loaFreeBytes = _memoryPoolLargeObjects->getActualFreeMemorySize();
-	Assert_GC_true_with_message2(env, (loaFreeBytes <= _loaSize), "loaFreeBytes(%zu) should be equal or smaller than _loaSize(%zu).", loaFreeBytes, _loaSize);
+	Assert_GC_true_with_message(env, (loaFreeBytes <= _loaSize), "loaFreeBytes(%zu) should be equal or smaller than _loaSize(%zu).", loaFreeBytes, _loaSize);
 
 	/*
 	 * shift elements to make room for current loa free Ratio

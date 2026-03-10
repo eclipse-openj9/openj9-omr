@@ -83,9 +83,9 @@ MM_ParallelTask::synchronizeGCThreads(MM_EnvironmentBase *env, const char *id)
 			_syncPointUniqueId = id;
 			_syncPointWorkUnitIndex = env->getWorkUnitIndex();
 		} else {
-			Assert_GC_true_with_message4(env, _syncPointUniqueId == id,
+			Assert_GC_true_with_message(env, _syncPointUniqueId == id,
 				"%s at %p from synchronizeGCThreads: call from (%s), expected (%s)\n", getBaseVirtualTypeId(), this, id, _syncPointUniqueId);
-			Assert_GC_true_with_message4(env, _syncPointWorkUnitIndex == env->getWorkUnitIndex(),
+			Assert_GC_true_with_message(env, _syncPointWorkUnitIndex == env->getWorkUnitIndex(),
 				"%s at %p from synchronizeGCThreads: call with syncPointWorkUnitIndex %zu, expected %zu\n", getBaseVirtualTypeId(), this, env->getWorkUnitIndex(), _syncPointWorkUnitIndex);
 		}
 
@@ -127,9 +127,9 @@ MM_ParallelTask::synchronizeGCThreadsAndReleaseMain(MM_EnvironmentBase *env, con
 			_syncPointUniqueId = id;
 			_syncPointWorkUnitIndex = env->getWorkUnitIndex();
 		} else {
-			Assert_GC_true_with_message4(env, _syncPointUniqueId == id,
+			Assert_GC_true_with_message(env, _syncPointUniqueId == id,
 				"%s at %p from synchronizeGCThreadsAndReleaseMain: call from (%s), expected (%s)\n", getBaseVirtualTypeId(), this, id, _syncPointUniqueId);
-			Assert_GC_true_with_message4(env, _syncPointWorkUnitIndex == env->getWorkUnitIndex(),
+			Assert_GC_true_with_message(env, _syncPointWorkUnitIndex == env->getWorkUnitIndex(),
 				"%s at %p from synchronizeGCThreadsAndReleaseMain: call with syncPointWorkUnitIndex %zu, expected %zu\n", getBaseVirtualTypeId(), this, env->getWorkUnitIndex(), _syncPointWorkUnitIndex);
 		}
 
@@ -183,9 +183,9 @@ MM_ParallelTask::synchronizeGCThreadsAndReleaseSingleThread(MM_EnvironmentBase *
 			_syncPointUniqueId = id;
 			_syncPointWorkUnitIndex = workUnitIndex;
 		} else {
-			Assert_GC_true_with_message4(env, _syncPointUniqueId == id,
+			Assert_GC_true_with_message(env, _syncPointUniqueId == id,
 				"%s at %p from synchronizeGCThreadsAndReleaseSingleThread: call from (%s), expected (%s)\n", getBaseVirtualTypeId(), this, id, _syncPointUniqueId);
-			Assert_GC_true_with_message4(env, _syncPointWorkUnitIndex == env->getWorkUnitIndex(),
+			Assert_GC_true_with_message(env, _syncPointWorkUnitIndex == env->getWorkUnitIndex(),
 				"%s at %p from synchronizeGCThreadsAndReleaseSingleThread: call with syncPointWorkUnitIndex %zu, expected %zu\n", getBaseVirtualTypeId(), this, env->getWorkUnitIndex(), _syncPointWorkUnitIndex);
 		}
 
@@ -227,7 +227,7 @@ MM_ParallelTask::releaseSynchronizedGCThreads(MM_EnvironmentBase *env)
 		return;
 	}
 	
-	Assert_GC_true_with_message2(env, _synchronized, "%s at %p from releaseSynchronizedGCThreads: call for non-synchronized\n", getBaseVirtualTypeId(), this);
+	Assert_GC_true_with_message(env, _synchronized, "%s at %p from releaseSynchronizedGCThreads: call for non-synchronized\n", getBaseVirtualTypeId(), this);
 	/* Could not have gotten here unless all other threads are sync'd - don't check, just release */
 	_synchronized = false;
 	omrthread_monitor_enter(_synchronizeMutex);
@@ -262,7 +262,7 @@ MM_ParallelTask::complete(MM_EnvironmentBase *env)
 			_syncPointUniqueId = id;
 			_syncPointWorkUnitIndex = env->getWorkUnitIndex();
 		} else {
-			Assert_GC_true_with_message3(env, _syncPointUniqueId == id,
+			Assert_GC_true_with_message(env, _syncPointUniqueId == id,
 				"%s at %p from complete: reach end of the task however threads are waiting at (%s)\n", getBaseVirtualTypeId(), this, _syncPointUniqueId);
 			/*
 			 * MM_ParallelScrubCardTableTask is implemented to be aborted if it takes too much time
@@ -270,7 +270,7 @@ MM_ParallelTask::complete(MM_EnvironmentBase *env)
 			 * Temporary commenting out
 			 */
 			/*
-			Assert_GC_true_with_message4(env, _syncPointWorkUnitIndex == env->getWorkUnitIndex(),
+			Assert_GC_true_with_message(env, _syncPointWorkUnitIndex == env->getWorkUnitIndex(),
 				"%s at %p from complete: call with syncPointWorkUnitIndex %zu, expected %zu\n", getBaseVirtualTypeId(), this, env->getWorkUnitIndex(), _syncPointWorkUnitIndex);
 			*/
 		}

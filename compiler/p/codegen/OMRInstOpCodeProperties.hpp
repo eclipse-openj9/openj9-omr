@@ -13817,8 +13817,8 @@
         /* .name        = */ "vpdepd",
         /* .description =    "Vector Parallel Bits Deposit Doubleword", */
         /* .prefix      = */ 0x00000000,
-        /* .opcode      = */ 0x00000000,
-        /* .format      = */ FORMAT_UNKNOWN,
+        /* .opcode      = */ 0x100005CD,
+        /* .format      = */ FORMAT_VRT_VRA_VRB,
         /* .minimumALS  = */ OMR_PROCESSOR_PPC_P10,
         /* .properties  = */ PPCOpProp_IsVMX | PPCOpProp_SyncSideEffectFree,
     },

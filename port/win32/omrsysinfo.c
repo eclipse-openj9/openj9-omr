@@ -607,6 +607,23 @@ WIN32_WINNT version constants :
  *
  * @note portLibrary is responsible for allocation/deallocation of returned buffer.
  */
+static BOOL
+getWindowsVersion(OSVERSIONINFOW *info)
+{
+	typedef LONG (WINAPI *RtlGetVersionPtr)(PRTL_OSVERSIONINFOW);
+
+	HMODULE hMod = GetModuleHandleW(L"ntdll.dll");
+	if (hMod) {
+		RtlGetVersionPtr fxPtr = (RtlGetVersionPtr)GetProcAddress(hMod, "RtlGetVersion");
+		if (fxPtr && fxPtr((PRTL_OSVERSIONINFOW)info) == 0) {
+			return TRUE;
+		}
+	}
+
+#pragma warning( suppress : 4996 )
+	return GetVersionExW(info);
+}
+
 const char *
 omrsysinfo_get_OS_version(struct OMRPortLibrary *portLibrary)
 {
@@ -625,7 +642,7 @@ omrsysinfo_get_OS_version(struct OMRPortLibrary *portLibrary)
 		versionInfo.dwOSVersionInfoSize = sizeof(versionInfo);
 /* GetVersionEx() is deprecated, but still needed to detect Windows 10 when using older compilers. Suppress the warning. */
 #pragma warning( suppress : 4996 )
-		if (GetVersionExW(&versionInfo) && (10 <= versionInfo.dwMajorVersion)) {
+		if (getWindowsVersion(&versionInfo) && (10 <= versionInfo.dwMajorVersion)) {
 			/* Build information for Windows 10 can't be hard coded, use GetVersionEx() below. */
 			PPG_si_osVersion = NULL;
 		} else
@@ -664,9 +681,8 @@ omrsysinfo_get_OS_version(struct OMRPortLibrary *portLibrary)
 		uintptr_t position;
 
 		versionInfo.dwOSVersionInfoSize = sizeof(versionInfo);
-/* GetVersionEx() is deprecated, but still useful to get the Windows 10 build information. Suppress the warning. */
-#pragma warning( suppress : 4996 )
-		if (!GetVersionExW(&versionInfo)) {
+		
+		if (!getWindowsVersion(&versionInfo)) {
 			return NULL;
 		}
 

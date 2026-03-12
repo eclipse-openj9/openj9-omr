@@ -3328,25 +3328,32 @@ TR::Register *OMR::Power::TreeEvaluator::vstoreEvaluator(TR::Node *node, TR::Cod
 
     TR::Node *valueChild = node->getOpCode().isStoreDirect() ? node->getFirstChild() : node->getSecondChild();
     TR::Register *valueReg = cg->evaluate(valueChild);
+    TR::Register *rearrangedValueReg = NULL;
 
     // Because type-specific vector store instructions are not available on P8 or lower for Int8 and Int16,
     // on LE systems we need to manually rearrange the register contents to preserve the original element order
     if (!cg->comp()->target().cpu.isAtLeast(OMR_PROCESSOR_PPC_P9) && cg->comp()->target().cpu.isLittleEndian()
         && (et == TR::Int8 || et == TR::Int16)) {
+        rearrangedValueReg = cg->allocateRegister(TR_VRF);
         TR::Register *rotateReg = cg->allocateRegister(TR_VRF);
 
         generateTrg1ImmInstruction(cg, TR::InstOpCode::vspltisw, node, rotateReg, -16);
-        generateTrg1Src2Instruction(cg, TR::InstOpCode::vrlw, node, valueReg, valueReg, rotateReg);
+        generateTrg1Src2Instruction(cg, TR::InstOpCode::vrlw, node, rearrangedValueReg, valueReg, rotateReg);
 
         if (et == TR::Int8) {
             generateTrg1ImmInstruction(cg, TR::InstOpCode::vspltish, node, rotateReg, 8);
-            generateTrg1Src2Instruction(cg, TR::InstOpCode::vrlh, node, valueReg, valueReg, rotateReg);
+            generateTrg1Src2Instruction(cg, TR::InstOpCode::vrlh, node, rearrangedValueReg, rearrangedValueReg,
+                rotateReg);
         }
 
         cg->stopUsingRegister(rotateReg);
     }
 
-    TR::LoadStoreHandler::generateStoreNodeSequence(cg, valueReg, node, opcode, 16, true);
+    TR::LoadStoreHandler::generateStoreNodeSequence(cg, rearrangedValueReg ? rearrangedValueReg : valueReg, node,
+        opcode, 16, true);
+
+    if (rearrangedValueReg)
+        cg->stopUsingRegister(rearrangedValueReg);
 
     cg->decReferenceCount(valueChild);
     return NULL;

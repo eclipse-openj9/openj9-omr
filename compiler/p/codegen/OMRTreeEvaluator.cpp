@@ -3275,6 +3275,26 @@ TR::Register *OMR::Power::TreeEvaluator::vloadEvaluator(TR::Node *node, TR::Code
 
     // Because type-specific vector load instructions are not available on P8 or lower for Int8 and Int16,
     // on LE systems we need to manually rearrange the register contents to preserve the original element order
+    //
+    // CASE 1: Int16/ShortVector {1, 2, 3, 4, 5, 6, 7, 8}
+    // After lxvw4x: dstReg = 0x00020001000400030006000500080007
+    //                      = {0002, 0001, 0004, 0003, 0006, 0005, 0008, 0007} (halfword-length elements)
+    //                      = {00020001, 00040003, 00060005, 00080007} (word-length elements)
+    // After 16-bit rotation of word-length elements:
+    //               dstReg = {00010002, 00030004, 00050006, 00070008} (word-length elements)
+    //                      = {0001, 0002, 0003, 0004, 0005, 0006, 0007, 0008} (halfword-length elements)
+    //
+    // CASE 2: Int8/ByteVector {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16}
+    // After lxvw4x: dstReg = 0x04030201080706050c0b0a09100f0e0d
+    //                      = {04, 03, 02, 01, 08, 07, 06, 05, 0c, 0b, 0a, 09, 10, 0f, 0e, 0d} (byte-length elements)
+    //                      = {04030201, 08070605, 0c0b0a09, 100f0e0d} (word-length elements)
+    // After 16-bit rotation of word-length elements:
+    //               dstReg = {02010403, 06050807, 0a090c0b, 0e0d100f} (word-length elements)
+    //                      = {02, 01, 04, 03, 06, 05, 08, 07, 0a, 09, 0c, 0b, 0e, 0d, 10, 0f} (byte-length elements)
+    //                      = {0201, 0403, 0605, 0807, 0a09, 0c0b, 0e0d, 100f} (halfword-length elements)
+    // After 8-bit rotation of halfword-length elements:
+    //               dstReg = {0102, 0304, 0506, 0708, 090a, 0b0c, 0d0e, 0f10} (halfword-length elements)
+    //                      = {01, 02, 03, 04, 05, 06, 07, 08, 09, 0a, 0b, 0c, 0d, 0e, 0f, 10} (byte-length elements)
     if (!cg->comp()->target().cpu.isAtLeast(OMR_PROCESSOR_PPC_P9) && cg->comp()->target().cpu.isLittleEndian()
         && (et == TR::Int8 || et == TR::Int16)) {
         TR::Register *rotateReg = cg->allocateRegister(TR_VRF);
@@ -3328,25 +3348,33 @@ TR::Register *OMR::Power::TreeEvaluator::vstoreEvaluator(TR::Node *node, TR::Cod
 
     TR::Node *valueChild = node->getOpCode().isStoreDirect() ? node->getFirstChild() : node->getSecondChild();
     TR::Register *valueReg = cg->evaluate(valueChild);
+    TR::Register *rearrangedValueReg = NULL;
 
     // Because type-specific vector store instructions are not available on P8 or lower for Int8 and Int16,
     // on LE systems we need to manually rearrange the register contents to preserve the original element order
+    // (see vloadEvaluator for detailed explanation)
     if (!cg->comp()->target().cpu.isAtLeast(OMR_PROCESSOR_PPC_P9) && cg->comp()->target().cpu.isLittleEndian()
         && (et == TR::Int8 || et == TR::Int16)) {
+        rearrangedValueReg = cg->allocateRegister(TR_VRF);
         TR::Register *rotateReg = cg->allocateRegister(TR_VRF);
 
         generateTrg1ImmInstruction(cg, TR::InstOpCode::vspltisw, node, rotateReg, -16);
-        generateTrg1Src2Instruction(cg, TR::InstOpCode::vrlw, node, valueReg, valueReg, rotateReg);
+        generateTrg1Src2Instruction(cg, TR::InstOpCode::vrlw, node, rearrangedValueReg, valueReg, rotateReg);
 
         if (et == TR::Int8) {
             generateTrg1ImmInstruction(cg, TR::InstOpCode::vspltish, node, rotateReg, 8);
-            generateTrg1Src2Instruction(cg, TR::InstOpCode::vrlh, node, valueReg, valueReg, rotateReg);
+            generateTrg1Src2Instruction(cg, TR::InstOpCode::vrlh, node, rearrangedValueReg, rearrangedValueReg,
+                rotateReg);
         }
 
         cg->stopUsingRegister(rotateReg);
     }
 
-    TR::LoadStoreHandler::generateStoreNodeSequence(cg, valueReg, node, opcode, 16, true);
+    TR::LoadStoreHandler::generateStoreNodeSequence(cg, rearrangedValueReg ? rearrangedValueReg : valueReg, node,
+        opcode, 16, true);
+
+    if (rearrangedValueReg)
+        cg->stopUsingRegister(rearrangedValueReg);
 
     cg->decReferenceCount(valueChild);
     return NULL;

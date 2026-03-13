@@ -259,4 +259,9 @@
  */
 #undef OMR_THR_MCS_LOCKS
 
+/**
+ * This flag enables recognition of dump type 'IEATDUMP_VALIDATE'.
+ */
+#undef OMR_TDUMP_VALIDATION
+
 #endif /* !defined(OMRCFG_H_) */

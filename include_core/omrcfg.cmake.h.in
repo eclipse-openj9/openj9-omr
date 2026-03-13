@@ -250,4 +250,9 @@
  */
 #cmakedefine OMR_THR_MCS_LOCKS
 
+/**
+ * This flag enables recognition of dump type 'IEATDUMP_VALIDATE'.
+ */
+#cmakedefine OMR_TDUMP_VALIDATION
+
 #endif /* !defined(OMRCFG_H_) */

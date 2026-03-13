@@ -48,11 +48,48 @@
 #endif
 #include "portnls.h"
 
+/* Defined in omrgenerate_ieat_dump.s. */
+extern void _TDUMP(void *ioParms, void *dsnPattern);
+
 static void convertToUpper(struct OMRPortLibrary *portLibrary, char *toConvert, uintptr_t len);
 static void appendCoreName(struct OMRPortLibrary *portLibrary, char *corepath, intptr_t pathBufferLimit, intptr_t pid);
-static uintptr_t tdump_wrapper(struct OMRPortLibrary *portLibrary, char *filename);
-static intptr_t tdump(struct OMRPortLibrary *portLibrary, char *asciiLabel, char *ebcdicLabel, uint32_t *returnCode, uint32_t *reasonCode);
+static uintptr_t tdump_wrapper(struct OMRPortLibrary *portLibrary, char *filename, BOOLEAN dsnTest);
+static intptr_t tdump(struct OMRPortLibrary *portLibrary, char *asciiLabel, char *ebcdicLabel, BOOLEAN dsnTest, uint32_t *returnCode, uint32_t *reasonCode);
 static intptr_t ceedump(struct OMRPortLibrary *portLibrary, char *asciiLabel, char *ebcdicLabel);
+
+#if defined(OMR_TDUMP_VALIDATION)
+
+/* Defined in omrgenerate_ieat_dumpv.s. */
+extern void _TDUMPV(void *ioParms, void *dsnPattern);
+
+/* Check if z/OS supports the DSNTEST option of IEATDUMP.
+ *
+ * @return TRUE if DSNTEST is supported; FALSE otherwise
+ */
+static BOOLEAN
+zosSupportsIEATDumpDsnTest(void)
+{
+	/* The PSA structure contains the address of the CVT.
+	 * See https://www.ibm.com/support/knowledgecenter/en/SSLTBW_2.3.0/com.ibm.zos.v2r3.iead300/PSA-map.htm.
+	 */
+	const uint8_t *CVT = (const uint8_t *)*(const uint32_t *)0x10;
+
+	/* The CVT structure contains the address of the RTMCT.
+	 * See https://www.ibm.com/support/knowledgecenter/en/SSLTBW_2.3.0/com.ibm.zos.v2r3.iead100/CVT-map.htm.
+	 */
+	const uint8_t *RTMCT = (const uint8_t *)*(const uint32_t *)(CVT + 0x23C);
+
+	/*
+	 * The RTMCT structure contains a flag byte of available SDUMP/ABDUMP features.
+	 * See https://www.ibm.com/docs/en/zos/2.5.0?topic=xtl-rtct-information.
+	 */
+	const uint8_t RTCTFEATURES = RTMCT[0xFD];
+	const uint8_t RTCTDSNTEST = 0x80;
+
+	return OMR_ARE_ANY_BITS_SET(RTCTFEATURES, RTCTDSNTEST);
+}
+
+#endif /* defined(OMR_TDUMP_VALIDATION) */
 
 /**
  * Create a dump file of the OS state.
@@ -78,9 +115,20 @@ omrdump_create(struct OMRPortLibrary *portLibrary, char *filename, char *dumpTyp
 	uintptr_t rc = 0;
 
 	/* handle J2SE and J9 controls */
+#if defined(OMR_TDUMP_VALIDATION)
+	if (NULL != strstr(dumpType, "IEATDUMP_VALIDATE")) {
+		if (zosSupportsIEATDumpDsnTest()) {
+			/* do IEATDUMP validation */
+			rc = tdump_wrapper(portLibrary, filename, TRUE);
+		} else {
+			/* validation is not available, so it cannot fail */
+			rc = 0;
+		}
+	} else
+#endif /* defined(OMR_TDUMP_VALIDATION) */
 	if (NULL != strstr(dumpType, "IEATDUMP")) {
 		/* do the IEATDUMP */
-		rc = tdump_wrapper(portLibrary, filename);
+		rc = tdump_wrapper(portLibrary, filename, FALSE);
 	} else {
 		/* do the CEEDUMP */
 		rc = ceedump(portLibrary, filename, NULL);
@@ -175,13 +223,13 @@ appendCoreName(struct OMRPortLibrary *portLibrary, char *corepath, intptr_t path
 }
 
 static uintptr_t
-tdump_wrapper(struct OMRPortLibrary *portLibrary, char *filename)
+tdump_wrapper(struct OMRPortLibrary *portLibrary, char *filename, BOOLEAN dsnTest)
 {
 	uintptr_t retVal = 0;
 	BOOLEAN filenameSpecified = TRUE;
 	uint32_t returnCode = 0;
 	uint32_t reasonCode = 0;
-	intptr_t err = 0;
+	intptr_t err = 1;
 
 	if (NULL == filename) {
 		return 1;
@@ -189,17 +237,14 @@ tdump_wrapper(struct OMRPortLibrary *portLibrary, char *filename)
 
 	/* Use default dataset name */
 	if (filename[0] == '\0') {
-		char *loginID = NULL;
 #define USERNAME_STACK_BUFFER_SIZE 128
 		char userNameStack[USERNAME_STACK_BUFFER_SIZE];
 		time_t now = time(NULL);
-		struct passwd *userDescription = NULL;
-		intptr_t result = -1;
 #define J9_MAX_JOBNAME 16
 		char jobname[J9_MAX_JOBNAME];
 		uintptr_t fileNamePrefixLength = 0;
+		intptr_t result = portLibrary->sysinfo_get_username(portLibrary, userNameStack, USERNAME_STACK_BUFFER_SIZE);
 
-		result = portLibrary->sysinfo_get_username(portLibrary, userNameStack, USERNAME_STACK_BUFFER_SIZE);
 		if (-1 == result) {
 			/* we tried to get the username, but failed, use ANON instead */
 			portLibrary->str_printf(portLibrary, userNameStack, USERNAME_STACK_BUFFER_SIZE, "%s", "ANON");
@@ -208,11 +253,12 @@ tdump_wrapper(struct OMRPortLibrary *portLibrary, char *filename)
 		/* fetch the current jobname */
 		omrget_jobname(portLibrary, jobname, J9_MAX_JOBNAME);
 
-#if defined(J9ZOS39064) /* Remove 'TDUMP' to alleviate the 44 chars constraint on dataset names */
+#if defined(J9ZOS39064)
+		/* Remove '.TDUMP' to alleviate the 44 chars constraint on dataset names. */
 		portLibrary->str_printf(portLibrary, filename, EsMaxPath, "%s.JVM.%s.", userNameStack, jobname);
-#else /* 31 bits */
+#else /* defined(J9ZOS39064) */
 		portLibrary->str_printf(portLibrary, filename, EsMaxPath, "%s.JVM.TDUMP.%s.", userNameStack, jobname);
-#endif
+#endif /* defined(J9ZOS39064) */
 
 		fileNamePrefixLength = strlen(filename);
 
@@ -256,13 +302,13 @@ tdump_wrapper(struct OMRPortLibrary *portLibrary, char *filename)
 	convertToUpper(portLibrary, filename, strlen(filename));
 
 #if defined(OMR_EBCDIC)
-	err = tdump(portLibrary, filename, filename, &returnCode, &reasonCode);
+	err = tdump(portLibrary, filename, filename, dsnTest, &returnCode, &reasonCode);
 #else /* defined(OMR_EBCDIC) */
 	{
 		/* Convert filename into EBCDIC... */
 		char *dsnName = a2e_func(filename, strlen(filename) + 1);
 		if (NULL != dsnName) {
-			err = tdump(portLibrary, filename, dsnName, &returnCode, &reasonCode);
+			err = tdump(portLibrary, filename, dsnName, dsnTest, &returnCode, &reasonCode);
 			free(dsnName);
 		}
 	}
@@ -276,7 +322,7 @@ tdump_wrapper(struct OMRPortLibrary *portLibrary, char *filename)
 			if (filenameSpecified) {
 				portLibrary->nls_printf(portLibrary, J9NLS_WARNING | J9NLS_STDERR, J9NLS_PORT_IEATDUMP_NAME_TOO_LONG);
 				filename[0] = '\0';
-				retVal = tdump_wrapper(portLibrary, filename);
+				retVal = tdump_wrapper(portLibrary, filename, dsnTest);
 			}
 		} else if ((0x8 == returnCode) && (0x26 == reasonCode)) {
 			/* Couldn't allocate data set (disk full) */
@@ -295,11 +341,12 @@ tdump_wrapper(struct OMRPortLibrary *portLibrary, char *filename)
  * Generate an IEATDUMP
  *
  * @param[in] portLibrary the port library
- * @param[in,out] asciiLabel the filename to use in ascii. Lowercase letters are _not_ allowed
- * @param[in,out] ebcdicLabel the filename to use in ebcdic. Lowercase letters are _not_ allowed
+ * @param[in,out] asciiLabel the filename to use in ascii; lowercase letters are _not_ allowed
+ * @param[in,out] ebcdicLabel the filename to use in ebcdic; lowercase letters are _not_ allowed
+ * @param[in] dsnTest TRUE to only validate the label, FALSE for normal dump creation
  * @param[out] returnCode the zOS return code from the IEATDUMP call
  * @param[out] reasonCode the zOS reason code from the IEATDUMP call
- *  *
+ *
  * @return 0 if IEATDUMP was actually called, non-zero if there was an error that prevented us
  *          getting that far
  *
@@ -307,10 +354,10 @@ tdump_wrapper(struct OMRPortLibrary *portLibrary, char *filename)
  * actually successful
  *
  * Note that asciiLabel and ebcdicLabel should represent the same
- *  filename as both are used in this function
+ * filename as both are used in this function.
  */
 static intptr_t
-tdump(struct OMRPortLibrary *portLibrary, char *asciiLabel, char *ebcdicLabel, uint32_t *returnCode, uint32_t *reasonCode)
+tdump(struct OMRPortLibrary *portLibrary, char *asciiLabel, char *ebcdicLabel, BOOLEAN dsnTest, uint32_t *returnCode, uint32_t *reasonCode)
 {
 	struct ioparms_t {
 		uint64_t plist[256];
@@ -324,10 +371,7 @@ tdump(struct OMRPortLibrary *portLibrary, char *asciiLabel, char *ebcdicLabel, u
 		char dsn[256];
 	} *dsnPattern31 = NULL;
 
-	/* Defined in omrgenerate_ieat_dump.s. */
-	extern void _TDUMP(struct ioparms_t *ioparms, struct dsn_pattern_t *dsn_pattern);
-
-	/* _TDUMP subroutine expects 31-bit addresses */
+	/* _TDUMP/_TDUMPV subroutines expect 31-bit addresses. */
 	ioParms31 = __malloc31(sizeof(*ioParms31));
 	if (NULL == ioParms31) {
 		omrtty_err_printf(portLibrary, "__malloc31 failed to allocate buffer for ioParms31\n");
@@ -346,12 +390,27 @@ tdump(struct OMRPortLibrary *portLibrary, char *asciiLabel, char *ebcdicLabel, u
 	strcpy(dsnPattern31->dsn, ebcdicLabel);
 	dsnPattern31->len = strlen(ebcdicLabel);
 
-	/* Note: the actual IEATDUMP options are specified on the assembler macro call in omrgenerate_ieat_dumps.s.
-	 * The message below needs to be kept consistent with the options set on the macro call.
-	 */
-	omrtty_err_printf(portLibrary, "IEATDUMP in progress with options SDATA=(LPA,GRSQ,LSQA,NUC,PSA,RGN,SQA,SUM,SWA,TRT)\n");
+	if (dsnTest) {
+#if defined(OMR_TDUMP_VALIDATION)
+		_TDUMPV(ioParms31, dsnPattern31);
 
-	_TDUMP(ioParms31, dsnPattern31);
+		if ((0x8 == ioParms31->retcode) && (0x0 == ioParms31->rsncode)) {
+			/*
+			 * A return code of 8 means the dump was not written, but since
+			 * the goal here is just to test the pattern, that qualifies as
+			 * success: Update the return code accordingly.
+			 */
+			ioParms31->retcode = 0x0;
+		}
+#endif /* defined(OMR_TDUMP_VALIDATION) */
+	} else {
+		/* Note: the actual IEATDUMP options are specified in the assembler macro call in omrgenerate_ieat_dumps.s.
+		 * The message below needs to be kept consistent with the options used in that macro call.
+		 */
+		omrtty_err_printf(portLibrary, "IEATDUMP in progress with options SDATA=(LPA,GRSQ,LSQA,NUC,PSA,RGN,SQA,SUM,SWA,TRT)\n");
+
+		_TDUMP(ioParms31, dsnPattern31);
+	}
 
 	if (NULL != returnCode) {
 		*returnCode = ioParms31->retcode;
@@ -361,10 +420,10 @@ tdump(struct OMRPortLibrary *portLibrary, char *asciiLabel, char *ebcdicLabel, u
 		*reasonCode = ioParms31->rsncode;
 	}
 
-	if (0 != ioParms31->retcode) {
-		/*
-		 * Please refer to VMDESIGN 1459 about IEATDUMP failure recovery
-		 */
+	if (dsnTest) {
+		/* Just testing (no dump generated). */
+	} else if (0 != ioParms31->retcode) {
+		/* Please refer to VMDESIGN 1459 about IEATDUMP failure recovery. */
 		char errmsg[1024];
 
 		omrtty_err_printf(portLibrary, "IEATDUMP failure for DSN='%s' RC=0x%08X RSN=0x%08X\n", asciiLabel, ioParms31->retcode, ioParms31->rsncode);
@@ -402,11 +461,13 @@ ceedump(struct OMRPortLibrary *portLibrary, char *asciiLabel, char *ebcdicLabel)
 		strncpy(corepath, location, EsMaxPath);
 		corepath[EsMaxPath - 1] = '\0';
 	} else {
-		getcwd(corepath, EsMaxPath);
+		if (NULL == getcwd(corepath, EsMaxPath)) {
+			corepath[0] = '\0';
+		}
 	}
 
 	/* Normalize path */
-	if (corepath[strlen(corepath) - 1] != '/') {
+	if (('\0' == corepath[0]) || ('/' != corepath[strlen(corepath) - 1])) {
 		strcat(corepath, "/");
 	}
 

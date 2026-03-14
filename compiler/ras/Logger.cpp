@@ -57,6 +57,14 @@ int32_t OMR::NullLogger::close()
     return this->flush();
 }
 
+// Explicit instantiations
+//
+template OMR::NullLogger *OMR::NullLogger::create(TR_HeapMemory t);
+
+template OMR::NullLogger *OMR::NullLogger::create(PERSISTENT_NEW_DECLARE t);
+
+template OMR::NullLogger *OMR::NullLogger::create(TR::RawAllocator t);
+
 /*
  * -----------------------------------------------------------------------------
  * AssertingLogger
@@ -113,6 +121,12 @@ int32_t OMR::AssertingLogger::close()
     setEnabled_DEPRECATED(false);
     return 0;
 }
+
+// Explicit instantiations
+//
+template OMR::AssertingLogger *OMR::AssertingLogger::create(TR_HeapMemory t);
+
+template OMR::AssertingLogger *OMR::AssertingLogger::create(PERSISTENT_NEW_DECLARE t);
 
 /*
  * -----------------------------------------------------------------------------
@@ -226,6 +240,20 @@ OMR::CStdIOStreamLogger *OMR::CStdIOStreamLogger::Stdout()
     return _stdout;
 }
 
+// Explicit instantiations
+//
+template OMR::CStdIOStreamLogger *OMR::CStdIOStreamLogger::create(TR_HeapMemory t, ::FILE *stream);
+
+template OMR::CStdIOStreamLogger *OMR::CStdIOStreamLogger::create(PERSISTENT_NEW_DECLARE t, ::FILE *stream);
+
+template OMR::CStdIOStreamLogger *OMR::CStdIOStreamLogger::create(TR::RawAllocator t, ::FILE *stream);
+
+template OMR::CStdIOStreamLogger *OMR::CStdIOStreamLogger::create(TR_HeapMemory t, const char *filename,
+    const char *fileMode);
+
+template OMR::CStdIOStreamLogger *OMR::CStdIOStreamLogger::create(PERSISTENT_NEW_DECLARE t, const char *filename,
+    const char *fileMode);
+
 /*
  * -----------------------------------------------------------------------------
  * TRIOStreamLogger
@@ -302,6 +330,18 @@ int32_t OMR::TRIOStreamLogger::close()
 
     return result;
 }
+
+// Explicit instantiations
+//
+template OMR::TRIOStreamLogger *OMR::TRIOStreamLogger::create(TR_HeapMemory t, TR::FILE *stream);
+
+template OMR::TRIOStreamLogger *OMR::TRIOStreamLogger::create(PERSISTENT_NEW_DECLARE t, TR::FILE *stream);
+
+template OMR::TRIOStreamLogger *OMR::TRIOStreamLogger::create(TR_HeapMemory t, const char *filename,
+    const char *fileMode);
+
+template OMR::TRIOStreamLogger *OMR::TRIOStreamLogger::create(PERSISTENT_NEW_DECLARE t, const char *filename,
+    const char *fileMode);
 
 /*
  * -----------------------------------------------------------------------------
@@ -380,6 +420,14 @@ int32_t OMR::CircularLogger::close()
     return getInnerLogger()->close();
 }
 
+// Explicit instantiations
+//
+template OMR::CircularLogger *OMR::CircularLogger::create(TR_HeapMemory t, OMR::Logger *innerLogger,
+    int64_t rewindThresholdInChars);
+
+template OMR::CircularLogger *OMR::CircularLogger::create(PERSISTENT_NEW_DECLARE t, OMR::Logger *innerLogger,
+    int64_t rewindThresholdInChars);
+
 /*
  * -----------------------------------------------------------------------------
  * MemoryBufferLogger
@@ -448,3 +496,11 @@ int32_t OMR::MemoryBufferLogger::close()
     setEnabled_DEPRECATED(false);
     return this->flush();
 }
+
+// Explicit instantiations
+//
+template OMR::MemoryBufferLogger *OMR::MemoryBufferLogger::create(TR_HeapMemory t, char *buf, size_t maxBufLen);
+
+template OMR::MemoryBufferLogger *OMR::MemoryBufferLogger::create(PERSISTENT_NEW_DECLARE t, char *buf,
+    size_t maxBufLen);
+

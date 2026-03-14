@@ -327,14 +327,6 @@ template<typename AllocatorType> OMR::NullLogger *OMR::NullLogger::create(Alloca
     return new (t) OMR::NullLogger();
 }
 
-// Explicit instantiations
-//
-template OMR::NullLogger *OMR::NullLogger::create(TR_HeapMemory t);
-
-template OMR::NullLogger *OMR::NullLogger::create(PERSISTENT_NEW_DECLARE t);
-
-template OMR::NullLogger *OMR::NullLogger::create(TR::RawAllocator t);
-
 /**
  * A Logger class that fatally asserts if any of the logging functions
  * is called. This is useful for test environments to detect unguarded
@@ -381,12 +373,6 @@ template<typename AllocatorType> OMR::AssertingLogger *OMR::AssertingLogger::cre
 {
     return new (t) OMR::AssertingLogger();
 }
-
-// Explicit instantiations
-//
-template OMR::AssertingLogger *OMR::AssertingLogger::create(TR_HeapMemory t);
-
-template OMR::AssertingLogger *OMR::AssertingLogger::create(PERSISTENT_NEW_DECLARE t);
 
 /**
  * A Logger class that implements logging using C standard IO functions.
@@ -499,20 +485,6 @@ OMR::CStdIOStreamLogger *OMR::CStdIOStreamLogger::create(AllocatorType t, const 
     return new (t) OMR::CStdIOStreamLogger(fd, true);
 }
 
-// Explicit instantiations
-//
-template OMR::CStdIOStreamLogger *OMR::CStdIOStreamLogger::create(TR_HeapMemory t, ::FILE *stream);
-
-template OMR::CStdIOStreamLogger *OMR::CStdIOStreamLogger::create(PERSISTENT_NEW_DECLARE t, ::FILE *stream);
-
-template OMR::CStdIOStreamLogger *OMR::CStdIOStreamLogger::create(TR::RawAllocator t, ::FILE *stream);
-
-template OMR::CStdIOStreamLogger *OMR::CStdIOStreamLogger::create(TR_HeapMemory t, const char *filename,
-    const char *fileMode);
-
-template OMR::CStdIOStreamLogger *OMR::CStdIOStreamLogger::create(PERSISTENT_NEW_DECLARE t, const char *filename,
-    const char *fileMode);
-
 /**
  * A Logger class that implements logging using TR IO functions.
  */
@@ -607,18 +579,6 @@ OMR::TRIOStreamLogger *OMR::TRIOStreamLogger::create(AllocatorType t, const char
     return new (t) OMR::TRIOStreamLogger(fd, true);
 }
 
-// Explicit instantiations
-//
-template OMR::TRIOStreamLogger *OMR::TRIOStreamLogger::create(TR_HeapMemory t, TR::FILE *stream);
-
-template OMR::TRIOStreamLogger *OMR::TRIOStreamLogger::create(PERSISTENT_NEW_DECLARE t, TR::FILE *stream);
-
-template OMR::TRIOStreamLogger *OMR::TRIOStreamLogger::create(TR_HeapMemory t, const char *filename,
-    const char *fileMode);
-
-template OMR::TRIOStreamLogger *OMR::TRIOStreamLogger::create(PERSISTENT_NEW_DECLARE t, const char *filename,
-    const char *fileMode);
-
 /**
  * A Logger class that implements circular logging functionality by rewinding
  * after a certain threshold of chars have been logged. Logging output is not
@@ -693,14 +653,6 @@ OMR::CircularLogger *OMR::CircularLogger::create(AllocatorType t, OMR::Logger *i
 {
     return new (t) OMR::CircularLogger(innerLogger, rewindThresholdInChars);
 }
-
-// Explicit instantiations
-//
-template OMR::CircularLogger *OMR::CircularLogger::create(TR_HeapMemory t, OMR::Logger *innerLogger,
-    int64_t rewindThresholdInChars);
-
-template OMR::CircularLogger *OMR::CircularLogger::create(PERSISTENT_NEW_DECLARE t, OMR::Logger *innerLogger,
-    int64_t rewindThresholdInChars);
 
 /**
  * A Logger class that performs logging to a memory buffer. The maximum size of the
@@ -807,13 +759,6 @@ OMR::MemoryBufferLogger *OMR::MemoryBufferLogger::create(AllocatorType t, char *
 {
     return new (t) OMR::MemoryBufferLogger(buf, maxBufLen);
 }
-
-// Explicit instantiations
-//
-template OMR::MemoryBufferLogger *OMR::MemoryBufferLogger::create(TR_HeapMemory t, char *buf, size_t maxBufLen);
-
-template OMR::MemoryBufferLogger *OMR::MemoryBufferLogger::create(PERSISTENT_NEW_DECLARE t, char *buf,
-    size_t maxBufLen);
 
 } // namespace OMR
 

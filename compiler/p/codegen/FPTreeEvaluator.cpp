@@ -305,7 +305,7 @@ TR::Register *OMR::Power::TreeEvaluator::dloadEvaluator(TR::Node *node, TR::Code
 TR::Register *OMR::Power::TreeEvaluator::vsplatsEvaluator(TR::Node *node, TR::CodeGenerator *cg)
 {
     TR_ASSERT_FATAL_WITH_NODE(node, node->getDataType().getVectorLength() == TR::VectorLength128,
-        "Only 128-bit vectors are supported %s", node->getDataType().toString());
+        "Only 128-bit vectors are supported but type %s was requested", node->getDataType().toString());
 
     TR::Node *child = node->getFirstChild();
     static bool disableDirectMove = feGetEnv("TR_disableDirectMove") ? true : false;

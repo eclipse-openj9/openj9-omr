@@ -389,15 +389,16 @@ void OMR::Power::MemoryReference::addToOffset(TR::Node *node, int64_t amount, TR
             } else {
                 if (cg->comp()->target().is64Bit() && (upper < LOWER_IMMED || upper > UPPER_IMMED)) {
                     TR::Register *tempReg = cg->allocateRegister();
-                    loadActualConstant(cg, node, upper << 16, tempReg);
+                    loadActualConstant(cg, node, displacement, tempReg);
                     generateTrg1Src2Instruction(cg, TR::InstOpCode::add, node, newBase, _baseRegister, tempReg);
                     cg->stopUsingRegister(tempReg);
-                } else
+                } else {
                     generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::addis, node, newBase, _baseRegister,
                         (int16_t)upper);
 
-                if (lower != 0)
-                    generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::addi2, node, newBase, newBase, lower);
+                    if (lower != 0)
+                        generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::addi2, node, newBase, newBase, lower);
+                }
             }
         } else
             loadActualConstant(cg, node, displacement, newBase);

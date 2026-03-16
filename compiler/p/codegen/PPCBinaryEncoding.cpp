@@ -861,7 +861,28 @@ static void fillFieldD34(TR::Instruction *instr, uint32_t *cursor, uint64_t val)
 {
     TR_ASSERT_FATAL_WITH_INSTRUCTION(instr, isValidInSignExtendedField(val, 0x3ffffffffull),
         "0x%llx is out-of-range for D(34) field", val);
-    cursor[0] |= (static_cast<int64_t>(val) >> 16) & 0x3ffff;
+    cursor[0] |= (val >> 16) & 0x3ffff;
+    cursor[1] |= val & 0xffff;
+}
+
+/**
+ * Fills in the 32-bit D field of a binary-encoded prefixed instruction with the provided immediate
+ * value:
+ *
+ * +----------------------------+---------------------------------+
+ * |                            | d0                              |
+ * | 0                          | 16                              |
+ * +----------------------------+---------------------------------+
+ * +----------------------------+---------------------------------+
+ * |                            | d1                              |
+ * | 0                          | 16                              |
+ * +----------------------------+---------------------------------+
+ */
+static void fillFieldD32(TR::Instruction *instr, uint32_t *cursor, uint64_t val)
+{
+    TR_ASSERT_FATAL_WITH_INSTRUCTION(instr, isValidInSignExtendedField(val, 0xffffffffull),
+        "0x%llx is out-of-range for D(32) field", val);
+    cursor[0] |= (val >> 16) & 0xffff;
     cursor[1] |= val & 0xffff;
 }
 
@@ -1669,6 +1690,12 @@ void TR::PPCTrg1ImmInstruction::fillBinaryEncodingFields(uint32_t *cursor)
             fillFieldR(self(), cursor, 1);
             break;
 
+        case FORMAT_RT_D32_RA_R:
+            fillFieldRT(self(), cursor + 1, trg);
+            fillFieldD32(self(), cursor, static_cast<int64_t>(static_cast<int32_t>(imm)));
+            fillFieldR(self(), cursor, 0);
+            break;
+
         case FORMAT_RTP_D34_RA_R:
             fillFieldRTP(self(), cursor + 1, trg);
             fillFieldD34(self(), cursor, static_cast<int64_t>(static_cast<int32_t>(imm)));
@@ -1760,6 +1787,13 @@ void TR::PPCTrg1Src1ImmInstruction::fillBinaryEncodingFields(uint32_t *cursor)
             fillFieldRT(self(), cursor + 1, trg);
             fillFieldRA(self(), cursor + 1, src);
             fillFieldD34(self(), cursor, imm);
+            fillFieldR(self(), cursor, 0);
+            break;
+
+        case FORMAT_RT_D32_RA_R:
+            fillFieldRT(self(), cursor + 1, trg);
+            fillFieldRA(self(), cursor + 1, src);
+            fillFieldD32(self(), cursor, imm);
             fillFieldR(self(), cursor, 0);
             break;
 

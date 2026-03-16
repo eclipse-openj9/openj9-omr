@@ -208,7 +208,6 @@ bool OMR::X86::Instruction::dependencyRefsRegister(TR::Register *reg)
 }
 
 #if defined(DEBUG) || defined(PROD_WITH_ASSUMES)
-
 uint32_t OMR::X86::Instruction::totalReferencedGPRegisters(TR::CodeGenerator *cg)
 {
     if (self()->getDependencyConditions()) {
@@ -217,16 +216,6 @@ uint32_t OMR::X86::Instruction::totalReferencedGPRegisters(TR::CodeGenerator *cg
     }
 
     return self()->getNumOperandReferencedGPRegisters();
-}
-
-uint32_t OMR::X86::Instruction::totalReferencedFPRegisters(TR::CodeGenerator *cg)
-{
-    if (self()->getDependencyConditions()) {
-        return self()->getNumOperandReferencedFPRegisters()
-            + self()->getDependencyConditions()->numReferencedFPRegisters(cg);
-    }
-
-    return self()->getNumOperandReferencedFPRegisters();
 }
 #endif
 

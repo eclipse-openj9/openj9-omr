@@ -232,7 +232,6 @@ public:
 
 #if defined(DEBUG)
     void printGPRegisterStatus(OMR::Logger *log, TR_FrontEnd *, TR::RealRegister **registerFile);
-    void printFPRegisterStatus(OMR::Logger *log, TR_FrontEnd *);
 #endif
 
 protected:

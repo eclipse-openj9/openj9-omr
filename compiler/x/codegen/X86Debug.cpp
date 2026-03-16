@@ -240,9 +240,7 @@ void TR_Debug::printDependencyConditions(OMR::Logger *log, TR::RegisterDependenc
         *(cursor++) = '(';
         remainingSize--;
         TR::RegisterDependency *regDep = conditions->getRegisterDependency(i);
-        if (regDep->isAllFPRegisters()) {
-            len = snprintf(cursor, remainingSize, "AllFP");
-        } else if (regDep->isNoReg()) {
+        if (regDep->isNoReg()) {
             len = snprintf(cursor, remainingSize, "NoReg");
         } else if (regDep->isByteReg()) {
             len = snprintf(cursor, remainingSize, "ByteReg");
@@ -292,27 +290,22 @@ void TR_Debug::dumpDependencyGroup(OMR::Logger *log, TR::RegisterDependencyGroup
         TR::RegisterDependency *regDep = group->getRegisterDependency(i);
         virtReg = regDep->getRegister();
 
-        if (omitNullDependencies) {
-            if (!virtReg && !regDep->isAllFPRegisters())
-                continue;
+        if (omitNullDependencies && !virtReg) {
+            continue;
         }
 
-        if (regDep->isAllFPRegisters()) {
-            log->prints(" [All FPRs]");
-        } else {
-            r = regDep->getRealRegister();
-            log->printf(" [%s : ", getName(virtReg));
-            if (regDep->isNoReg())
-                log->prints("NoReg]");
-            else if (regDep->isByteReg())
-                log->prints("ByteReg]");
-            else if (regDep->isBestFreeReg())
-                log->prints("BestFreeReg]");
-            else if (regDep->isSpilledReg())
-                log->prints("SpilledReg]");
-            else
-                log->printf("%s]", getName(_cg->machine()->getRealRegister(r)));
-        }
+        r = regDep->getRealRegister();
+        log->printf(" [%s : ", getName(virtReg));
+        if (regDep->isNoReg())
+            log->prints("NoReg]");
+        else if (regDep->isByteReg())
+            log->prints("ByteReg]");
+        else if (regDep->isBestFreeReg())
+            log->prints("BestFreeReg]");
+        else if (regDep->isSpilledReg())
+            log->prints("SpilledReg]");
+        else
+            log->printf("%s]", getName(_cg->machine()->getRealRegister(r)));
 
         foundDep = true;
     }

@@ -2064,8 +2064,6 @@ public:
 
 #ifdef DEBUG
     virtual uint32_t getNumOperandReferencedGPRegisters() { return 0; }
-
-    virtual uint32_t getNumOperandReferencedFPRegisters() { return 1; }
 #endif
 };
 
@@ -2339,8 +2337,6 @@ public:
 
 #ifdef DEBUG
     virtual uint32_t getNumOperandReferencedGPRegisters() { return 0; }
-
-    virtual uint32_t getNumOperandReferencedFPRegisters() { return 2; }
 #endif
 };
 
@@ -2474,8 +2470,6 @@ public:
     {
         return getMemoryReference()->getNumMRReferencedGPRegisters();
     }
-
-    virtual uint32_t getNumOperandReferencedFPRegisters() { return 1; }
 #endif
 };
 
@@ -2500,8 +2494,6 @@ public:
     {
         return getMemoryReference()->getNumMRReferencedGPRegisters();
     }
-
-    virtual uint32_t getNumOperandReferencedFPRegisters() { return 1; }
 #endif
 };
 

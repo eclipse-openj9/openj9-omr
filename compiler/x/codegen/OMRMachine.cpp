@@ -2272,25 +2272,4 @@ void OMR::X86::Machine::printGPRegisterStatus(OMR::Logger *log, TR_FrontEnd *fe,
 
     log->flush();
 }
-
-// Dump the FP register stack
-//
-void OMR::X86::Machine::printFPRegisterStatus(OMR::Logger *log, TR_FrontEnd *fe)
-{
-    const size_t bufSize = 32;
-    char buf[bufSize];
-    char *cursor;
-    int32_t i;
-
-    log->prints("\n  FP Reg Status:          Register         State        Assigned      Total Future\n");
-    for (i = 0; i < 8; i++) {
-        memset(buf, ' ', 25);
-        cursor = buf + 17;
-        size_t remainingSize = bufSize - 17;
-        snprintf(cursor, remainingSize, "st%d:", i);
-        log->printf("%s [ empty      ]\n", buf);
-    }
-
-    log->flush();
-}
 #endif

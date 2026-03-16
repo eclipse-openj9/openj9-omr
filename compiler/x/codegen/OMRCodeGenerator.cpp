@@ -3117,55 +3117,6 @@ void OMR::X86::CodeGenerator::dumpDataSnippets(OMR::Logger *log)
 }
 
 #if defined(DEBUG)
-// Dump the instruction before FP register assignment to
-// reveal the virtual registers prior to stack register assignment.
-//
-void OMR::X86::CodeGenerator::dumpPreFPRegisterAssignment(OMR::Logger *log, TR::Instruction *instructionCursor)
-{
-    if (instructionCursor->totalReferencedFPRegisters(self()) > 0) {
-        log->printf("\n<< Pre-FPR assignment for instruction: %p", instructionCursor);
-        self()->getDebug()->print(log, instructionCursor);
-        self()->getDebug()->printReferencedRegisterInfo(log, instructionCursor);
-
-        if (debug("dumpFPRegStatus")) {
-            self()->machine()->printFPRegisterStatus(log, self()->fe());
-        }
-    }
-}
-
-// Dump the current instruction with the FP registers assigned and any new
-// instructions that may have been added before it (such as FXCH).
-//
-void OMR::X86::CodeGenerator::dumpPostFPRegisterAssignment(OMR::Logger *log, TR::Instruction *instructionCursor,
-    TR::Instruction *origPrevInstruction)
-{
-    if (instructionCursor->totalReferencedFPRegisters(self()) > 0) {
-        TR::Instruction *prevInstruction = instructionCursor->getPrev();
-        log->printf("\n>> Post-FPR assignment for instruction: %p", instructionCursor);
-
-        if (prevInstruction == origPrevInstruction)
-            prevInstruction = NULL;
-
-        while (prevInstruction && (prevInstruction != origPrevInstruction)) {
-            if (prevInstruction->getPrev() == origPrevInstruction)
-                break;
-            prevInstruction = prevInstruction->getPrev();
-        }
-
-        while (prevInstruction && (prevInstruction != instructionCursor)) {
-            self()->getDebug()->print(log, prevInstruction);
-            prevInstruction = prevInstruction->getNext();
-        }
-
-        self()->getDebug()->print(log, instructionCursor);
-        self()->getDebug()->printReferencedRegisterInfo(log, instructionCursor);
-
-        if (debug("dumpFPRegStatus")) {
-            self()->machine()->printFPRegisterStatus(log, self()->fe());
-        }
-    }
-}
-
 void OMR::X86::CodeGenerator::dumpPreGPRegisterAssignment(OMR::Logger *log, TR::Instruction *instructionCursor)
 {
     if (instructionCursor->totalReferencedGPRegisters(self()) > 0) {

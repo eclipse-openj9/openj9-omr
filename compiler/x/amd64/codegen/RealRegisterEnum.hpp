@@ -52,7 +52,7 @@ NoReg = 0,
     // k0 -> reserved for unmasked operations
     k0 = 42, k1 = 43, k2 = 44, k3 = 45, k4 = 46, k5 = 47, k6 = 48, k7 = 49,
 
-    AllFPRegisters = 50, ByteReg = 51, BestFreeReg = 52, SpilledReg = 53, NumRegisters = 54,
+    ByteReg = 50, BestFreeReg = 51, SpilledReg = 52, NumRegisters = 53,
 
     NumXMMRegisters = LastXMMR - FirstXMMR + 1,
     MaxAssignableRegisters = NumXMMRegisters + (LastAssignableGPR - FirstGPR + 1) - 1 // -1 for stack pointer

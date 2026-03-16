@@ -157,10 +157,7 @@ public:
 
     virtual uint32_t getNumOperandReferencedGPRegisters() { return 0; }
 
-    virtual uint32_t getNumOperandReferencedFPRegisters() { return 0; }
-
     uint32_t totalReferencedGPRegisters(TR::CodeGenerator *);
-    uint32_t totalReferencedFPRegisters(TR::CodeGenerator *);
 #endif
 
     // AMD64-specific REX prefix calculations

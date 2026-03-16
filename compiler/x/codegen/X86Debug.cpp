@@ -130,15 +130,6 @@ void TR_Debug::printx(OMR::Logger *log, TR::Instruction *instr)
         case TR::Instruction::IsRegRegImm:
             print(log, (TR::X86RegRegImmInstruction *)instr);
             break;
-        case TR::Instruction::IsFPRegReg:
-        case TR::Instruction::IsFPST0ST1RegReg:
-        case TR::Instruction::IsFPST0STiRegReg:
-        case TR::Instruction::IsFPSTiST0RegReg:
-        case TR::Instruction::IsFPArithmeticRegReg:
-        case TR::Instruction::IsFPCompareRegReg:
-        case TR::Instruction::IsFPRemainderRegReg:
-            print(log, (TR::X86FPRegRegInstruction *)instr);
-            break;
 #ifdef TR_TARGET_64BIT
         case TR::Instruction::IsRegImm64:
         case TR::Instruction::IsRegImm64Sym:
@@ -157,12 +148,6 @@ void TR_Debug::printx(OMR::Logger *log, TR::Instruction *instr)
             break;
         case TR::Instruction::IsRegRegMem:
             print(log, (TR::X86RegRegMemInstruction *)instr);
-            break;
-        case TR::Instruction::IsFPRegMem:
-            print(log, (TR::X86FPRegMemInstruction *)instr);
-            break;
-        case TR::Instruction::IsFPReg:
-            print(log, (TR::X86FPRegInstruction *)instr);
             break;
         case TR::Instruction::IsMem:
         case TR::Instruction::IsMemTable:
@@ -183,9 +168,6 @@ void TR_Debug::printx(OMR::Logger *log, TR::Instruction *instr)
         case TR::Instruction::IsMemRegImm:
             print(log, (TR::X86MemRegImmInstruction *)instr);
             break;
-        case TR::Instruction::IsFPMemReg:
-            print(log, (TR::X86FPMemRegInstruction *)instr);
-            break;
         case TR::Instruction::IsVFPSave:
             print(log, (TR::X86VFPSaveInstruction *)instr);
             break;
@@ -204,7 +186,6 @@ void TR_Debug::printx(OMR::Logger *log, TR::Instruction *instr)
         default:
             TR_ASSERT(0, "Unknown instruction kind");
             // fall thru
-        case TR::Instruction::IsFPCompareEval:
         case TR::Instruction::IsNotExtended: {
             printPrefix(log, instr);
             log->printf("%-32s", getMnemonicName(&instr->getOpCode()));
@@ -1204,72 +1185,6 @@ void TR_Debug::printReferencedRegisterInfo(OMR::Logger *log, TR::X86RegRegMemIns
         printFullRegisterDependencyInfo(log, instr->getDependencyConditions());
     }
 
-    log->flush();
-}
-
-void TR_Debug::print(OMR::Logger *log, TR::X86FPRegInstruction *instr)
-{
-    printPrefix(log, instr);
-    log->printf("%s\t", getMnemonicName(&instr->getOpCode()));
-    if (!(instr->getOpCode().targetRegIsImplicit() != 0))
-        print(log, instr->getTargetRegister());
-
-    printInstructionComment(log, 3, instr);
-    printFPRegisterComment(log, instr->getTargetRegister(), NULL);
-    dumpDependencies(log, instr);
-    log->flush();
-}
-
-void TR_Debug::print(OMR::Logger *log, TR::X86FPRegRegInstruction *instr)
-{
-    printPrefix(log, instr);
-    log->printf("%s\t", getMnemonicName(&instr->getOpCode()));
-    if (!(instr->getOpCode().targetRegIsImplicit() != 0))
-        print(log, instr->getTargetRegister());
-    if (!(instr->getOpCode().targetRegIsImplicit() != 0) && !(instr->getOpCode().sourceRegIsImplicit() != 0))
-        log->prints(", ");
-    if (!(instr->getOpCode().sourceRegIsImplicit() != 0))
-        print(log, instr->getSourceRegister());
-    printInstructionComment(log, 2, instr);
-    printFPRegisterComment(log, instr->getTargetRegister(), instr->getSourceRegister());
-    dumpDependencies(log, instr);
-    log->flush();
-}
-
-void TR_Debug::print(OMR::Logger *log, TR::X86FPMemRegInstruction *instr)
-{
-    printPrefix(log, instr);
-    log->printf("%s\t", getMnemonicName(&instr->getOpCode()));
-    print(log, instr->getMemoryReference(), getTargetSizeFromInstruction(instr));
-    if (!(instr->getOpCode().sourceRegIsImplicit() != 0)) {
-        log->prints(", ");
-        print(log, instr->getSourceRegister());
-    }
-    printInstructionComment(log, 1, instr);
-    printFPRegisterComment(log, NULL, instr->getSourceRegister());
-    printMemoryReferenceComment(log, instr->getMemoryReference());
-    dumpDependencies(log, instr);
-    log->flush();
-}
-
-void TR_Debug::print(OMR::Logger *log, TR::X86FPRegMemInstruction *instr)
-{
-    int32_t barrier = memoryBarrierRequired(instr->getOpCode(), instr->getMemoryReference(), _cg, false);
-    int32_t barrierOffset = printPrefixAndMnemonicWithoutBarrier(log, instr, barrier);
-
-    if (!(instr->getOpCode().targetRegIsImplicit() != 0)) {
-        print(log, instr->getTargetRegister());
-        log->prints(", ");
-    }
-    print(log, instr->getMemoryReference(), getSourceSizeFromInstruction(instr));
-    printInstructionComment(log, 1, instr);
-    printFPRegisterComment(log, instr->getTargetRegister(), NULL);
-    printMemoryReferenceComment(log, instr->getMemoryReference());
-
-    if (barrier & NeedsExplicitBarrier)
-        printPrefixAndMemoryBarrier(log, instr, barrier, barrierOffset);
-
-    dumpDependencies(log, instr);
     log->flush();
 }
 

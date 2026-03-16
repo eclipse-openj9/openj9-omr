@@ -287,9 +287,6 @@ TR::Register *OMR::X86::TreeEvaluator::floatingPointStoreEvaluator(TR::Node *nod
             exceptionPoint
                 = generateMemImmInstruction(TR::InstOpCode::S4MemImm4, node, tempMR, valueChild->getFloatBits(), cg);
         }
-        TR::Register *firstChildReg = valueChild->getRegister();
-        if (firstChildReg && firstChildReg->getKind() == TR_X87 && valueChild->getReferenceCount() == 1)
-            generateFPSTiST0RegRegInstruction(TR::InstOpCode::FSTRegReg, valueChild, firstChildReg, firstChildReg, cg);
     } else if (debug("useGPRsForFP")
         && (cg->getLiveRegisters(TR_GPR)->getNumberOfLiveRegisters() < cg->getMaximumNumbersOfAssignableGPRs() - 1)
         && valueChild->getOpCode().isLoadVar() && valueChild->getRegister() == NULL
@@ -303,49 +300,46 @@ TR::Register *OMR::X86::TreeEvaluator::floatingPointStoreEvaluator(TR::Node *nod
         loadMR->decNodeReferenceCounts(cg);
     } else {
         TR::Register *sourceRegister = cg->evaluate(valueChild);
-        if (sourceRegister->getKind() == TR_FPR) {
-            if (cg->comp()->target().is64Bit() && tempMR->getSymbolReference().isUnresolved()) {
-                if (!tempMR->getSymbolReference().getSymbol()->isShadow()
-                    && !tempMR->getSymbolReference().getSymbol()->isClassObject()
-                    && !tempMR->getSymbolReference().getSymbol()->isConstObjectRef()) {
-                    // The 64-bit static case does not require the LEA instruction as we can resolve the address in the
-                    // MOV reg, imm  instruction preceeding the store.
-                    //
-                    exceptionPoint = generateMemRegInstruction(TR::InstOpCode::MOVSMemReg(nodeIs64Bit), node, tempMR,
-                        sourceRegister, cg);
-                } else {
-                    // The 64-bit store instructions may be wider than 8-bytes (our patching
-                    // window) but we won't know that for sure until after register assignment.
-                    // Hence, the unresolved memory reference must be evaluated into a register
-                    // first.
-                    //
-                    TR::Register *memReg = cg->allocateRegister(TR_GPR);
-                    generateRegMemInstruction(TR::InstOpCode::LEA8RegMem, node, memReg, tempMR, cg);
-                    TR::MemoryReference *mr = generateX86MemoryReference(memReg, 0, cg);
-                    TR_ASSERT(nodeIs64Bit != sourceRegister->isSinglePrecision(),
-                        "Wrong operand type to floating point store\n");
-                    exceptionPoint = generateMemRegInstruction(TR::InstOpCode::MOVSMemReg(nodeIs64Bit), node, mr,
-                        sourceRegister, cg);
 
-                    tempMR->setProcessAsFPVolatile();
-
-                    if (cg->comp()->getOption(TR_X86UseMFENCE))
-                        insertUnresolvedReferenceInstructionMemoryBarrier(cg, TR::InstOpCode::MFENCE, exceptionPoint,
-                            tempMR, sourceRegister, tempMR);
-                    else
-                        insertUnresolvedReferenceInstructionMemoryBarrier(cg, LockOR, exceptionPoint, tempMR,
-                            sourceRegister, tempMR);
-
-                    cg->stopUsingRegister(memReg);
-                }
-            } else {
-                TR_ASSERT(nodeIs64Bit != sourceRegister->isSinglePrecision(),
-                    "Wrong operand type to floating point store\n");
+        if (cg->comp()->target().is64Bit() && tempMR->getSymbolReference().isUnresolved()) {
+            if (!tempMR->getSymbolReference().getSymbol()->isShadow()
+                && !tempMR->getSymbolReference().getSymbol()->isClassObject()
+                && !tempMR->getSymbolReference().getSymbol()->isConstObjectRef()) {
+                // The 64-bit static case does not require the LEA instruction as we can resolve the address in the
+                // MOV reg, imm  instruction preceeding the store.
+                //
                 exceptionPoint = generateMemRegInstruction(TR::InstOpCode::MOVSMemReg(nodeIs64Bit), node, tempMR,
                     sourceRegister, cg);
+            } else {
+                // The 64-bit store instructions may be wider than 8-bytes (our patching
+                // window) but we won't know that for sure until after register assignment.
+                // Hence, the unresolved memory reference must be evaluated into a register
+                // first.
+                //
+                TR::Register *memReg = cg->allocateRegister(TR_GPR);
+                generateRegMemInstruction(TR::InstOpCode::LEA8RegMem, node, memReg, tempMR, cg);
+                TR::MemoryReference *mr = generateX86MemoryReference(memReg, 0, cg);
+                TR_ASSERT(nodeIs64Bit != sourceRegister->isSinglePrecision(),
+                    "Wrong operand type to floating point store\n");
+                exceptionPoint
+                    = generateMemRegInstruction(TR::InstOpCode::MOVSMemReg(nodeIs64Bit), node, mr, sourceRegister, cg);
+
+                tempMR->setProcessAsFPVolatile();
+
+                if (cg->comp()->getOption(TR_X86UseMFENCE))
+                    insertUnresolvedReferenceInstructionMemoryBarrier(cg, TR::InstOpCode::MFENCE, exceptionPoint,
+                        tempMR, sourceRegister, tempMR);
+                else
+                    insertUnresolvedReferenceInstructionMemoryBarrier(cg, LockOR, exceptionPoint, tempMR,
+                        sourceRegister, tempMR);
+
+                cg->stopUsingRegister(memReg);
             }
         } else {
-            exceptionPoint = generateFPMemRegInstruction(TR::InstOpCode::FSTMemReg, node, tempMR, sourceRegister, cg);
+            TR_ASSERT(nodeIs64Bit != sourceRegister->isSinglePrecision(),
+                "Wrong operand type to floating point store\n");
+            exceptionPoint
+                = generateMemRegInstruction(TR::InstOpCode::MOVSMemReg(nodeIs64Bit), node, tempMR, sourceRegister, cg);
         }
     }
 
@@ -407,9 +401,9 @@ TR::Register *OMR::X86::TreeEvaluator::fpReturnEvaluator(TR::Node *node, TR::Cod
     }
 
     if (linkageProperties.getCallerCleanup()) {
-        generateFPReturnInstruction(TR::InstOpCode::RET, node, dependencies, cg);
+        generateInstruction(TR::InstOpCode::RET, node, dependencies, cg);
     } else {
-        generateFPReturnImmInstruction(TR::InstOpCode::RETImm2, node, 0, dependencies, cg);
+        generateImmInstruction(TR::InstOpCode::RETImm2, node, 0, dependencies, cg);
     }
 
     if (comp->getJittedMethodSymbol()->getLinkageConvention() == TR_Private) {
@@ -1107,17 +1101,10 @@ TR::Register *OMR::X86::TreeEvaluator::fbits2iEvaluator(TR::Node *node, TR::Code
         // Move the float value from a FPR or XMMR to a GPR.
         //
         TR::Register *floatReg = cg->evaluate(child);
-        if (floatReg->getKind() == TR_FPR) {
-            tempMR = cg->machine()->getDummyLocalMR(TR::Int32);
-            generateMemRegInstruction(TR::InstOpCode::MOVSSMemReg, node, tempMR, floatReg, cg);
-            generateRegMemInstruction(TR::InstOpCode::L4RegMem, node, target,
-                generateX86MemoryReference(*tempMR, 0, cg), cg);
-        } else {
-            tempMR = cg->machine()->getDummyLocalMR(TR::Int32);
-            generateFPMemRegInstruction(TR::InstOpCode::FSTMemReg, node, tempMR, floatReg, cg);
-            generateRegMemInstruction(TR::InstOpCode::L4RegMem, node, target,
-                generateX86MemoryReference(*tempMR, 0, cg), cg);
-        }
+        tempMR = cg->machine()->getDummyLocalMR(TR::Int32);
+        generateMemRegInstruction(TR::InstOpCode::MOVSSMemReg, node, tempMR, floatReg, cg);
+        generateRegMemInstruction(TR::InstOpCode::L4RegMem, node, target, generateX86MemoryReference(*tempMR, 0, cg),
+            cg);
     }
 
     // Check for the special case where the child is a NaN,

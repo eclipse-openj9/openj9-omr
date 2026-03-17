@@ -133,8 +133,8 @@ private:
     private:
         TR::ConstRefPrivatization * const _opt;
         TR::vector<T, TR::Region &> _vec;
-        size_t _len;
-        size_t _numNodes;
+        uint32_t _len;
+        uint32_t _numNodes;
     };
 
     class FlowBitSet {

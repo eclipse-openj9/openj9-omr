@@ -665,7 +665,7 @@ void TR::ConstRefPrivatization::doAcyclicAnalysisAndTransform(TR_RegionStructure
         }
 
         // Identify which candidates to consider storing to a temp in this node.
-        const float mightLoadLaterThresholdP = 0.05;
+        const float mightLoadLaterThresholdP = 0.05f;
 
         FlowBitSet::NodeView curInitHereCis = _sd->_initHereCis.atNode(blockInfo);
         FlowBitSet::NodeView curPotentiallyAvailableMuis = _sd->_potentiallyAvailableMuis.atNode(blockInfo);
@@ -778,7 +778,7 @@ void TR::ConstRefPrivatization::doAcyclicAnalysisAndTransform(TR_RegionStructure
             curInitIncomingCis.unionWith(curInitCis);
         }
 
-        const float willLoadLaterThresholdP = 0.95;
+        const float willLoadLaterThresholdP = 0.95f;
 
         bool haveWantToInitCandidates = false;
         wantToInitCis.clearAllBits();
@@ -1444,7 +1444,7 @@ void TR::ConstRefPrivatization::hoistConstRefLoads(TR_RegionStructure *region)
         }
     }
 
-    const float shouldHoistRelFreqThreshold = 0.95;
+    const float shouldHoistRelFreqThreshold = 0.95f;
     bool didHoistSomething = false;
     koiIsHoisted.resize(_knotSize, 0);
     for (auto it = _sd->_usedKois.begin(); it != _sd->_usedKois.end(); it++) {

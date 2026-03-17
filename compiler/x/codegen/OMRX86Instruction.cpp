@@ -1613,20 +1613,16 @@ void insertUnresolvedReferenceInstructionMemoryBarrier(TR::CodeGenerator *cg, in
     deps = generateRegisterDependencyConditions((uint8_t)0, 7, cg);
 
     if (baseReg)
-        if (baseReg->getKind() != TR_X87)
-            deps->addPostCondition(baseReg, TR::RealRegister::NoReg, cg);
+        deps->addPostCondition(baseReg, TR::RealRegister::NoReg, cg);
 
     if (indexReg)
-        if (indexReg->getKind() != TR_X87)
-            deps->addPostCondition(indexReg, TR::RealRegister::NoReg, cg);
+        deps->addPostCondition(indexReg, TR::RealRegister::NoReg, cg);
 
     if (srcReg)
-        if (srcReg->getKind() != TR_X87)
-            deps->addPostCondition(srcReg, TR::RealRegister::NoReg, cg);
+        deps->addPostCondition(srcReg, TR::RealRegister::NoReg, cg);
 
     if (addressReg)
-        if (addressReg->getKind() != TR_X87)
-            deps->addPostCondition(addressReg, TR::RealRegister::NoReg, cg);
+        deps->addPostCondition(addressReg, TR::RealRegister::NoReg, cg);
 
     if (anotherMr) {
         addressReg = NULL;
@@ -1635,11 +1631,11 @@ void insertUnresolvedReferenceInstructionMemoryBarrier(TR::CodeGenerator *cg, in
         if (cg->comp()->target().is64Bit())
             addressReg = anotherMr->getAddressRegister();
 
-        if (baseReg && baseReg->getKind() != TR_X87)
+        if (baseReg)
             deps->addPostCondition(baseReg, TR::RealRegister::NoReg, cg);
-        if (indexReg && indexReg->getKind() != TR_X87)
+        if (indexReg)
             deps->addPostCondition(indexReg, TR::RealRegister::NoReg, cg);
-        if (addressReg && addressReg->getKind() != TR_X87)
+        if (addressReg)
             deps->addPostCondition(addressReg, TR::RealRegister::NoReg, cg);
     }
 

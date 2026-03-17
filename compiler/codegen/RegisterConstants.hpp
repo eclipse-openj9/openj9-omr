@@ -34,12 +34,11 @@ enum TR_RegisterKinds {
     TR_GPR = 0,
     TR_FPR = 1,
     TR_CCR = 2,
-    TR_X87 = 3,
-    TR_VRF = 4,
-    TR_VSX_SCALAR = 5,
-    TR_VSX_VECTOR = 6,
-    TR_VMR = 7, // used for masked vector operations
-    TR_SSR = 8, // used for TR_PseudoRegisters for SS (storage to storage) instructions to return results
+    TR_VRF = 3,
+    TR_VSX_SCALAR = 4,
+    TR_VSX_VECTOR = 5,
+    TR_VMR = 6, // used for masked vector operations
+    TR_SSR = 7, // used for TR_PseudoRegisters for SS (storage to storage) instructions to return results
     LastRegisterKind = TR_SSR,
     NumRegisterKinds = LastRegisterKind + 1,
 

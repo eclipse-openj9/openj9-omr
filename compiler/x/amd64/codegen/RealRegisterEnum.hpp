@@ -33,26 +33,36 @@ NoReg = 0,
 
     vfp = 17,
 
-    FPRMaskOffset = LastGPR, st0 = 18, FirstFPR = st0, st1 = 19, st2 = 20, st3 = 21, st4 = 22, st5 = 23, st6 = 24,
-    st7 = 25, LastFPR = st7, LastAssignableFPR = st7,
+    // st0Return is used for 32-bit linkages where floating point values are
+    // returned in x87 register st0. It is a special register that cannot be
+    // assigned.
+    //
+    st0Return = 18,
 
-    XMMRMaskOffset = LastGPR, xmm0 = 26, FirstXMMR = xmm0, xmm1 = 27, xmm2 = 28, xmm3 = 29, xmm4 = 30, xmm5 = 31,
-    xmm6 = 32, xmm7 = 33, xmm8 = 34, xmm9 = 35, xmm10 = 36, FirstSpillReg = xmm10, xmm11 = 37, xmm12 = 38, xmm13 = 39,
-    xmm14 = 40, xmm15 = 41, LastSpillReg = xmm15, LastXMMR = xmm15,
+    xmm0 = 19, FirstXMMR = xmm0, xmm1 = 20, xmm2 = 21, xmm3 = 22, xmm4 = 23, xmm5 = 24, xmm6 = 25, xmm7 = 26, xmm8 = 27,
+    xmm9 = 28, xmm10 = 29, FirstSpillReg = xmm10, xmm11 = 30, xmm12 = 31, xmm13 = 32, xmm14 = 33, xmm15 = 34,
+    LastSpillReg = xmm15, LastXMMR = xmm15,
 
-    YMMRMaskOffset = LastGPR, ymm0 = xmm0, FirstYMMR = ymm0, ymm1 = xmm1, ymm2 = xmm2, ymm3 = xmm3, ymm4 = xmm4,
-    ymm5 = xmm5, ymm6 = xmm6, ymm7 = xmm7, ymm8 = xmm8, ymm9 = xmm9, ymm10 = xmm10, ymm11 = xmm11, ymm12 = xmm12,
-    ymm13 = xmm13, ymm14 = xmm14, ymm15 = xmm15, LastYMMR = ymm15,
+    // Map the x87 registers st0-st7 over top of the xmm registers. This will
+    // aid downstream removal of st0-st7. This mapping will be removed once
+    // that refactoring is complete.
+    //
+    st0 = xmm0, FirstFPR = st0, st1 = xmm1, st2 = xmm2, st3 = xmm3, st4 = xmm4, st5 = xmm5, st6 = xmm6, st7 = xmm7,
+    LastAssignableFPR = st7,
 
-    ZMMRMaskOffset = LastGPR, zmm0 = xmm0, FirstZMMR = zmm0, zmm1 = xmm1, zmm2 = xmm2, zmm3 = xmm3, zmm4 = xmm4,
-    zmm5 = xmm5, zmm6 = xmm6, zmm7 = xmm7, zmm8 = xmm8, zmm9 = xmm9, zmm10 = xmm10, zmm11 = xmm11, zmm12 = xmm12,
-    zmm13 = xmm13, zmm14 = xmm14, zmm15 = xmm15, LastZMMR = zmm15,
+    ymm0 = xmm0, FirstYMMR = ymm0, ymm1 = xmm1, ymm2 = xmm2, ymm3 = xmm3, ymm4 = xmm4, ymm5 = xmm5, ymm6 = xmm6,
+    ymm7 = xmm7, ymm8 = xmm8, ymm9 = xmm9, ymm10 = xmm10, ymm11 = xmm11, ymm12 = xmm12, ymm13 = xmm13, ymm14 = xmm14,
+    ymm15 = xmm15, LastYMMR = ymm15,
+
+    zmm0 = xmm0, FirstZMMR = zmm0, zmm1 = xmm1, zmm2 = xmm2, zmm3 = xmm3, zmm4 = xmm4, zmm5 = xmm5, zmm6 = xmm6,
+    zmm7 = xmm7, zmm8 = xmm8, zmm9 = xmm9, zmm10 = xmm10, zmm11 = xmm11, zmm12 = xmm12, zmm13 = xmm13, zmm14 = xmm14,
+    zmm15 = xmm15, LastZMMR = zmm15,
 
     // avx512 write mask registers
     // k0 -> reserved for unmasked operations
-    k0 = 42, k1 = 43, k2 = 44, k3 = 45, k4 = 46, k5 = 47, k6 = 48, k7 = 49,
+    k0 = 35, k1 = 36, k2 = 37, k3 = 38, k4 = 39, k5 = 40, k6 = 41, k7 = 42,
 
-    ByteReg = 50, BestFreeReg = 51, SpilledReg = 52, NumRegisters = 53,
+    ByteReg = 43, BestFreeReg = 44, SpilledReg = 45, NumRegisters = 46,
 
     NumXMMRegisters = LastXMMR - FirstXMMR + 1,
     MaxAssignableRegisters = NumXMMRegisters + (LastAssignableGPR - FirstGPR + 1) - 1 // -1 for stack pointer

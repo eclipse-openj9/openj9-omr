@@ -85,7 +85,7 @@ TR::IA32SystemLinkage::IA32SystemLinkage(TR::CodeGenerator *cg)
     _properties._registerFlags[TR::RealRegister::esi] = Preserved;
     _properties._registerFlags[TR::RealRegister::ebp] = Preserved;
     _properties._registerFlags[TR::RealRegister::esp] = Preserved;
-    _properties._registerFlags[TR::RealRegister::st0] = FloatReturn;
+    _properties._registerFlags[TR::RealRegister::st0Return] = FloatReturn;
 
     _properties._preservedRegisters[0] = TR::RealRegister::ebx;
     _properties._preservedRegisters[1] = TR::RealRegister::edi;
@@ -97,7 +97,7 @@ TR::IA32SystemLinkage::IA32SystemLinkage(TR::CodeGenerator *cg)
     _properties._argumentRegisters[0] = TR::RealRegister::NoReg;
 
     _properties._returnRegisters[0] = TR::RealRegister::eax; // IntegerReturnRegiste
-    _properties._returnRegisters[1] = TR::RealRegister::st0; // Float/Double ReturnReg
+    _properties._returnRegisters[1] = TR::RealRegister::st0Return; // Float/Double ReturnReg
     _properties._returnRegisters[2] = TR::RealRegister::edx; // LongHighReturnRegister
 
     _properties._numIntegerArgumentRegisters = 0;
@@ -154,14 +154,14 @@ TR::IA32SystemLinkage::IA32SystemLinkage(TR::CodeGenerator *cg)
     _properties._allocationOrder[p++] = TR::RealRegister::ebp;
 
     // floating point
-    _properties._allocationOrder[p++] = TR::RealRegister::st0;
-    _properties._allocationOrder[p++] = TR::RealRegister::st1;
-    _properties._allocationOrder[p++] = TR::RealRegister::st2;
-    _properties._allocationOrder[p++] = TR::RealRegister::st3;
-    _properties._allocationOrder[p++] = TR::RealRegister::st4;
-    _properties._allocationOrder[p++] = TR::RealRegister::st5;
-    _properties._allocationOrder[p++] = TR::RealRegister::st6;
-    _properties._allocationOrder[p++] = TR::RealRegister::st7;
+    _properties._allocationOrder[p++] = TR::RealRegister::xmm0;
+    _properties._allocationOrder[p++] = TR::RealRegister::xmm1;
+    _properties._allocationOrder[p++] = TR::RealRegister::xmm2;
+    _properties._allocationOrder[p++] = TR::RealRegister::xmm3;
+    _properties._allocationOrder[p++] = TR::RealRegister::xmm4;
+    _properties._allocationOrder[p++] = TR::RealRegister::xmm5;
+    _properties._allocationOrder[p++] = TR::RealRegister::xmm6;
+    _properties._allocationOrder[p++] = TR::RealRegister::xmm7;
 
     if (cg->comp()->target().cpu.supportsFeature(OMR_FEATURE_X86_AVX512F)) {
         _properties._allocationOrder[p++] = TR::RealRegister::k0;

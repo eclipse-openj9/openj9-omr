@@ -49,14 +49,7 @@ const OMR::X86::RealRegister::TR_RegisterBinaryEncoding
           { 0x06, 1, 1 }, // r14
           { 0x07, 1, 1 }, // r15
           { 0x00 }, // vfp
-          { 0x00 }, // st0
-          { 0x01 }, // st1
-          { 0x02 }, // st2
-          { 0x03 }, // st3
-          { 0x04 }, // st4
-          { 0x05 }, // st6
-          { 0x06 }, // st6
-          { 0x07 }, // st7
+          { 0x00 }, // st0Return
           { 0x00, 0, 0 }, // xmm0
           { 0x01, 0, 0 }, // xmm1
           { 0x02, 0, 0 }, // xmm2

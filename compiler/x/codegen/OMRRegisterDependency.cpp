@@ -129,10 +129,7 @@ OMR::X86::RegisterDependencyConditions::RegisterDependencyConditions(TR::Node *n
             if (highGlobalRegNum > -1)
                 realHighRegNum = (TR::RealRegister::RegNum)cg->getGlobalRegister(highGlobalRegNum);
         } else if (globalReg->getKind() == TR_FPR) {
-            // Convert the global register number from an st0-based value to an xmm0-based one.
-            //
-            realRegNum = (TR::RealRegister::RegNum)(
-                cg->getGlobalRegister(globalRegNum) - TR::RealRegister::FirstFPR + TR::RealRegister::FirstXMMR);
+            realRegNum = (TR::RealRegister::RegNum)(cg->getGlobalRegister(globalRegNum));
 
             // Find the global register that has been allocated in this XMMR, if any.
             //

@@ -361,7 +361,6 @@ TR::Register *OMR::X86::TreeEvaluator::fpReturnEvaluator(TR::Node *node, TR::Cod
     TR::RealRegister::RegNum machineReturnRegister = (returnRegister->isSinglePrecision())
         ? linkageProperties.getFloatReturnRegister()
         : linkageProperties.getDoubleReturnRegister();
-    bool x87Return = false;
 
     /**
      *  On 32-bit targets, regardless of whether the target processor
@@ -370,13 +369,11 @@ TR::Register *OMR::X86::TreeEvaluator::fpReturnEvaluator(TR::Node *node, TR::Cod
      *  example).  If so, the value in an XMM register needs to be
      *  coerced into the appropriate x87 register.
      */
-    if (cg->comp()->target().is32Bit()
-        && (machineReturnRegister >= TR::RealRegister::FirstFPR && machineReturnRegister <= TR::RealRegister::LastFPR)
-        && returnRegister->getKind() == TR_FPR) {
+    TR::RegisterDependencyConditions *dependencies = NULL;
+    if (comp->target().is32Bit() && (machineReturnRegister == TR::RealRegister::st0Return)) {
         TR::DataType mrType = TR::Double;
         TR::InstOpCode::Mnemonic xmmOpCode = TR::InstOpCode::MOVSDMemReg;
         TR::InstOpCode::Mnemonic x87OpCode = TR::InstOpCode::DLDMem;
-        x87Return = true;
 
         if (returnRegister->isSinglePrecision()) {
             mrType = TR::Float;
@@ -387,16 +384,9 @@ TR::Register *OMR::X86::TreeEvaluator::fpReturnEvaluator(TR::Node *node, TR::Cod
         TR::MemoryReference *tempMR = cg->machine()->getDummyLocalMR(mrType);
         generateMemRegInstruction(xmmOpCode, node, tempMR, returnRegister, cg);
         generateMemInstruction(x87OpCode, node, generateX86MemoryReference(*tempMR, 0, cg), cg);
-    }
-
-    TR::RegisterDependencyConditions *dependencies = NULL;
-    if (machineReturnRegister != TR::RealRegister::NoReg) {
+    } else {
         dependencies = generateRegisterDependencyConditions((uint8_t)1, 0, cg);
-
-        if (!x87Return) {
-            dependencies->addPreCondition(returnRegister, machineReturnRegister, cg);
-        }
-
+        dependencies->addPreCondition(returnRegister, machineReturnRegister, cg);
         dependencies->stopAddingConditions();
     }
 

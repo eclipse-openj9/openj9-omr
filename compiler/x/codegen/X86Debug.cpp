@@ -1807,70 +1807,8 @@ const char *TR_Debug::getName(uint32_t realRegisterIndex, TR_RegisterSizes size)
                 default:
                     return unknownRegisterName('v');
             } // 3 is for AMD64
-        case TR::RealRegister::st0:
-            switch (size) {
-                case 2:
-                case -1:
-                    return "st(0)";
-                default:
-                    return unknownRegisterName('s');
-            }
-        case TR::RealRegister::st1:
-            switch (size) {
-                case 2:
-                case -1:
-                    return "st(1)";
-                default:
-                    return unknownRegisterName('s');
-            }
-        case TR::RealRegister::st2:
-            switch (size) {
-                case 2:
-                case -1:
-                    return "st(2)";
-                default:
-                    return unknownRegisterName('s');
-            }
-        case TR::RealRegister::st3:
-            switch (size) {
-                case 2:
-                case -1:
-                    return "st(3)";
-                default:
-                    return unknownRegisterName('s');
-            }
-        case TR::RealRegister::st4:
-            switch (size) {
-                case 2:
-                case -1:
-                    return "st(4)";
-                default:
-                    return unknownRegisterName('s');
-            }
-        case TR::RealRegister::st5:
-            switch (size) {
-                case 2:
-                case -1:
-                    return "st(5)";
-                default:
-                    return unknownRegisterName('s');
-            }
-        case TR::RealRegister::st6:
-            switch (size) {
-                case 2:
-                case -1:
-                    return "st(6)";
-                default:
-                    return unknownRegisterName('s');
-            }
-        case TR::RealRegister::st7:
-            switch (size) {
-                case 2:
-                case -1:
-                    return "st(7)";
-                default:
-                    return unknownRegisterName('s');
-            }
+        case TR::RealRegister::st0Return:
+            return "st0";
         case TR::RealRegister::xmm0:
             switch (size) {
                 case 4:
@@ -2089,31 +2027,6 @@ const char *TR_Debug::getName(uint32_t realRegisterIndex, TR_RegisterSizes size)
 
 const char *TR_Debug::getName(TR::RealRegister *reg, TR_RegisterSizes size)
 {
-    if (reg->getKind() == TR_X87) {
-        switch (reg->getRegisterNumber()) {
-            case TR::RealRegister::st0:
-                return "st(0)";
-            case TR::RealRegister::st1:
-                return "st(1)";
-            case TR::RealRegister::st2:
-                return "st(2)";
-            case TR::RealRegister::st3:
-                return "st(3)";
-            case TR::RealRegister::st4:
-                return "st(4)";
-            case TR::RealRegister::st5:
-                return "st(5)";
-            case TR::RealRegister::st6:
-                return "st(6)";
-            case TR::RealRegister::st7:
-                return "st(7)";
-
-            default:
-                TR_ASSERT(0, "unexpected FPR number");
-                return unknownRegisterName('s');
-        }
-    }
-
     if ((reg->getKind() == TR_FPR && size != TR_VectorReg256 && size != TR_VectorReg512) || reg->getKind() == TR_VRF)
         size = TR_QuadWordReg;
 

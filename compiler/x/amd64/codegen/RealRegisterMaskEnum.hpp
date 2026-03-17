@@ -28,11 +28,6 @@ noRegMask = 0x00000000,
     r10Mask = 0x00000400, r11Mask = 0x00000800, r12Mask = 0x00001000, r13Mask = 0x00002000, r14Mask = 0x00004000,
     r15Mask = 0x00008000, AvailableGPRMask = 0x0000FFFF,
 
-    // FPR
-    //
-    st0Mask = 0x00000001, st1Mask = 0x00000002, st2Mask = 0x00000004, st3Mask = 0x00000008, st4Mask = 0x00000010,
-    st5Mask = 0x00000020, st6Mask = 0x00000040, st7Mask = 0x00000080, AvailableFPRMask = 0x000000FF,
-
     // XMMR
     //
     xmm0Mask = 0x00000001, xmm1Mask = 0x00000002, xmm2Mask = 0x00000004, xmm3Mask = 0x00000008, xmm4Mask = 0x00000010,

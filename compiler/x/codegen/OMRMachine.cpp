@@ -1552,13 +1552,6 @@ void OMR::X86::Machine::initializeRegisterFile(const struct TR::X86LinkageProper
 
     // Other register kinds
     //
-    for (reg = TR::RealRegister::FirstFPR; reg <= TR::RealRegister::LastFPR; reg++) {
-        _registerFile[reg] = new (self()->cg()->trHeapMemory()) TR::RealRegister(TR_X87,
-            properties.isPreservedRegister((TR::RealRegister::RegNum)reg) ? PRESERVED_WEIGHT : NONPRESERVED_WEIGHT,
-            TR::RealRegister::Free, (TR::RealRegister::RegNum)reg,
-            TR::RealRegister::fprMask((TR::RealRegister::RegNum)reg), self()->cg());
-    }
-
     for (reg = TR::RealRegister::FirstXMMR; reg <= TR::RealRegister::LastXMMR; reg++) {
         _registerFile[reg] = new (self()->cg()->trHeapMemory()) TR::RealRegister(TR_FPR,
             properties.isPreservedRegister((TR::RealRegister::RegNum)reg) ? PRESERVED_WEIGHT : NONPRESERVED_WEIGHT,

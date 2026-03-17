@@ -2421,8 +2421,6 @@ const char *TR_Debug::getRegisterKindName(TR_RegisterKinds rk)
             return "VMR";
         case TR_CCR:
             return "CCR";
-        case TR_X87:
-            return "X87";
         case TR_VRF:
             return "VRF";
         case TR_VSX_SCALAR:

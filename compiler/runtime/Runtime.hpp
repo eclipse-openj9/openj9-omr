@@ -338,7 +338,8 @@ typedef enum {
     TR_ValidateHandleMethodFromCPIndex = 116,
     TR_CallsiteTableEntryAddress = 117,
     TR_MethodTypeTableEntryAddress = 118,
-    TR_NumExternalRelocationKinds = 119,
+    TR_ValidateMethodsFromClass = 119,
+    TR_NumExternalRelocationKinds = 120,
     TR_ExternalRelocationTargetKindMask = 0xff,
 } TR_ExternalRelocationTargetKind;
 

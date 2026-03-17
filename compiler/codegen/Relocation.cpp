@@ -437,6 +437,7 @@ const char *TR::ExternalRelocation::_externalRelocationTargetKindNames[TR_NumExt
     "TR_ValidateHandleMethodFromCPIndex (116)",
     "TR_CallsiteTableEntryAddress (117)",
     "TR_MethodTypeTableEntryAddress (118)",
+    "TR_ValidateMethodsFromClass (119)",
 };
 
 uintptr_t TR::ExternalRelocation::_globalValueList[TR_NumGlobalValueItems] = {

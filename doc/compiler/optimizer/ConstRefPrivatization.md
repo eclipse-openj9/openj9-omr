@@ -21,6 +21,26 @@ SPDX-License-Identifier: EPL-2.0 OR Apache-2.0 OR GPL-2.0-only WITH Classpath-ex
 
 # Const Ref Privatization
 
+## Motivation
+
+Constant propagation for const refs can, by itself, hurt performance. Consider code that loads a reference-typed static final field, stores the reference into an auto, and then repeatedly uses the auto. For *n* uses at runtime, this requires *n*+1 loads and a store — but GRA has an opportunity to move the auto into a register, in which case only a single load is required to cover all of the uses. With const refs, propagating the constant would prevent GRA from taking effect, requiring at least *n* loads at runtime.
+
+The goal of this pass is to allow and encourage constant propagation until very late in the compilation without regressing the quality of the generated code. The overall strategy involves the following steps:
+
+1. **Trivial dead store elimination** *(later PR)*: Identify autos that are completely unused and remove all stores to them. In particular, if an auto has a constant value that has been propagated to all uses, then the auto will be eliminated.
+2. **Dead trees elimination**: Allow an existing pass of dead trees elimination to clean up after step 1. If this removes const ref loads, it can get rid of false redundancies that might otherwise cause unnecessary work in the next step.
+3. **Const ref privatization** *(this pass)*: Just before GRA (or live range splitter), identify cases where the IL will repeatedly evaluate const ref loads for the same object. Store the reference into a fresh temp and replace later uses with uses of the temp, much like PRE might, to create an opportunity for GRA.
+4. **GRA** (possibly preceded by live range splitter).
+5. **Const ref rematerialization** *(later PR)*: For a given temp introduced by step 3, GRA may or may not have actually chosen to register-allocate it. If not, then the temp made the code worse by introducing at least an extra store. To fix this case, identify for each auto (including temps) whether it always points to a particular known object, and if it does, rematerialize the const ref load at all uses.
+6. **Post-GRA global DSE**: Let the existing post-GRA pass of global DSE clean up any temp stores that are no longer necessary after step 5.
+
+### Why Not PRE?
+
+PRE was not used for this purpose for two reasons:
+
+- PRE runs early in the compilation, so many more passes run after it. On one hand, PRE could obscure the constant value at use sites for all of those passes. On the other hand, there is also more risk of one of those later passes propagating constants again, undoing the effect of PRE. The const ref privatization/rematerialization strategy takes care of it as late as possible.
+- PRE runs only at hot and above, but the motivating problem can also occur at warm. This pass is designed to be as cheap as possible so that it can run at warm: there are many early outs, cold blocks and exception handlers are ignored, the flow data is very small, and data flow analysis is performed only on acyclic parts of the structure to avoid iterating until convergence.
+
 ## Acyclic Analysis Overview
 
 In example CFGs, control flow is from top to bottom (acyclic). Blocks marked with * are all loading some particular const ref, and blocks marked with + are all loading some *other* particular const ref.
@@ -146,3 +166,9 @@ The fourth pass propagates liveness backwards so that it's possible to skip init
      *H
 
 Here * will not be considered live at E, just like in the original version of the example. However, it now *will* be considered live at H, and so it will undergo transformation. Propagating the liveness backward will allow the transformation to tell that initialization is required at F but not at C.
+
+## Notes
+
+### Acyclic Region Nesting
+
+In some cases, unnecessary levels of acyclic region nesting may appear in the structure, i.e. acyclic regions whose parents are natural loops or other acyclic regions. The extra nesting will interfere with the analysis in this pass. If it becomes a problem in the future, one possibility would be to make the analysis "see through" the nesting, but that would be unnecessarily complex. The recommended approach is to flatten the structure in a separate prepass instead.

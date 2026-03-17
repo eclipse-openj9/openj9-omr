@@ -25,6 +25,7 @@
 #include "infra/ILWalk.hpp"
 #include "optimizer/Optimization_inlines.hpp"
 #include "optimizer/Structure.hpp"
+#include "ras/Logger.hpp"
 
 #define INVALID_MUI UINT32_MAX
 #define INVALID_CI UINT32_MAX

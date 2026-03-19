@@ -1189,8 +1189,23 @@ TR::Register *OMR::X86::TreeEvaluator::SSE2ArraycmpLenEvaluator(TR::Node *node, 
         highReg = strLenReg->getHighOrder();
     }
 
-    generateRegImmInstruction(TR::InstOpCode::MOVRegImm4(), node, resultReg, 0, cg);
+    // Test whether the address operands are equal - if so, arrays are equal, so finish with
+    // resultReg containing the array length
+    //
+    generateRegRegInstruction(TR::InstOpCode::MOVRegReg(), node, resultReg, strLenReg, cg);
+
     generateLabelInstruction(TR::InstOpCode::label, node, startLabel, cg);
+
+    generateRegRegInstruction(TR::InstOpCode::CMPRegReg(), node, s1Reg, s2Reg, cg);
+    generateLabelInstruction(TR::InstOpCode::JE4, node, doneLabel, cg);
+
+    generateRegRegInstruction(TR::InstOpCode::XOR4RegReg, node, resultReg, resultReg, cg);
+
+    // Loop comparing sixteen bytes at a time, for strLenReg >> 4 iterations
+    // Result of each byte of comparison is placed in xmm1RegResult - 0 if unequal; -1 if equal -
+    // and MSB of each byte is copied into low order two bytes of equalTestReg to test whether
+    // all sixteen bytes were equal
+    //
     generateRegRegInstruction(TR::InstOpCode::MOVRegReg(), node, qwordCounterReg, strLenReg, cg);
     generateRegImmInstruction(TR::InstOpCode::SHRRegImm1(), node, qwordCounterReg, 4, cg);
     generateLabelInstruction(TR::InstOpCode::JE4, node, byteStart, cg);
@@ -1214,6 +1229,10 @@ TR::Register *OMR::X86::TreeEvaluator::SSE2ArraycmpLenEvaluator(TR::Node *node, 
 
     generateLabelInstruction(TR::InstOpCode::JMP4, node, byteStart, cg);
 
+    // Some byte was/were unequal in sixteen byte comparison.  Each byte comparison is represented
+    // by one bit in low-order two bytes of equalTestReg - 0 if unequal; 1 if equal.  Complement
+    // those bits and use BSF instruction to find the first 1 bit (now representing unequal).
+    //
     generateLabelInstruction(TR::InstOpCode::label, node, qwordUnequal, cg);
     generateRegInstruction(TR::InstOpCode::NOT2Reg, node, equalTestReg, cg);
     generateRegRegInstruction(TR::InstOpCode::BSF2RegReg, node, equalTestReg, equalTestReg, cg);
@@ -1223,6 +1242,7 @@ TR::Register *OMR::X86::TreeEvaluator::SSE2ArraycmpLenEvaluator(TR::Node *node, 
     cg->stopUsingRegister(qwordCounterReg);
     cg->stopUsingRegister(equalTestReg);
 
+    // Process 0 to 15 residual bytes
     generateLabelInstruction(TR::InstOpCode::label, node, byteStart, cg);
     generateRegRegInstruction(TR::InstOpCode::MOVRegReg(), node, byteCounterReg, strLenReg, cg);
     generateRegImmInstruction(TR::InstOpCode::ANDRegImm4(), node, byteCounterReg, 0xf, cg);

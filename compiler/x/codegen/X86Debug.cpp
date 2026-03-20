@@ -1811,7 +1811,10 @@ const char *TR_Debug::getName(uint32_t realRegisterIndex, TR_RegisterSizes size)
             return "st0";
         case TR::RealRegister::xmm0:
             switch (size) {
-                case 4:
+                case TR_QuadWordReg:
+                case TR_FloatReg:
+                case TR_DoubleReg:
+                case TR_VectorReg128:
                 case -1:
                     return "xmm0";
                 case TR_VectorReg256:
@@ -1823,7 +1826,10 @@ const char *TR_Debug::getName(uint32_t realRegisterIndex, TR_RegisterSizes size)
             }
         case TR::RealRegister::xmm1:
             switch (size) {
-                case 4:
+                case TR_QuadWordReg:
+                case TR_FloatReg:
+                case TR_DoubleReg:
+                case TR_VectorReg128:
                 case -1:
                     return "xmm1";
                 case TR_VectorReg256:
@@ -1835,7 +1841,10 @@ const char *TR_Debug::getName(uint32_t realRegisterIndex, TR_RegisterSizes size)
             }
         case TR::RealRegister::xmm2:
             switch (size) {
-                case 4:
+                case TR_QuadWordReg:
+                case TR_FloatReg:
+                case TR_DoubleReg:
+                case TR_VectorReg128:
                 case -1:
                     return "xmm2";
                 case TR_VectorReg256:
@@ -1847,7 +1856,10 @@ const char *TR_Debug::getName(uint32_t realRegisterIndex, TR_RegisterSizes size)
             }
         case TR::RealRegister::xmm3:
             switch (size) {
-                case 4:
+                case TR_QuadWordReg:
+                case TR_FloatReg:
+                case TR_DoubleReg:
+                case TR_VectorReg128:
                 case -1:
                     return "xmm3";
                 case TR_VectorReg256:
@@ -1859,7 +1871,10 @@ const char *TR_Debug::getName(uint32_t realRegisterIndex, TR_RegisterSizes size)
             }
         case TR::RealRegister::xmm4:
             switch (size) {
-                case 4:
+                case TR_QuadWordReg:
+                case TR_FloatReg:
+                case TR_DoubleReg:
+                case TR_VectorReg128:
                 case -1:
                     return "xmm4";
                 case TR_VectorReg256:
@@ -1871,7 +1886,10 @@ const char *TR_Debug::getName(uint32_t realRegisterIndex, TR_RegisterSizes size)
             }
         case TR::RealRegister::xmm5:
             switch (size) {
-                case 4:
+                case TR_QuadWordReg:
+                case TR_FloatReg:
+                case TR_DoubleReg:
+                case TR_VectorReg128:
                 case -1:
                     return "xmm5";
                 case TR_VectorReg256:
@@ -1883,7 +1901,10 @@ const char *TR_Debug::getName(uint32_t realRegisterIndex, TR_RegisterSizes size)
             }
         case TR::RealRegister::xmm6:
             switch (size) {
-                case 4:
+                case TR_QuadWordReg:
+                case TR_FloatReg:
+                case TR_DoubleReg:
+                case TR_VectorReg128:
                 case -1:
                     return "xmm6";
                 case TR_VectorReg256:
@@ -1895,7 +1916,10 @@ const char *TR_Debug::getName(uint32_t realRegisterIndex, TR_RegisterSizes size)
             }
         case TR::RealRegister::xmm7:
             switch (size) {
-                case 4:
+                case TR_QuadWordReg:
+                case TR_FloatReg:
+                case TR_DoubleReg:
+                case TR_VectorReg128:
                 case -1:
                     return "xmm7";
                 case TR_VectorReg256:
@@ -1908,7 +1932,10 @@ const char *TR_Debug::getName(uint32_t realRegisterIndex, TR_RegisterSizes size)
 #ifdef TR_TARGET_64BIT
         case TR::RealRegister::xmm8:
             switch (size) {
-                case 4:
+                case TR_QuadWordReg:
+                case TR_FloatReg:
+                case TR_DoubleReg:
+                case TR_VectorReg128:
                 case -1:
                     return "xmm8";
                 case TR_VectorReg256:
@@ -1920,7 +1947,10 @@ const char *TR_Debug::getName(uint32_t realRegisterIndex, TR_RegisterSizes size)
             }
         case TR::RealRegister::xmm9:
             switch (size) {
-                case 4:
+                case TR_QuadWordReg:
+                case TR_FloatReg:
+                case TR_DoubleReg:
+                case TR_VectorReg128:
                 case -1:
                     return "xmm9";
                 case TR_VectorReg256:
@@ -1932,7 +1962,10 @@ const char *TR_Debug::getName(uint32_t realRegisterIndex, TR_RegisterSizes size)
             }
         case TR::RealRegister::xmm10:
             switch (size) {
-                case 4:
+                case TR_QuadWordReg:
+                case TR_FloatReg:
+                case TR_DoubleReg:
+                case TR_VectorReg128:
                 case -1:
                     return "xmm10";
                 case TR_VectorReg256:
@@ -1944,7 +1977,10 @@ const char *TR_Debug::getName(uint32_t realRegisterIndex, TR_RegisterSizes size)
             }
         case TR::RealRegister::xmm11:
             switch (size) {
-                case 4:
+                case TR_QuadWordReg:
+                case TR_FloatReg:
+                case TR_DoubleReg:
+                case TR_VectorReg128:
                 case -1:
                     return "xmm11";
                 case TR_VectorReg256:
@@ -1956,7 +1992,10 @@ const char *TR_Debug::getName(uint32_t realRegisterIndex, TR_RegisterSizes size)
             }
         case TR::RealRegister::xmm12:
             switch (size) {
-                case 4:
+                case TR_QuadWordReg:
+                case TR_FloatReg:
+                case TR_DoubleReg:
+                case TR_VectorReg128:
                 case -1:
                     return "xmm12";
                 case TR_VectorReg256:
@@ -1968,7 +2007,10 @@ const char *TR_Debug::getName(uint32_t realRegisterIndex, TR_RegisterSizes size)
             }
         case TR::RealRegister::xmm13:
             switch (size) {
-                case 4:
+                case TR_QuadWordReg:
+                case TR_FloatReg:
+                case TR_DoubleReg:
+                case TR_VectorReg128:
                 case -1:
                     return "xmm13";
                 case TR_VectorReg256:
@@ -1980,7 +2022,10 @@ const char *TR_Debug::getName(uint32_t realRegisterIndex, TR_RegisterSizes size)
             }
         case TR::RealRegister::xmm14:
             switch (size) {
-                case 4:
+                case TR_QuadWordReg:
+                case TR_FloatReg:
+                case TR_DoubleReg:
+                case TR_VectorReg128:
                 case -1:
                     return "xmm14";
                 case TR_VectorReg256:
@@ -1992,7 +2037,10 @@ const char *TR_Debug::getName(uint32_t realRegisterIndex, TR_RegisterSizes size)
             }
         case TR::RealRegister::xmm15:
             switch (size) {
-                case 4:
+                case TR_QuadWordReg:
+                case TR_FloatReg:
+                case TR_DoubleReg:
+                case TR_VectorReg128:
                 case -1:
                     return "xmm15";
                 case TR_VectorReg256:

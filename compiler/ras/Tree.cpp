@@ -1415,11 +1415,12 @@ void TR_Debug::printNodeInfo(TR::Node *node, TR_PrettyPrinterString &output, boo
         if (stride > 0)
             output.appendf(" (stride %d)", stride);
     } else if (node->getOpCode().isLoadReg() || node->getOpCode().isStoreReg()) {
+        TR::DataType dt = node->getDataType();
         if ((node->getType().isInt64() && _comp->target().is32Bit() && !_comp->cg()->use64BitRegsOn32Bit()))
-            output.appendf(" %s:%s ", getGlobalRegisterName(node->getHighGlobalRegisterNumber()),
-                getGlobalRegisterName(node->getLowGlobalRegisterNumber()));
+            output.appendf(" %s:%s ", getGlobalRegisterName(node->getHighGlobalRegisterNumber(), dt),
+                getGlobalRegisterName(node->getLowGlobalRegisterNumber(), dt));
         else
-            output.appendf(" %s ", getGlobalRegisterName(node->getGlobalRegisterNumber()));
+            output.appendf(" %s ", getGlobalRegisterName(node->getGlobalRegisterNumber(), dt));
 
         if (node->getOpCode().isLoadReg())
             print(node->getRegLoadStoreSymbolReference(), output);
@@ -1427,22 +1428,12 @@ void TR_Debug::printNodeInfo(TR::Node *node, TR_PrettyPrinterString &output, boo
         // print only if under a GlRegDep
         bool isParentGlRegDep = getCurrentParent() ? (getCurrentParent()->getOpCodeValue() == TR::GlRegDeps) : false;
         if (isParentGlRegDep) {
-            TR::DataType t = node->getDataType();
-            // This is a half-hearted attempt at getting better register sizes, I know
-            TR_RegisterSizes size;
-            if (t == TR::Int8)
-                size = TR_ByteReg;
-            else if (t == TR::Int16)
-                size = TR_HalfWordReg;
-            else if (t == TR::Int32)
-                size = TR_WordReg;
-            else
-                size = TR_DoubleWordReg;
+            TR::DataType dt = node->getDataType();
             if ((node->getFirstChild()->getType().isInt64() && _comp->target().is32Bit()))
-                output.appendf(" %s:%s ", getGlobalRegisterName(node->getHighGlobalRegisterNumber(), size),
-                    getGlobalRegisterName(node->getLowGlobalRegisterNumber(), size));
+                output.appendf(" %s:%s ", getGlobalRegisterName(node->getHighGlobalRegisterNumber(), dt),
+                    getGlobalRegisterName(node->getLowGlobalRegisterNumber(), dt));
             else
-                output.appendf(" %s ", getGlobalRegisterName(node->getGlobalRegisterNumber(), size));
+                output.appendf(" %s ", getGlobalRegisterName(node->getGlobalRegisterNumber(), dt));
         }
     } else if (node->getOpCode().hasNoDataType()) {
         output.appendf(" (%s)", getName(node->getDataType()));

@@ -2623,6 +2623,11 @@ const char *TR_Debug::getName(TR::RealRegister *reg, TR_RegisterSizes size)
     return getRegisterName(reg->getRegisterNumber(), (size == TR_DoubleWordReg || size == TR_DoubleReg));
 }
 
+const char *TR_Debug::getName(uint32_t regNum, TR_RegisterSizes size)
+{
+    return getRegisterName((TR::RealRegister::RegNum)regNum, (size == TR_DoubleWordReg || size == TR_DoubleReg));
+}
+
 const char *TR_Debug::getARM64RegisterName(uint32_t regNum, bool is64bit)
 {
     return getRegisterName((TR::RealRegister::RegNum)regNum, is64bit);

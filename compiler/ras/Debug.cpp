@@ -2278,6 +2278,19 @@ void TR_Debug::print(OMR::Logger *log, TR::Snippet *snippet)
 #endif
 }
 
+bool TR_Debug::refineRegisterSizeForDataType()
+{
+#if defined(TR_TARGET_X86)
+    return true;
+#elif defined(TR_TARGET_ARM)
+    return true;
+#elif defined(TR_TARGET_ARM64)
+    return true;
+#else
+    return false;
+#endif
+}
+
 const char *TR_Debug::getRealRegisterName(uint32_t regNum)
 {
 // need to add 1 to regNum because the enum has 0 = NoReg, and we want 0 to = GPR0
@@ -2384,6 +2397,62 @@ const char *TR_Debug::getName(TR::Register *reg, TR_RegisterSizes size)
     }
 }
 
+const char *TR_Debug::getGlobalRegisterName(TR_GlobalRegisterNumber regNum, TR::DataType dt)
+{
+    // TR_WordReg is the historical default for register size
+    //
+    TR_RegisterSizes regSize = TR_WordReg;
+
+    if (refineRegisterSizeForDataType()) {
+        switch (dt) {
+            case TR::Int8:
+                regSize = TR_ByteReg;
+                break;
+            case TR::Int16:
+                regSize = TR_HalfWordReg;
+                break;
+            case TR::Int32:
+                regSize = TR_WordReg;
+                break;
+            case TR::Int64:
+                regSize = TR_DoubleWordReg;
+                break;
+            case TR::Float:
+                regSize = TR_FloatReg;
+                break;
+            case TR::Double:
+                regSize = TR_DoubleReg;
+                break;
+            case TR::Address:
+                regSize = _comp->target().is64Bit() ? TR_DoubleWordReg : TR_WordReg;
+                break;
+            default:
+                if (dt.isVector() || dt.isMask()) {
+                    switch (dt.getVectorLength()) {
+                        case TR::VectorLength128:
+                            regSize = TR_VectorReg128;
+                            break;
+                        case TR::VectorLength256:
+                            regSize = TR_VectorReg256;
+                            break;
+                        case TR::VectorLength512:
+                            regSize = TR_VectorReg512;
+                            break;
+                        default:
+                            regSize = TR_UnknownSizeReg;
+                            break;
+                    }
+                } else {
+                    regSize = TR_UnknownSizeReg;
+                }
+
+                break;
+        }
+    }
+
+    return getGlobalRegisterName(regNum, regSize);
+}
+
 const char *TR_Debug::getGlobalRegisterName(TR_GlobalRegisterNumber regNum, TR_RegisterSizes size)
 {
     uint32_t realRegNum = _comp->cg()->getGlobalRegister(regNum);
@@ -2405,7 +2474,7 @@ const char *TR_Debug::getGlobalRegisterName(TR_GlobalRegisterNumber regNum, TR_R
 #endif
 #if defined(TR_TARGET_ARM64)
     if (_comp->target().cpu.isARM64())
-        return getARM64RegisterName(realRegNum, size);
+        return getName(realRegNum, size);
 #endif
     return "???";
 }

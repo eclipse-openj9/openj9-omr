@@ -736,6 +736,9 @@ TR::Register *OMR::Power::TreeEvaluator::PassThroughEvaluator(TR::Node *node, TR
 // mask evaluators
 TR::Register *OMR::Power::TreeEvaluator::mAnyTrueEvaluator(TR::Node *node, TR::CodeGenerator *cg)
 {
+    TR_ASSERT_FATAL_WITH_NODE(node, cg->comp()->target().cpu.isAtLeast(OMR_PROCESSOR_PPC_P8),
+        "mAnyTrue is only supported on P8 and higher");
+
     TR::Node *inputNode = node->getFirstChild();
     TR::Node *maskNode = node->getOpCode().isVectorMasked() ? node->getSecondChild() : NULL;
 
@@ -783,6 +786,9 @@ TR::Register *OMR::Power::TreeEvaluator::mAnyTrueEvaluator(TR::Node *node, TR::C
 
 TR::Register *OMR::Power::TreeEvaluator::mAllTrueEvaluator(TR::Node *node, TR::CodeGenerator *cg)
 {
+    TR_ASSERT_FATAL_WITH_NODE(node, cg->comp()->target().cpu.isAtLeast(OMR_PROCESSOR_PPC_P8),
+        "mAllTrue is only supported on P8 and higher");
+
     TR::Node *inputNode = node->getFirstChild();
     TR::Node *maskNode = node->getOpCode().isVectorMasked() ? node->getSecondChild() : NULL;
 
@@ -867,10 +873,13 @@ TR::Register *OMR::Power::TreeEvaluator::msplatsEvaluator(TR::Node *node, TR::Co
 
 TR::Register *OMR::Power::TreeEvaluator::mTrueCountEvaluator(TR::Node *node, TR::CodeGenerator *cg)
 {
+    TR_ASSERT_FATAL_WITH_NODE(node, cg->comp()->target().cpu.isAtLeast(OMR_PROCESSOR_PPC_P8),
+        "mTrueCount is only supported on P8 and higher");
+
     TR::Node *firstChild = node->getFirstChild();
 
     TR_ASSERT_FATAL_WITH_NODE(node, firstChild->getDataType().getVectorLength() == TR::VectorLength128,
-        "Only 128-bit vectors are supported %s", node->getDataType().toString());
+        "Only 128-bit vectors are supported but type %s was requested", node->getDataType().toString());
 
     TR::Register *srcReg = cg->evaluate(firstChild);
     TR::Register *resReg = cg->allocateRegister(TR_GPR);
@@ -923,10 +932,13 @@ TR::Register *OMR::Power::TreeEvaluator::mTrueCountEvaluator(TR::Node *node, TR:
 
 TR::Register *OMR::Power::TreeEvaluator::mFirstTrueEvaluator(TR::Node *node, TR::CodeGenerator *cg)
 {
+    TR_ASSERT_FATAL_WITH_NODE(node, cg->comp()->target().cpu.isAtLeast(OMR_PROCESSOR_PPC_P9),
+        "mFirstTrue is only supported on P9 and higher");
+
     TR::Node *firstChild = node->getFirstChild();
 
     TR_ASSERT_FATAL_WITH_NODE(node, firstChild->getDataType().getVectorLength() == TR::VectorLength128,
-        "Only 128-bit vectors are supported %s", node->getDataType().toString());
+        "Only 128-bit vectors are supported but type %s was requested", node->getDataType().toString());
 
     TR::Register *srcReg = cg->evaluate(firstChild);
     TR::Register *resReg = cg->allocateRegister(TR_GPR);
@@ -972,7 +984,7 @@ TR::Register *OMR::Power::TreeEvaluator::mToLongBitsEvaluator(TR::Node *node, TR
     TR::Node *firstChild = node->getFirstChild();
 
     TR_ASSERT_FATAL_WITH_NODE(node, firstChild->getDataType().getVectorLength() == TR::VectorLength128,
-        "Only 128-bit vectors are supported %s", node->getDataType().toString());
+        "Only 128-bit vectors are supported but type %s was requested", node->getDataType().toString());
 
     TR_ASSERT_FATAL_WITH_NODE(node, firstChild->getDataType().getVectorNumLanes() == 16,
         "Unsupported vector type %s for mToLongBits\n", firstChild->getDataType().toString());
@@ -1076,7 +1088,7 @@ static TR::Register *mloadiFromArrayHelper(TR::Node *node, TR::CodeGenerator *cg
 TR::Register *OMR::Power::TreeEvaluator::mloadiFromArrayEvaluator(TR::Node *node, TR::CodeGenerator *cg)
 {
     TR_ASSERT_FATAL_WITH_NODE(node, node->getDataType().getVectorLength() == TR::VectorLength128,
-        "Only 128-bit vectors are supported %s", node->getDataType().toString());
+        "Only 128-bit vectors are supported but type %s was requested", node->getDataType().toString());
 
     switch (node->getDataType().getVectorElementType()) {
         case TR::Int8:
@@ -1161,7 +1173,7 @@ static TR::Register *mstoreiToArrayHelper(TR::Node *node, TR::CodeGenerator *cg,
 TR::Register *OMR::Power::TreeEvaluator::mstoreiToArrayEvaluator(TR::Node *node, TR::CodeGenerator *cg)
 {
     TR_ASSERT_FATAL_WITH_NODE(node, node->getDataType().getVectorLength() == TR::VectorLength128,
-        "Only 128-bit vectors are supported %s", node->getDataType().toString());
+        "Only 128-bit vectors are supported but type %s was requested", node->getDataType().toString());
 
     switch (node->getDataType().getVectorElementType()) {
         case TR::Int8:
@@ -1253,7 +1265,7 @@ TR::Register *OMR::Power::TreeEvaluator::m2vEvaluator(TR::Node *node, TR::CodeGe
     TR_ASSERT_FATAL_WITH_NODE(node,
         node->getDataType().getVectorLength() == TR::VectorLength128
             && node->getDataType().getVectorElementType() == TR::Int8,
-        "Only 128-bit vectors are supported %s", node->getDataType().toString());
+        "Only 128-bit vectors are supported but type %s was requested", node->getDataType().toString());
 
     TR_ASSERT_FATAL(cg->comp()->target().cpu.isAtLeast(OMR_PROCESSOR_PPC_P9), "m2v is only supported on P9 and higher");
 
@@ -1274,7 +1286,7 @@ TR::Register *OMR::Power::TreeEvaluator::m2vEvaluator(TR::Node *node, TR::CodeGe
 TR::Register *OMR::Power::TreeEvaluator::vcmpeqEvaluator(TR::Node *node, TR::CodeGenerator *cg)
 {
     TR_ASSERT_FATAL_WITH_NODE(node, node->getDataType().getVectorLength() == TR::VectorLength128,
-        "Only 128-bit vectors are supported %s", node->getDataType().toString());
+        "Only 128-bit vectors are supported but type %s was requested", node->getDataType().toString());
 
     TR::DataType elementType = node->getOpCode().getVectorSourceDataType().getVectorElementType();
 
@@ -1286,6 +1298,8 @@ TR::Register *OMR::Power::TreeEvaluator::vcmpeqEvaluator(TR::Node *node, TR::Cod
         case TR::Int32:
             return vcmpHelper(node, cg, TR::InstOpCode::vcmpequw, false, false);
         case TR::Int64:
+            TR_ASSERT_FATAL_WITH_NODE(node, cg->comp()->target().cpu.isAtLeast(OMR_PROCESSOR_PPC_P8),
+                "vcmpeq for LongVector is only supported on P8 and higher");
             return vcmpHelper(node, cg, TR::InstOpCode::vcmpequd, false, false);
         case TR::Float:
             return vcmpHelper(node, cg, TR::InstOpCode::xvcmpeqsp, false, false);
@@ -1300,7 +1314,7 @@ TR::Register *OMR::Power::TreeEvaluator::vcmpeqEvaluator(TR::Node *node, TR::Cod
 TR::Register *OMR::Power::TreeEvaluator::vcmpneEvaluator(TR::Node *node, TR::CodeGenerator *cg)
 {
     TR_ASSERT_FATAL_WITH_NODE(node, node->getDataType().getVectorLength() == TR::VectorLength128,
-        "Only 128-bit vectors are supported %s", node->getDataType().toString());
+        "Only 128-bit vectors are supported but type %s was requested", node->getDataType().toString());
 
     TR::DataType elementType = node->getOpCode().getVectorSourceDataType().getVectorElementType();
     bool p9Plus = cg->comp()->target().cpu.isAtLeast(
@@ -1325,6 +1339,8 @@ TR::Register *OMR::Power::TreeEvaluator::vcmpneEvaluator(TR::Node *node, TR::Cod
             else
                 return vcmpHelper(node, cg, TR::InstOpCode::vcmpequw, true, false);
         case TR::Int64:
+            TR_ASSERT_FATAL_WITH_NODE(node, cg->comp()->target().cpu.isAtLeast(OMR_PROCESSOR_PPC_P8),
+                "vcmpne for LongVector is only supported on P8 and higher");
             return vcmpHelper(node, cg, TR::InstOpCode::vcmpequd, true, false);
         case TR::Float:
             return vcmpHelper(node, cg, TR::InstOpCode::xvcmpeqsp, true, false);
@@ -1339,7 +1355,7 @@ TR::Register *OMR::Power::TreeEvaluator::vcmpneEvaluator(TR::Node *node, TR::Cod
 TR::Register *OMR::Power::TreeEvaluator::vcmpltEvaluator(TR::Node *node, TR::CodeGenerator *cg)
 {
     TR_ASSERT_FATAL_WITH_NODE(node, node->getDataType().getVectorLength() == TR::VectorLength128,
-        "Only 128-bit vectors are supported %s", node->getDataType().toString());
+        "Only 128-bit vectors are supported but type %s was requested", node->getDataType().toString());
 
     TR::DataType elementType = node->getOpCode().getVectorSourceDataType().getVectorElementType();
 
@@ -1352,6 +1368,8 @@ TR::Register *OMR::Power::TreeEvaluator::vcmpltEvaluator(TR::Node *node, TR::Cod
         case TR::Int32:
             return vcmpHelper(node, cg, TR::InstOpCode::vcmpgtsw, false, true);
         case TR::Int64:
+            TR_ASSERT_FATAL_WITH_NODE(node, cg->comp()->target().cpu.isAtLeast(OMR_PROCESSOR_PPC_P8),
+                "vcmplt for LongVector is only supported on P8 and higher");
             return vcmpHelper(node, cg, TR::InstOpCode::vcmpgtsd, false, true);
         case TR::Float:
             return vcmpHelper(node, cg, TR::InstOpCode::xvcmpgtsp, false, true);
@@ -1366,7 +1384,7 @@ TR::Register *OMR::Power::TreeEvaluator::vcmpltEvaluator(TR::Node *node, TR::Cod
 TR::Register *OMR::Power::TreeEvaluator::vcmpgtEvaluator(TR::Node *node, TR::CodeGenerator *cg)
 {
     TR_ASSERT_FATAL_WITH_NODE(node, node->getDataType().getVectorLength() == TR::VectorLength128,
-        "Only 128-bit vectors are supported %s", node->getDataType().toString());
+        "Only 128-bit vectors are supported but type %s was requested", node->getDataType().toString());
 
     TR::DataType elementType = node->getOpCode().getVectorSourceDataType().getVectorElementType();
 
@@ -1378,6 +1396,8 @@ TR::Register *OMR::Power::TreeEvaluator::vcmpgtEvaluator(TR::Node *node, TR::Cod
         case TR::Int32:
             return vcmpHelper(node, cg, TR::InstOpCode::vcmpgtsw, false, false);
         case TR::Int64:
+            TR_ASSERT_FATAL_WITH_NODE(node, cg->comp()->target().cpu.isAtLeast(OMR_PROCESSOR_PPC_P8),
+                "vcmpgt for LongVector is only supported on P8 and higher");
             return vcmpHelper(node, cg, TR::InstOpCode::vcmpgtsd, false, false);
         case TR::Float:
             return vcmpHelper(node, cg, TR::InstOpCode::xvcmpgtsp, false, false);
@@ -1392,7 +1412,7 @@ TR::Register *OMR::Power::TreeEvaluator::vcmpgtEvaluator(TR::Node *node, TR::Cod
 TR::Register *OMR::Power::TreeEvaluator::vcmpleEvaluator(TR::Node *node, TR::CodeGenerator *cg)
 {
     TR_ASSERT_FATAL_WITH_NODE(node, node->getDataType().getVectorLength() == TR::VectorLength128,
-        "Only 128-bit vectors are supported %s", node->getDataType().toString());
+        "Only 128-bit vectors are supported but type %s was requested", node->getDataType().toString());
 
     TR::DataType elementType = node->getOpCode().getVectorSourceDataType().getVectorElementType();
 
@@ -1406,6 +1426,8 @@ TR::Register *OMR::Power::TreeEvaluator::vcmpleEvaluator(TR::Node *node, TR::Cod
         case TR::Int32:
             return vcmpHelper(node, cg, TR::InstOpCode::vcmpgtsw, true, false);
         case TR::Int64:
+            TR_ASSERT_FATAL_WITH_NODE(node, cg->comp()->target().cpu.isAtLeast(OMR_PROCESSOR_PPC_P8),
+                "vcmple for LongVector is only supported on P8 and higher");
             return vcmpHelper(node, cg, TR::InstOpCode::vcmpgtsd, true, false);
         case TR::Float:
             return vcmpHelper(node, cg, TR::InstOpCode::xvcmpgesp, false, true); // (A <= B) == (B >= A)
@@ -1420,7 +1442,7 @@ TR::Register *OMR::Power::TreeEvaluator::vcmpleEvaluator(TR::Node *node, TR::Cod
 TR::Register *OMR::Power::TreeEvaluator::vcmpgeEvaluator(TR::Node *node, TR::CodeGenerator *cg)
 {
     TR_ASSERT_FATAL_WITH_NODE(node, node->getDataType().getVectorLength() == TR::VectorLength128,
-        "Only 128-bit vectors are supported %s", node->getDataType().toString());
+        "Only 128-bit vectors are supported but type %s was requested", node->getDataType().toString());
 
     TR::DataType elementType = node->getOpCode().getVectorSourceDataType().getVectorElementType();
 
@@ -1434,6 +1456,8 @@ TR::Register *OMR::Power::TreeEvaluator::vcmpgeEvaluator(TR::Node *node, TR::Cod
         case TR::Int32:
             return vcmpHelper(node, cg, TR::InstOpCode::vcmpgtsw, true, true);
         case TR::Int64:
+            TR_ASSERT_FATAL_WITH_NODE(node, cg->comp()->target().cpu.isAtLeast(OMR_PROCESSOR_PPC_P8),
+                "vcmpge for LongVector is only supported on P8 and higher");
             return vcmpHelper(node, cg, TR::InstOpCode::vcmpgtsd, true, true);
         case TR::Float:
             return vcmpHelper(node, cg, TR::InstOpCode::xvcmpgesp, false, false);
@@ -1673,7 +1697,7 @@ TR::Register *OMR::Power::TreeEvaluator::vreductionAddEvaluator(TR::Node *node, 
     TR::DataType type = firstChild->getDataType().getVectorElementType();
 
     TR_ASSERT_FATAL_WITH_NODE(node, firstChild->getDataType().getVectorLength() == TR::VectorLength128,
-        "Only 128-bit vectors are supported %s", firstChild->getDataType().toString());
+        "Only 128-bit vectors are supported but type %s was requested", firstChild->getDataType().toString());
 
     switch (type) {
         case TR::Int8:
@@ -3282,7 +3306,7 @@ TR::Register *OMR::Power::TreeEvaluator::sstoreEvaluator(TR::Node *node, TR::Cod
 TR::Register *OMR::Power::TreeEvaluator::vloadEvaluator(TR::Node *node, TR::CodeGenerator *cg)
 {
     TR_ASSERT_FATAL_WITH_NODE(node, node->getDataType().getVectorLength() == TR::VectorLength128,
-        "Only 128-bit vectors are supported %s", node->getDataType().toString());
+        "Only 128-bit vectors are supported but type %s was requested", node->getDataType().toString());
 
     TR::InstOpCode::Mnemonic opcode;
     TR_RegisterKinds kind;
@@ -3365,7 +3389,7 @@ TR::Register *OMR::Power::TreeEvaluator::vloadEvaluator(TR::Node *node, TR::Code
 TR::Register *OMR::Power::TreeEvaluator::vstoreEvaluator(TR::Node *node, TR::CodeGenerator *cg)
 {
     TR_ASSERT_FATAL_WITH_NODE(node, node->getDataType().getVectorLength() == TR::VectorLength128,
-        "Only 128-bit vectors are supported %s lenght:%d", node->getDataType().toString(),
+        "Only 128-bit vectors are supported but type %s was requested lenght:%d", node->getDataType().toString(),
         node->getDataType().getVectorLength());
 
     TR::InstOpCode::Mnemonic opcode;
@@ -3607,7 +3631,7 @@ TR::Register *OMR::Power::TreeEvaluator::inlineVectorBitSelectOp(TR::Node *node,
 TR::Register *OMR::Power::TreeEvaluator::vandEvaluator(TR::Node *node, TR::CodeGenerator *cg)
 {
     TR_ASSERT_FATAL_WITH_NODE(node, node->getDataType().getVectorLength() == TR::VectorLength128,
-        "Only 128-bit vectors are supported %s", node->getDataType().toString());
+        "Only 128-bit vectors are supported but type %s was requested", node->getDataType().toString());
 
     TR::InstOpCode::Mnemonic opCode = TR::InstOpCode::bad;
 
@@ -3619,7 +3643,7 @@ TR::Register *OMR::Power::TreeEvaluator::vandEvaluator(TR::Node *node, TR::CodeG
             opCode = TR::InstOpCode::vand;
             break;
         default:
-            TR_ASSERT_FATAL(false, "unrecognized vector type %s\n", node->getDataType().toString());
+            TR_ASSERT_FATAL(false, "unsupported vector type %s\n", node->getDataType().toString());
             return NULL;
     }
 
@@ -3629,7 +3653,7 @@ TR::Register *OMR::Power::TreeEvaluator::vandEvaluator(TR::Node *node, TR::CodeG
 TR::Register *OMR::Power::TreeEvaluator::vorEvaluator(TR::Node *node, TR::CodeGenerator *cg)
 {
     TR_ASSERT_FATAL_WITH_NODE(node, node->getDataType().getVectorLength() == TR::VectorLength128,
-        "Only 128-bit vectors are supported %s", node->getDataType().toString());
+        "Only 128-bit vectors are supported but type %s was requested", node->getDataType().toString());
 
     TR::InstOpCode::Mnemonic opCode = TR::InstOpCode::bad;
 
@@ -3641,7 +3665,7 @@ TR::Register *OMR::Power::TreeEvaluator::vorEvaluator(TR::Node *node, TR::CodeGe
             opCode = TR::InstOpCode::vor;
             break;
         default:
-            TR_ASSERT_FATAL(false, "unrecognized vector type %s\n", node->getDataType().toString());
+            TR_ASSERT_FATAL(false, "unsupported vector type %s\n", node->getDataType().toString());
             return NULL;
     }
     return TR::TreeEvaluator::inlineVectorBinaryOp(node, cg, opCode);
@@ -3650,7 +3674,7 @@ TR::Register *OMR::Power::TreeEvaluator::vorEvaluator(TR::Node *node, TR::CodeGe
 TR::Register *OMR::Power::TreeEvaluator::vxorEvaluator(TR::Node *node, TR::CodeGenerator *cg)
 {
     TR_ASSERT_FATAL_WITH_NODE(node, node->getDataType().getVectorLength() == TR::VectorLength128,
-        "Only 128-bit vectors are supported %s", node->getDataType().toString());
+        "Only 128-bit vectors are supported but type %s was requested", node->getDataType().toString());
 
     TR::InstOpCode::Mnemonic opCode = TR::InstOpCode::bad;
 
@@ -3662,7 +3686,7 @@ TR::Register *OMR::Power::TreeEvaluator::vxorEvaluator(TR::Node *node, TR::CodeG
             opCode = TR::InstOpCode::vxor;
             break;
         default:
-            TR_ASSERT_FATAL(false, "unrecognized vector type %s\n", node->getDataType().toString());
+            TR_ASSERT_FATAL(false, "unsupported vector type %s\n", node->getDataType().toString());
             return NULL;
     }
     return TR::TreeEvaluator::inlineVectorBinaryOp(node, cg, opCode);
@@ -3717,7 +3741,7 @@ TR::Register *OMR::Power::TreeEvaluator::vgetelemDirectMoveHelper(TR::Node *node
     int32_t elementCount = -1;
 
     TR_ASSERT_FATAL_WITH_NODE(node, firstChild->getDataType().getVectorLength() == TR::VectorLength128,
-        "Only 128-bit vectors are supported %s", node->getDataType().toString());
+        "Only 128-bit vectors are supported but type %s was requested", node->getDataType().toString());
 
     switch (firstChild->getDataType().getVectorElementType()) {
         case TR::Int8:
@@ -3938,7 +3962,7 @@ TR::Register *OMR::Power::TreeEvaluator::vgetelemMemoryMoveHelper(TR::Node *node
     TR::InstOpCode::Mnemonic vecStoreOpCode = TR::InstOpCode::stxvw4x;
 
     TR_ASSERT_FATAL_WITH_NODE(node, firstChild->getDataType().getVectorLength() == TR::VectorLength128,
-        "Only 128-bit vectors are supported %s", node->getDataType().toString());
+        "Only 128-bit vectors are supported but type %s was requested", node->getDataType().toString());
 
     switch (firstChild->getDataType().getVectorElementType()) {
         case TR::Int8:
@@ -4080,7 +4104,7 @@ TR::Register *OMR::Power::TreeEvaluator::visetelemHelper(TR::Node *node, TR::Cod
     TR::Node *vectorChild = node->getFirstChild();
 
     TR_ASSERT_FATAL_WITH_NODE(node, vectorChild->getDataType().getVectorLength() == TR::VectorLength128,
-        "Only 128-bit vectors are supported %s", node->getDataType().toString());
+        "Only 128-bit vectors are supported but type %s was requested", node->getDataType().toString());
 
     TR::Node *indexChild = node->getSecondChild();
     TR::Node *valueChild = node->getThirdChild();
@@ -4124,7 +4148,7 @@ TR::Register *OMR::Power::TreeEvaluator::visetelemHelper(TR::Node *node, TR::Cod
 TR::Register *OMR::Power::TreeEvaluator::vaddEvaluator(TR::Node *node, TR::CodeGenerator *cg)
 {
     TR_ASSERT_FATAL_WITH_NODE(node, node->getDataType().getVectorLength() == TR::VectorLength128,
-        "Only 128-bit vectors are supported %s", node->getDataType().toString());
+        "Only 128-bit vectors are supported but type %s was requested", node->getDataType().toString());
 
     switch (node->getDataType().getVectorElementType()) {
         case TR::Int8:
@@ -4134,6 +4158,8 @@ TR::Register *OMR::Power::TreeEvaluator::vaddEvaluator(TR::Node *node, TR::CodeG
         case TR::Int32:
             return TR::TreeEvaluator::inlineVectorBinaryOp(node, cg, TR::InstOpCode::vadduwm);
         case TR::Int64:
+            TR_ASSERT_FATAL_WITH_NODE(node, cg->comp()->target().cpu.isAtLeast(OMR_PROCESSOR_PPC_P8),
+                "vadd for LongVector is only supported on P8 and higher");
             return TR::TreeEvaluator::inlineVectorBinaryOp(node, cg, TR::InstOpCode::vaddudm);
         case TR::Float:
             return TR::TreeEvaluator::inlineVectorBinaryOp(node, cg, TR::InstOpCode::xvaddsp);
@@ -4148,7 +4174,7 @@ TR::Register *OMR::Power::TreeEvaluator::vaddEvaluator(TR::Node *node, TR::CodeG
 TR::Register *OMR::Power::TreeEvaluator::vsubEvaluator(TR::Node *node, TR::CodeGenerator *cg)
 {
     TR_ASSERT_FATAL_WITH_NODE(node, node->getDataType().getVectorLength() == TR::VectorLength128,
-        "Only 128-bit vectors are supported %s", node->getDataType().toString());
+        "Only 128-bit vectors are supported but type %s was requested", node->getDataType().toString());
 
     switch (node->getDataType().getVectorElementType()) {
         case TR::Int8:
@@ -4158,6 +4184,8 @@ TR::Register *OMR::Power::TreeEvaluator::vsubEvaluator(TR::Node *node, TR::CodeG
         case TR::Int32:
             return TR::TreeEvaluator::inlineVectorBinaryOp(node, cg, TR::InstOpCode::vsubuwm);
         case TR::Int64:
+            TR_ASSERT_FATAL_WITH_NODE(node, cg->comp()->target().cpu.isAtLeast(OMR_PROCESSOR_PPC_P8),
+                "vsub for LongVector is only supported on P8 and higher");
             return TR::TreeEvaluator::inlineVectorBinaryOp(node, cg, TR::InstOpCode::vsubudm);
         case TR::Float:
             return TR::TreeEvaluator::inlineVectorBinaryOp(node, cg, TR::InstOpCode::xvsubsp);
@@ -4172,7 +4200,7 @@ TR::Register *OMR::Power::TreeEvaluator::vsubEvaluator(TR::Node *node, TR::CodeG
 TR::Register *OMR::Power::TreeEvaluator::vnegEvaluator(TR::Node *node, TR::CodeGenerator *cg)
 {
     TR_ASSERT_FATAL_WITH_NODE(node, node->getDataType().getVectorLength() == TR::VectorLength128,
-        "Only 128-bit vectors are supported %s", node->getDataType().toString());
+        "Only 128-bit vectors are supported but type %s was requested", node->getDataType().toString());
 
     switch (node->getDataType().getVectorElementType()) {
         case TR::Int8:
@@ -4260,7 +4288,7 @@ TR::Register *OMR::Power::TreeEvaluator::vnegDoubleHelper(TR::Node *node, TR::Co
 TR::Register *OMR::Power::TreeEvaluator::vabsEvaluator(TR::Node *node, TR::CodeGenerator *cg)
 {
     TR_ASSERT_FATAL_WITH_NODE(node, node->getDataType().getVectorLength() == TR::VectorLength128,
-        "Only 128-bit vectors are supported %s", node->getDataType().toString());
+        "Only 128-bit vectors are supported but type %s was requested", node->getDataType().toString());
 
     switch (node->getDataType().getVectorElementType()) {
         case TR::Int8:
@@ -4270,6 +4298,8 @@ TR::Register *OMR::Power::TreeEvaluator::vabsEvaluator(TR::Node *node, TR::CodeG
         case TR::Int32:
             return TR::TreeEvaluator::vabsIntHelper(node, cg, TR::InstOpCode::vsraw, TR::InstOpCode::vadduwm);
         case TR::Int64:
+            TR_ASSERT_FATAL_WITH_NODE(node, cg->comp()->target().cpu.isAtLeast(OMR_PROCESSOR_PPC_P8),
+                "vabs for LongVector is only supported on P8 and higher");
             return TR::TreeEvaluator::vabsIntHelper(node, cg, TR::InstOpCode::vsrad, TR::InstOpCode::vaddudm);
         case TR::Float:
             return TR::TreeEvaluator::inlineVectorUnaryOp(node, cg, TR::InstOpCode::xvabssp);
@@ -4322,7 +4352,7 @@ TR::Register *OMR::Power::TreeEvaluator::vabsIntHelper(TR::Node *node, TR::CodeG
 TR::Register *OMR::Power::TreeEvaluator::vsqrtEvaluator(TR::Node *node, TR::CodeGenerator *cg)
 {
     TR_ASSERT_FATAL_WITH_NODE(node, node->getDataType().getVectorLength() == TR::VectorLength128,
-        "Only 128-bit vectors are supported %s", node->getDataType().toString());
+        "Only 128-bit vectors are supported but type %s was requested", node->getDataType().toString());
 
     switch (node->getDataType().getVectorElementType()) {
         case TR::Float:
@@ -4330,7 +4360,7 @@ TR::Register *OMR::Power::TreeEvaluator::vsqrtEvaluator(TR::Node *node, TR::Code
         case TR::Double:
             return TR::TreeEvaluator::inlineVectorUnaryOp(node, cg, TR::InstOpCode::xvsqrtdp);
         default:
-            TR_ASSERT_FATAL(false, "unrecognized vector type %s\n", node->getDataType().toString());
+            TR_ASSERT_FATAL(false, "unsupported vector type %s\n", node->getDataType().toString());
             return NULL;
     }
 }
@@ -4407,7 +4437,7 @@ static TR::Register *vminFPHelper(TR::Node *node, TR::CodeGenerator *cg, TR::Dat
 TR::Register *OMR::Power::TreeEvaluator::vminEvaluator(TR::Node *node, TR::CodeGenerator *cg)
 {
     TR_ASSERT_FATAL_WITH_NODE(node, node->getDataType().getVectorLength() == TR::VectorLength128,
-        "Only 128-bit vectors are supported %s", node->getDataType().toString());
+        "Only 128-bit vectors are supported but type %s was requested", node->getDataType().toString());
 
     switch (node->getDataType().getVectorElementType()) {
         case TR::Int8:
@@ -4417,9 +4447,14 @@ TR::Register *OMR::Power::TreeEvaluator::vminEvaluator(TR::Node *node, TR::CodeG
         case TR::Int32:
             return TR::TreeEvaluator::inlineVectorBinaryOp(node, cg, TR::InstOpCode::vminsw);
         case TR::Int64:
+            TR_ASSERT_FATAL_WITH_NODE(node, cg->comp()->target().cpu.isAtLeast(OMR_PROCESSOR_PPC_P8),
+                "vmin for LongVector is only supported on P8 and higher");
             return TR::TreeEvaluator::inlineVectorBinaryOp(node, cg, TR::InstOpCode::vminsd);
         case TR::Float:
+            return vminFPHelper(node, cg, node->getDataType().getVectorElementType());
         case TR::Double:
+            TR_ASSERT_FATAL_WITH_NODE(node, cg->comp()->target().cpu.isAtLeast(OMR_PROCESSOR_PPC_P8),
+                "vmin for DoubleVector is only supported on P8 and higher");
             return vminFPHelper(node, cg, node->getDataType().getVectorElementType());
         default:
             TR_ASSERT(false, "unrecognized vector type %s\n", node->getDataType().toString());
@@ -4499,7 +4534,7 @@ TR::Register *vmaxFPHelper(TR::Node *node, TR::CodeGenerator *cg, TR::DataType t
 TR::Register *OMR::Power::TreeEvaluator::vmaxEvaluator(TR::Node *node, TR::CodeGenerator *cg)
 {
     TR_ASSERT_FATAL_WITH_NODE(node, node->getDataType().getVectorLength() == TR::VectorLength128,
-        "Only 128-bit vectors are supported %s", node->getDataType().toString());
+        "Only 128-bit vectors are supported but type %s was requested", node->getDataType().toString());
 
     switch (node->getDataType().getVectorElementType()) {
         case TR::Int8:
@@ -4509,9 +4544,14 @@ TR::Register *OMR::Power::TreeEvaluator::vmaxEvaluator(TR::Node *node, TR::CodeG
         case TR::Int32:
             return TR::TreeEvaluator::inlineVectorBinaryOp(node, cg, TR::InstOpCode::vmaxsw);
         case TR::Int64:
+            TR_ASSERT_FATAL_WITH_NODE(node, cg->comp()->target().cpu.isAtLeast(OMR_PROCESSOR_PPC_P8),
+                "vmax for LongVector is only supported on P8 and higher");
             return TR::TreeEvaluator::inlineVectorBinaryOp(node, cg, TR::InstOpCode::vmaxsd);
         case TR::Float:
+            return vmaxFPHelper(node, cg, node->getDataType().getVectorElementType());
         case TR::Double:
+            TR_ASSERT_FATAL_WITH_NODE(node, cg->comp()->target().cpu.isAtLeast(OMR_PROCESSOR_PPC_P8),
+                "vmax for DoubleVector is only supported on P8 and higher");
             return vmaxFPHelper(node, cg, node->getDataType().getVectorElementType());
         default:
             TR_ASSERT(false, "unrecognized vector type %s\n", node->getDataType().toString());
@@ -4522,7 +4562,7 @@ TR::Register *OMR::Power::TreeEvaluator::vmaxEvaluator(TR::Node *node, TR::CodeG
 TR::Register *OMR::Power::TreeEvaluator::vmulEvaluator(TR::Node *node, TR::CodeGenerator *cg)
 {
     TR_ASSERT_FATAL_WITH_NODE(node, node->getDataType().getVectorLength() == TR::VectorLength128,
-        "Only 128-bit vectors are supported %s", node->getDataType().toString());
+        "Only 128-bit vectors are supported but type %s was requested", node->getDataType().toString());
 
     switch (node->getDataType().getVectorElementType()) {
         case TR::Int8:
@@ -4532,6 +4572,8 @@ TR::Register *OMR::Power::TreeEvaluator::vmulEvaluator(TR::Node *node, TR::CodeG
         case TR::Int32:
             return TR::TreeEvaluator::vmulInt32Helper(node, cg);
         case TR::Int64:
+            TR_ASSERT_FATAL_WITH_NODE(node, cg->comp()->target().cpu.isAtLeast(OMR_PROCESSOR_PPC_P8),
+                "vmul for LongVector is only supported on P8 and higher");
             return TR::TreeEvaluator::vmulInt64Helper(node, cg);
         case TR::Float:
             return TR::TreeEvaluator::vmulFloatHelper(node, cg);
@@ -4719,7 +4761,7 @@ TR::Register *OMR::Power::TreeEvaluator::vmulDoubleHelper(TR::Node *node, TR::Co
 TR::Register *OMR::Power::TreeEvaluator::vdivEvaluator(TR::Node *node, TR::CodeGenerator *cg)
 {
     TR_ASSERT_FATAL_WITH_NODE(node, node->getDataType().getVectorLength() == TR::VectorLength128,
-        "Only 128-bit vectors are supported %s", node->getDataType().toString());
+        "Only 128-bit vectors are supported but type %s was requested", node->getDataType().toString());
 
     switch (node->getDataType().getVectorElementType()) {
         case TR::Int32:
@@ -4731,7 +4773,7 @@ TR::Register *OMR::Power::TreeEvaluator::vdivEvaluator(TR::Node *node, TR::CodeG
         case TR::Double:
             return TR::TreeEvaluator::vdivDoubleHelper(node, cg);
         default:
-            TR_ASSERT(false, "unrecognized vector type %s\n", node->getDataType().toString());
+            TR_ASSERT(false, "unsupported vector type %s\n", node->getDataType().toString());
             return NULL;
     }
 }
@@ -4749,7 +4791,7 @@ TR::Register *OMR::Power::TreeEvaluator::vdivDoubleHelper(TR::Node *node, TR::Co
 TR::Register *OMR::Power::TreeEvaluator::vdivInt32Helper(TR::Node *node, TR::CodeGenerator *cg)
 {
     TR_ASSERT_FATAL_WITH_NODE(node, node->getDataType().getVectorLength() == TR::VectorLength128,
-        "Only 128-bit vectors are supported %s", node->getDataType().toString());
+        "Only 128-bit vectors are supported but type %s was requested", node->getDataType().toString());
 
     if (cg->comp()->target().cpu.isAtLeast(OMR_PROCESSOR_PPC_P10))
         return TR::TreeEvaluator::inlineVectorBinaryOp(node, cg, TR::InstOpCode::vdivsw);

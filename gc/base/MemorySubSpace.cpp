@@ -76,6 +76,10 @@ memorySubSpaceAsyncCallbackHandler(OMR_VMThread *omrVMThread)
 void
 MM_MemorySubSpace::reportSystemGCStart(MM_EnvironmentBase* env, uint32_t gcCode)
 {
+	/* While the reason may be used much later (for example at cycle end) collectionReason is initially set in the
+	 * evironment so it can be easily transferred later when it's needed (consider passing via method params)
+	 */
+	env->_collectionReason = MM_CycleState::gc_reason_system_gc;
 	OMRPORT_ACCESS_FROM_ENVIRONMENT(env);
 
 	Trc_OMRMM_SystemGCStart(env->getOmrVMThread(),
@@ -236,6 +240,7 @@ MM_MemorySubSpace::reportAllocationFailureStart(MM_EnvironmentBase* env, MM_Allo
 	generateAllocationFailureStats(env, allocDescription);
 
 	env->allocationFailureStartReportIfRequired(allocDescription, getTypeFlags());
+	env->_collectionReason = MM_CycleState::gc_reason_alloc_failure;
 
 	Trc_MM_AllocationFailureCycleStart(env->getLanguageVMThread(),
 									   _extensions->heap->getApproximateActiveFreeMemorySize(MEMORY_TYPE_NEW),

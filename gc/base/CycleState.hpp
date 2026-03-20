@@ -28,6 +28,7 @@
 #include "GCCode.hpp"
 
 class MM_CollectionStatistics;
+class MM_EnvironmentBase;
 class MM_MarkMap;
 class MM_MemorySubSpace;
 class MM_WorkPacketsVLHGC;
@@ -41,6 +42,14 @@ public:
 		CT_GLOBAL_GARBAGE_COLLECTION = 0, /**< Global tracing to create a valid mark map across the entire heap (with possible reclamation) */
 		CT_PARTIAL_GARBAGE_COLLECTION = 1, /**< Partial heap trace / reclaim */
 		CT_GLOBAL_MARK_PHASE = 2, /**< Global mark phase type (performs a full heap trace to build a fresh mark map) */
+	};
+
+	enum CollectionReason {
+		gc_reason_other = 0,
+		gc_reason_system_gc,
+		gc_reason_alloc_failure,
+		gc_reason_alloc_taxation,
+		gc_reason_concurrent_kickoff,
 	};
 
 	MM_GCCode _gcCode;
@@ -62,12 +71,6 @@ public:
 		state_process_work_packets_after_initial_mark,
 		state_final_roots_complete,
 	} _markDelegateState; /**< The state of the MarkDelegate's incremental state machine (part of the cycle since multiple cycles could be in different places in the machine) */
-
-	enum CollectionReason {
-		gc_reason_other = 0,
-		gc_reason_alloc_failure = 1,
-		gc_reason_system_gc = 2,
-	} _collectionReason; /**< The reason for the collection (used for event reporting [JFR]) */
 
 	struct {
 		uintptr_t _survivorSetRegionCount; /**< Count of regions Copy Forward used as destination. Effective usage of regions is accounted, thus the count is not a cardinal number. */
@@ -101,6 +104,7 @@ public:
 	};
 
 	uintptr_t _referenceObjectOptions; /**< A bitmask controlling how Reference objects are treated during marking */
+	CollectionReason _collectionReason; /**< The reason for the collection (transferred from environment for event reporting) */
 
 public:
 	MM_CycleState()
@@ -114,7 +118,6 @@ public:
 		, _noCompactionAfterSweep(false)
 		, _collectionType(CT_GLOBAL_GARBAGE_COLLECTION)
 		, _markDelegateState(state_mark_idle)
-		, _collectionReason(gc_reason_other)
 		, _currentIncrement(0)
 		, _currentCycleID(0)
 		, _startTime(0)
@@ -125,6 +128,7 @@ public:
 		, _type(OMR_GC_CYCLE_TYPE_DEFAULT)
 		, _verboseContextID(0)
 		, _referenceObjectOptions(references_default)
+		, _collectionReason(gc_reason_other)
 	{
 	}
 };

@@ -173,6 +173,7 @@ void oldToOldReferenceCreated(MM_EnvironmentBase *env, omrobjectptr_t objectPtr)
 void
 MM_ConcurrentGC::reportConcurrentKickoff(MM_EnvironmentBase *env)
 {
+	env->_collectionReason = MM_CycleState::gc_reason_concurrent_kickoff;
 	OMRPORT_ACCESS_FROM_ENVIRONMENT(env);
 
 	Trc_MM_ConcurrentKickoff(env->getLanguageVMThread(),
@@ -1682,6 +1683,8 @@ MM_ConcurrentGC::timeToKickoffConcurrent(MM_EnvironmentBase *env, MM_AllocateDes
 			}
 			_extensions->setConcurrentGlobalGCInProgress(true);
 			reportConcurrentKickoff(env);
+			/* Transfer collection reason to concurrent cycle state */
+			_concurrentCycleState._collectionReason = env->_collectionReason;
 		}
 		return true;
 	} else {
@@ -1965,6 +1968,8 @@ MM_ConcurrentGC::internalPreCollect(MM_EnvironmentBase *env, MM_MemorySubSpace *
 		env->_cycleState->_gcCode = MM_GCCode(gcCode);
 		env->_cycleState->_activeSubSpace = subSpace;
 		env->_cycleState->_collectionStatistics = &_collectionStatistics;
+		/* Transfer collection reason from environment to cycle state */
+		env->_cycleState->_collectionReason = env->_collectionReason;
 
 		/* Report concurrent-end now, concurrent-start was reported but we didn't get
 		 * the opportunity to report concurrent-end (due to GC idle collection or concurrent halted)

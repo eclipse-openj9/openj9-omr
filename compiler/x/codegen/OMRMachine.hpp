@@ -193,16 +193,7 @@ public:
 
     void createRegisterAssociationDirective(TR::Instruction *cursor);
 
-    //
-    // Methods to support the IA32 floating point register stack.
-    //
-
-    TR::InstOpCode::Mnemonic fpDeterminePopOpCode(TR::InstOpCode::Mnemonic op);
-    TR::InstOpCode::Mnemonic fpDetermineReverseOpCode(TR::InstOpCode::Mnemonic op);
-
     TR::MemoryReference *getDummyLocalMR(TR::DataType dt);
-
-    void setFPTopOfStack(TR::Register *vreg);
 
     uint8_t fpGetNumberOfLiveFPRs() { return 0; }
 

@@ -90,8 +90,6 @@ void OMR::X86::Instruction::assumeValidInstruction()
 bool OMR::X86::Instruction::isRegRegMove()
 {
     switch (self()->getOpCodeValue()) {
-        case TR::InstOpCode::FLDRegReg:
-        case TR::InstOpCode::DLDRegReg:
         case TR::InstOpCode::MOVAPSRegReg:
         case TR::InstOpCode::MOVAPDRegReg:
         case TR::InstOpCode::MOVUPSRegReg:

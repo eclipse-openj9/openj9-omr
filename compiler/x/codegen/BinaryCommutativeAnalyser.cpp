@@ -151,26 +151,12 @@ TR::Register *TR_X86BinaryCommutativeAnalyser::genericAnalyserImpl(TR::Node *roo
         targetRegister = secondRegister;
         notReversedOperands();
     } else if (getCopyReg1()) {
-        TR::Register *tempReg;
-        if (TR::InstOpCode::fprOp(copyOpCode) == 0) {
-            tempReg = _cg->allocateRegister();
-        } else if (TR::InstOpCode::singleFPOp(copyOpCode)) {
-            tempReg = _cg->allocateSinglePrecisionRegister(TR_X87);
-        } else {
-            tempReg = _cg->allocateRegister(TR_X87);
-        }
+        TR::Register *tempReg = _cg->allocateRegister();
         targetRegister = tempReg;
         generateRegRegInstruction(copyOpCode, root, tempReg, firstRegister, _cg);
         generateRegRegInstruction(regRegOpCode, root, tempReg, secondRegister, _cg);
     } else if (getCopyReg2()) {
-        TR::Register *tempReg;
-        if (TR::InstOpCode::fprOp(copyOpCode) == 0) {
-            tempReg = _cg->allocateRegister();
-        } else if (TR::InstOpCode::singleFPOp(copyOpCode)) {
-            tempReg = _cg->allocateSinglePrecisionRegister(TR_X87);
-        } else {
-            tempReg = _cg->allocateRegister(TR_X87);
-        }
+        TR::Register *tempReg = _cg->allocateRegister();
         targetRegister = tempReg;
         generateRegRegInstruction(copyOpCode, root, tempReg, secondRegister, _cg);
         generateRegRegInstruction(regRegOpCode, root, tempReg, firstRegister, _cg);

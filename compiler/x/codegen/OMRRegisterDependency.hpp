@@ -258,7 +258,6 @@ public:
 
 #if defined(DEBUG) || defined(PROD_WITH_ASSUMES)
     uint32_t numReferencedGPRegisters(TR::CodeGenerator *);
-    uint32_t numReferencedFPRegisters(TR::CodeGenerator *);
     void printFullRegisterDependencyInfo(OMR::Logger *log);
 #endif /* defined(DEBUG) || defined(PROD_WITH_ASSUMES) */
 };

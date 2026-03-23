@@ -1552,13 +1552,6 @@ void OMR::X86::Machine::initializeRegisterFile(const struct TR::X86LinkageProper
 
     // Other register kinds
     //
-    for (reg = TR::RealRegister::FirstFPR; reg <= TR::RealRegister::LastFPR; reg++) {
-        _registerFile[reg] = new (self()->cg()->trHeapMemory()) TR::RealRegister(TR_X87,
-            properties.isPreservedRegister((TR::RealRegister::RegNum)reg) ? PRESERVED_WEIGHT : NONPRESERVED_WEIGHT,
-            TR::RealRegister::Free, (TR::RealRegister::RegNum)reg,
-            TR::RealRegister::fprMask((TR::RealRegister::RegNum)reg), self()->cg());
-    }
-
     for (reg = TR::RealRegister::FirstXMMR; reg <= TR::RealRegister::LastXMMR; reg++) {
         _registerFile[reg] = new (self()->cg()->trHeapMemory()) TR::RealRegister(TR_FPR,
             properties.isPreservedRegister((TR::RealRegister::RegNum)reg) ? PRESERVED_WEIGHT : NONPRESERVED_WEIGHT,
@@ -2268,27 +2261,6 @@ void OMR::X86::Machine::printGPRegisterStatus(OMR::Logger *log, TR_FrontEnd *fe,
     }
     for (i = TR::RealRegister::FirstXMMR; i <= TR::RealRegister::LastXMMR; i++) {
         printOneRegisterStatus(log, fe, self()->getDebug(), registerFile[i]);
-    }
-
-    log->flush();
-}
-
-// Dump the FP register stack
-//
-void OMR::X86::Machine::printFPRegisterStatus(OMR::Logger *log, TR_FrontEnd *fe)
-{
-    const size_t bufSize = 32;
-    char buf[bufSize];
-    char *cursor;
-    int32_t i;
-
-    log->prints("\n  FP Reg Status:          Register         State        Assigned      Total Future\n");
-    for (i = 0; i < 8; i++) {
-        memset(buf, ' ', 25);
-        cursor = buf + 17;
-        size_t remainingSize = bufSize - 17;
-        snprintf(cursor, remainingSize, "st%d:", i);
-        log->printf("%s [ empty      ]\n", buf);
     }
 
     log->flush();

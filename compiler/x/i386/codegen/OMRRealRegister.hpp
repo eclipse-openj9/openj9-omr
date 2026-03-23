@@ -113,33 +113,6 @@ public:
         }
     }
 
-    static RegMask fprMask(RegNum idx)
-    {
-        switch (idx) {
-            case OMR::RealRegister::NoReg:
-                return OMR::RealRegister::noRegMask;
-            case OMR::RealRegister::st0:
-                return OMR::RealRegister::st0Mask;
-            case OMR::RealRegister::st1:
-                return OMR::RealRegister::st1Mask;
-            case OMR::RealRegister::st2:
-                return OMR::RealRegister::st2Mask;
-            case OMR::RealRegister::st3:
-                return OMR::RealRegister::st3Mask;
-            case OMR::RealRegister::st4:
-                return OMR::RealRegister::st4Mask;
-            case OMR::RealRegister::st5:
-                return OMR::RealRegister::st5Mask;
-            case OMR::RealRegister::st6:
-                return OMR::RealRegister::st6Mask;
-            case OMR::RealRegister::st7:
-                return OMR::RealRegister::st7Mask;
-            default:
-                TR_ASSERT(false, "fprMask is only valid for registers st0 to st7");
-                return OMR::RealRegister::noRegMask;
-        }
-    }
-
     static RegMask vectorMaskMask(RegNum idx)
     {
         switch (idx) {

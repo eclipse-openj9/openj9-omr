@@ -150,10 +150,6 @@ class X86MemRegImmInstruction;
 class X86RegMemInstruction;
 class X86RegMemImmInstruction;
 class X86RegRegMemInstruction;
-class X86FPRegInstruction;
-class X86FPRegRegInstruction;
-class X86FPMemRegInstruction;
-class X86FPRegMemInstruction;
 class X86RestartSnippet;
 class X86PicDataSnippet;
 class X86DivideCheckSnippet;
@@ -561,8 +557,31 @@ public:
     virtual const char *getName(TR::LabelSymbol *);
     virtual const char *getName(TR::SymbolReference *);
     virtual const char *getName(TR::Register *, TR_RegisterSizes = TR_WordReg);
+
+    /**
+     * @brief Answers whether the type of data stored in a register should
+     *     influence the register size being used. This is primarily
+     *     useful when printing register names and ensuring the best
+     *     register name is printed for the context.
+     *
+     * @return true if this platform should use the data type to refine the
+     *     register size; false otherwise.
+     */
+    virtual bool refineRegisterSizeForDataType();
     virtual const char *getRealRegisterName(uint32_t regNum);
     virtual const char *getGlobalRegisterName(TR_GlobalRegisterNumber regNum, TR_RegisterSizes size = TR_WordReg);
+
+    /**
+     * @brief Returns a const char * string corresponding to the given register number.
+     *     The choice of register name is further refined by the data type if desired
+     *     by a particular platform.
+     *
+     * @param[in] regNum : the register to return the name for
+     * @param[in] dt : the data type of the data to be stored in the register
+     *
+     * @return a const char * string for the name of the register
+     */
+    virtual const char *getGlobalRegisterName(TR_GlobalRegisterNumber regNum, TR::DataType dt);
     virtual const char *getName(TR::Snippet *);
     virtual const char *getName(TR::Node *);
     virtual const char *getName(TR::Symbol *);
@@ -909,10 +928,6 @@ public:
     void print(OMR::Logger *log, TR::X86RegMaskMemInstruction *);
     void print(OMR::Logger *log, TR::X86RegMemImmInstruction *);
     void print(OMR::Logger *log, TR::X86RegRegMemInstruction *);
-    void print(OMR::Logger *log, TR::X86FPRegInstruction *);
-    void print(OMR::Logger *log, TR::X86FPRegRegInstruction *);
-    void print(OMR::Logger *log, TR::X86FPMemRegInstruction *);
-    void print(OMR::Logger *log, TR::X86FPRegMemInstruction *);
     void print(OMR::Logger *log, TR::AMD64Imm64Instruction *);
     void print(OMR::Logger *log, TR::AMD64Imm64SymInstruction *);
     void print(OMR::Logger *log, TR::AMD64RegImm64Instruction *);
@@ -1261,6 +1276,17 @@ public:
     void printAssocRegDirective(OMR::Logger *log, TR::Instruction *);
 
     const char *getARM64RegisterName(uint32_t, bool = true);
+
+    /**
+     * @brief Returns a const char * string for the name of the given
+     *     register refined by the provided register size
+     *
+     * @param[in] regNum : register number
+     * @param[in[ size : the size of register to output
+     *
+     * @return const char * string for the register name
+     */
+    const char *getName(uint32_t regNum, TR_RegisterSizes size);
 
     void printa64(OMR::Logger *log, TR::Snippet *);
     const char *getNamea64(TR::Snippet *);

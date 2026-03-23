@@ -69,7 +69,6 @@ public:
         REX_B = 0x01
     };
 
-    static TR::RealRegister *regMaskToRealRegister(TR_RegisterMask mask, TR_RegisterKinds rk, TR::CodeGenerator *cg);
     static TR_RegisterMask getAvailableRegistersMask(TR_RegisterKinds rk);
     static RegMask getRealRegisterMask(TR_RegisterKinds rk, RegNum idx);
     using OMR::RealRegister::getRealRegisterMask; // for getting the _registerMask member

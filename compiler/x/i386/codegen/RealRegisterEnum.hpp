@@ -33,23 +33,33 @@ NoReg = 0,
 
     vfp = 9,
 
-    FPRMaskOffset = LastGPR, st0 = 10, FirstFPR = st0, st1 = 11, st2 = 12, st3 = 13, st4 = 14, st5 = 15, st6 = 16,
-    st7 = 17, LastFPR = st7, LastAssignableFPR = st7,
+    // st0Return is used for 32-bit linkages where floating point values are
+    // returned in x87 register st0. It is a special register that cannot be
+    // assigned.
+    //
+    st0Return = 10,
 
-    XMMRMaskOffset = LastGPR, xmm0 = 18, FirstXMMR = xmm0, xmm1 = 19, xmm2 = 20, xmm3 = 21, xmm4 = 22, xmm5 = 23,
-    xmm6 = 24, xmm7 = 25, LastXMMR = xmm7,
+    xmm0 = 11, FirstXMMR = xmm0, xmm1 = 12, xmm2 = 13, xmm3 = 14, xmm4 = 15, xmm5 = 16, xmm6 = 17, xmm7 = 18,
+    LastXMMR = xmm7,
 
-    YMMRMaskOffset = LastGPR, ymm0 = xmm0, FirstYMMR = ymm0, ymm1 = xmm1, ymm2 = xmm2, ymm3 = xmm3, ymm4 = xmm4,
-    ymm5 = xmm5, ymm6 = xmm6, ymm7 = xmm7, LastYMMR = ymm7,
+    // Map the x87 registers st0-st7 over top of the xmm registers. This will
+    // aid downstream removal of st0-st7. This mapping will be removed once
+    // that refactoring is complete.
+    //
+    st0 = xmm0, FirstFPR = st0, st1 = xmm1, st2 = xmm2, st3 = xmm3, st4 = xmm4, st5 = xmm5, st6 = xmm6, st7 = xmm7,
+    LastAssignableFPR = st7,
 
-    ZMMRMaskOffset = LastGPR, zmm0 = xmm0, FirstZMMR = zmm0, zmm1 = xmm1, zmm2 = xmm2, zmm3 = xmm3, zmm4 = xmm4,
-    zmm5 = xmm5, zmm6 = xmm6, zmm7 = xmm7, LastZMMR = zmm7,
+    ymm0 = xmm0, FirstYMMR = ymm0, ymm1 = xmm1, ymm2 = xmm2, ymm3 = xmm3, ymm4 = xmm4, ymm5 = xmm5, ymm6 = xmm6,
+    ymm7 = xmm7, LastYMMR = ymm7,
+
+    zmm0 = xmm0, FirstZMMR = zmm0, zmm1 = xmm1, zmm2 = xmm2, zmm3 = xmm3, zmm4 = xmm4, zmm5 = xmm5, zmm6 = xmm6,
+    zmm7 = xmm7, LastZMMR = zmm7,
 
     // avx512 write mask registers
     // k0 -> reserved for unmasked operations
-    k0 = 26, k1 = 27, k2 = 28, k3 = 29, k4 = 30, k5 = 31, k6 = 32, k7 = 33,
+    k0 = 19, k1 = 20, k2 = 21, k3 = 22, k4 = 23, k5 = 24, k6 = 25, k7 = 26,
 
-    AllFPRegisters = 34, ByteReg = 35, BestFreeReg = 36, SpilledReg = 37, NumRegisters = 38,
+    ByteReg = 27, BestFreeReg = 28, SpilledReg = 29, NumRegisters = 30,
 
     NumXMMRegisters = LastXMMR - FirstXMMR + 1,
     MaxAssignableRegisters = NumXMMRegisters + (LastAssignableGPR - FirstGPR + 1) - 1 // -1 for stack pointer

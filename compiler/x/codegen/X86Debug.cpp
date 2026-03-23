@@ -130,15 +130,6 @@ void TR_Debug::printx(OMR::Logger *log, TR::Instruction *instr)
         case TR::Instruction::IsRegRegImm:
             print(log, (TR::X86RegRegImmInstruction *)instr);
             break;
-        case TR::Instruction::IsFPRegReg:
-        case TR::Instruction::IsFPST0ST1RegReg:
-        case TR::Instruction::IsFPST0STiRegReg:
-        case TR::Instruction::IsFPSTiST0RegReg:
-        case TR::Instruction::IsFPArithmeticRegReg:
-        case TR::Instruction::IsFPCompareRegReg:
-        case TR::Instruction::IsFPRemainderRegReg:
-            print(log, (TR::X86FPRegRegInstruction *)instr);
-            break;
 #ifdef TR_TARGET_64BIT
         case TR::Instruction::IsRegImm64:
         case TR::Instruction::IsRegImm64Sym:
@@ -157,12 +148,6 @@ void TR_Debug::printx(OMR::Logger *log, TR::Instruction *instr)
             break;
         case TR::Instruction::IsRegRegMem:
             print(log, (TR::X86RegRegMemInstruction *)instr);
-            break;
-        case TR::Instruction::IsFPRegMem:
-            print(log, (TR::X86FPRegMemInstruction *)instr);
-            break;
-        case TR::Instruction::IsFPReg:
-            print(log, (TR::X86FPRegInstruction *)instr);
             break;
         case TR::Instruction::IsMem:
         case TR::Instruction::IsMemTable:
@@ -183,9 +168,6 @@ void TR_Debug::printx(OMR::Logger *log, TR::Instruction *instr)
         case TR::Instruction::IsMemRegImm:
             print(log, (TR::X86MemRegImmInstruction *)instr);
             break;
-        case TR::Instruction::IsFPMemReg:
-            print(log, (TR::X86FPMemRegInstruction *)instr);
-            break;
         case TR::Instruction::IsVFPSave:
             print(log, (TR::X86VFPSaveInstruction *)instr);
             break;
@@ -204,7 +186,6 @@ void TR_Debug::printx(OMR::Logger *log, TR::Instruction *instr)
         default:
             TR_ASSERT(0, "Unknown instruction kind");
             // fall thru
-        case TR::Instruction::IsFPCompareEval:
         case TR::Instruction::IsNotExtended: {
             printPrefix(log, instr);
             log->printf("%-32s", getMnemonicName(&instr->getOpCode()));
@@ -240,9 +221,7 @@ void TR_Debug::printDependencyConditions(OMR::Logger *log, TR::RegisterDependenc
         *(cursor++) = '(';
         remainingSize--;
         TR::RegisterDependency *regDep = conditions->getRegisterDependency(i);
-        if (regDep->isAllFPRegisters()) {
-            len = snprintf(cursor, remainingSize, "AllFP");
-        } else if (regDep->isNoReg()) {
+        if (regDep->isNoReg()) {
             len = snprintf(cursor, remainingSize, "NoReg");
         } else if (regDep->isByteReg()) {
             len = snprintf(cursor, remainingSize, "ByteReg");
@@ -292,27 +271,22 @@ void TR_Debug::dumpDependencyGroup(OMR::Logger *log, TR::RegisterDependencyGroup
         TR::RegisterDependency *regDep = group->getRegisterDependency(i);
         virtReg = regDep->getRegister();
 
-        if (omitNullDependencies) {
-            if (!virtReg && !regDep->isAllFPRegisters())
-                continue;
+        if (omitNullDependencies && !virtReg) {
+            continue;
         }
 
-        if (regDep->isAllFPRegisters()) {
-            log->prints(" [All FPRs]");
-        } else {
-            r = regDep->getRealRegister();
-            log->printf(" [%s : ", getName(virtReg));
-            if (regDep->isNoReg())
-                log->prints("NoReg]");
-            else if (regDep->isByteReg())
-                log->prints("ByteReg]");
-            else if (regDep->isBestFreeReg())
-                log->prints("BestFreeReg]");
-            else if (regDep->isSpilledReg())
-                log->prints("SpilledReg]");
-            else
-                log->printf("%s]", getName(_cg->machine()->getRealRegister(r)));
-        }
+        r = regDep->getRealRegister();
+        log->printf(" [%s : ", getName(virtReg));
+        if (regDep->isNoReg())
+            log->prints("NoReg]");
+        else if (regDep->isByteReg())
+            log->prints("ByteReg]");
+        else if (regDep->isBestFreeReg())
+            log->prints("BestFreeReg]");
+        else if (regDep->isSpilledReg())
+            log->prints("SpilledReg]");
+        else
+            log->printf("%s]", getName(_cg->machine()->getRealRegister(r)));
 
         foundDep = true;
     }
@@ -1214,72 +1188,6 @@ void TR_Debug::printReferencedRegisterInfo(OMR::Logger *log, TR::X86RegRegMemIns
     log->flush();
 }
 
-void TR_Debug::print(OMR::Logger *log, TR::X86FPRegInstruction *instr)
-{
-    printPrefix(log, instr);
-    log->printf("%s\t", getMnemonicName(&instr->getOpCode()));
-    if (!(instr->getOpCode().targetRegIsImplicit() != 0))
-        print(log, instr->getTargetRegister());
-
-    printInstructionComment(log, 3, instr);
-    printFPRegisterComment(log, instr->getTargetRegister(), NULL);
-    dumpDependencies(log, instr);
-    log->flush();
-}
-
-void TR_Debug::print(OMR::Logger *log, TR::X86FPRegRegInstruction *instr)
-{
-    printPrefix(log, instr);
-    log->printf("%s\t", getMnemonicName(&instr->getOpCode()));
-    if (!(instr->getOpCode().targetRegIsImplicit() != 0))
-        print(log, instr->getTargetRegister());
-    if (!(instr->getOpCode().targetRegIsImplicit() != 0) && !(instr->getOpCode().sourceRegIsImplicit() != 0))
-        log->prints(", ");
-    if (!(instr->getOpCode().sourceRegIsImplicit() != 0))
-        print(log, instr->getSourceRegister());
-    printInstructionComment(log, 2, instr);
-    printFPRegisterComment(log, instr->getTargetRegister(), instr->getSourceRegister());
-    dumpDependencies(log, instr);
-    log->flush();
-}
-
-void TR_Debug::print(OMR::Logger *log, TR::X86FPMemRegInstruction *instr)
-{
-    printPrefix(log, instr);
-    log->printf("%s\t", getMnemonicName(&instr->getOpCode()));
-    print(log, instr->getMemoryReference(), getTargetSizeFromInstruction(instr));
-    if (!(instr->getOpCode().sourceRegIsImplicit() != 0)) {
-        log->prints(", ");
-        print(log, instr->getSourceRegister());
-    }
-    printInstructionComment(log, 1, instr);
-    printFPRegisterComment(log, NULL, instr->getSourceRegister());
-    printMemoryReferenceComment(log, instr->getMemoryReference());
-    dumpDependencies(log, instr);
-    log->flush();
-}
-
-void TR_Debug::print(OMR::Logger *log, TR::X86FPRegMemInstruction *instr)
-{
-    int32_t barrier = memoryBarrierRequired(instr->getOpCode(), instr->getMemoryReference(), _cg, false);
-    int32_t barrierOffset = printPrefixAndMnemonicWithoutBarrier(log, instr, barrier);
-
-    if (!(instr->getOpCode().targetRegIsImplicit() != 0)) {
-        print(log, instr->getTargetRegister());
-        log->prints(", ");
-    }
-    print(log, instr->getMemoryReference(), getSourceSizeFromInstruction(instr));
-    printInstructionComment(log, 1, instr);
-    printFPRegisterComment(log, instr->getTargetRegister(), NULL);
-    printMemoryReferenceComment(log, instr->getMemoryReference());
-
-    if (barrier & NeedsExplicitBarrier)
-        printPrefixAndMemoryBarrier(log, instr, barrier, barrierOffset);
-
-    dumpDependencies(log, instr);
-    log->flush();
-}
-
 void TR_Debug::print(OMR::Logger *log, TR::MemoryReference *mr, TR_RegisterSizes operandSize)
 {
     const char *typeSpecifier[10] = { "byte", // TR_ByteReg
@@ -1899,73 +1807,14 @@ const char *TR_Debug::getName(uint32_t realRegisterIndex, TR_RegisterSizes size)
                 default:
                     return unknownRegisterName('v');
             } // 3 is for AMD64
-        case TR::RealRegister::st0:
-            switch (size) {
-                case 2:
-                case -1:
-                    return "st(0)";
-                default:
-                    return unknownRegisterName('s');
-            }
-        case TR::RealRegister::st1:
-            switch (size) {
-                case 2:
-                case -1:
-                    return "st(1)";
-                default:
-                    return unknownRegisterName('s');
-            }
-        case TR::RealRegister::st2:
-            switch (size) {
-                case 2:
-                case -1:
-                    return "st(2)";
-                default:
-                    return unknownRegisterName('s');
-            }
-        case TR::RealRegister::st3:
-            switch (size) {
-                case 2:
-                case -1:
-                    return "st(3)";
-                default:
-                    return unknownRegisterName('s');
-            }
-        case TR::RealRegister::st4:
-            switch (size) {
-                case 2:
-                case -1:
-                    return "st(4)";
-                default:
-                    return unknownRegisterName('s');
-            }
-        case TR::RealRegister::st5:
-            switch (size) {
-                case 2:
-                case -1:
-                    return "st(5)";
-                default:
-                    return unknownRegisterName('s');
-            }
-        case TR::RealRegister::st6:
-            switch (size) {
-                case 2:
-                case -1:
-                    return "st(6)";
-                default:
-                    return unknownRegisterName('s');
-            }
-        case TR::RealRegister::st7:
-            switch (size) {
-                case 2:
-                case -1:
-                    return "st(7)";
-                default:
-                    return unknownRegisterName('s');
-            }
+        case TR::RealRegister::st0Return:
+            return "st0";
         case TR::RealRegister::xmm0:
             switch (size) {
-                case 4:
+                case TR_QuadWordReg:
+                case TR_FloatReg:
+                case TR_DoubleReg:
+                case TR_VectorReg128:
                 case -1:
                     return "xmm0";
                 case TR_VectorReg256:
@@ -1977,7 +1826,10 @@ const char *TR_Debug::getName(uint32_t realRegisterIndex, TR_RegisterSizes size)
             }
         case TR::RealRegister::xmm1:
             switch (size) {
-                case 4:
+                case TR_QuadWordReg:
+                case TR_FloatReg:
+                case TR_DoubleReg:
+                case TR_VectorReg128:
                 case -1:
                     return "xmm1";
                 case TR_VectorReg256:
@@ -1989,7 +1841,10 @@ const char *TR_Debug::getName(uint32_t realRegisterIndex, TR_RegisterSizes size)
             }
         case TR::RealRegister::xmm2:
             switch (size) {
-                case 4:
+                case TR_QuadWordReg:
+                case TR_FloatReg:
+                case TR_DoubleReg:
+                case TR_VectorReg128:
                 case -1:
                     return "xmm2";
                 case TR_VectorReg256:
@@ -2001,7 +1856,10 @@ const char *TR_Debug::getName(uint32_t realRegisterIndex, TR_RegisterSizes size)
             }
         case TR::RealRegister::xmm3:
             switch (size) {
-                case 4:
+                case TR_QuadWordReg:
+                case TR_FloatReg:
+                case TR_DoubleReg:
+                case TR_VectorReg128:
                 case -1:
                     return "xmm3";
                 case TR_VectorReg256:
@@ -2013,7 +1871,10 @@ const char *TR_Debug::getName(uint32_t realRegisterIndex, TR_RegisterSizes size)
             }
         case TR::RealRegister::xmm4:
             switch (size) {
-                case 4:
+                case TR_QuadWordReg:
+                case TR_FloatReg:
+                case TR_DoubleReg:
+                case TR_VectorReg128:
                 case -1:
                     return "xmm4";
                 case TR_VectorReg256:
@@ -2025,7 +1886,10 @@ const char *TR_Debug::getName(uint32_t realRegisterIndex, TR_RegisterSizes size)
             }
         case TR::RealRegister::xmm5:
             switch (size) {
-                case 4:
+                case TR_QuadWordReg:
+                case TR_FloatReg:
+                case TR_DoubleReg:
+                case TR_VectorReg128:
                 case -1:
                     return "xmm5";
                 case TR_VectorReg256:
@@ -2037,7 +1901,10 @@ const char *TR_Debug::getName(uint32_t realRegisterIndex, TR_RegisterSizes size)
             }
         case TR::RealRegister::xmm6:
             switch (size) {
-                case 4:
+                case TR_QuadWordReg:
+                case TR_FloatReg:
+                case TR_DoubleReg:
+                case TR_VectorReg128:
                 case -1:
                     return "xmm6";
                 case TR_VectorReg256:
@@ -2049,7 +1916,10 @@ const char *TR_Debug::getName(uint32_t realRegisterIndex, TR_RegisterSizes size)
             }
         case TR::RealRegister::xmm7:
             switch (size) {
-                case 4:
+                case TR_QuadWordReg:
+                case TR_FloatReg:
+                case TR_DoubleReg:
+                case TR_VectorReg128:
                 case -1:
                     return "xmm7";
                 case TR_VectorReg256:
@@ -2062,7 +1932,10 @@ const char *TR_Debug::getName(uint32_t realRegisterIndex, TR_RegisterSizes size)
 #ifdef TR_TARGET_64BIT
         case TR::RealRegister::xmm8:
             switch (size) {
-                case 4:
+                case TR_QuadWordReg:
+                case TR_FloatReg:
+                case TR_DoubleReg:
+                case TR_VectorReg128:
                 case -1:
                     return "xmm8";
                 case TR_VectorReg256:
@@ -2074,7 +1947,10 @@ const char *TR_Debug::getName(uint32_t realRegisterIndex, TR_RegisterSizes size)
             }
         case TR::RealRegister::xmm9:
             switch (size) {
-                case 4:
+                case TR_QuadWordReg:
+                case TR_FloatReg:
+                case TR_DoubleReg:
+                case TR_VectorReg128:
                 case -1:
                     return "xmm9";
                 case TR_VectorReg256:
@@ -2086,7 +1962,10 @@ const char *TR_Debug::getName(uint32_t realRegisterIndex, TR_RegisterSizes size)
             }
         case TR::RealRegister::xmm10:
             switch (size) {
-                case 4:
+                case TR_QuadWordReg:
+                case TR_FloatReg:
+                case TR_DoubleReg:
+                case TR_VectorReg128:
                 case -1:
                     return "xmm10";
                 case TR_VectorReg256:
@@ -2098,7 +1977,10 @@ const char *TR_Debug::getName(uint32_t realRegisterIndex, TR_RegisterSizes size)
             }
         case TR::RealRegister::xmm11:
             switch (size) {
-                case 4:
+                case TR_QuadWordReg:
+                case TR_FloatReg:
+                case TR_DoubleReg:
+                case TR_VectorReg128:
                 case -1:
                     return "xmm11";
                 case TR_VectorReg256:
@@ -2110,7 +1992,10 @@ const char *TR_Debug::getName(uint32_t realRegisterIndex, TR_RegisterSizes size)
             }
         case TR::RealRegister::xmm12:
             switch (size) {
-                case 4:
+                case TR_QuadWordReg:
+                case TR_FloatReg:
+                case TR_DoubleReg:
+                case TR_VectorReg128:
                 case -1:
                     return "xmm12";
                 case TR_VectorReg256:
@@ -2122,7 +2007,10 @@ const char *TR_Debug::getName(uint32_t realRegisterIndex, TR_RegisterSizes size)
             }
         case TR::RealRegister::xmm13:
             switch (size) {
-                case 4:
+                case TR_QuadWordReg:
+                case TR_FloatReg:
+                case TR_DoubleReg:
+                case TR_VectorReg128:
                 case -1:
                     return "xmm13";
                 case TR_VectorReg256:
@@ -2134,7 +2022,10 @@ const char *TR_Debug::getName(uint32_t realRegisterIndex, TR_RegisterSizes size)
             }
         case TR::RealRegister::xmm14:
             switch (size) {
-                case 4:
+                case TR_QuadWordReg:
+                case TR_FloatReg:
+                case TR_DoubleReg:
+                case TR_VectorReg128:
                 case -1:
                     return "xmm14";
                 case TR_VectorReg256:
@@ -2146,7 +2037,10 @@ const char *TR_Debug::getName(uint32_t realRegisterIndex, TR_RegisterSizes size)
             }
         case TR::RealRegister::xmm15:
             switch (size) {
-                case 4:
+                case TR_QuadWordReg:
+                case TR_FloatReg:
+                case TR_DoubleReg:
+                case TR_VectorReg128:
                 case -1:
                     return "xmm15";
                 case TR_VectorReg256:
@@ -2181,31 +2075,6 @@ const char *TR_Debug::getName(uint32_t realRegisterIndex, TR_RegisterSizes size)
 
 const char *TR_Debug::getName(TR::RealRegister *reg, TR_RegisterSizes size)
 {
-    if (reg->getKind() == TR_X87) {
-        switch (reg->getRegisterNumber()) {
-            case TR::RealRegister::st0:
-                return "st(0)";
-            case TR::RealRegister::st1:
-                return "st(1)";
-            case TR::RealRegister::st2:
-                return "st(2)";
-            case TR::RealRegister::st3:
-                return "st(3)";
-            case TR::RealRegister::st4:
-                return "st(4)";
-            case TR::RealRegister::st5:
-                return "st(5)";
-            case TR::RealRegister::st6:
-                return "st(6)";
-            case TR::RealRegister::st7:
-                return "st(7)";
-
-            default:
-                TR_ASSERT(0, "unexpected FPR number");
-                return unknownRegisterName('s');
-        }
-    }
-
     if ((reg->getKind() == TR_FPR && size != TR_VectorReg256 && size != TR_VectorReg512) || reg->getKind() == TR_VRF)
         size = TR_QuadWordReg;
 

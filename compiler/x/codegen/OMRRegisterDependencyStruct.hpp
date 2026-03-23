@@ -47,12 +47,6 @@ namespace OMR { namespace X86 {
 
 struct RegisterDependency : OMR::RegisterDependency {
     /**
-     * @return Answers \c true if this register dependency refers to all x87 floating
-     *         point registers collectively; \c false otherwise.
-     */
-    bool isAllFPRegisters() { return _realRegister == TR::RealRegister::AllFPRegisters; }
-
-    /**
      * @return Answers \c true if this register dependency is a request for the
      *         best free register from the perspective of the register assigner;
      *         \c false otherwise.

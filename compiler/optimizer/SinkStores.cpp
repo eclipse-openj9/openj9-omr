@@ -1689,7 +1689,7 @@ TR::RegisterMappedSymbol *TR_SinkStores::getSinkableSymbol(TR::Node *node)
 }
 
 bool TR_SinkStores::treeIsSinkableStore(TR::Node *node, bool sinkIndirectLoads, uint32_t &indirectLoadCount,
-    int32_t &depth, bool &isLoadStatic, vcount_t visitCount)
+    int32_t &depth, bool &isLoadStatic, vcount_t visitCount, bool underCommonedNode)
 {
     OMR::Logger *log = comp()->log();
 
@@ -1700,11 +1700,9 @@ bool TR_SinkStores::treeIsSinkableStore(TR::Node *node, bool sinkIndirectLoads, 
     }
 
     int32_t numChildren = node->getNumChildren();
-    static bool underCommonedNode;
 
-    /* initialization upon first entry */
     if (depth == 0) {
-        underCommonedNode = false;
+        TR_ASSERT_FATAL(!underCommonedNode, "underCommonedNode must not be true at root of a tree\n");
     }
 
     if (numChildren == 0) {
@@ -1793,18 +1791,17 @@ bool TR_SinkStores::treeIsSinkableStore(TR::Node *node, bool sinkIndirectLoads, 
     }
 
     int32_t currentDepth = ++depth;
-    bool previouslyCommoned = underCommonedNode;
     if (node->getReferenceCount() > 1)
         underCommonedNode = true;
     for (int32_t c = 0; c < numChildren; c++) {
         int32_t childDepth = currentDepth;
         TR::Node *child = node->getChild(c);
-        if (!treeIsSinkableStore(child, sinkIndirectLoads, indirectLoadCount, childDepth, isLoadStatic, visitCount))
+        if (!treeIsSinkableStore(child, sinkIndirectLoads, indirectLoadCount, childDepth, isLoadStatic, visitCount,
+                underCommonedNode))
             return false;
         if (childDepth > depth)
             depth = childDepth;
     }
-    underCommonedNode = previouslyCommoned;
     return true;
 }
 

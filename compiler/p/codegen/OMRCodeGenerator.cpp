@@ -1678,6 +1678,7 @@ bool OMR::Power::CodeGenerator::getSupportsOpCodeForAutoSIMD(TR::CPU *cpu, TR::I
         case TR::mLongBitsToMask:
             return cpu->isAtLeast(OMR_PROCESSOR_PPC_P10);
         case TR::mFirstTrue:
+        case TR::mLastTrue:
             if (cpu->isAtLeast(OMR_PROCESSOR_PPC_P9))
                 return true;
             else

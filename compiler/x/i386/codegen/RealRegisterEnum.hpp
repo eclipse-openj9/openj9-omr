@@ -42,13 +42,6 @@ NoReg = 0,
     xmm0 = 11, FirstXMMR = xmm0, xmm1 = 12, xmm2 = 13, xmm3 = 14, xmm4 = 15, xmm5 = 16, xmm6 = 17, xmm7 = 18,
     LastXMMR = xmm7,
 
-    // Map the x87 registers st0-st7 over top of the xmm registers. This will
-    // aid downstream removal of st0-st7. This mapping will be removed once
-    // that refactoring is complete.
-    //
-    st0 = xmm0, FirstFPR = st0, st1 = xmm1, st2 = xmm2, st3 = xmm3, st4 = xmm4, st5 = xmm5, st6 = xmm6, st7 = xmm7,
-    LastAssignableFPR = st7,
-
     ymm0 = xmm0, FirstYMMR = ymm0, ymm1 = xmm1, ymm2 = xmm2, ymm3 = xmm3, ymm4 = xmm4, ymm5 = xmm5, ymm6 = xmm6,
     ymm7 = xmm7, LastYMMR = ymm7,
 

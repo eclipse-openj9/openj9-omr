@@ -2033,6 +2033,7 @@ typedef uintptr_t (*omrsig_protected_fn)(struct OMRPortLibrary *portLib, void *h
 typedef uintptr_t (*omrsig_handler_fn)(struct OMRPortLibrary *portLib, uint32_t gpType, void *gpInfo, void *handler_arg);
 typedef uintptr_t (*OMRLibraryInfoCallback)(const char *name, void *addressLow, void *addressHigh, void *userData);
 typedef uintptr_t (*OMRProcessInfoCallback)(uintptr_t pid, const char *commandLine, void *userData);
+typedef uintptr_t (*OMRNetworkInterfaceCallback)(const char *name, uint64_t rxBytes, uint64_t txBytes, void *userData);
 
 typedef struct OMRPortLibrary {
 	/** portGlobals*/
@@ -2919,6 +2920,7 @@ typedef struct OMRPortLibrary {
 	/** see @ref omrcuda.cpp::omrcuda_streamWaitEvent "omrcuda_streamWaitEvent" */
 	int32_t (*cuda_streamWaitEvent)(struct OMRPortLibrary *portLibrary, uint32_t deviceId, J9CudaStream stream, J9CudaEvent event);
 #endif /* OMR_OPT_CUDA */
+	uintptr_t (*network_get_network_interfaces)(struct OMRPortLibrary *portLibrary, OMRNetworkInterfaceCallback callback, void *userData);
 } OMRPortLibrary;
 
 /**
@@ -3508,6 +3510,8 @@ extern J9_CFUNC int32_t omrport_getVersion(struct OMRPortLibrary *portLibrary);
 #define omrcuda_streamWaitEvent(deviceId, stream, event) \
 				privateOmrPortLibrary->cuda_streamWaitEvent(privateOmrPortLibrary, (deviceId), (stream), (event))
 #endif /* OMR_OPT_CUDA */
+#define omrnetwork_get_network_interfaces(callback, userData) \
+				privateOmrPortLibrary->network_get_network_interfaces(privateOmrPortLibrary, (callback), (userData))
 
 #endif /* !defined(OMRPORT_LIBRARY_DEFINE) */
 

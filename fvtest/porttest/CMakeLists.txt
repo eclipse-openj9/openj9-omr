@@ -33,6 +33,7 @@ omr_add_executable(omrporttest
 	omrintrospectTest.cpp
 	omrmemTest.cpp
 	omrmmapTest.cpp
+	omrnetworkTest.cpp
 	omrsignalExtendedTest.cpp
 	omrsignalTest.cpp
 	omrslTest.cpp

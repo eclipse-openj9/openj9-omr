@@ -484,6 +484,7 @@ static OMRPortLibrary MainPortLibraryTable = {
 	omrcuda_streamSynchronize, /* cuda_streamSynchronize */
 	omrcuda_streamWaitEvent, /* cuda_streamWaitEvent */
 #endif /* OMR_OPT_CUDA */
+	omrnetwork_get_network_interfaces,
 };
 
 /**

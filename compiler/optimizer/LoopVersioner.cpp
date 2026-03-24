@@ -389,6 +389,7 @@ int32_t TR_LoopVersioner::performWithoutDominators()
         TR_ScratchList<TR::TreeTop> checkCastTrees(trMemory());
         TR_ScratchList<TR::TreeTop> arrayStoreCheckTrees(trMemory());
         TR_ScratchList<TR::TreeTop> awrtbariTrees(trMemory());
+        TR_ScratchList<TR::TreeTop> asyncCheckTrees(trMemory());
         TR_ScratchList<TR::Node> specializedInvariantNodes(trMemory());
         TR_ScratchList<TR_NodeParentSymRef> invariantNodesList(trMemory());
         TR_ScratchList<TR_NodeParentSymRefWeightTuple> invariantTranslationNodesList(trMemory());
@@ -415,7 +416,6 @@ int32_t TR_LoopVersioner::performWithoutDominators()
         _seenDefinedSymbolReferences->empty();
         _writtenAndNotJustForHeapification->empty();
         _additionInfo->empty();
-        _asyncCheckTree = NULL;
 
         // Initialize induction variable information
         //
@@ -436,8 +436,8 @@ int32_t TR_LoopVersioner::performWithoutDominators()
         bool discontinue = false;
         bool nullChecksMayBeEliminated = detectChecksToBeEliminated(naturalLoop, &nullCheckedReferences,
             &nullCheckTrees, &numIndirections, &boundCheckTrees, &spineCheckTrees, &numDimensions, &conditionalTrees,
-            &divCheckTrees, &awrtbariTrees, &checkCastTrees, &arrayStoreCheckTrees, &specializedInvariantNodes,
-            invariantNodes, &invariantTranslationNodesList, discontinue);
+            &divCheckTrees, &awrtbariTrees, &checkCastTrees, &arrayStoreCheckTrees, &asyncCheckTrees,
+            &specializedInvariantNodes, invariantNodes, &invariantTranslationNodesList, discontinue);
 
         if (discontinue) {
             _curLoop = NULL;
@@ -451,9 +451,10 @@ int32_t TR_LoopVersioner::performWithoutDominators()
                     _loopTestTree->getNode()->getSecondChild());
                 _loopConditionInvariant = true;
             } else
-                _asyncCheckTree = NULL;
-        } else
-            _asyncCheckTree = NULL;
+                asyncCheckTrees.deleteAll();
+        } else {
+            asyncCheckTrees.deleteAll();
+        }
 
         bool nullChecksWillBeEliminated = false;
 
@@ -572,7 +573,7 @@ int32_t TR_LoopVersioner::performWithoutDominators()
             && (((debug("nullCheckVersion") || comp()->cg()->performsChecksExplicitly()
                      || (comp()->getMethodHotness() >= veryHot))
                     && (naturalLoop->containsOnlyAcyclicRegions() || !_loopTransferDone) && nullChecksWillBeEliminated)
-                || (_asyncCheckTree && shouldOnlySpecializeLoops()) || boundChecksWillBeEliminated
+                || (!asyncCheckTrees.isEmpty() && shouldOnlySpecializeLoops()) || boundChecksWillBeEliminated
                 || spineChecksWillBeEliminated || conditionalsWillBeEliminated || divChecksWillBeEliminated
                 || awrtBarisWillBeEliminated || checkCastTreesWillBeEliminated || arrayStoreCheckTreesWillBeEliminated
                 || specializedNodesWillBeEliminated || invariantNodesWillBeEliminated || versionToRefineAliases
@@ -581,8 +582,8 @@ int32_t TR_LoopVersioner::performWithoutDominators()
             versionedThisLoop = true;
             versionNaturalLoop(naturalLoop, &nullCheckedReferences, &nullCheckTrees, &boundCheckTrees, &spineCheckTrees,
                 &conditionalTrees, &divCheckTrees, &awrtbariTrees, &checkCastTrees, &arrayStoreCheckTrees,
-                &specializedInvariantNodes, invariantNodes, &invariantTranslationNodesList, &whileLoops,
-                &clonedInnerWhileLoops, skipAsyncCheckRemoval, reverseBranchInLoops);
+                &asyncCheckTrees, &specializedInvariantNodes, invariantNodes, &invariantTranslationNodesList,
+                &whileLoops, &clonedInnerWhileLoops, skipAsyncCheckRemoval, reverseBranchInLoops);
             _exitGotoTarget = NULL;
         }
 
@@ -2529,9 +2530,9 @@ bool TR_LoopVersioner::detectChecksToBeEliminated(TR_RegionStructure *whileLoop,
     List<TR::TreeTop> *nullCheckTrees, List<int32_t> *numIndirections, List<TR::TreeTop> *boundCheckTrees,
     List<TR::TreeTop> *spineCheckTrees, List<int32_t> *numDimensions, List<TR::TreeTop> *conditionalTrees,
     List<TR::TreeTop> *divCheckTrees, List<TR::TreeTop> *awrtbariTrees, List<TR::TreeTop> *checkCastTrees,
-    List<TR::TreeTop> *arrayStoreCheckTrees, List<TR::Node> *specializedInvariantNodes,
-    List<TR_NodeParentSymRef> *invariantNodes, List<TR_NodeParentSymRefWeightTuple> *invariantTranslationNodesList,
-    bool &discontinue)
+    List<TR::TreeTop> *arrayStoreCheckTrees, List<TR::TreeTop> *asyncCheckTrees,
+    List<TR::Node> *specializedInvariantNodes, List<TR_NodeParentSymRef> *invariantNodes,
+    List<TR_NodeParentSymRefWeightTuple> *invariantTranslationNodesList, bool &discontinue)
 {
     OMR::Logger *log = comp()->log();
     bool foundPotentialChecks = false;
@@ -2648,9 +2649,25 @@ bool TR_LoopVersioner::detectChecksToBeEliminated(TR_RegionStructure *whileLoop,
                 _nullCheckReference = currentNode->getNullCheckReference();
 
             if (currentOpCode.getOpCodeValue() == TR::asynccheck) {
-                _asyncCheckTree = currentTree;
+                // Only consider asynccheck nodes that are in the current loop - not a nested loop
+                //
+                bool isAsyncCheckInCurrentLoop = false;
 
-                if (_loopTestTree && (_loopTestTree->getNode()->getNumChildren() > 1) && _asyncCheckTree
+                TR_Structure *parent = nextBlockStructure->getParent();
+                while (parent) {
+                    TR_RegionStructure *region = parent->asRegion();
+
+                    if (region->isNaturalLoop() || region->containsInternalCycles()) {
+                        if (region == whileLoop) {
+                            isAsyncCheckInCurrentLoop = true;
+                            asyncCheckTrees->add(currentTree);
+                        }
+                        break;
+                    }
+                    parent = parent->getParent();
+                }
+
+                if (isAsyncCheckInCurrentLoop && _loopTestTree && (_loopTestTree->getNode()->getNumChildren() > 1)
                     && shouldOnlySpecializeLoops()) {
                     bool isIncreasing;
                     TR::SymbolReference *firstChildSymRef;
@@ -2660,10 +2677,12 @@ bool TR_LoopVersioner::detectChecksToBeEliminated(TR_RegionStructure *whileLoop,
                     if (_canPredictIters) {
                         int32_t numIters = whileLoop->getEntryBlock()->getFrequency();
                         // if (numIters > 0.90*comp()->getRecompilationInfo()->getMaxBlockCount())
-                        if (numIters < 0.90 * (MAX_BLOCK_COUNT + MAX_COLD_BLOCK_COUNT))
-                            _asyncCheckTree = NULL;
-                    } else
-                        _asyncCheckTree = NULL;
+                        if (numIters < 0.90 * (MAX_BLOCK_COUNT + MAX_COLD_BLOCK_COUNT)) {
+                            asyncCheckTrees->deleteAll();
+                        }
+                    } else {
+                        asyncCheckTrees->deleteAll();
+                    }
                 }
             }
             vcount_t visitCount = comp()->incVisitCount(); //@TODO: unsafe API/use pattern
@@ -2966,10 +2985,10 @@ static void traceCannot(const char *what, TR::Node *culprit, TR::Compilation *co
 void TR_LoopVersioner::versionNaturalLoop(TR_RegionStructure *whileLoop, List<TR::Node> *nullCheckedReferences,
     List<TR::TreeTop> *nullCheckTrees, List<TR::TreeTop> *boundCheckTrees, List<TR::TreeTop> *spineCheckTrees,
     List<TR::TreeTop> *conditionalTrees, List<TR::TreeTop> *divCheckTrees, List<TR::TreeTop> *awrtbariTrees,
-    List<TR::TreeTop> *checkCastTrees, List<TR::TreeTop> *arrayStoreCheckTrees, List<TR::Node> *specializedNodes,
-    List<TR_NodeParentSymRef> *invariantNodes, List<TR_NodeParentSymRefWeightTuple> *invariantTranslationNodesList,
-    List<TR_Structure> *innerWhileLoops, List<TR_Structure> *clonedInnerWhileLoops, bool skipVersioningAsynchk,
-    SharedSparseBitVector &reverseBranchInLoops)
+    List<TR::TreeTop> *checkCastTrees, List<TR::TreeTop> *arrayStoreCheckTrees, List<TR::TreeTop> *asyncCheckTrees,
+    List<TR::Node> *specializedNodes, List<TR_NodeParentSymRef> *invariantNodes,
+    List<TR_NodeParentSymRefWeightTuple> *invariantTranslationNodesList, List<TR_Structure> *innerWhileLoops,
+    List<TR_Structure> *clonedInnerWhileLoops, bool skipVersioningAsynchk, SharedSparseBitVector &reverseBranchInLoops)
 {
     OMR::Logger *log = comp()->log();
     const int loopNum = whileLoop->getNumber();
@@ -3395,7 +3414,7 @@ void TR_LoopVersioner::versionNaturalLoop(TR_RegionStructure *whileLoop, List<TR
         }
     }
 
-    if (_loopConditionInvariant && _asyncCheckTree) {
+    if (_loopConditionInvariant && !asyncCheckTrees->isEmpty()) {
         bool isIncreasing;
         TR::SymbolReference *firstChildSymRef;
         bool _canPredictIters = canPredictIters(whileLoop, blocksInWhileLoop, isIncreasing, firstChildSymRef);
@@ -3515,9 +3534,17 @@ void TR_LoopVersioner::versionNaturalLoop(TR_RegionStructure *whileLoop, List<TR
             LoopEntryPrep *prep = createLoopEntryPrep(LoopEntryPrep::TEST, nextComparisonNode);
 
             if (prep != NULL) {
-                nodeWillBeRemovedIfPossible(_asyncCheckTree->getNode(), prep);
-                _curLoop->_loopImprovements.push_back(
-                    new (_curLoop->_memRegion) RemoveAsyncCheck(this, prep, _asyncCheckTree));
+                ListElement<TR::TreeTop> *nextTree = asyncCheckTrees->getListHead();
+
+                while (nextTree != NULL) {
+                    TR::TreeTop *asyncCheckTree = nextTree->getData();
+
+                    nodeWillBeRemovedIfPossible(asyncCheckTree->getNode(), prep);
+                    _curLoop->_loopImprovements.push_back(
+                        new (_curLoop->_memRegion) RemoveAsyncCheck(this, prep, asyncCheckTree));
+
+                    nextTree = nextTree->getNextElement();
+                }
             }
         }
     }

@@ -935,8 +935,9 @@ protected:
     TR::Node *findLoad(TR::Node *node, TR::SymbolReference *symRef, vcount_t origVisitCount);
     void versionNaturalLoop(TR_RegionStructure *, List<TR::Node> *, List<TR::TreeTop> *, List<TR::TreeTop> *,
         List<TR::TreeTop> *, List<TR::TreeTop> *, List<TR::TreeTop> *, List<TR::TreeTop> *, List<TR::TreeTop> *,
-        List<TR::TreeTop> *, List<TR::Node> *, List<TR_NodeParentSymRef> *, List<TR_NodeParentSymRefWeightTuple> *,
-        List<TR_Structure> *whileLoops, List<TR_Structure> *clonedInnerWhileLoops, bool skipVersioningAsynchk,
+        List<TR::TreeTop> *, List<TR::TreeTop> *, List<TR::Node> *, List<TR_NodeParentSymRef> *,
+        List<TR_NodeParentSymRefWeightTuple> *, List<TR_Structure> *whileLoops,
+        List<TR_Structure> *clonedInnerWhileLoops, bool skipVersioningAsynchk,
         SharedSparseBitVector &reverseBranchInLoops);
 
     TR::Node *findCallNodeInBlockForGuard(TR::Node *node);
@@ -1012,8 +1013,8 @@ protected:
 
     bool detectChecksToBeEliminated(TR_RegionStructure *, List<TR::Node> *, List<TR::TreeTop> *, List<int32_t> *,
         List<TR::TreeTop> *, List<TR::TreeTop> *, List<int32_t> *, List<TR::TreeTop> *, List<TR::TreeTop> *,
-        List<TR::TreeTop> *, List<TR::TreeTop> *, List<TR::TreeTop> *, List<TR::Node> *, List<TR_NodeParentSymRef> *,
-        List<TR_NodeParentSymRefWeightTuple> *, bool &);
+        List<TR::TreeTop> *, List<TR::TreeTop> *, List<TR::TreeTop> *, List<TR::TreeTop> *, List<TR::Node> *,
+        List<TR_NodeParentSymRef> *, List<TR_NodeParentSymRefWeightTuple> *, bool &);
 
     void buildNullCheckComparisonsTree(List<TR::Node> *, List<TR::TreeTop> *);
     void buildBoundCheckComparisonsTree(List<TR::TreeTop> *, List<TR::TreeTop> *, bool);

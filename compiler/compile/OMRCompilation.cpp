@@ -349,15 +349,6 @@ OMR::Compilation::Compilation(int32_t id, OMR_VMThread *omrVMThread, TR_FrontEnd
         );
     _isServerInlining = !options.getOption(TR_NoOptServer);
 
-    // TR_DisableInternalPointers must be set before the TR::CodeGenerator object is created because
-    // CodeGenerator's _disableInternalPointers member is set in its constructor and this is one of
-    // options that is checked for
-    if (_isOptServer) {
-        if (self()->getMethodHotness() <= warm) {
-            self()->setOption(TR_DisableInternalPointers);
-        }
-    }
-
     //_methodSymbol must be done after symRefTab, but before codegen
     // _methodSymbol must be initialized here because creating a jitted method symbol
     //   actually inspects TR::comp()->_methodSymbol (to compare against the new object)

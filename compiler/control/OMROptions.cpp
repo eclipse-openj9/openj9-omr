@@ -5733,17 +5733,20 @@ const char *OMR::Options::disableCPUFeatures(const char *option, void *base, TR:
     return option;
 }
 
-const char *OMR::Options::_verboseOptionNames[TR_NumVerboseOptions] = { "options", "compileStart", "compileEnd",
-    "compileRequest", "gc", "recompile", "compilePerformance", "filters", "sampling", "mmap", "compileExclude", "link",
-    "classLoadPhase", "GCcycle", "compilationYieldStats", "heartbeat", "Extended", "SChints", "counts", "failures",
-    "jitState", "jitMemory", "compilationThreads", "compilationThreadsDetails", "MCCReclamation", "dump", "hooks",
-    "hookDetails", "runtimeAssumptions", "methodHandles", "methodHandleDetails", "j2iThunks",
+const char *OMR::Options::_verboseOptionNames[TR_NumVerboseOptions] = {
+    "options", "compileStart", "compileEnd", "compileRequest", "gc", "recompile", "compilePerformance", "filters",
+    "sampling", "mmap", "compileExclude", "link", "classLoadPhase", "GCcycle", "compilationYieldStats", "heartbeat",
+    "Extended", "SChints", "counts", "failures", "jitState", "jitMemory", "compilationThreads",
+    "compilationThreadsDetails", "MCCReclamation", "dump", "hooks", "hookDetails", "runtimeAssumptions",
+    "methodHandles", "methodHandleDetails", "j2iThunks",
     "vmemAvailable", // currently used only for win32
     "codecache", "precompile", "osr", "osrDetails", "optimizer", "hwprofiler", "inlining", "classUnloading", "patching",
     "compilationDispatch", "reclamation", "hookDetailsClassLoading", "hookDetailsClassUnloading", "sampleDensity",
     "profiling", "JITServer", "aotcompression", "JITServerConns", "vectorAPI", "iprofilerPersistence",
     "CheckpointRestore", "CheckpointRestoreDetails", "RSSReport", "RSSReportDetailed", "dependencyTracking",
-    "dependencyTrackingDetails", "JITServerSharedProfile", "JITServerSharedProfileDetails" };
+    "dependencyTrackingDetails", "JITServerSharedProfile", "JITServerSharedProfileDetails",
+    "cpuStats" /* currently used only for z/OS */
+};
 
 const char *OMR::Options::setVerboseBitsInJitPrivateConfig(const char *option, void *base, TR::OptionTable *entry)
 {

@@ -75,6 +75,8 @@ typedef enum OMRSysInfoCpuLoadCallStatus {
 	CPU_LOAD_ERROR_VALUE,
 	INSUFFICIENT_PRIVILEGE,
 	UNSUPPORTED,
+	TIME_STAMP_ERROR,
+	CPU_COUNT_NOT_AVAILABLE,
 	OMRSysInfoCpuLoadCallStatus_EnsureWideEnum = 0x1000000	/* force 4-byte enum */
 } OMRSysInfoCpuLoadCallStatus;
 

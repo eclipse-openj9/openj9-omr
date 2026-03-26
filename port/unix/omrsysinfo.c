@@ -3194,7 +3194,7 @@ omrsysinfo_get_number_CPUs_by_type(struct OMRPortLibrary *portLibrary, uintptr_t
 			Trc_PRT_sysinfo_get_number_CPUs_by_type_failedOnline("(no errno) ", 0);
 		}
 #elif defined(J9ZOS390)
-		toReturn = Get_Number_Of_CPUs();
+		toReturn = retrieveZosOnlineCpuCount();
 
 		if (0 == toReturn) {
 			Trc_PRT_sysinfo_get_number_CPUs_by_type_failedOnline("(no errno) ", 0);
@@ -3342,7 +3342,7 @@ omrsysinfo_get_number_CPUs_by_type(struct OMRPortLibrary *portLibrary, uintptr_t
 			Trc_PRT_sysinfo_get_number_CPUs_by_type_failedBound("errno: ", errno);
 		}
 #elif defined(J9ZOS390)
-		toReturn = Get_Number_Of_CPUs();
+		toReturn = retrieveZosOnlineCpuCount();
 
 		if (0 == toReturn) {
 			Trc_PRT_sysinfo_get_number_CPUs_by_type_failedBound("(no errno) ", 0);
@@ -4788,6 +4788,33 @@ omrsysinfo_get_CPU_utilization(struct OMRPortLibrary *portLibrary, struct J9Sysi
 }
 
 intptr_t
+omrsysinfo_get_CPU_usage_stats(struct OMRPortLibrary *portLibrary, CpuUsageStats *usageStats)
+{
+#if defined(J9ZOS390)
+	return retrieveZosCpuUsageStats(portLibrary, usageStats);
+#else /* defined(J9ZOS390) */
+	/* Supported only on z/OS. */
+	return OMRPORT_ERROR_SYSINFO_NOT_SUPPORTED;
+#endif /* defined(J9ZOS390) */
+}
+
+intptr_t
+omrsysinfo_get_CPU_capacity(struct OMRPortLibrary *portLibrary, double *cpuCapacity)
+{
+#if defined(J9ZOS390)
+	intptr_t ret = OMRPORT_ERROR_SYSINFO_ERROR_GETTING_CPU_CAPACITY;
+	*cpuCapacity = retrieveZosCpuCapacity(portLibrary);
+	if (*cpuCapacity > 0.0) {
+		ret = 0;
+	}
+	return ret;
+#else /* defined(J9ZOS390) */
+	/* Supported only on z/OS. */
+	return OMRPORT_ERROR_SYSINFO_NOT_SUPPORTED;
+#endif /* defined(J9ZOS390) */
+}
+
+intptr_t
 omrsysinfo_get_CPU_load(struct OMRPortLibrary *portLibrary, double *cpuLoad)
 {
 #if (defined(LINUX) && !defined(OMRZTPF)) || defined(AIXPPC) || defined(OSX)
@@ -4830,13 +4857,12 @@ omrsysinfo_get_CPU_load(struct OMRPortLibrary *portLibrary, double *cpuLoad)
 
 	return OMRPORT_ERROR_OPFAILED;
 #elif defined(J9ZOS390) /* (defined(LINUX) && !defined(OMRZTPF)) || defined(AIXPPC) || defined(OSX) */
-	J9CVT* __ptr32 cvtp = ((J9PSA* __ptr32)0)->flccvt;
-	J9RMCT* __ptr32 rcmtp = cvtp->cvtopctp;
-	J9CCT* __ptr32 cctp = rcmtp->rmctcct;
-
-	*cpuLoad = (double)cctp->ccvutilp / 100.0;
+	*cpuLoad = retrieveZosCpuLoad(portLibrary);
+	if (*cpuLoad < 0.0) {
+		return OMRPORT_ERROR_SYSINFO_ERROR_GETTING_CPU_LOAD;
+	}
 	return 0;
-#else /* (defined(LINUX) && !defined(OMRZTPF)) || defined(AIXPPC) || defined(OSX) || defined(J9ZOS390) */
+#else /* defined(J9ZOS390) */
 	return OMRPORT_ERROR_SYSINFO_NOT_SUPPORTED;
 #endif
 }

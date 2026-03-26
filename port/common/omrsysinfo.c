@@ -624,6 +624,25 @@ omrsysinfo_get_load_average(struct OMRPortLibrary *portLibrary, struct J9PortSys
 }
 
 /**
+ * Obtain overall system CPU capacity. This is different from omrsysinfo_get_number_CPUs_by_type()
+ * because CPU capacity can be less than the number of CPUs. For example, on z/OS with 2 zIIPs 1 GCP and SMT-2 enabled,
+ * CPU count will be 5 (2 zIIPs * 2 (theoretical SMT-2 gain) + 1 GCP) whereas CPU capacity will be
+ * ~2.7 (2 zIIPs * 1.3 (SMT_2_GAIN_FACTOR) + 1 GCP * 0.1 (GCP_SCALING_FACTOR)).
+ *
+ * @param[in] portLibrary The port library
+ * @param[out] cpuCapacity the CPU capacity of the system
+ * @return
+ *  \arg 0 on success
+ *  \arg OMRPORT_ERROR_SYSINFO_ERROR_GETTING_CPU_CAPACITY if there was an error getting CPU capacity
+ *  \arg OMRPORT_ERROR_SYSINFO_NOT_SUPPORTED if this API is not supported on the platform
+ */
+intptr_t
+omrsysinfo_get_CPU_capacity(struct OMRPortLibrary *portLibrary, double *cpuCapacity)
+{
+	return OMRPORT_ERROR_SYSINFO_NOT_SUPPORTED;
+}
+
+/**
  * Obtain the cumulative CPU utilization of all CPUs on the system.
  * The cpuTime, timestamp, userTime, systemTime and idleTime values have no absolute significance.
  * They should be used only to compute differences from previous values.
@@ -660,6 +679,24 @@ omrsysinfo_get_CPU_utilization(struct OMRPortLibrary *portLibrary, struct J9Sysi
  */
 intptr_t
 omrsysinfo_get_CPU_load(struct OMRPortLibrary *portLibrary, double *cpuLoad)
+{
+	return OMRPORT_ERROR_SYSINFO_NOT_SUPPORTED;
+}
+
+/**
+ * Returns various CPU utilization stats.
+ *
+ * @param[in] portLibrary The Port Library Handle
+ * @param[out] usageStats the CPU usage stats to be filled in by this function
+ * @return
+ *  \arg 0 on success
+ *  \arg OMRPORT_ERROR_SYSINFO_ERROR_GETTING_CPU_CAPACITY if there was an error getting CPU capacity
+ *  \arg OMRPORT_ERROR_INSUFFICIENT_DATA if only one data point for CPU time has been recorded
+ *  \arg OMRPORT_ERROR_OPFAILED if less than 10 ms have passed since the last call to this API
+ *  \arg OMRPORT_ERROR_SYSINFO_NOT_SUPPORTED if this API is not supported on the platform
+ */
+intptr_t
+omrsysinfo_get_CPU_usage_stats(struct OMRPortLibrary *portLibrary, CpuUsageStats *usageStats)
 {
 	return OMRPORT_ERROR_SYSINFO_NOT_SUPPORTED;
 }

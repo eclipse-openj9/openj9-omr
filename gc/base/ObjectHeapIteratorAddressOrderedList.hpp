@@ -51,16 +51,14 @@ private:
 	bool _includeDeadObjects;
 #if defined(OMR_GC_CONCURRENT_SCAVENGER)
 	bool _includeForwardedObjects;
-#endif	/* OMR_GC_CONCURRENT_SCAVENGER */
+#endif	/* defined(OMR_GC_CONCURRENT_SCAVENGER) */
+	GC_ObjectModel *_objectModel;
 
 	omrobjectptr_t _scanPtr;
 	omrobjectptr_t _scanPtrTop;
 	bool _isDeadObject;
-	bool _isSingleSlotHole;
 	uintptr_t _deadObjectSize;
 	bool _pastFirstObject;
-	
-	MM_GCExtensionsBase *_extensions; /**< The GC extensions associated with the JVM */
 
 protected:
 	
@@ -71,9 +69,9 @@ public:
 	 */
 private:
 	/**
-	 * Compute the deadObjectSize for the current _scanPtr
+	 * Compute the deadObjectSize for the current _scanPtr and store into _deadObjectSize
 	 */
-	uintptr_t computeDeadObjectSize();
+	void computeDeadObjectSize();
 
 	/**
 	 * Advances the _scanPtr field by the specified amount
@@ -101,12 +99,11 @@ public:
 		_includeDeadObjects(includeDeadObjects),
 #if defined(OMR_GC_CONCURRENT_SCAVENGER)
 		_includeForwardedObjects(false),
-#endif
+#endif	/* defined(OMR_GC_CONCURRENT_SCAVENGER) */
+		_objectModel(&extensions->objectModel),
 		_isDeadObject(false),
-		_isSingleSlotHole(false),
 		_deadObjectSize(0),
-		_pastFirstObject(false),
-		_extensions(extensions)
+		_pastFirstObject(false)
 	{
 		_scanPtrTop = (omrobjectptr_t)region->getHighAddress();
 		/* Iterator scan values */
@@ -124,15 +121,14 @@ public:
 		_includeDeadObjects(includeDeadObjects),
 #if defined(OMR_GC_CONCURRENT_SCAVENGER)
 		_includeForwardedObjects(false),
-#endif		
+#endif	/* defined(OMR_GC_CONCURRENT_SCAVENGER) */
+		_objectModel(&extensions->objectModel),
 		_scanPtr(base),
 		_scanPtrTop(top),
 		/* Iterator scan values */
 		_isDeadObject(false),
-		_isSingleSlotHole(false),
 		_deadObjectSize(0),
-		_pastFirstObject(skipFirstObject),
-		_extensions(extensions)
+		_pastFirstObject(skipFirstObject)
 	{}
 
 	virtual omrobjectptr_t nextObjectNoAdvance();
@@ -144,31 +140,23 @@ public:
 
 	/**
 	 * @see GC_ObjectHeapIterator::nextObject()
+	 * Unlike nextObjectNoAdvance(), this method does not consider forwarded objects,
+	 * since there are no users of this API where such an object could exist.
 	 */
 	MMINLINE virtual omrobjectptr_t nextObject()
 	{
-		omrobjectptr_t currentObject;
-
-		while(_scanPtr < _scanPtrTop) {
-#if defined(OMR_GC_CONCURRENT_SCAVENGER)
-			/* There are no known users of this type of iteration, while there are still forwarded objects in the heap */
-			Assert_MM_false(MM_ForwardedHeader(_scanPtr, _extensions->compressObjectReferences()).isForwardedPointer());
-#endif
+		while (_scanPtr < _scanPtrTop) {
 		
-			_isDeadObject = _extensions->objectModel.isDeadObject(_scanPtr);
-			currentObject = _scanPtr;
-			if(!_isDeadObject) {
-				_scanPtr = (omrobjectptr_t) ( ((uintptr_t)_scanPtr) + _extensions->objectModel.getConsumedSizeInBytesWithHeader(_scanPtr) );
+			_isDeadObject = _objectModel->isDeadObject(_scanPtr);
+			omrobjectptr_t currentObject = _scanPtr;
+			if (!_isDeadObject) {
+				_scanPtr = (omrobjectptr_t)(((uintptr_t)_scanPtr) + _objectModel->getConsumedSizeInBytesWithHeader(_scanPtr));
 				return currentObject;
 			} else {
-				_isSingleSlotHole = _extensions->objectModel.isSingleSlotDeadObject(_scanPtr);
-				if(_isSingleSlotHole) {
-					_deadObjectSize = _extensions->objectModel.getSizeInBytesSingleSlotDeadObject(_scanPtr);
-				} else {
-					_deadObjectSize = _extensions->objectModel.getSizeInBytesMultiSlotDeadObject(_scanPtr);
-				}
-				_scanPtr = (omrobjectptr_t)( ((uintptr_t)_scanPtr) + _deadObjectSize );
-				if(_includeDeadObjects) {
+				computeDeadObjectSize();
+
+				_scanPtr = (omrobjectptr_t)(((uintptr_t)_scanPtr) + _deadObjectSize);
+				if (_includeDeadObjects) {
 					return currentObject;
 				}
 			}
@@ -183,13 +171,6 @@ public:
 	MMINLINE bool isDeadObject()
 	{
 		return _isDeadObject;
-	}
-
-	/**
-	 * Returns true if the slot hole is a singleton
-	 */
-	MMINLINE bool isSingleSlotHole() {
-		return _isSingleSlotHole;
 	}
 
 	/**

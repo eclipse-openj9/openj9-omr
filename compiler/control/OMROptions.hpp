@@ -1657,7 +1657,28 @@ public:
         TR_VerboseFlags op4, TR_VerboseFlags op5, TR_VerboseFlags op6);
     bool isVerboseFileSet();
 
+    /**
+     * \brief
+     * Returns whether or not the address enumeration option supplied in the mask is active
+     *
+     * \param mask
+     * Any one of TR_EnumerateBlock, TR_EnumerateInstruction, TR_EnumerateNode, TR_EnumerateRegister,
+     * TR_EnumerateSymbol, or TR_EnumerateStructure
+     *
+     * \return
+     * Boolean value of "true" (1) if the option is active and "false" (0) otherwise
+     */
     bool getAddressEnumerationOption(uint32_t mask) { return (_addressToEnumerate & mask) != 0; }
+
+    /**
+     * \brief
+     * Sets any number of address enumeration options specified by the mask
+     *
+     * \param mask
+     * Any combination of TR_EnumerateBlock, TR_EnumerateInstruction, TR_EnumerateNode, TR_EnumerateRegister,
+     * TR_EnumerateSymbol, or TR_EnumerateStructure
+     */
+    void setAddressEnumerationOption(uint32_t mask) { _addressToEnumerate |= mask; }
 
     bool getDebugEnableFlag(uint32_t mask) { return (_debugEnableFlags & mask) != 0; }
 

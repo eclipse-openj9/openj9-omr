@@ -55,6 +55,16 @@
 #include "omrutilbase.h"
 
 /*
+ * RISC-V relies on GCC builtin __sync_val_compare_and_swap() which has been fixed
+ * in GCC 13 [1].  Therefore GCC 13 and newer is required.
+ *
+ * [1]: https://inbox.sourceware.org/gcc-patches/20230427162301.1151333-1-patrick@rivosinc.com/
+ */
+#if defined(OMR_ARCH_RISCV) && (!defined(__GNUC__) || (__GNUC__ <= 12))
+#error "GCC version 13 or higher is required on RISC-V"
+#endif /* defined(OMR_ARCH_RISCV) && (!defined(__GNUC__) || (__GNUC__ <= 12)) */
+
+/*
  * Platform dependent synchronization functions.
  * Do not call directly, use the methods from VM_AtomicSupport.
  */
@@ -443,17 +453,8 @@ public:
 		__compare_and_swap((volatile int*)address, (int*)&oldValue, (int)newValue);
 		return oldValue;
 #elif defined(__GNUC__)  /* defined(__xlC__) || defined(__open_xl__) */
-#if defined(__riscv)
-		/* To keep the LR/SC(load/store) code sequentially consistent in memory operations
-		 * so as to prevent reordering of code sequence on RISC-V, directly insert the assembly
-		 * with the RL(release) bit set on the SC(store) instruction which is missing
-		 * in the built-in function __sync_val_compare_and_swap() against the RISC-V Spec.
-		 */
-		return RiscvCAS32Helper(address, oldValue, newValue);
-#else /* defined(__riscv) */
 		/* Assume GCC >= 4.2 */
 		return __sync_val_compare_and_swap(address, oldValue, newValue);
-#endif /* defined(__riscv) */
 #elif defined(_MSC_VER) /* defined(__GNUC__) */
 		return (uint32_t)_InterlockedCompareExchange((volatile long *)address, (long)newValue, (long)oldValue);
 #else /* defined(_MSC_VER) */
@@ -488,12 +489,8 @@ public:
 #elif defined(__xlC__) || defined(__open_xl__) /* defined(__xlC__) && (__xlC__ >= 0x1001) */
 		return __sync_val_compare_and_swap(address, oldValue, newValue);
 #elif defined(__GNUC__) /* defined(__xlC__) || defined(__open_xl__) */
-#if defined(__riscv)
-		return lockCompareAndExchangeU8Helper(address, oldValue, newValue);
-#else /* defined(__riscv) */
 		/* Assume GCC >= 4.2. */
 		return __sync_val_compare_and_swap(address, oldValue, newValue);
-#endif /* defined(__riscv) */
 #elif defined(_MSC_VER) /* defined(__GNUC__) */
 		return (uint8_t)_InterlockedCompareExchange8((volatile char *)address, (char)newValue, (char)oldValue);
 #else /* defined(_MSC_VER) */
@@ -527,12 +524,8 @@ public:
 #elif defined(__xlC__) || defined(__open_xl__) /* defined(__xlC__) && (__xlC__ >= 0x1001) */
 		return __sync_val_compare_and_swap(address, oldValue, newValue);
 #elif defined(__GNUC__) /* defined(__xlC__) || defined(__open_xl__) */
-#if defined(__riscv)
-		return lockCompareAndExchangeU16Helper(address, oldValue, newValue);
-#else /* defined(__riscv) */
 		/* Assume GCC >= 4.2. */
 		return __sync_val_compare_and_swap(address, oldValue, newValue);
-#endif /* defined(__riscv) */
 #elif defined(_MSC_VER) /* defined(__GNUC__) */
 		return (uint16_t)_InterlockedCompareExchange16((volatile short *)address, (short)newValue, (short)oldValue);
 #else /* defined(_MSC_VER) */
@@ -596,17 +589,8 @@ public:
 #endif /* defined(__64BIT__) || !defined(AIXPPC) */
 		return oldValue;
 #elif defined(__GNUC__) /* defined(__xlC__) || defined(__open_xl__) */
-#if defined(__riscv)
-		/* To keep the LR/SC(load/store) code sequentially consistent in memory operations
-		 * so as to prevent reordering of code sequence on RISC-V, directly insert the assembly
-		 * with the RL(release) bit set on the SC(store) instruction which is missing
-		 * in the built-in function __sync_val_compare_and_swap() against the RISC-V Spec.
-		 */
-		return RiscvCAS64Helper(address, oldValue, newValue);
-#else /* defined(__riscv) */
 		/* Assume GCC >= 4.2 */
 		return __sync_val_compare_and_swap(address, oldValue, newValue);
-#endif /* defined(__riscv) */
 #elif defined(_MSC_VER) /* defined(__GNUC__) */
 		return (uint64_t)_InterlockedCompareExchange64((volatile __int64 *)address, (__int64)newValue, (__int64)oldValue);
 #else /* defined(_MSC_VER) */

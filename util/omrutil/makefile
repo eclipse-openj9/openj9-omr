@@ -78,17 +78,6 @@ ifeq (ppc,$(OMR_HOST_ARCH))
   endif
 endif
 
-ifeq (riscv,$(OMR_HOST_ARCH))
-  ifeq (linux,$(OMR_HOST_OS))
-    OBJECTS += cas32helper$(OBJEXT)
-    vpath cas32helper.s unix/linux/riscv/32
-    ifeq (1,$(OMR_ENV_DATA64))
-      OBJECTS += cas64helper$(OBJEXT)
-      vpath cas64helper.s unix/linux/riscv/64
-    endif
-  endif
-endif
-
 ifeq (zos,$(OMR_HOST_OS))
   OBJECTS += zbarrier$(OBJEXT)
   ifeq (0,$(OMR_ENV_DATA64))

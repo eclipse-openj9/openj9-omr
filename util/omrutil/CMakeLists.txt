@@ -114,20 +114,6 @@ if(OMR_ARCH_POWER)
 	endif()
 endif()
 
-if(OMR_ARCH_RISCV)
-	if(OMR_OS_LINUX)
-		list(APPEND OBJECTS cas32helper.s)
-		list(APPEND VPATH unix/linux/riscv/32)
-		target_include_directories(omrutil_obj PRIVATE unix/linux/riscv/32)
-
-		if(OMR_ENV_DATA64)
-			list(APPEND OBJECTS cas64helper.s)
-			list(APPEND VPATH unix/linux/riscv/64)
-			target_include_directories(omrutil_obj PRIVATE unix/linux/riscv/64)
-		endif()
-	endif()
-endif()
-
 list(APPEND OBJECTS
 	AtomicFunctions.cpp
 	argscan.c

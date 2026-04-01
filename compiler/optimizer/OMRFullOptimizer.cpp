@@ -247,9 +247,7 @@ static const OptimizationStrategy partialRedundancyEliminationOpts[] = {
     { OMR::treeSimplification, OMR::IfEnabled }, // Array length simplification shd be followed by reassoc before PRE
     { OMR::reorderArrayExprGroup, OMR::IfEnabled }, // maximize opportunities hoisting of index array expressions
     { OMR::partialRedundancyElimination, OMR::IfMoreThanOneBlock },
-    {
-     OMR::localCSE,
-     }, // common up expression which can benefit EA
+    { OMR::localCSE }, // common up expression which can benefit EA
     { OMR::catchBlockRemoval, OMR::IfEnabled }, // if checks were removed
     { OMR::deadTreesElimination, OMR::IfEnabled }, // if checks were removed
     { OMR::compactNullChecks, OMR::IfEnabled }, // PRE creates explicit null checks in large numbers
@@ -272,22 +270,14 @@ static const OptimizationStrategy partialRedundancyEliminationOpts[] = {
     { OMR::localCSE, OMR::IfEnabled }, // so that it will not get confused with internal pointers.
     { OMR::globalDeadStoreElimination,
      OMR::IfEnabledAndMoreThanOneBlock }, // It may need to be run twice if deadstore elimination is required,
-    {
-     OMR::deadTreesElimination,
-     }, // but this only happens for unsafe access (arraytranslate.twoToOne)
-    {
-     OMR::loopReduction,
-     }, // and so is conditional
+    { OMR::deadTreesElimination }, // but this only happens for unsafe access (arraytranslate.twoToOne)
+    { OMR::loopReduction }, // and so is conditional
 #ifdef J9_PROJECT_SPECIFIC
     { OMR::idiomRecognition, OMR::IfLoopsAndNotProfiling }, // after loopReduction!!
 #endif
     { OMR::lastLoopVersionerGroup, OMR::IfLoops },
-    {
-     OMR::treeSimplification,
-     }, // cleanup before AutoVectorization
-    {
-     OMR::deadTreesElimination,
-     }, // cleanup before AutoVectorization
+    { OMR::treeSimplification }, // cleanup before AutoVectorization
+    { OMR::deadTreesElimination }, // cleanup before AutoVectorization
     { OMR::inductionVariableAnalysis, OMR::IfLoopsAndNotProfiling },
 #ifdef J9_PROJECT_SPECIFIC
     { OMR::SPMDKernelParallelization, OMR::IfLoops },
@@ -295,16 +285,11 @@ static const OptimizationStrategy partialRedundancyEliminationOpts[] = {
     { OMR::loopStrider, OMR::IfLoops },
     { OMR::treeSimplification, OMR::IfEnabled },
     { OMR::lastLoopVersionerGroup, OMR::IfEnabledAndLoops },
-    {
-     OMR::treeSimplification,
-     }, // cleanup before strider
-    {
-     OMR::localCSE,
-     }, // cleanup before strider so it will not be confused by commoned nodes (mandatory to run local CSE before
-    // strider)
-    {
-     OMR::deadTreesElimination,
-     }, // cleanup before strider so that dead stores can be eliminated more effcientlly (i.e. false uses are not seen)
+    { OMR::treeSimplification }, // cleanup before strider
+    { OMR::localCSE }, // cleanup before strider so it will not be confused by commoned nodes (mandatory to run local
+    // CSE before strider)
+    { OMR::deadTreesElimination }, // cleanup before strider so that dead stores can be eliminated more efficiently
+    // (i.e. false uses are not seen)
     { OMR::loopStrider, OMR::IfLoops },
 
     { OMR::treeSimplification, OMR::IfEnabled }, // cleanup after strider
@@ -313,18 +298,12 @@ static const OptimizationStrategy partialRedundancyEliminationOpts[] = {
 };
 
 static const OptimizationStrategy methodHandleInvokeInliningOpts[] = {
-    {
-     OMR::treeSimplification,
-     }, // Supply some known-object info, and help CSE
-    {
-     OMR::localCSE,
-     }, // Especially copy propagation to replace temps with more descriptive trees
+    { OMR::treeSimplification }, // Supply some known-object info, and help CSE
+    { OMR::localCSE }, // Especially copy propagation to replace temps with more descriptive trees
     { OMR::localValuePropagation }, // Propagate known-object info and derive more specific archetype specimen symbols
 // for inlining
 #ifdef J9_PROJECT_SPECIFIC
-    {
-     OMR::targetedInlining,
-     },
+    { OMR::targetedInlining },
 #endif
     { OMR::deadTreesElimination },
     { OMR::methodHandleInvokeInliningGroup,
@@ -351,9 +330,7 @@ static const OptimizationStrategy earlyGlobalOpts[] = {
 static const OptimizationStrategy earlyLocalOpts[] = {
     { OMR::localValuePropagation },
     { OMR::localReordering },
-    {
-     OMR::switchAnalyzer,
-     },
+    { OMR::switchAnalyzer },
     { OMR::treeSimplification, OMR::IfEnabled }, // simplify any exprs created by LCP/LCSE
 #ifdef J9_PROJECT_SPECIFIC
     { OMR::catchBlockRemoval }, // if all possible exceptions in a try were removed by inlining/LCP/LCSE
@@ -452,20 +429,13 @@ static const OptimizationStrategy eachLocalAnalysisPassOpts[] = {
     { OMR::endGroup }
 };
 
-static const OptimizationStrategy lateLocalOpts[] = {
-    { OMR::eachLocalAnalysisPassGroup },
+static const OptimizationStrategy lateLocalOpts[] = { { OMR::eachLocalAnalysisPassGroup },
     { OMR::andSimplification }, // needs commoning across blocks to work well; must be done after versioning
     { OMR::treesCleansing }, // maximize fall throughs after LCP has converted some conditions to gotos
-    { OMR::eachLocalAnalysisPassGroup },
-    { OMR::localDeadStoreElimination }, // after latest copy propagation
+    { OMR::eachLocalAnalysisPassGroup }, { OMR::localDeadStoreElimination }, // after latest copy propagation
     { OMR::deadTreesElimination }, // remove dead anchors created by check/store removal
-    {
-     OMR::globalDeadStoreGroup,
-     },
-    { OMR::eachLocalAnalysisPassGroup },
-    { OMR::treeSimplification },
-    { OMR::endGroup }
-};
+    { OMR::globalDeadStoreGroup }, { OMR::eachLocalAnalysisPassGroup }, { OMR::treeSimplification },
+    { OMR::endGroup } };
 
 static const OptimizationStrategy tacticalGlobalRegisterAllocatorOpts[] = {
     { OMR::inductionVariableAnalysis, OMR::IfLoops },
@@ -574,83 +544,41 @@ static const OptimizationStrategy fullHotStrategyOpts[] = {
     { OMR::earlyGlobalGroup },
     { OMR::earlyLocalGroup },
     { OMR::andSimplification }, // needs commoning across blocks to work well; must be done after versioning
-    {
-     OMR::stripMiningGroup,
-     }, // strip mining in loops
-    {
-     OMR::loopReplicator,
-     }, // tail-duplication in loops
-    {
-     OMR::blockSplitter,
-     }, // treeSimplification + blockSplitter + VP => opportunity for EA
-    {
-     OMR::arrayPrivatizationGroup,
-     }, // must preceed escape analysis
+    { OMR::stripMiningGroup }, // strip mining in loops
+    { OMR::loopReplicator }, // tail-duplication in loops
+    { OMR::blockSplitter }, // treeSimplification + blockSplitter + VP => opportunity for EA
+    { OMR::arrayPrivatizationGroup }, // must preceed escape analysis
     { OMR::veryExpensiveGlobalValuePropagationGroup },
-    {
-     OMR::globalDeadStoreGroup,
-     },
-    {
-     OMR::globalCopyPropagation,
-     },
-    {
-     OMR::loopCanonicalizationGroup,
-     }, // canonicalize loops (improve fall throughs)
-    {
-     OMR::expressionsSimplification,
-     },
+    { OMR::globalDeadStoreGroup },
+    { OMR::globalCopyPropagation },
+    { OMR::loopCanonicalizationGroup }, // canonicalize loops (improve fall throughs)
+    { OMR::expressionsSimplification },
     { OMR::partialRedundancyEliminationGroup },
-    {
-     OMR::globalDeadStoreElimination,
-     },
-    {
-     OMR::inductionVariableAnalysis,
-     },
-    {
-     OMR::loopSpecializerGroup,
-     },
-    {
-     OMR::inductionVariableAnalysis,
-     },
-    {
-     OMR::generalLoopUnroller,
-     }, // unroll Loops
+    { OMR::globalDeadStoreElimination },
+    { OMR::inductionVariableAnalysis },
+    { OMR::loopSpecializerGroup },
+    { OMR::inductionVariableAnalysis },
+    { OMR::generalLoopUnroller }, // unroll Loops
     { OMR::blockSplitter, OMR::MarkLastRun },
     { OMR::blockManipulationGroup },
     { OMR::lateLocalGroup },
     { OMR::redundantAsyncCheckRemoval }, // optimize async check placement
 #ifdef J9_PROJECT_SPECIFIC
-    {
-     OMR::recompilationModifier,
-     }, // do before GRA to avoid commoning of longs afterwards
+    { OMR::recompilationModifier }, // do before GRA to avoid commoning of longs afterwards
 #endif
-    {
-     OMR::globalCopyPropagation,
-     }, // Can produce opportunities for store sinking
+    { OMR::globalCopyPropagation }, // Can produce opportunities for store sinking
     { OMR::generalStoreSinking },
-    {
-     OMR::localCSE,
-     }, //  common up lit pool refs in the same block
-    {
-     OMR::treeSimplification,
-     }, // cleanup the trees after sunk store and localCSE
+    { OMR::localCSE }, //  common up lit pool refs in the same block
+    { OMR::treeSimplification }, // cleanup the trees after sunk store and localCSE
     { OMR::trivialBlockExtension },
-    {
-     OMR::localDeadStoreElimination,
-     }, //  remove the astore if no literal pool is required
-    {
-     OMR::localCSE,
-     }, //  common up lit pool refs in the same block
+    { OMR::localDeadStoreElimination }, //  remove the astore if no literal pool is required
+    { OMR::localCSE }, //  common up lit pool refs in the same block
     { OMR::arraysetStoreElimination },
     { OMR::localValuePropagation, OMR::MarkLastRun },
     { OMR::checkcastAndProfiledGuardCoalescer },
     { OMR::osrExceptionEdgeRemoval, OMR::MarkLastRun },
-    {
-     OMR::tacticalGlobalRegisterAllocatorGroup,
-     },
-    {
-     OMR::globalDeadStoreElimination,
-     }, // global dead store removal
+    { OMR::tacticalGlobalRegisterAllocatorGroup },
+    { OMR::globalDeadStoreElimination }, // global dead store removal
     { OMR::deadTreesElimination }, // cleanup after dead store removal
     { OMR::compactNullChecks }, // cleanup at the end
     { OMR::finalGlobalGroup }, // done just before codegen

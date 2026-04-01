@@ -264,9 +264,13 @@ TR::Node *OMR::IlInjector::arrayLoad(TR::Node *base, TR::Node *index, TR::IlType
 {
     TR::Node *scaledIndex;
     TR::Node *element;
+    if (TR::Compiler->target.is64Bit() && index->getDataType() == TR::Int32) {
+        index = TR::Node::create(TR::i2l, 1, index);
+    }
+
     if (index->getDataType() == TR::Int32) {
         scaledIndex
-            = createWithoutSymRef(TR::imul, 2, index, iconst((int64_t)TR::DataType::getSize(dt->getPrimitiveType())));
+            = createWithoutSymRef(TR::imul, 2, index, iconst((int32_t)TR::DataType::getSize(dt->getPrimitiveType())));
         element = TR::Node::create(TR::aiadd, 2, base, scaledIndex);
     } else {
         TR_ASSERT(index->getDataType() == TR::Int64, "expecting Int32 or Int64 for arrayLoad index expression");

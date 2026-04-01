@@ -1985,7 +1985,7 @@ OPCODE_MACRO(\
    /* .reverseBranchOpCode  = */ TR::BadILOp, \
    /* .booleanCompareOpCode = */ TR::BadILOp, \
    /* .ifCompareOpCode      = */ TR::BadILOp, \
-   /* .description          =    shift integer left                (child1 << child2) */ \
+   /* .description          =    shift integer left                (child1 << (child2 & 0x1f)) */ \
 )
 OPCODE_MACRO(\
    /* .opcode               = */ lshl, \
@@ -2001,7 +2001,7 @@ OPCODE_MACRO(\
    /* .reverseBranchOpCode  = */ TR::BadILOp, \
    /* .booleanCompareOpCode = */ TR::BadILOp, \
    /* .ifCompareOpCode      = */ TR::BadILOp, \
-   /* .description          =    shift long integer left           (child1 << child2) */ \
+   /* .description          =    shift long integer left           (child1 << (child2 & 0x3f)) */ \
 )
 OPCODE_MACRO(\
    /* .opcode               = */ bshl, \
@@ -2017,7 +2017,7 @@ OPCODE_MACRO(\
    /* .reverseBranchOpCode  = */ TR::BadILOp, \
    /* .booleanCompareOpCode = */ TR::BadILOp, \
    /* .ifCompareOpCode      = */ TR::BadILOp, \
-   /* .description          =    shift byte left                   (child1 << child2) */ \
+   /* .description          =    shift byte left                   (child1 << (child2 & 0x07)) */ \
 )
 OPCODE_MACRO(\
    /* .opcode               = */ sshl, \
@@ -2033,7 +2033,7 @@ OPCODE_MACRO(\
    /* .reverseBranchOpCode  = */ TR::BadILOp, \
    /* .booleanCompareOpCode = */ TR::BadILOp, \
    /* .ifCompareOpCode      = */ TR::BadILOp, \
-   /* .description          =    shift short integer left          (child1 << child2) */ \
+   /* .description          =    shift short integer left          (child1 << (child2 & 0x0f)) */ \
 )
 OPCODE_MACRO(\
    /* .opcode               = */ ishr, \
@@ -2049,7 +2049,7 @@ OPCODE_MACRO(\
    /* .reverseBranchOpCode  = */ TR::BadILOp, \
    /* .booleanCompareOpCode = */ TR::BadILOp, \
    /* .ifCompareOpCode      = */ TR::BadILOp, \
-   /* .description          =    shift integer right arithmetically               (child1 >> child2) */ \
+   /* .description          =    shift integer right arithmetically               (child1 >> (child2 & 0x1f)) */ \
 )
 OPCODE_MACRO(\
    /* .opcode               = */ lshr, \
@@ -2065,7 +2065,7 @@ OPCODE_MACRO(\
    /* .reverseBranchOpCode  = */ TR::BadILOp, \
    /* .booleanCompareOpCode = */ TR::BadILOp, \
    /* .ifCompareOpCode      = */ TR::BadILOp, \
-   /* .description          =    shift long integer right arithmetically          (child1 >> child2) */ \
+   /* .description          =    shift long integer right arithmetically          (child1 >> (child2 & 0x3f)) */ \
 )
 OPCODE_MACRO(\
    /* .opcode               = */ bshr, \
@@ -2081,7 +2081,7 @@ OPCODE_MACRO(\
    /* .reverseBranchOpCode  = */ TR::BadILOp, \
    /* .booleanCompareOpCode = */ TR::BadILOp, \
    /* .ifCompareOpCode      = */ TR::BadILOp, \
-   /* .description          =    shift byte right arithmetically                  (child1 >> child2) */ \
+   /* .description          =    shift byte right arithmetically                  (child1 >> (child2 & 0x07)) */ \
 )
 OPCODE_MACRO(\
    /* .opcode               = */ sshr, \
@@ -2097,7 +2097,7 @@ OPCODE_MACRO(\
    /* .reverseBranchOpCode  = */ TR::BadILOp, \
    /* .booleanCompareOpCode = */ TR::BadILOp, \
    /* .ifCompareOpCode      = */ TR::BadILOp, \
-   /* .description          =    shift short integer arithmetically               (child1 >> child2) */ \
+   /* .description          =    shift short integer arithmetically               (child1 >> (child2 & 0x0f)) */ \
 )
 OPCODE_MACRO(\
    /* .opcode               = */ iushr, \
@@ -2113,7 +2113,7 @@ OPCODE_MACRO(\
    /* .reverseBranchOpCode  = */ TR::BadILOp, \
    /* .booleanCompareOpCode = */ TR::BadILOp, \
    /* .ifCompareOpCode      = */ TR::BadILOp, \
-   /* .description          =    shift integer right logically                   (child1 >> child2) */ \
+   /* .description          =    shift integer right logically                   (child1 >> (child2 & 0x1f)) */ \
 )
 OPCODE_MACRO(\
    /* .opcode               = */ lushr, \
@@ -2129,7 +2129,7 @@ OPCODE_MACRO(\
    /* .reverseBranchOpCode  = */ TR::BadILOp, \
    /* .booleanCompareOpCode = */ TR::BadILOp, \
    /* .ifCompareOpCode      = */ TR::BadILOp, \
-   /* .description          =    shift long integer right logically              (child1 >> child2) */ \
+   /* .description          =    shift long integer right logically              (child1 >> (child2 & 0x3f)) */ \
 )
 OPCODE_MACRO(\
    /* .opcode               = */ bushr, \
@@ -2145,7 +2145,7 @@ OPCODE_MACRO(\
    /* .reverseBranchOpCode  = */ TR::BadILOp, \
    /* .booleanCompareOpCode = */ TR::BadILOp, \
    /* .ifCompareOpCode      = */ TR::BadILOp, \
-   /* .description          =    shift byte right logically                      (child1 >> child2) */ \
+   /* .description          =    shift byte right logically                      (child1 >> (child2 & 0x07)) */ \
 )
 OPCODE_MACRO(\
    /* .opcode               = */ sushr, \
@@ -2161,7 +2161,7 @@ OPCODE_MACRO(\
    /* .reverseBranchOpCode  = */ TR::BadILOp, \
    /* .booleanCompareOpCode = */ TR::BadILOp, \
    /* .ifCompareOpCode      = */ TR::BadILOp, \
-   /* .description          =    shift short integer right logically             (child1 >> child2) */ \
+   /* .description          =    shift short integer right logically             (child1 >> (child2 & 0x0f)) */ \
 )
 OPCODE_MACRO(\
    /* .opcode               = */ irol, \

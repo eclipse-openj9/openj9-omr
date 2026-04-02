@@ -157,7 +157,7 @@
 class VM_AtomicSupport
 {
 private:
-#if defined(OMRZTPF) || defined(J9ZOS390) || defined(__riscv)
+#if defined(OMRZTPF) || defined(J9ZOS390) || (defined(__xlC__) && (__xlC__ >= 0x1001))
 	static const uintptr_t OFFSET_MASK = 0x3;
 
 	VMINLINE static uint32_t
@@ -237,7 +237,7 @@ private:
 #endif /* defined(OMR_ENV_LITTLE_ENDIAN) */
 		return lockCompareAndExchangeSmallTypeHelper(addressValue, oldValue, newValue, shiftAmount, U16_VALUE_MASK);
 	}
-#endif /* defined(OMRZTPF) || defined(J9ZOS390)  || defined(__riscv) */
+#endif /* defined(OMRZTPF) || defined(J9ZOS390) || (defined(__xlC__) && (__xlC__ >= 0x1001)) */
 
 public:
 
@@ -484,8 +484,7 @@ public:
 #elif defined(OMRZTPF) || defined(J9ZOS390) /* defined(ATOMIC_SUPPORT_STUB) */
 		return lockCompareAndExchangeU8Helper(address, oldValue, newValue);
 #elif defined(__xlC__) && (__xlC__ >= 0x1001) /* XLC >= 16.1.0 */ /* defined(OMRZTPF) || defined(J9ZOS390) */
-		atomic_compare_exchange_strong(address, &oldValue, newValue);
-		return oldValue;
+		return lockCompareAndExchangeU8Helper(address, oldValue, newValue);
 #elif defined(__xlC__) || defined(__open_xl__) /* defined(__xlC__) && (__xlC__ >= 0x1001) */
 		return __sync_val_compare_and_swap(address, oldValue, newValue);
 #elif defined(__GNUC__) /* defined(__xlC__) || defined(__open_xl__) */
@@ -519,8 +518,7 @@ public:
 #elif defined(OMRZTPF) || defined(J9ZOS390) /* defined(ATOMIC_SUPPORT_STUB) */
 		return lockCompareAndExchangeU16Helper(address, oldValue, newValue);
 #elif defined(__xlC__) && (__xlC__ >= 0x1001) /* XLC >= 16.1.0 */ /* defined(OMRZTPF) || defined(J9ZOS390) */
-		atomic_compare_exchange_strong(address, &oldValue, newValue);
-		return oldValue;
+		return lockCompareAndExchangeU16Helper(address, oldValue, newValue);
 #elif defined(__xlC__) || defined(__open_xl__) /* defined(__xlC__) && (__xlC__ >= 0x1001) */
 		return __sync_val_compare_and_swap(address, oldValue, newValue);
 #elif defined(__GNUC__) /* defined(__xlC__) || defined(__open_xl__) */

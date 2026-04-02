@@ -139,7 +139,8 @@ initializeCodeCache(TR::CodeCacheManager & codeCacheManager)
 // portLib is the OMRPortLibrary to use in compiler environment
 extern "C"
 bool
-initializeTestJitWithPort(TR_RuntimeHelper *helperIDs, void **helperAddresses, int32_t numHelpers, char *options, void *portLib)
+initializeTestJitWithPort(TR_RuntimeHelper *helperIDs, void **helperAddresses, int32_t numHelpers, char *options,
+   OMRPortLibrary *portLib)
    {
     // Force enable tree verifier
     std::string optionsWithVerifier = options;
@@ -156,7 +157,7 @@ initializeTestJitWithPort(TR_RuntimeHelper *helperIDs, void **helperAddresses, i
       {
       // Allocate the host environment structure
       //
-      TR::Compiler = static_cast<TR::CompilerEnv *>(new (rawAllocator) OMR::CompilerEnv(rawAllocator, TR::PersistentAllocatorKit(rawAllocator), (OMRPortLibrary *)portLib));
+      TR::Compiler = new (rawAllocator) TR::CompilerEnv(rawAllocator, TR::PersistentAllocatorKit(rawAllocator), portLib);
       }
    catch (const std::bad_alloc&)
       {
@@ -185,7 +186,7 @@ extern "C"
 bool
 initializeTestJit(TR_RuntimeHelper *helperIDs, void **helperAddresses, int32_t numHelpers, char *options)
    {
-      return initializeTestJitWithPort(helperIDs, helperAddresses, numHelpers, options, (void *)NULL);
+      return initializeTestJitWithPort(helperIDs, helperAddresses, numHelpers, options, (OMRPortLibrary *)NULL);
    }
 
 extern "C"
@@ -197,7 +198,7 @@ initializeJitWithOptions(char *options)
 
 extern "C"
 bool
-initializeJitWithOptionsAndPort(char *options, void *portLib)
+initializeJitWithOptionsAndPort(char *options, OMRPortLibrary *portLib)
    {
    return initializeTestJitWithPort(0, 0, 0, options, portLib);
    }

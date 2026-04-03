@@ -527,6 +527,12 @@ const OptimizationStrategy idiomRecognitionOpts[] = {
     { endGroup }
 };
 
+const OptimizationStrategy cheapIdiomRecognitionOpts[] = {
+    { localCSE, IfLoopsAndNotProfiling },
+    { idiomRecognition, IfLoopsAndNotProfiling },
+    { endGroup }
+};
+
 // **************************************************************************
 //
 // Strategy that is run for each non-peeking IlGeneration - this allows early
@@ -946,6 +952,8 @@ OMR::Optimizer::Optimizer(TR::Compilation *comp, TR::ResolvedMethodSymbol *metho
         = new (comp->allocator()) TR::OptimizationManager(self(), NULL, OMR::finalGlobalGroup, finalGlobalOpts);
     _opts[OMR::idiomRecognitionGroup] = new (comp->allocator())
         TR::OptimizationManager(self(), NULL, OMR::idiomRecognitionGroup, idiomRecognitionOpts);
+    _opts[OMR::cheapIdiomRecognitionGroup] = new (comp->allocator())
+        TR::OptimizationManager(self(), NULL, OMR::cheapIdiomRecognitionGroup, cheapIdiomRecognitionOpts);
 
     // NOTE: Please add new OMR optimization groups here!
 #endif
@@ -1488,6 +1496,10 @@ int32_t OMR::Optimizer::performOptimization(const OptimizationStrategy *optimiza
             if (comp()->getMethodSymbol()->hasIdiomRecognitionOpportunities())
                 doThisOptimization = true;
         } break;
+        case IfNotKnownIdiomRecognitionOpportunity: {
+            if (!comp()->getMethodSymbol()->hasIdiomRecognitionOpportunities())
+                doThisOptimization = true;
+        } break;
         case IfExceptionHandlers: {
             if (comp()->hasExceptionHandlers())
                 doThisOptimization = true;
@@ -1518,7 +1530,7 @@ int32_t OMR::Optimizer::performOptimization(const OptimizationStrategy *optimiza
     // If this is the start of an optimization subGroup, perform the
     // optimizations in the subgroup.
     //
-    if (optNum > OMR::numOpts && doThisOptimization) {
+    if (optNum > OMR::numOpts && doThisOptimization && isEnabled(optNum)) {
         if (comp()->getOption(TR_TraceOptDetails) || comp()->getOption(TR_TraceOpts)) {
             if (comp()->isOutermostMethod())
                 log->printf("%*s<optgroup name=%s>\n", optDepth * 3, " ", manager->name());

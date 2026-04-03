@@ -61,3 +61,4 @@
    OPTIMIZATION(sequentialLoadAndStoreWarmGroup)
    OPTIMIZATION(methodHandleInvokeInliningGroup)
    OPTIMIZATION(idiomRecognitionGroup)
+   OPTIMIZATION(cheapIdiomRecognitionGroup)

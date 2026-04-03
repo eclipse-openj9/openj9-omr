@@ -137,6 +137,7 @@ enum {
     IfExceptionHandlers,
     IfLoopsAndNotCompileTimeSensitive, // If loops and compile time is not that important
     IfKnownIdiomRecognitionOpportunity,
+    IfNotKnownIdiomRecognitionOpportunity,
     MarkLastRun
 };
 

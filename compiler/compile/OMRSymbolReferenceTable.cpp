@@ -1620,9 +1620,7 @@ TR::SymbolReference *OMR::SymbolReferenceTable::findAvailableAuto(List<TR::Symbo
         ListIterator<TR::SymbolReference> autos(&availableAutos);
         for (prev = 0, a = autos.getFirst(); a; prev = autos.getCurrentElement(), a = autos.getNext())
             if (type == a->getSymbol()->getDataType() && !notSharing && !a->getSymbol()->holdsMonitoredObject()
-                && !a->hasKnownObjectIndex() && (a->isAdjunct() == isAdjunct)
-                && (comp()->cg()->getSupportsJavaFloatSemantics() || (type != TR::Float && type != TR::Double)
-                    || (a->isTemporary(comp()) && behavesLikeTemp == !a->getSymbol()->behaveLikeNonTemp()))) {
+                && !a->hasKnownObjectIndex() && (a->isAdjunct() == isAdjunct)) {
                 availableAutos.removeNext(prev);
                 return a;
             }

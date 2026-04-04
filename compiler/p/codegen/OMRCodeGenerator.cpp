@@ -249,10 +249,6 @@ void OMR::Power::CodeGenerator::initialize()
     _numberBytesReadInaccessible = 0;
     _numberBytesWriteInaccessible = 4096;
 
-    // Poorly named.  Not necessarily Java specific.
-    //
-    cg->setSupportsJavaFloatSemantics();
-
     cg->setSupportsDivCheck();
     cg->setSupportsIMulHigh();
     if (comp->target().is64Bit())

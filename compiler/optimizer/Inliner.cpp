@@ -2164,8 +2164,7 @@ void TR_ParameterToArgumentMapper::initialize(TR_CallStack *callStack)
 
         if (parmMap->_parmSymbol->getParameterOffset() == argOffset) {
             parmMap->_argIndex = argIndex;
-            if (!parmMap->_parmIsModified
-                && (!arg->getOpCode().isFloatingPoint() || comp()->cg()->getSupportsJavaFloatSemantics())) {
+            if (!parmMap->_parmIsModified) {
                 if (parmMap->_addressTaken) {
                     if (arg->getOpCode().isLoadVarDirect() && arg->getReferenceCount() == 1
                         && arg->getSymbol()->isAutoOrParm())

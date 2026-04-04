@@ -2071,10 +2071,6 @@ public:
 
     void setSpillsFPRegistersAcrossCalls() { _flags1.set(SpillsFPRegistersAcrossCalls); }
 
-    bool getSupportsJavaFloatSemantics() { return _flags1.testAny(SupportsJavaFloatSemantics); }
-
-    void setSupportsJavaFloatSemantics() { _flags1.set(SupportsJavaFloatSemantics); }
-
     bool getSupportsInliningOfTypeCoersionMethods() { return _flags1.testAny(SupportsInliningOfTypeCoersionMethods); }
 
     void setSupportsInliningOfTypeCoersionMethods() { _flags1.set(SupportsInliningOfTypeCoersionMethods); }
@@ -2350,7 +2346,7 @@ protected:
         IsLeafMethod = 0x00000080,
         SupportsPartialInlineOfMethodHooks = 0x00000100,
         SupportsReferenceArrayCopy = 0x00000200,
-        SupportsJavaFloatSemantics = 0x00000400,
+        // AVAILABLE = 0x00000400,
         SupportsInliningOfTypeCoersionMethods = 0x00000800,
         SupportsRecompilation = 0x00001000,
         SupportsVectorRegisters = 0x00002000,
@@ -2365,7 +2361,7 @@ protected:
         SupportsByteswap = 0x00400000,
         SupportsScaledIndexAddressing = 0x00800000,
         SupportsCompactedLocals = 0x01000000,
-        // AVAILABLE                                       = 0x02000000,
+        // AVAILABLE = 0x02000000,
         UsesRegisterPairsForLongs = 0x04000000,
         SupportsArraySet = 0x08000000,
         SupportsArrayCmpLen = 0x10000000,

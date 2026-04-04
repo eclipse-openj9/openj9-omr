@@ -12420,8 +12420,6 @@ static TR::Node *simplifyIficmpneHelper(TR::Node *node, TR::Block *block, TR::Si
     if (firstChild->getOpCode().isBooleanCompare() && (secondChild->getOpCode().isLoadConst())
         && ((secondChild->getInt() == 0) || (secondChild->getInt() == 1))
         && (firstChild->getOpCode().convertCmpToIfCmp() != TR::BadILOp)
-        && (s->comp()->cg()->getSupportsJavaFloatSemantics()
-            || !(firstChild->getNumChildren() > 1 && firstChild->getFirstChild()->getOpCode().isFloatingPoint()))
         && performTransformation(s->comp(), "%sChanging if opcode %p because first child %p is a comparison opcode\n",
             s->optDetailString(), node, firstChild)) {
         TR::Node::recreate(node, firstChild->getOpCode().convertCmpToIfCmp());
@@ -12525,8 +12523,6 @@ TR::Node *ificmpeqSimplifier(TR::Node *node, TR::Block *block, TR::Simplifier *s
     if (firstChild->getOpCode().isBooleanCompare() && (secondChild->getOpCode().isLoadConst())
         && ((secondChild->getInt() == 0) || (secondChild->getInt() == 1))
         && (firstChild->getOpCode().convertCmpToIfCmp() != TR::BadILOp)
-        && (s->comp()->cg()->getSupportsJavaFloatSemantics()
-            || !(firstChild->getNumChildren() > 1 && firstChild->getFirstChild()->getOpCode().isFloatingPoint()))
         && performTransformation(s->comp(), "%sChanging if opcode %p because first child %p is a comparison opcode\n",
             s->optDetailString(), node, firstChild)) {
         TR::Node::recreate(node, firstChild->getOpCode().convertCmpToIfCmp());

@@ -640,9 +640,6 @@ void OMR::Z::CodeGenerator::initialize()
     _numberBytesReadInaccessible = 4096;
     _numberBytesWriteInaccessible = 4096;
 
-    // zLinux sTR requires this as well, otherwise cp00f054.C testcase fails in TR_FPStoreReloadElimination.
-    cg->setSupportsJavaFloatSemantics();
-
     _localF2ISpill = NULL;
     _localD2LSpill = NULL;
 

@@ -334,7 +334,6 @@ void OMR::X86::CodeGenerator::initializeX86(TR::Compilation *comp)
     TR_ASSERT_FATAL(supportsSSE2, "Target processor/OS must support SSE2");
 
     self()->setSupportsAutoSIMD();
-    self()->setSupportsJavaFloatSemantics();
 
     // Choose the best XMM double precision load instruction for the target architecture.
     //

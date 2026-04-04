@@ -987,15 +987,7 @@ bool OMR::SymbolReference::canKill(TR::SymbolReference *sr2)
     return self()->getUseDefAliases().contains(sr2, comp);
 }
 
-bool OMR::SymbolReference::storeCanBeRemoved()
-{
-    TR::Compilation *comp = TR::comp();
-    TR::Symbol *s = self()->getSymbol();
-
-    return s->isTransparent()
-        && (((s->getDataType() != TR::Double) && (s->getDataType() != TR::Float))
-            || comp->cg()->getSupportsJavaFloatSemantics() || (self()->isTemporary(comp) && !s->behaveLikeNonTemp()));
-}
+bool OMR::SymbolReference::storeCanBeRemoved() { return self()->getSymbol()->isTransparent(); }
 
 const char *OMR::SymbolReference::getTypeSignature(int32_t &len, TR_AllocationKind allocKind, bool *isFixed)
 {

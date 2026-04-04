@@ -1152,16 +1152,13 @@ void TR_GlobalRegisterAllocator::transformNode(TR::Node *node, TR::Node *parent,
             if (symRef->getSymbol()->getDataType() == TR::Float || symRef->getSymbol()->getDataType() == TR::Double)
                 fpStore = true;
 
-            // If this is an FP store, then the correct precision adjustment will
-            // be done on IA32 by the global analysis GlobalFPStoreReloadOpt; so we
-            // do not need to keep the store around for ANY FP store.
-            // Also if it is a 'normal' int or address or long store, we do not need
+            // If it is a 'normal' int or address or long store, we do not need
             // to keep the store.
             //
             // However if storeCanBeRemoved returns false for (some special) stores created
             // by other optimization passes (like escape analysis), then for non FP stores
-            // (FP stores are handled correct as explained above because we will insert store/reload
-            // pairs wherever required based on GlobalFPStoreReloadOpt), we must keep the store intact.
+            // we must keep the store intact.
+            //
             // Another case when we must keep the store to the stack location intact is if
             // it is a pinning array for an internal pointer, as the pinning array for an
             // internal pointer must always be present on the stack.
@@ -1186,39 +1183,6 @@ void TR_GlobalRegisterAllocator::transformNode(TR::Node *node, TR::Node *parent,
                         : "",
                     rc->getSymbolReference()->getReferenceNumber());
 
-                bool avoidDuplicateFPStackValues = false;
-                if (fpStore && !comp()->cg()->getSupportsJavaFloatSemantics()) {
-                    int32_t i;
-                    for (i = _firstGlobalRegisterNumber; i <= _lastGlobalRegisterNumber; ++i) {
-                        TR::Block *b = block;
-                        while (b) {
-                            TR_Array<TR::GlobalRegister> &curRegisters = b->getGlobalRegisters(comp());
-
-                            if (curRegisters[i].getRegisterCandidateOnExit()
-                                && (curRegisters[i].getRegisterCandidateOnExit() != rc)) {
-                                if ((*extRegisters)[i].getValue() == node->getFirstChild()) {
-                                    // gr.setValue(0);
-                                    (*extRegisters)[rc->getGlobalRegisterNumber()].setValue(0);
-                                    // gr.setAutoContainsRegisterValue(false);
-                                    // rc->setValueModified(true);
-                                    // gr.setLastRefTreeTop(0);
-                                    avoidDuplicateFPStackValues = true;
-                                    break;
-                                }
-                            }
-
-                            b = b->getNextBlock();
-                            if (b && !b->isExtensionOfPreviousBlock())
-                                break;
-                        }
-
-                        if (avoidDuplicateFPStackValues)
-                            break;
-                    }
-                }
-
-                if (avoidDuplicateFPStackValues)
-                    return;
                 StoresInBlockInfo *storeInfo = NULL;
 
                 bool storeIntact = false;
@@ -1688,10 +1652,7 @@ void TR_GlobalRegisterAllocator::prepareForBlockExit(TR::TreeTop *&exitTreeTop, 
         //
 
         if (extgr->getValue()) {
-            bool mustBeLiveAcrossAllPaths
-                = (extgr->getValue()->getOpCode().isFloatingPoint() && !cg()->getSupportsJavaFloatSemantics());
-
-            if ((!extgr->getAutoContainsRegisterValue() || mustBeLiveAcrossAllPaths)
+            if (!extgr->getAutoContainsRegisterValue()
                 && !registerIsLiveAcrossEdge(exitTreeTop, exitNode, block, extgr, successorBlock, i)) {
                 TR::RegisterCandidate *rc = extgr->getCurrentRegisterCandidate();
                 bool liveOnSomeSucc = true;
@@ -1720,8 +1681,6 @@ void TR_GlobalRegisterAllocator::prepareForBlockExit(TR::TreeTop *&exitTreeTop, 
                         }
                     }
                 }
-                if (mustBeLiveAcrossAllPaths)
-                    extgr->setValue(0); // must ensure the stack is cleared across the edge
             }
         }
 

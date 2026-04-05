@@ -699,7 +699,7 @@ int32_t OMR::X86::CodeGenerator::getMaximumNumbersOfAssignableGPRs()
 
 int32_t OMR::X86::CodeGenerator::getMaximumNumbersOfAssignableFPRs()
 {
-    return TR::RealRegister::LastAssignableFPR - TR::RealRegister::FirstFPR + 1;
+    return TR::RealRegister::LastXMMR - TR::RealRegister::FirstXMMR + 1;
 }
 
 // X has a different concept of VR's compared to p/z but since LocalOpts needs this to be hoisted within CG,

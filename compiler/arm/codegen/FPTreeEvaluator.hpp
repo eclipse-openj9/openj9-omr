@@ -37,6 +37,5 @@
 #define IEEE_DOUBLE_1_0 0x3ff0000000000000LL
 #endif
 
-extern void insertPrecisionAdjustment(TR_Register *reg, TR::Node *node);
 #endif
 

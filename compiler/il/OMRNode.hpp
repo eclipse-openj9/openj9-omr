@@ -2002,7 +2002,6 @@ protected:
 
         NeedsSignExtension = 0x00004000, ///< Flag used by TR::istore/TR::iRegStore
         SkipSignExtension = 0x00004000, ///< Flag used by TR::iload/TR::iRegLoad
-        precisionAdjustment = 0x00004000, ///< Flag used by FP regLoad/regStore
 
         nodeUsedForBranchOnCount = 0x00000400, ///< Flag used by TR_if or TR::istore/TR::iRegStore or TR::iadd,
                                                ///< TR::ladd, TR::isub, TR::lsub

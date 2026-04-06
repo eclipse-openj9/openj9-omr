@@ -83,8 +83,8 @@ void TR::ARM64LabelInstruction::assignRegisters(TR_RegisterKinds kindToBeAssigne
     TR::RegisterDependencyConditions *cond = OMR::ARM64::Instruction::getDependencyConditions();
 
     if (cond) {
-        cond->assignPostConditionRegisters(self(), kindToBeAssigned, self()->cg());
-        cond->assignPreConditionRegisters(self()->getPrev(), kindToBeAssigned, self()->cg());
+        cond->assignPostConditionRegisters(self(), kindToBeAssigned, cg());
+        cond->assignPreConditionRegisters(getPrev(), kindToBeAssigned, cg());
     }
 
     assignRegistersForOutOfLineCodeSection(kindToBeAssigned);
@@ -96,8 +96,8 @@ void TR::ARM64AdminInstruction::assignRegisters(TR_RegisterKinds kindToBeAssigne
 {
     if (getOpCodeValue() != TR::InstOpCode::assocreg) {
         OMR::ARM64::Instruction::assignRegisters(kindToBeAssigned);
-    } else if (self()->cg()->enableRegisterAssociations()) {
-        TR::Machine *machine = self()->cg()->machine();
+    } else if (cg()->enableRegisterAssociations()) {
+        TR::Machine *machine = cg()->machine();
 
         int32_t first = TR::RealRegister::FirstGPR;
         int32_t last = TR::RealRegister::LastAssignableFPR;

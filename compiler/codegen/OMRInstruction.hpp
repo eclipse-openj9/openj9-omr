@@ -92,22 +92,22 @@ public:
     /*
      * Instruction OpCodes
      */
-    TR::InstOpCode &getOpCode() { return _opcode; }
+    OMR_FINAL TR::InstOpCode &getOpCode() { return _opcode; }
 
-    TR::InstOpCode::Mnemonic getOpCodeValue() { return _opcode.getMnemonic(); }
+    OMR_FINAL TR::InstOpCode::Mnemonic getOpCodeValue() { return _opcode.getMnemonic(); }
 
-    void setOpCodeValue(TR::InstOpCode::Mnemonic op) { _opcode.setMnemonic(op); }
+    OMR_FINAL void setOpCodeValue(TR::InstOpCode::Mnemonic op) { _opcode.setMnemonic(op); }
 
     /*
      * Instruction stream links.
      */
-    TR::Instruction *getNext() { return _next; }
+    OMR_FINAL TR::Instruction *getNext() { return _next; }
 
-    void setNext(TR::Instruction *n) { _next = n; }
+    OMR_FINAL void setNext(TR::Instruction *n) { _next = n; }
 
-    TR::Instruction *getPrev() { return _prev; }
+    OMR_FINAL TR::Instruction *getPrev() { return _prev; }
 
-    void setPrev(TR::Instruction *p) { _prev = p; }
+    OMR_FINAL void setPrev(TR::Instruction *p) { _prev = p; }
 
     void remove();
     TR::Instruction *move(TR::Instruction *newLocation);
@@ -116,21 +116,21 @@ public:
      * Address of binary buffer where this instruction was encoded.  The binary buffer
      * is NULL if this instruction has not been encoded yet.
      */
-    uint8_t *getBinaryEncoding() { return _binaryEncodingBuffer; }
+    OMR_FINAL uint8_t *getBinaryEncoding() { return _binaryEncodingBuffer; }
 
-    void setBinaryEncoding(uint8_t *be) { _binaryEncodingBuffer = be; }
+    OMR_FINAL void setBinaryEncoding(uint8_t *be) { _binaryEncodingBuffer = be; }
 
-    uint8_t getBinaryLength() { return _binaryLength; }
+    OMR_FINAL uint8_t getBinaryLength() { return _binaryLength; }
 
-    void setBinaryLength(uint8_t length) { _binaryLength = length; }
+    OMR_FINAL void setBinaryLength(uint8_t length) { _binaryLength = length; }
 
     /*
      * Cached estimate of an instruction's worst case length in bytes.
      * Assumes that estimateBinaryLength() has been run before.
      */
-    uint8_t getEstimatedBinaryLength() { return _estimatedBinaryLength; }
+    OMR_FINAL uint8_t getEstimatedBinaryLength() { return _estimatedBinaryLength; }
 
-    void setEstimatedBinaryLength(uint8_t e) { _estimatedBinaryLength = e; }
+    OMR_FINAL void setEstimatedBinaryLength(uint8_t e) { _estimatedBinaryLength = e; }
 
     /*
      * Action to estimate the generated binary length of this instruction.
@@ -185,9 +185,9 @@ public:
     /*
      * The IR node whence this instruction was created.
      */
-    TR::Node *getNode() { return _node; }
+    OMR_FINAL TR::Node *getNode() { return _node; }
 
-    void setNode(TR::Node *n) { _node = n; }
+    OMR_FINAL void setNode(TR::Node *n) { _node = n; }
 
     /*
      * Answers whether the instruction can be included in a guard patch point

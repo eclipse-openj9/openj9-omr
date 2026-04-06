@@ -58,7 +58,7 @@ OMR::Power::Instruction::Instruction(TR::CodeGenerator *cg, TR::InstOpCode::Mnem
 
 TR::Register *OMR::Power::Instruction::getTargetRegister(uint32_t i)
 {
-    return (_conditions == NULL) ? NULL : _conditions->getTargetRegister(i, self()->cg());
+    return (_conditions == NULL) ? NULL : _conditions->getTargetRegister(i, cg());
 }
 
 TR::Register *OMR::Power::Instruction::getSourceRegister(uint32_t i)
@@ -73,7 +73,7 @@ bool OMR::Power::Instruction::isCall()
 
 void OMR::Power::Instruction::PPCNeedsGCMap(uint32_t mask)
 {
-    if (self()->cg()->comp()->useRegisterMaps())
+    if (cg()->comp()->useRegisterMaps())
         self()->setNeedsGCMap(mask);
 }
 
@@ -126,13 +126,13 @@ void OMR::Power::Instruction::assignRegisters(TR_RegisterKinds kindToBeAssigned)
 {
     if (OMR::Power::Instruction::getDependencyConditions()) {
         OMR::Power::Instruction::getDependencyConditions()->assignPostConditionRegisters(self(), kindToBeAssigned,
-            self()->cg());
-        OMR::Power::Instruction::getDependencyConditions()->assignPreConditionRegisters(self()->getPrev(),
-            kindToBeAssigned, self()->cg());
+            cg());
+        OMR::Power::Instruction::getDependencyConditions()->assignPreConditionRegisters(getPrev(), kindToBeAssigned,
+            cg());
     }
 }
 
-bool OMR::Power::Instruction::isBeginBlock() { return self()->getPrev()->getOpCodeValue() == TR::InstOpCode::label; }
+bool OMR::Power::Instruction::isBeginBlock() { return getPrev()->getOpCodeValue() == TR::InstOpCode::label; }
 
 bool OMR::Power::Instruction::setsCountRegister()
 {
@@ -141,11 +141,11 @@ bool OMR::Power::Instruction::setsCountRegister()
     return self()->isCall() | _opcode.setsCountRegister();
 }
 
-bool OMR::Power::Instruction::is4ByteLoad() { return (self()->getOpCodeValue() == TR::InstOpCode::lwz); }
+bool OMR::Power::Instruction::is4ByteLoad() { return (getOpCodeValue() == TR::InstOpCode::lwz); }
 
-int32_t OMR::Power::Instruction::getMachineOpCode() { return self()->getOpCodeValue(); }
+int32_t OMR::Power::Instruction::getMachineOpCode() { return getOpCodeValue(); }
 
-uint8_t OMR::Power::Instruction::getBinaryLengthLowerBound() { return self()->getEstimatedBinaryLength(); }
+uint8_t OMR::Power::Instruction::getBinaryLengthLowerBound() { return getEstimatedBinaryLength(); }
 
 int32_t TR::PPCDepImmSymInstruction::estimateBinaryLength(int32_t currentEstimate)
 {

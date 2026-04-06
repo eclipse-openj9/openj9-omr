@@ -176,9 +176,9 @@ uint8_t getMemoryBarrierBinaryLengthLowerBound(int32_t barrier, TR::CodeGenerato
 
 // -----------------------------------------------------------------------------
 // OMR::X86::Instruction:: member functions
-bool OMR::X86::Instruction::needsRepPrefix() { return self()->getOpCode().needsRepPrefix() != 0; }
+bool OMR::X86::Instruction::needsRepPrefix() { return getOpCode().needsRepPrefix() != 0; }
 
-bool OMR::X86::Instruction::needsLockPrefix() { return self()->getOpCode().needsLockPrefix() != 0; }
+bool OMR::X86::Instruction::needsLockPrefix() { return getOpCode().needsLockPrefix() != 0; }
 
 uint8_t *OMR::X86::Instruction::generateBinaryEncoding()
 {
@@ -186,9 +186,9 @@ uint8_t *OMR::X86::Instruction::generateBinaryEncoding()
     // it is needed to avoid recursive calls when generateOperand() requests to regenerate the binary code by returning
     // NULL;
     for (;;) {
-        uint8_t *instructionStart = self()->cg()->getBinaryBufferCursor();
+        uint8_t *instructionStart = cg()->getBinaryBufferCursor();
         uint8_t *cursor = instructionStart;
-        self()->setBinaryEncoding(instructionStart);
+        setBinaryEncoding(instructionStart);
         if (self()->needsRepPrefix()) {
             *cursor++ = 0xf3;
         }
@@ -196,18 +196,17 @@ uint8_t *OMR::X86::Instruction::generateBinaryEncoding()
             *cursor++ = 0xf0;
         }
         cursor = self()->generateRepeatedRexPrefix(cursor);
-        cursor = self()->getOpCode().binary(cursor, self()->getEncodingMethod(), self()->rexBits());
+        cursor = getOpCode().binary(cursor, self()->getEncodingMethod(), self()->rexBits());
         cursor = self()->generateOperand(cursor);
         // cursor is normal not NULL, and hence we can finish binary encoding and exit the loop
         // cursor is NULL when generateOperand() requests to regenerate the binary code, which may happen during
         // encoding of memref with unresolved symbols on 64-bit
         if (cursor) {
             if (!self()->getSource2ndRegister()) {
-                self()->getOpCode().finalize(instructionStart);
+                getOpCode().finalize(instructionStart);
             }
-            self()->setBinaryLength(static_cast<int8_t>(cursor - instructionStart));
-            self()->cg()->addAccumulatedInstructionLengthError(
-                self()->getEstimatedBinaryLength() - self()->getBinaryLength());
+            setBinaryLength(static_cast<int8_t>(cursor - instructionStart));
+            cg()->addAccumulatedInstructionLengthError(getEstimatedBinaryLength() - getBinaryLength());
             return cursor;
         }
     }
@@ -215,9 +214,9 @@ uint8_t *OMR::X86::Instruction::generateBinaryEncoding()
 
 int32_t OMR::X86::Instruction::estimateBinaryLength(int32_t currentEstimate)
 {
-    self()->setEstimatedBinaryLength(self()->getOpCode().length(self()->getEncodingMethod(), self()->rexBits())
-        + (self()->needsRepPrefix() ? 1 : 0));
-    return currentEstimate + self()->getEstimatedBinaryLength();
+    setEstimatedBinaryLength(
+        getOpCode().length(self()->getEncodingMethod(), self()->rexBits()) + (self()->needsRepPrefix() ? 1 : 0));
+    return currentEstimate + getEstimatedBinaryLength();
 }
 
 // -----------------------------------------------------------------------------
@@ -611,9 +610,8 @@ uint8_t *TR::X86FenceInstruction::generateBinaryEncoding()
 
 int32_t TR::X86VirtualGuardNOPInstruction::estimateBinaryLength(int32_t currentEstimate)
 {
-    setEstimatedBinaryLength(self()->cg()->comp()->target().is64Bit()
-            ? 5
-            : 6); // TODO:AMD64: What if patched instruction needs a Rex?  Is 6 enough?
+    setEstimatedBinaryLength(
+        cg()->comp()->target().is64Bit() ? 5 : 6); // TODO:AMD64: What if patched instruction needs a Rex?  Is 6 enough?
     return currentEstimate + getEstimatedBinaryLength();
 }
 
@@ -931,7 +929,7 @@ void TR::X86ImmSymInstruction::addMetaDataForCodeAddress(uint8_t *cursor)
                         int rType = methodSym->getMethodKind() - 1; // method kinds are 1-based
                         TR_ASSERT(reloTypes[rType], "There shouldn't be direct JNI interface calls!");
 
-                        uint8_t *startOfInstruction = self()->getBinaryEncoding();
+                        uint8_t *startOfInstruction = getBinaryEncoding();
                         uint8_t *startOfImmediate = cursor;
                         intptr_t diff = reinterpret_cast<intptr_t>(startOfImmediate)
                             - reinterpret_cast<intptr_t>(startOfInstruction);
@@ -1118,7 +1116,7 @@ uint8_t *TR::X86ImmSymInstruction::generateOperand(uint8_t *cursor)
                     //
                     TR::MethodSymbol *methodSym = sym->getMethodSymbol();
 
-                    if (self()->cg()->comp()->target().is64Bit()) {
+                    if (cg()->comp()->target().is64Bit()) {
                         // Obtain the actual target of this call instruction.
                         //
                         // Symbols created for JNI methods have their method address pointing to the RAM method.
@@ -2594,7 +2592,7 @@ void TR::AMD64RegImm64Instruction::addMetaDataForCodeAddress(uint8_t *cursor)
                 case TR_JNIStaticTargetAddress:
                 case TR_JNISpecialTargetAddress:
                 case TR_JNIVirtualTargetAddress: {
-                    uint8_t *startOfInstruction = self()->getBinaryEncoding();
+                    uint8_t *startOfInstruction = getBinaryEncoding();
                     uint8_t *startOfImmediate = cursor;
                     intptr_t diff
                         = reinterpret_cast<intptr_t>(startOfImmediate) - reinterpret_cast<intptr_t>(startOfInstruction);

@@ -146,7 +146,7 @@ void TR::X86LabelInstruction::initialize(TR::LabelSymbol *sym)
     _outlinedInstructionBranch = NULL;
     _reloType = TR_NoRelocation;
     _permitShortening = true;
-    if (sym && self()->getOpCodeValue() == TR::InstOpCode::label)
+    if (sym && getOpCodeValue() == TR::InstOpCode::label)
         sym->setInstruction(this);
     else if (sym)
         sym->setDirectlyTargeted();

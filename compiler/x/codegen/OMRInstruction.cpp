@@ -83,13 +83,12 @@ void OMR::X86::Instruction::initialize(TR::CodeGenerator *cg, TR::RegisterDepend
 
 void OMR::X86::Instruction::assumeValidInstruction()
 {
-    TR_ASSERT(!(self()->cg()->comp()->target().is64Bit() && self()->getOpCode().isIA32Only()),
-        "Cannot use invalid AMD64 instructions");
+    TR_ASSERT(!(cg()->comp()->target().is64Bit() && getOpCode().isIA32Only()), "Cannot use invalid AMD64 instructions");
 }
 
 bool OMR::X86::Instruction::isRegRegMove()
 {
-    switch (self()->getOpCodeValue()) {
+    switch (getOpCodeValue()) {
         case TR::InstOpCode::MOVAPSRegReg:
         case TR::InstOpCode::MOVAPDRegReg:
         case TR::InstOpCode::MOVUPSRegReg:
@@ -109,7 +108,7 @@ bool OMR::X86::Instruction::isRegRegMove()
 
 bool OMR::X86::Instruction::isPatchBarrier(TR::CodeGenerator *cg)
 {
-    Kind kind = self()->getKind();
+    Kind kind = getKind();
     return kind == TR::Instruction::IsPatchableCodeAlignment || kind == TR::Instruction::IsBoundaryAvoidance
         || kind == TR::Instruction::IsAlignment;
 }
@@ -122,12 +121,12 @@ void OMR::X86::Instruction::assignRegisters(TR_RegisterKinds kindsToBeAssigned)
         return;
     }
 
-    if (self()->getOpCodeValue() != TR::InstOpCode::assocreg) {
-        self()->getDependencyConditions()->assignPostConditionRegisters(self(), kindsToBeAssigned, self()->cg());
-        self()->getDependencyConditions()->assignPreConditionRegisters(self(), kindsToBeAssigned, self()->cg());
-    } else if ((self()->getOpCodeValue() == TR::InstOpCode::assocreg) && self()->cg()->enableRegisterAssociations()) {
+    if (getOpCodeValue() != TR::InstOpCode::assocreg) {
+        self()->getDependencyConditions()->assignPostConditionRegisters(self(), kindsToBeAssigned, cg());
+        self()->getDependencyConditions()->assignPreConditionRegisters(self(), kindsToBeAssigned, cg());
+    } else if ((getOpCodeValue() == TR::InstOpCode::assocreg) && cg()->enableRegisterAssociations()) {
         if (kindsToBeAssigned & TR_GPR_Mask) {
-            TR::Machine *machine = self()->cg()->machine();
+            TR::Machine *machine = cg()->machine();
 
             // First traverse the existing associations and remove them
             // so that they don't interfere with the new ones
@@ -158,7 +157,7 @@ void OMR::X86::Instruction::assignRegisters(TR_RegisterKinds kindsToBeAssigned)
 
         // Process FPR/XMM associations
         if (kindsToBeAssigned & TR_FPR_Mask) {
-            TR::Machine *machine = self()->cg()->machine();
+            TR::Machine *machine = cg()->machine();
 
             // Clear existing XMM associations
             for (int i = TR::RealRegister::FirstXMMR; i <= TR::RealRegister::LastXMMR; ++i) {
@@ -221,12 +220,12 @@ void OMR::X86::Instruction::adjustVFPState(TR_VFPState *state, TR::CodeGenerator
 {
     TR::Compilation *comp = cg->comp();
     if (state->_register == TR::RealRegister::esp) {
-        if (self()->getOpCode().isPushOp())
+        if (getOpCode().isPushOp())
             state->_displacement += static_cast<int32_t>(TR::Compiler->om.sizeofReferenceAddress());
-        else if (self()->getOpCode().isPopOp())
+        else if (getOpCode().isPopOp())
             state->_displacement -= static_cast<int32_t>(TR::Compiler->om.sizeofReferenceAddress());
-        else if (self()->getOpCodeValue() == TR::InstOpCode::RET || self()->getOpCodeValue() == TR::InstOpCode::RETImm2
-            || self()->getOpCodeValue() == TR::InstOpCode::retn)
+        else if (getOpCodeValue() == TR::InstOpCode::RET || getOpCodeValue() == TR::InstOpCode::RETImm2
+            || getOpCodeValue() == TR::InstOpCode::retn)
             *state = cg->vfpResetInstruction()->getSavedState();
     }
 }
@@ -234,7 +233,7 @@ void OMR::X86::Instruction::adjustVFPState(TR_VFPState *state, TR::CodeGenerator
 void OMR::X86::Instruction::adjustVFPStateForCall(TR_VFPState *state, int32_t vfpAdjustmentForCall,
     TR::CodeGenerator *cg)
 {
-    if (state->_register == TR::RealRegister::esp && self()->getOpCode().isCallOp()) {
+    if (state->_register == TR::RealRegister::esp && getOpCode().isCallOp()) {
         state->_displacement += vfpAdjustmentForCall;
     } else {
         OMR::X86::Instruction::adjustVFPState(state, cg);
@@ -246,14 +245,13 @@ void OMR::X86::Instruction::clobberRegsForRematerialisation()
     // We assume most instructions modify all registers that appear in their
     // postconditions, with a few exceptions.
     //
-    if (self()->cg()->enableRematerialisation() && self()->getDependencyConditions()
-        && (self()->getOpCodeValue()
+    if (cg()->enableRematerialisation() && self()->getDependencyConditions()
+        && (getOpCodeValue()
             != TR::InstOpCode::assocreg) // reg associations aren't really instructions, so they don't modify anything
-        && (self()->getOpCodeValue()
+        && (getOpCodeValue()
             != TR::InstOpCode::label) // labels must already be handled properly for a variety of reasons
-        && (!self()->getOpCode().isShiftOp())
-        && (!self()->getOpCode().isRotateOp()) // shifts and rotates often have a postcondition on ecx but don't clobber
-                                               // it
+        && (!getOpCode().isShiftOp()) && (!getOpCode().isRotateOp()) // shifts and rotates often have a postcondition on
+                                                                     // ecx but don't clobber it
     ) {
         // Check the live discardable register list to see if this is the first
         // instruction that kills the rematerialisable range of a register.
@@ -264,18 +262,17 @@ void OMR::X86::Instruction::clobberRegsForRematerialisation()
             TR::Register *reg = post->getRegisterDependency(i)->getRegister();
             if (reg->isDiscardable()) {
                 if (!clob) {
-                    clob = new (self()->cg()->trHeapMemory())
-                        TR::ClobberingInstruction(self(), self()->cg()->trMemory());
-                    self()->cg()->addClobberingInstruction(clob);
+                    clob = new (cg()->trHeapMemory()) TR::ClobberingInstruction(self(), cg()->trMemory());
+                    cg()->addClobberingInstruction(clob);
                 }
                 clob->addClobberedRegister(reg);
-                self()->cg()->removeLiveDiscardableRegister(reg);
-                self()->cg()->clobberLiveDependentDiscardableRegisters(clob, reg);
+                cg()->removeLiveDiscardableRegister(reg);
+                cg()->clobberLiveDependentDiscardableRegisters(clob, reg);
 
                 if (debug("dumpRemat"))
                     diagnostic("---> Clobbering %s discardable postcondition register %s at instruction %s\n",
-                        self()->cg()->getDebug()->toString(reg->getRematerializationInfo()),
-                        self()->cg()->getDebug()->getName(reg), self()->cg()->getDebug()->getName(self()));
+                        cg()->getDebug()->toString(reg->getRematerializationInfo()), cg()->getDebug()->getName(reg),
+                        cg()->getDebug()->getName(self()));
             }
         }
     }
@@ -284,7 +281,7 @@ void OMR::X86::Instruction::clobberRegsForRematerialisation()
 #if defined(TR_TARGET_64BIT)
 uint8_t OMR::X86::Instruction::operandSizeRexBits() // Rex bits indicating 32/64-bit operand sizes
 {
-    if (self()->getOpCode().info().rex_w)
+    if (getOpCode().info().rex_w)
         return TR::RealRegister::REX | TR::RealRegister::REX_W;
     else
         return 0;
@@ -293,7 +290,7 @@ uint8_t OMR::X86::Instruction::operandSizeRexBits() // Rex bits indicating 32/64
 uint8_t OMR::X86::Instruction::rexBits() { return self()->operandSizeRexBits(); }
 #endif
 
-bool OMR::X86::Instruction::isLabel() { return self()->getOpCodeValue() == TR::InstOpCode::label; }
+bool OMR::X86::Instruction::isLabel() { return getOpCodeValue() == TR::InstOpCode::label; }
 
 uint8_t *OMR::X86::Instruction::generateRepeatedRexPrefix(uint8_t *cursor)
 {

@@ -41,20 +41,20 @@ void OMR::ARM::Instruction::generateConditionBinaryEncoding(uint8_t *instruction
 
 uint8_t *OMR::ARM::Instruction::generateBinaryEncoding()
 {
-    uint8_t *instructionStart = self()->cg()->getBinaryBufferCursor();
+    uint8_t *instructionStart = cg()->getBinaryBufferCursor();
     uint8_t *cursor = instructionStart;
-    cursor = self()->getOpCode().copyBinaryToBuffer(instructionStart);
+    cursor = getOpCode().copyBinaryToBuffer(instructionStart);
     self()->generateConditionBinaryEncoding(instructionStart);
     cursor += 4;
-    self()->setBinaryLength(cursor - instructionStart);
-    self()->setBinaryEncoding(instructionStart);
+    setBinaryLength(cursor - instructionStart);
+    setBinaryEncoding(instructionStart);
     return cursor;
 }
 
 int32_t OMR::ARM::Instruction::estimateBinaryLength(int32_t currentEstimate)
 {
-    self()->setEstimatedBinaryLength(ARM_INSTRUCTION_LENGTH);
-    return currentEstimate + self()->getEstimatedBinaryLength();
+    setEstimatedBinaryLength(ARM_INSTRUCTION_LENGTH);
+    return currentEstimate + getEstimatedBinaryLength();
 }
 
 uint32_t encodeBranchDistance(uint32_t from, uint32_t to)

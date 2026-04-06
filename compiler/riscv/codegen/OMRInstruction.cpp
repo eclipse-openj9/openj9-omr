@@ -64,8 +64,8 @@ OMR::RV::Instruction::Instruction(TR::CodeGenerator *cg, TR::Instruction *preced
 
 void OMR::RV::Instruction::remove()
 {
-    self()->getPrev()->setNext(self()->getNext());
-    self()->getNext()->setPrev(self()->getPrev());
+    getPrev()->setNext(getNext());
+    getNext()->setPrev(getPrev());
 }
 
 void OMR::RV::Instruction::RVNeedsGCMap(TR::CodeGenerator *cg, uint32_t mask)
@@ -102,8 +102,8 @@ void OMR::RV::Instruction::assignRegisters(TR_RegisterKinds kindToBeAssigned)
 {
     TR::RegisterDependencyConditions *cond = OMR::RV::Instruction::getDependencyConditions();
     if (cond) {
-        cond->assignPostConditionRegisters(self(), kindToBeAssigned, self()->cg());
-        cond->assignPreConditionRegisters(self()->getPrev(), kindToBeAssigned, self()->cg());
+        cond->assignPostConditionRegisters(self(), kindToBeAssigned, cg());
+        cond->assignPreConditionRegisters(getPrev(), kindToBeAssigned, cg());
     }
 }
 
@@ -116,7 +116,7 @@ uint8_t *OMR::RV::Instruction::generateBinaryEncoding()
 int32_t OMR::RV::Instruction::estimateBinaryLength(int32_t currentEstimate)
 {
     setEstimatedBinaryLength(RISCV_INSTRUCTION_LENGTH);
-    return currentEstimate + self()->getEstimatedBinaryLength();
+    return currentEstimate + getEstimatedBinaryLength();
 }
 
 TR::BtypeInstruction *OMR::RV::Instruction::getBtypeInstruction() { return NULL; }

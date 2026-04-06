@@ -63,13 +63,13 @@ TR::Linkage *OMR::ARM::CodeGenerator::createLinkage(TR_LinkageConventions lc)
         case TR_Private:
         case TR_Helper:
         case TR_System:
-            linkage = new (self()->trHeapMemory()) TR::ARMSystemLinkage(self());
+            linkage = new (trHeapMemory()) TR::ARMSystemLinkage(self());
             break;
         default:
             TR_ASSERT(0, "using system linkage for unrecognized convention %d\n", lc);
-            linkage = new (self()->trHeapMemory()) TR::ARMSystemLinkage(self());
+            linkage = new (trHeapMemory()) TR::ARMSystemLinkage(self());
     }
-    self()->setLinkage(lc, linkage);
+    setLinkage(lc, linkage);
     return linkage;
 }
 
@@ -275,8 +275,8 @@ TR::Instruction *OMR::ARM::CodeGenerator::generateSwitchToInterpreterPrePrologue
     TR::Node *node)
 {
     TR::Compilation *comp = self()->comp();
-    TR::Register *gr4 = self()->machine()->getRealRegister(TR::RealRegister::gr4);
-    TR::Register *lr = self()->machine()->getRealRegister(TR::RealRegister::gr14); // link register
+    TR::Register *gr4 = machine()->getRealRegister(TR::RealRegister::gr4);
+    TR::Register *lr = machine()->getRealRegister(TR::RealRegister::gr14); // link register
     TR::ResolvedMethodSymbol *methodSymbol = comp->getJittedMethodSymbol();
     TR::SymbolReference *revertToInterpreterSymRef
         = self()->symRefTab()->findOrCreateRuntimeHelper(TR_ARMrevertToInterpreterGlue);
@@ -286,13 +286,12 @@ TR::Instruction *OMR::ARM::CodeGenerator::generateSwitchToInterpreterPrePrologue
     uintptr_t helperAddr = (uintptr_t)helperSymRef->getMethodAddress();
 
     // gr4 must contain the saved LR; see Recompilation.s
-    cursor
-        = new (self()->trHeapMemory()) TR::ARMTrg1Src1Instruction(cursor, TR::InstOpCode::mov, node, gr4, lr, self());
-    cursor = self()->getLinkage()->flushArguments(cursor);
+    cursor = new (trHeapMemory()) TR::ARMTrg1Src1Instruction(cursor, TR::InstOpCode::mov, node, gr4, lr, self());
+    cursor = getLinkage()->flushArguments(cursor);
     cursor = generateImmSymInstruction(self(), TR::InstOpCode::bl, node,
         (uintptr_t)revertToInterpreterSymRef->getMethodAddress(),
-        new (self()->trHeapMemory()) TR::RegisterDependencyConditions((uint8_t)0, 0, self()->trMemory()),
-        revertToInterpreterSymRef, NULL, cursor);
+        new (trHeapMemory()) TR::RegisterDependencyConditions((uint8_t)0, 0, trMemory()), revertToInterpreterSymRef,
+        NULL, cursor);
     cursor = generateImmInstruction(self(), TR::InstOpCode::dd, node, (int32_t)ramMethod, TR_RamMethod, cursor);
 
     if (comp->getOption(TR_EnableHCR))
@@ -316,18 +315,18 @@ void OMR::ARM::CodeGenerator::beginInstructionSelection()
         TR::ResolvedMethodSymbol *methodSymbol = comp->getMethodSymbol();
         if (methodSymbol->isJNI()) {
             uintptr_t JNIMethodAddress = (uintptr_t)methodSymbol->getResolvedMethod()->startAddressForJNIMethod(comp);
-            cursor = new (self()->trHeapMemory())
+            cursor = new (trHeapMemory())
                 TR::ARMImmInstruction(cursor, TR::InstOpCode::dd, startNode, (int32_t)JNIMethodAddress, self());
         }
 
         _returnTypeInfoInstruction
-            = new (self()->trHeapMemory()) TR::ARMImmInstruction(cursor, TR::InstOpCode::dd, startNode, 0, self());
-        new (self()->trHeapMemory())
+            = new (trHeapMemory()) TR::ARMImmInstruction(cursor, TR::InstOpCode::dd, startNode, 0, self());
+        new (trHeapMemory())
             TR::ARMAdminInstruction(_returnTypeInfoInstruction, TR::InstOpCode::proc, startNode, NULL, self());
 
     } else {
         _returnTypeInfoInstruction = NULL;
-        new (self()->trHeapMemory())
+        new (trHeapMemory())
             TR::ARMAdminInstruction((TR::Instruction *)NULL, TR::InstOpCode::proc, startNode, NULL, self());
     }
 }
@@ -335,7 +334,7 @@ void OMR::ARM::CodeGenerator::beginInstructionSelection()
 void OMR::ARM::CodeGenerator::endInstructionSelection()
 {
     if (_returnTypeInfoInstruction != NULL) {
-        _returnTypeInfoInstruction->setSourceImmediate(static_cast<uint32_t>(self()->comp()->getReturnInfo()));
+        _returnTypeInfoInstruction->setSourceImmediate(static_cast<uint32_t>(comp()->getReturnInfo()));
     }
 }
 
@@ -343,16 +342,16 @@ void OMR::ARM::CodeGenerator::doBinaryEncoding()
 {
     TR::Compilation *comp = self()->comp();
     int32_t estimate = 0;
-    TR::Instruction *cursorInstruction = self()->getFirstInstruction();
+    TR::Instruction *cursorInstruction = getFirstInstruction();
 
-    self()->getLinkage()->createPrologue(cursorInstruction);
+    getLinkage()->createPrologue(cursorInstruction);
 
     bool skipOneReturn = false;
     while (cursorInstruction) {
         if (cursorInstruction->getOpCodeValue() == TR::InstOpCode::retn) {
             if (skipOneReturn == false) {
                 TR::Instruction *temp = cursorInstruction->getPrev();
-                self()->getLinkage()->createEpilogue(temp);
+                getLinkage()->createEpilogue(temp);
                 cursorInstruction = temp->getNext();
                 skipOneReturn = true;
             } else {
@@ -371,7 +370,7 @@ void OMR::ARM::CodeGenerator::doBinaryEncoding()
 
     self()->setEstimatedCodeLength(estimate);
 
-    cursorInstruction = self()->getFirstInstruction();
+    cursorInstruction = getFirstInstruction();
     uint8_t *coldCode = NULL;
     uint8_t *temp = self()->allocateCodeMemory(self()->getEstimatedCodeLength(), 0, &coldCode);
 
@@ -384,7 +383,7 @@ void OMR::ARM::CodeGenerator::doBinaryEncoding()
         cursorInstruction = cursorInstruction->getNext();
     }
 
-    self()->getLinkage()->performPostBinaryEncoding();
+    getLinkage()->performPostBinaryEncoding();
 }
 
 bool OMR::ARM::CodeGenerator::hasDataSnippets() { return (_constantData == NULL) ? false : true; }
@@ -405,7 +404,7 @@ int32_t OMR::ARM::CodeGenerator::findOrCreateAddressConstant(void *v, TR::DataTy
     bool isUnloadablePicSite)
 {
     if (_constantData == NULL)
-        _constantData = new (self()->trHeapMemory()) TR::ARMConstantDataSnippet(self());
+        _constantData = new (trHeapMemory()) TR::ARMConstantDataSnippet(self());
     return (_constantData->addConstantRequest(v, t, n0, n1, n2, n3, n4, node, isUnloadablePicSite));
 }
 
@@ -487,7 +486,7 @@ void OMR::ARM::CodeGenerator::buildRegisterMapForInstruction(TR_GCStackMap *map)
     // Build the register map
     //
     for (int i = TR::RealRegister::FirstGPR; i <= TR::RealRegister::LastGPR; i++) {
-        TR::RealRegister *realReg = self()->machine()->getRealRegister((TR::RealRegister::RegNum)i);
+        TR::RealRegister *realReg = machine()->getRealRegister((TR::RealRegister::RegNum)i);
         if (realReg->getHasBeenAssignedInMethod()) {
             TR::Register *virtReg = realReg->getAssignedRegister();
             if (virtReg != NULL && virtReg->containsCollectedReference()) {
@@ -618,8 +617,8 @@ TR_GlobalRegisterNumber OMR::ARM::CodeGenerator::getLinkageGlobalRegisterNumber(
         else
             result = _gprLinkageGlobalRegisterNumbers[linkageRegisterIndex];
     }
-    diagnostic("getLinkageGlobalRegisterNumber(%d, %s) = %d\n", linkageRegisterIndex,
-        self()->comp()->getDebug()->getName(type), result);
+    diagnostic("getLinkageGlobalRegisterNumber(%d, %s) = %d\n", linkageRegisterIndex, comp()->getDebug()->getName(type),
+        result);
     return result;
 }
 #endif
@@ -654,12 +653,12 @@ bool OMR::ARM::CodeGenerator::shouldValueBeInACommonedNode(int64_t value)
 
 bool OMR::ARM::CodeGenerator::isGlobalRegisterAvailable(TR_GlobalRegisterNumber i, TR::DataType dt)
 {
-    return self()->machine()->getRealRegister((TR::RealRegister::RegNum)self()->getGlobalRegister(i))->getState()
+    return machine()->getRealRegister((TR::RealRegister::RegNum)self()->getGlobalRegister(i))->getState()
         == TR::RealRegister::Free;
 }
 
 bool OMR::ARM::CodeGenerator::directCallRequiresTrampoline(intptr_t targetAddress, intptr_t sourceAddress)
 {
-    return !self()->comp()->target().cpu.isTargetWithinBranchImmediateRange(targetAddress, sourceAddress)
-        || self()->comp()->getOption(TR_StressTrampolines);
+    return !comp()->target().cpu.isTargetWithinBranchImmediateRange(targetAddress, sourceAddress)
+        || comp()->getOption(TR_StressTrampolines);
 }

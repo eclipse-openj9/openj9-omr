@@ -183,8 +183,8 @@ TR::Register *OMR::CodeGenerator::evaluate(TR::Node *node)
         reg = _nodeToInstrEvaluators[opcode](node, self());
 
         if (comp->getOption(TR_TraceRegisterPressureDetails)) {
-            log->printf("  evaluated %s", self()->getDebug()->getName(node));
-            self()->getDebug()->dumpLiveRegisters(log);
+            log->printf("  evaluated %s", getDebug()->getName(node));
+            getDebug()->dumpLiveRegisters(log);
             log->println();
         }
 
@@ -342,9 +342,9 @@ rcount_t OMR::CodeGenerator::decReferenceCount(TR::Node *node)
         TR_ASSERT(reg->isLive()
                 || (diagnostic("\n*** Error: Register %s for node "
                                "[%s] died prematurely\n",
-                        reg->getRegisterName(self()->comp()), node->getName(self()->comp()->getDebug())),
+                        reg->getRegisterName(comp()), node->getName(getDebug())),
                     0),
-            "Node %s register should be live", self()->getDebug()->getName(node));
+            "Node %s register should be live", getDebug()->getName(node));
 
         TR_LiveRegisterInfo *liveRegister = reg->getLiveRegisterInfo();
         TR::Register *pair = reg->getRegisterPair();
@@ -369,12 +369,12 @@ rcount_t OMR::CodeGenerator::decReferenceCount(TR::Node *node)
         storageReference->decrementTemporaryReferenceCount();
         if (node->getReferenceCount() == 1) {
             storageReference->decOwningRegisterCount();
-            logprintf(self()->traceBCDCodeGen(), self()->comp()->log(),
+            logprintf(self()->traceBCDCodeGen(), comp()->log(),
                 "\tdecrement owningRegisterCount %d->%d on ref #%d (%s) for reg %s as %s (%p) refCount == 1 (going to "
                 "0)\n",
                 storageReference->getOwningRegisterCount() + 1, storageReference->getOwningRegisterCount(),
-                storageReference->getReferenceNumber(), self()->getDebug()->getName(storageReference->getSymbol()),
-                self()->getDebug()->getName(reg), node->getOpCode().getName(), node);
+                storageReference->getReferenceNumber(), getDebug()->getName(storageReference->getSymbol()),
+                getDebug()->getName(reg), node->getOpCode().getName(), node);
         }
     } else if (node->getOpCode().hasSymbolReference() && node->getSymbolReference()
         && node->getSymbolReference()->isTempVariableSizeSymRef()) {
@@ -389,10 +389,10 @@ rcount_t OMR::CodeGenerator::decReferenceCount(TR::Node *node)
 
 rcount_t OMR::CodeGenerator::recursivelyDecReferenceCount(TR::Node *node)
 {
-    TR_ASSERT(!self()->comp()->getOption(TR_EnableParanoidRefCountChecks) || node->getOpCode().isTreeTop()
+    TR_ASSERT(!comp()->getOption(TR_EnableParanoidRefCountChecks) || node->getOpCode().isTreeTop()
             || node->getReferenceCount() > 0,
         "OMR::CodeGenerator::recursivelyDecReferenceCount invoked for nontreetop node [%s] with count == 0",
-        node->getName(self()->comp()->getDebug()));
+        node->getName(comp()->getDebug()));
     rcount_t count = self()->decReferenceCount(node);
     if (count == 0 && !node->getRegister())
         for (int16_t c = node->getNumChildren() - 1; c >= 0; c--)
@@ -418,7 +418,7 @@ void OMR::CodeGenerator::evaluateChildrenWithMultipleRefCount(TR::Node *node)
                 && (child->getOpCode().hasSymbolReference()
                     || (child->getOpCodeValue() == TR::l2a && child->getChild(0)->containsCompressionSequence()))) {
                 TR::SymbolReference *vftPointerSymRef
-                    = self()->comp()->getSymRefTab()->element(TR::SymbolReferenceTable::vftSymbol);
+                    = comp()->getSymRefTab()->element(TR::SymbolReferenceTable::vftSymbol);
                 if (node->isNopableInlineGuard() && self()->getSupportsVirtualGuardNOPing()
                     && child->getOpCodeValue() == TR::aloadi && child->getChild(0)->getOpCode().hasSymbolReference()
                     && child->getChild(0)->getSymbolReference() == vftPointerSymRef

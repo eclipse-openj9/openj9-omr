@@ -73,7 +73,7 @@ void OMR::CodeGenerator::createStackAtlas()
     // Now assign GC map indices to parameters depending on the linkage mapping.
     // At the same time build the parameter map.
     //
-    TR_GCStackMap *parameterMap = new (self()->trHeapMemory(), numberOfParmSlots) TR_GCStackMap(numberOfParmSlots);
+    TR_GCStackMap *parameterMap = new (trHeapMemory(), numberOfParmSlots) TR_GCStackMap(numberOfParmSlots);
 
     // --------------------------------------------------------------------------
     // Now assign a GC map index to reference locals. When the stack is mapped,
@@ -102,7 +102,7 @@ void OMR::CodeGenerator::createStackAtlas()
     // Build the stack map for a method.  Start with all parameters and locals
     // being live, and selectively mark slots that are not live.
     //
-    TR_GCStackMap *localMap = new (self()->trHeapMemory(), numberOfSlots) TR_GCStackMap(numberOfSlots);
+    TR_GCStackMap *localMap = new (trHeapMemory(), numberOfSlots) TR_GCStackMap(numberOfSlots);
     localMap->copy(parameterMap);
 
     // Set all the local references to be live
@@ -116,8 +116,7 @@ void OMR::CodeGenerator::createStackAtlas()
 
     // Now create the stack atlas
     //
-    TR::GCStackAtlas *atlas
-        = new (self()->trHeapMemory()) TR::GCStackAtlas(numberOfParmSlots, numberOfSlots, self()->trMemory());
+    TR::GCStackAtlas *atlas = new (trHeapMemory()) TR::GCStackAtlas(numberOfParmSlots, numberOfSlots, trMemory());
 
     atlas->setParmBaseOffset(firstMappedParmOffset);
     atlas->setParameterMap(parameterMap);
@@ -162,7 +161,7 @@ TR_GCStackMap *OMR::CodeGenerator::buildGCMapForInstruction(TR::Instruction *ins
     TR::GCStackAtlas *atlas = self()->getStackAtlas();
     uint32_t numberOfSlots = atlas->getNumberOfSlotsMapped();
 
-    TR_GCStackMap *map = new (self()->trHeapMemory(), numberOfSlots) TR_GCStackMap(numberOfSlots);
+    TR_GCStackMap *map = new (trHeapMemory(), numberOfSlots) TR_GCStackMap(numberOfSlots);
 
     TR_ASSERT(instr, "instruction is NULL\n");
     if (instr->getNode()) {
@@ -188,7 +187,7 @@ TR_GCStackMap *OMR::CodeGenerator::buildGCMapForInstruction(TR::Instruction *ins
     TR_BitVector *liveMonitors = instr->getLiveMonitors();
 
     if (liveMonitors) {
-        map->allocateLiveMonitorBits(self()->trMemory());
+        map->allocateLiveMonitorBits(trMemory());
     }
 
     if (liveLocals || liveMonitors) {
@@ -250,13 +249,12 @@ TR_GCStackMap *OMR::CodeGenerator::buildGCMapForInstruction(TR::Instruction *ins
             // skip it.  The occupied flag is not accurate in this case because we
             // did not free the spill and therefore did not clear the flag.
             //
-            if ((self()->comp()->target().cpu.isPower() || self()->comp()->target().cpu.isZ()
-                    || self()->comp()->target().cpu.isARM64())
+            if ((comp->target().cpu.isPower() || comp->target().cpu.isZ() || comp->target().cpu.isARM64())
                 && (*location)->getMaxSpillDepth() == 0 && comp->cg()->isOutOfLineHotPath()) {
                 logprintf(trace, log,
                     "\nSkipping GC map [%p] index %d (%s) for instruction [%p] in OOL hot path because it has already "
                     "been reverse spilled.\n",
-                    map, s->getGCMapIndex(), self()->getDebug()->getName((*location)->getSymbolReference()), instr);
+                    map, s->getGCMapIndex(), getDebug()->getName((*location)->getSymbolReference()), instr);
                 continue;
             }
 
@@ -310,7 +308,7 @@ void OMR::CodeGenerator::remapGCIndicesInInternalPtrFormat()
                 stackAtlas->setHasUninitializedPinningArrayPointer(true);
 
             if (!internalPtrMap) {
-                internalPtrMap = new (self()->trHeapMemory()) TR_InternalPointerMap(self()->trMemory());
+                internalPtrMap = new (trHeapMemory()) TR_InternalPointerMap(trMemory());
                 stackAtlas->setInternalPointerMap(internalPtrMap);
             }
             stackAtlas->addPinningArrayPtrForInternalPtrReg(localCursor);
@@ -330,7 +328,7 @@ void OMR::CodeGenerator::remapGCIndicesInInternalPtrFormat()
             index += roundedSize / static_cast<int32_t>(TR::Compiler->om.sizeofReferenceAddress());
 
             if (!internalPtrMap) {
-                internalPtrMap = new (self()->trHeapMemory()) TR_InternalPointerMap(self()->trMemory());
+                internalPtrMap = new (trHeapMemory()) TR_InternalPointerMap(trMemory());
                 stackAtlas->setInternalPointerMap(internalPtrMap);
             }
 
@@ -387,7 +385,7 @@ void OMR::CodeGenerator::addToAtlas(TR::Instruction *instr)
         for (TR::Instruction *prev = instr->getPrev(); prev; prev = prev->getPrev()) {
             TR_GCStackMap *prevMap = prev->getGCMap();
             if (prevMap) {
-                map = prevMap->clone(self()->trMemory());
+                map = prevMap->clone(trMemory());
                 map->setByteCodeInfo(instr->getNode()->getByteCodeInfo());
                 break;
             }

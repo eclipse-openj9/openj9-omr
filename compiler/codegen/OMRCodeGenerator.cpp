@@ -295,11 +295,11 @@ void OMR::CodeGenerator::initialize()
     cg->createObjectFormat();
 }
 
-TR_StackMemory OMR::CodeGenerator::trStackMemory() { return self()->trMemory(); }
+TR_StackMemory OMR::CodeGenerator::trStackMemory() { return trMemory(); }
 
-TR_FrontEnd *OMR::CodeGenerator::fe() { return self()->comp()->fe(); }
+TR_FrontEnd *OMR::CodeGenerator::fe() { return comp()->fe(); }
 
-TR_Debug *OMR::CodeGenerator::getDebug() { return self()->comp()->getDebug(); }
+TR_Debug *OMR::CodeGenerator::getDebug() { return comp()->getDebug(); }
 
 /*
  * generateCodeFromIL
@@ -546,8 +546,8 @@ void OMR::CodeGenerator::lowerTreesWalk(TR::Node *parent, TR::TreeTop *treeTop, 
 
 void OMR::CodeGenerator::lowerTreesPropagateBlockToNode(TR::Node *node)
 {
-    if (self()->comp()->getFlowGraph()->getNextNodeNumber() < SHRT_MAX) {
-        node->setLocalIndex(self()->getCurrentBlock()->getNumber());
+    if (comp()->getFlowGraph()->getNextNodeNumber() < SHRT_MAX) {
+        node->setLocalIndex(getCurrentBlock()->getNumber());
     } else {
         node->setLocalIndex(-1);
     }
@@ -567,7 +567,7 @@ void OMR::CodeGenerator::lowerTreesPreTreeTopVisit(TR::TreeTop *tt, vcount_t vis
 
     if (node->getOpCodeValue() == TR::BBStart) {
         TR::Block *block = node->getBlock();
-        self()->setCurrentBlock(block);
+        setCurrentBlock(block);
     }
 }
 
@@ -577,7 +577,7 @@ void OMR::CodeGenerator::lowerTreesPostChildrenVisit(TR::Node *parent, TR::TreeT
 
 void OMR::CodeGenerator::setUpForInstructionSelection()
 {
-    self()->comp()->incVisitCount();
+    comp()->incVisitCount();
 
     // prepareNodeForInstructionSelection is called during a separate walk of the treetops because
     // the _register and _label fields are unioned members of a node.  prepareNodeForInstructionSelection
@@ -585,11 +585,11 @@ void OMR::CodeGenerator::setUpForInstructionSelection()
     //
     TR::TreeTop *tt = NULL, *prev = NULL;
 
-    for (tt = self()->comp()->getStartTree(); tt; tt = tt->getNextTreeTop()) {
+    for (tt = comp()->getStartTree(); tt; tt = tt->getNextTreeTop()) {
         self()->prepareNodeForInstructionSelection(tt->getNode());
     }
 
-    for (tt = self()->comp()->getStartTree(); tt; prev = tt, tt = tt->getNextTreeTop()) {
+    for (tt = comp()->getStartTree(); tt; prev = tt, tt = tt->getNextTreeTop()) {
         TR::Node *node = tt->getNode();
 
         if ((node->getOpCodeValue() == TR::treetop) || node->getOpCode().isAnchor() || node->getOpCode().isCheck()) {
@@ -599,7 +599,7 @@ void OMR::CodeGenerator::setUpForInstructionSelection()
         TR::ILOpCode &opcode = node->getOpCode();
 
         if (opcode.getOpCodeValue() == TR::BBStart) {
-            self()->setCurrentBlock(node->getBlock());
+            setCurrentBlock(node->getBlock());
         } else if (opcode.isLoadVarOrStore()) {
             TR::Symbol *sym = node->getSymbol();
             TR::AutomaticSymbol *local = sym->getAutoSymbol();
@@ -609,7 +609,7 @@ void OMR::CodeGenerator::setUpForInstructionSelection()
         } else if (opcode.isBranch()) {
             if (node->getBranchDestination()->getNode()->getLabel() == NULL) {
                 // need to get the label type from the target block for RAS
-                TR::LabelSymbol *label = TR::LabelSymbol::create(self()->trHeapMemory(), self(),
+                TR::LabelSymbol *label = TR::LabelSymbol::create(trHeapMemory(), self(),
                     node->getBranchDestination()->getNode()->getBlock());
 
                 node->getBranchDestination()->getNode()->setLabel(label);
@@ -671,7 +671,7 @@ void OMR::CodeGenerator::uncommonCallConstNodes()
 
     TR::NodeChecklist checklist(comp);
 
-    for (TR::TreeTop *tt = self()->comp()->getStartTree(); tt; tt = tt->getNextTreeTop()) {
+    for (TR::TreeTop *tt = comp->getStartTree(); tt; tt = tt->getNextTreeTop()) {
         TR::Node *node = tt->getNode();
         if (node->getNumChildren() >= 1 && node->getFirstChild()->getOpCode().isFunctionCall()) {
             TR::Node *callNode = node->getFirstChild();
@@ -709,16 +709,16 @@ void OMR::CodeGenerator::doInstructionSelection()
     self()->setPrePrologueSize(0);
 
     if (trace) {
-        self()->getDebug()->setupToDumpTreesAndInstructions(log, "Performing Instruction Selection");
+        getDebug()->setupToDumpTreesAndInstructions(log, "Performing Instruction Selection");
     }
 
     self()->beginInstructionSelection();
 
-    TR_BitVector *liveLocals = self()->getLiveLocals();
-    TR_BitVector nodeChecklistBeforeDump(comp->getNodeCount(), self()->trMemory(), stackAlloc, growable);
+    TR_BitVector *liveLocals = getLiveLocals();
+    TR_BitVector nodeChecklistBeforeDump(comp->getNodeCount(), trMemory(), stackAlloc, growable);
 
-    for (TR::TreeTop *tt = comp->getStartTree(); tt; tt = self()->getCurrentEvaluationTreeTop()->getNextTreeTop()) {
-        TR::Instruction *prevInstr = self()->getAppendInstruction();
+    for (TR::TreeTop *tt = comp->getStartTree(); tt; tt = getCurrentEvaluationTreeTop()->getNextTreeTop()) {
+        TR::Instruction *prevInstr = getAppendInstruction();
         TR::Node *node = tt->getNode();
         TR::ILOpCodes opCode = node->getOpCodeValue();
 
@@ -726,7 +726,7 @@ void OMR::CodeGenerator::doInstructionSelection()
 
         if (opCode == TR::BBStart) {
             TR::Block *block = node->getBlock();
-            self()->setCurrentEvaluationBlock(block);
+            setCurrentEvaluationBlock(block);
 
             if (!block->isExtensionOfPreviousBlock()) {
                 // If we are keeping track of live locals, set up the live locals for
@@ -734,16 +734,16 @@ void OMR::CodeGenerator::doInstructionSelection()
                 //
                 if (liveLocals) {
                     if (block->getLiveLocals()) {
-                        liveLocals = new (self()->trHeapMemory()) TR_BitVector(*block->getLiveLocals());
+                        liveLocals = new (trHeapMemory()) TR_BitVector(*block->getLiveLocals());
                     } else {
-                        liveLocals = new (self()->trHeapMemory()) TR_BitVector(*liveLocals);
+                        liveLocals = new (trHeapMemory()) TR_BitVector(*liveLocals);
                         liveLocals->empty();
                     }
                 }
             }
 
-            if (self()->getDebug()) {
-                self()->getDebug()->roundAddressEnumerationCounters();
+            if (getDebug()) {
+                getDebug()->roundAddressEnumerationCounters();
             }
 #if DEBUG
             // Verify that we are only being more conservative by inheriting the live
@@ -759,17 +759,17 @@ void OMR::CodeGenerator::doInstructionSelection()
 #endif
         }
 
-        self()->setLiveLocals(liveLocals);
+        setLiveLocals(liveLocals);
 
         if (trace) {
             // any evaluator that handles multiple trees will need to dump
             // the others
-            self()->getDebug()->saveNodeChecklist(nodeChecklistBeforeDump);
-            self()->getDebug()->dumpSingleTreeWithInstrs(comp->log(), tt, NULL, true, false, true, true);
+            getDebug()->saveNodeChecklist(nodeChecklistBeforeDump);
+            getDebug()->dumpSingleTreeWithInstrs(comp->log(), tt, NULL, true, false, true, true);
             log->prints("\n------------------------------\n");
         }
 
-        self()->setCurrentEvaluationTreeTop(tt);
+        setCurrentEvaluationTreeTop(tt);
         self()->setImplicitExceptionPoint(NULL);
 
         // -----------------------------------------------------------------------
@@ -778,7 +778,7 @@ void OMR::CodeGenerator::doInstructionSelection()
         self()->evaluate(node);
 
         if (trace || debug("traceGRA")) {
-            TR::Instruction *lastInstr = self()->getAppendInstruction();
+            TR::Instruction *lastInstr = getAppendInstruction();
             tt->setLastInstruction(lastInstr == prevInstr ? 0 : lastInstr);
         }
 
@@ -827,27 +827,27 @@ void OMR::CodeGenerator::doInstructionSelection()
             }
 
             if (liveSym) {
-                liveLocals = new (self()->trHeapMemory()) TR_BitVector(*liveLocals);
+                liveLocals = new (trHeapMemory()) TR_BitVector(*liveLocals);
                 liveLocals->set(liveSym->getLiveLocalIndex());
             }
         }
 
         if (comp->getOption(TR_TraceCG)) {
-            self()->getDebug()->restoreNodeChecklist(nodeChecklistBeforeDump);
-            if (tt == self()->getCurrentEvaluationTreeTop()) {
+            getDebug()->restoreNodeChecklist(nodeChecklistBeforeDump);
+            if (tt == getCurrentEvaluationTreeTop()) {
                 log->prints("------------------------------\n");
-                self()->getDebug()->dumpSingleTreeWithInstrs(log, tt, prevInstr->getNext(), true, true, true, false);
+                getDebug()->dumpSingleTreeWithInstrs(log, tt, prevInstr->getNext(), true, true, true, false);
             } else {
                 // dump all the trees that the evaluator handled
                 log->prints("------------------------------");
-                for (TR::TreeTop *dumptt = tt; dumptt != self()->getCurrentEvaluationTreeTop()->getNextTreeTop();
+                for (TR::TreeTop *dumptt = tt; dumptt != getCurrentEvaluationTreeTop()->getNextTreeTop();
                      dumptt = dumptt->getNextTreeTop()) {
                     log->println();
-                    self()->getDebug()->dumpSingleTreeWithInstrs(log, dumptt, NULL, true, false, true, false);
+                    getDebug()->dumpSingleTreeWithInstrs(log, dumptt, NULL, true, false, true, false);
                 }
 
                 // all instructions are on the tt tree
-                self()->getDebug()->dumpSingleTreeWithInstrs(log, tt, prevInstr->getNext(), false, true, false, false);
+                getDebug()->dumpSingleTreeWithInstrs(log, tt, prevInstr->getNext(), false, true, false, false);
             }
 
             log->flush();
@@ -865,8 +865,8 @@ void OMR::CodeGenerator::doInstructionSelection()
         comp->incVisitCount();
     }
 
-    if (self()->getDebug()) {
-        self()->getDebug()->roundAddressEnumerationCounters();
+    if (getDebug()) {
+        getDebug()->roundAddressEnumerationCounters();
     }
 
     self()->endInstructionSelection();
@@ -875,20 +875,20 @@ void OMR::CodeGenerator::doInstructionSelection()
 void OMR::CodeGenerator::doRegisterAssignment(TR_RegisterKinds kindsToAssign)
 {
     TR::Instruction *prevInstr = NULL;
-    TR::Instruction *currInstr = self()->getAppendInstruction();
+    TR::Instruction *currInstr = getAppendInstruction();
 
     if (!self()->isOutOfLineColdPath()) {
-        auto *firstTimeLiveOOLRegisterList = new (self()->trHeapMemory())
-            TR::list<TR::Register *>(getTypedAllocator<TR::Register *>(self()->comp()->allocator()));
-        self()->setFirstTimeLiveOOLRegisterList(firstTimeLiveOOLRegisterList);
+        auto *firstTimeLiveOOLRegisterList
+            = new (trHeapMemory()) TR::list<TR::Register *>(getTypedAllocator<TR::Register *>(comp()->allocator()));
+        setFirstTimeLiveOOLRegisterList(firstTimeLiveOOLRegisterList);
 
-        auto *spilledRegisterList = new (self()->trHeapMemory())
-            TR::list<TR::Register *>(getTypedAllocator<TR::CFGEdge *>(self()->comp()->allocator()));
-        self()->setSpilledRegisterList(spilledRegisterList);
+        auto *spilledRegisterList
+            = new (trHeapMemory()) TR::list<TR::Register *>(getTypedAllocator<TR::CFGEdge *>(comp()->allocator()));
+        setSpilledRegisterList(spilledRegisterList);
     }
 
-    if (self()->getDebug()) {
-        self()->getDebug()->startTracingRegisterAssignment(self()->comp()->log());
+    if (getDebug()) {
+        getDebug()->startTracingRegisterAssignment(comp()->log());
     }
 
     while (currInstr) {
@@ -897,7 +897,7 @@ void OMR::CodeGenerator::doRegisterAssignment(TR_RegisterKinds kindsToAssign)
         self()->tracePreRAInstruction(currInstr);
 
         if (currInstr->getNode()->getOpCodeValue() == TR::BBEnd) {
-            self()->comp()->setCurrentBlock(currInstr->getNode()->getBlock());
+            comp()->setCurrentBlock(currInstr->getNode()->getBlock());
         }
 
         // Main register assignment procedure
@@ -924,21 +924,21 @@ void OMR::CodeGenerator::doRegisterAssignment(TR_RegisterKinds kindsToAssign)
 
     _afterRA = true;
 
-    if (self()->getDebug()) {
-        self()->getDebug()->stopTracingRegisterAssignment(self()->comp()->log());
+    if (getDebug()) {
+        getDebug()->stopTracingRegisterAssignment(comp()->log());
     }
 }
 
 bool OMR::CodeGenerator::use64BitRegsOn32Bit()
 {
 #ifdef TR_TARGET_S390
-    return self()->comp()->target().is32Bit();
+    return comp()->target().is32Bit();
 #else
     return false;
 #endif // TR_TARGET_S390
 }
 
-TR_PersistentMemory *OMR::CodeGenerator::trPersistentMemory() { return self()->trMemory()->trPersistentMemory(); }
+TR_PersistentMemory *OMR::CodeGenerator::trPersistentMemory() { return trMemory()->trPersistentMemory(); }
 
 void OMR::CodeGenerator::addSymbolAndDataTypeToMap(TR::Symbol *symbol, TR::DataType dt)
 {
@@ -1036,27 +1036,27 @@ bool OMR::CodeGenerator::getSupportsConstantOffsetInAddressing(int64_t value)
 
 void OMR::CodeGenerator::toggleIsInOOLSection() { _flags4.set(IsInOOLSection, !self()->getIsInOOLSection()); }
 
-bool OMR::CodeGenerator::traceBCDCodeGen() { return self()->comp()->getOption(TR_TraceCG); }
+bool OMR::CodeGenerator::traceBCDCodeGen() { return comp()->getOption(TR_TraceCG); }
 
 void OMR::CodeGenerator::traceBCDEntry(char *str, TR::Node *node)
 {
-    logprintf(self()->traceBCDCodeGen(), self()->comp()->log(), "EVAL: %s 0x%p - start\n", str, node);
+    logprintf(self()->traceBCDCodeGen(), comp()->log(), "EVAL: %s 0x%p - start\n", str, node);
 }
 
 void OMR::CodeGenerator::traceBCDExit(char *str, TR::Node *node)
 {
-    logprintf(self()->traceBCDCodeGen(), self()->comp()->log(), "EVAL: %s 0x%p - end\n", str, node);
+    logprintf(self()->traceBCDCodeGen(), comp()->log(), "EVAL: %s 0x%p - end\n", str, node);
 }
 
 bool OMR::CodeGenerator::traceSimulateTreeEvaluation()
 {
-    return self()->comp()->getOptions()->trace(OMR::tacticalGlobalRegisterAllocator)
-        && !self()->comp()->getOption(TR_TerseRegisterPressureTrace);
+    return comp()->getOptions()->trace(OMR::tacticalGlobalRegisterAllocator)
+        && !comp()->getOption(TR_TerseRegisterPressureTrace);
 }
 
 bool OMR::CodeGenerator::terseSimulateTreeEvaluation()
 {
-    return self()->comp()->getOptions()->trace(OMR::tacticalGlobalRegisterAllocator);
+    return comp()->getOptions()->trace(OMR::tacticalGlobalRegisterAllocator);
 }
 
 TR::SymbolReference *OMR::CodeGenerator::getSymRef(TR_RuntimeHelper h) { return _symRefTab->getSymRef(h); }
@@ -1076,9 +1076,8 @@ void OMR::CodeGenerator::initializeLinkage()
     // Expect to call once during initialization
     //
     linkage = self()->createLinkageForCompilation();
-    linkage
-        = linkage ? linkage : self()->createLinkage(self()->comp()->getJittedMethodSymbol()->getLinkageConvention());
-    self()->setLinkage(linkage);
+    linkage = linkage ? linkage : self()->createLinkage(comp()->getJittedMethodSymbol()->getLinkageConvention());
+    setLinkage(linkage);
 }
 
 TR::Linkage *OMR::CodeGenerator::createLinkage(TR_LinkageConventions lc)
@@ -1112,24 +1111,21 @@ uint32_t OMR::CodeGenerator::getCodeLength() // cast explicitly
     return (uint32_t)(self()->getCodeEnd() - self()->getCodeStart());
 }
 
-bool OMR::CodeGenerator::needRelocationsForLookupEvaluationData() { return self()->comp()->compileRelocatableCode(); }
+bool OMR::CodeGenerator::needRelocationsForLookupEvaluationData() { return comp()->compileRelocatableCode(); }
 
-bool OMR::CodeGenerator::needClassAndMethodPointerRelocations() { return self()->comp()->compileRelocatableCode(); }
+bool OMR::CodeGenerator::needClassAndMethodPointerRelocations() { return comp()->compileRelocatableCode(); }
 
-bool OMR::CodeGenerator::needRelocationsForStatics() { return self()->comp()->compileRelocatableCode(); }
+bool OMR::CodeGenerator::needRelocationsForStatics() { return comp()->compileRelocatableCode(); }
 
-bool OMR::CodeGenerator::needRelocationsForBodyInfoData() { return self()->comp()->compileRelocatableCode(); }
+bool OMR::CodeGenerator::needRelocationsForBodyInfoData() { return comp()->compileRelocatableCode(); }
 
-bool OMR::CodeGenerator::needRelocationsForPersistentInfoData() { return self()->comp()->compileRelocatableCode(); }
+bool OMR::CodeGenerator::needRelocationsForPersistentInfoData() { return comp()->compileRelocatableCode(); }
 
-bool OMR::CodeGenerator::needRelocationsForPersistentProfileInfoData()
-{
-    return self()->comp()->compileRelocatableCode();
-}
+bool OMR::CodeGenerator::needRelocationsForPersistentProfileInfoData() { return comp()->compileRelocatableCode(); }
 
-bool OMR::CodeGenerator::needRelocationsForCurrentMethodPC() { return self()->comp()->compileRelocatableCode(); }
+bool OMR::CodeGenerator::needRelocationsForCurrentMethodPC() { return comp()->compileRelocatableCode(); }
 
-bool OMR::CodeGenerator::needRelocationsForHelpers() { return self()->comp()->compileRelocatableCode(); }
+bool OMR::CodeGenerator::needRelocationsForHelpers() { return comp()->compileRelocatableCode(); }
 
 bool OMR::CodeGenerator::isGlobalVRF(TR_GlobalRegisterNumber n)
 {
@@ -1152,7 +1148,7 @@ TR_BitVector *OMR::CodeGenerator::getBlocksWithCalls()
     return _blocksWithCalls;
 }
 
-bool OMR::CodeGenerator::profiledPointersRequireRelocation() { return self()->comp()->compileRelocatableCode(); }
+bool OMR::CodeGenerator::profiledPointersRequireRelocation() { return comp()->compileRelocatableCode(); }
 
 bool OMR::CodeGenerator::supportsInternalPointers()
 {
@@ -1226,13 +1222,13 @@ void OMR::CodeGenerator::addSnippet(TR::Snippet *s) { _snippetList.push_back(s);
 void OMR::CodeGenerator::setCurrentBlock(TR::Block *b)
 {
     _currentBlock = b;
-    self()->comp()->setCurrentBlock(b);
+    comp()->setCurrentBlock(b);
 }
 
 bool OMR::CodeGenerator::useClobberEvaluate()
 {
 #if defined(TR_HOST_S390) || defined(TR_HOST_POWER)
-    if (!self()->comp()->getOption(TR_DisableEnhancedClobberEval))
+    if (!comp()->getOption(TR_DisableEnhancedClobberEval))
         return false;
 #endif
     return true;
@@ -1249,77 +1245,76 @@ bool OMR::CodeGenerator::opCodeIsNoOp(TR::ILOpCode &opCode)
 void OMR::CodeGenerator::traceRAInstruction(TR::Instruction *instr)
 {
     const static char *traceEveryInstruction = feGetEnv("TR_traceEveryInstructionDuringRA");
-    if (self()->getDebug())
-        self()->getDebug()->traceRegisterAssignment(self()->comp()->log(), instr, true,
-            traceEveryInstruction ? true : false);
+    if (getDebug())
+        getDebug()->traceRegisterAssignment(comp()->log(), instr, true, traceEveryInstruction ? true : false);
 }
 
 void OMR::CodeGenerator::tracePreRAInstruction(TR::Instruction *instr)
 {
-    if (self()->getDebug())
-        self()->getDebug()->traceRegisterAssignment(self()->comp()->log(), instr, false);
+    if (getDebug())
+        getDebug()->traceRegisterAssignment(comp()->log(), instr, false);
 }
 
 void OMR::CodeGenerator::tracePostRAInstruction(TR::Instruction *instr)
 {
-    if (self()->getDebug())
-        self()->getDebug()->traceRegisterAssignment(self()->comp()->log(), instr, false, true);
+    if (getDebug())
+        getDebug()->traceRegisterAssignment(comp()->log(), instr, false, true);
 }
 
 void OMR::CodeGenerator::traceRegAssigned(TR::Register *virtReg, TR::Register *realReg)
 {
-    if (self()->getDebug())
-        self()->getDebug()->traceRegisterAssigned(self()->comp()->log(), _regAssignFlags, virtReg, realReg);
+    if (getDebug())
+        getDebug()->traceRegisterAssigned(comp()->log(), _regAssignFlags, virtReg, realReg);
 }
 
 void OMR::CodeGenerator::traceRegAssigned(TR::Register *virtReg, TR::Register *realReg,
     TR_RegisterAssignmentFlags flags)
 {
-    if (self()->getDebug())
-        self()->getDebug()->traceRegisterAssigned(self()->comp()->log(), flags, virtReg, realReg);
+    if (getDebug())
+        getDebug()->traceRegisterAssigned(comp()->log(), flags, virtReg, realReg);
 }
 
 void OMR::CodeGenerator::traceRegFreed(TR::Register *virtReg, TR::Register *realReg)
 {
-    if (self()->getDebug())
-        self()->getDebug()->traceRegisterFreed(self()->comp()->log(), virtReg, realReg);
+    if (getDebug())
+        getDebug()->traceRegisterFreed(comp()->log(), virtReg, realReg);
 }
 
 void OMR::CodeGenerator::traceRegInterference(TR::Register *virtReg, TR::Register *interferingVirtual, int32_t distance)
 {
-    if (self()->getDebug())
-        self()->getDebug()->traceRegisterInterference(self()->comp()->log(), virtReg, interferingVirtual, distance);
+    if (getDebug())
+        getDebug()->traceRegisterInterference(comp()->log(), virtReg, interferingVirtual, distance);
 }
 
 void OMR::CodeGenerator::traceRegWeight(TR::Register *realReg, uint32_t weight)
 {
-    if (self()->getDebug())
-        self()->getDebug()->traceRegisterWeight(self()->comp()->log(), realReg, weight);
+    if (getDebug())
+        getDebug()->traceRegisterWeight(comp()->log(), realReg, weight);
 }
 
 void OMR::CodeGenerator::traceRegisterAssignment(const char *format, ...)
 {
-    if (self()->getDebug()) {
+    if (getDebug()) {
         va_list args;
         va_start(args, format);
-        self()->getDebug()->traceRegisterAssignment(self()->comp()->log(), format, args);
+        getDebug()->traceRegisterAssignment(comp()->log(), format, args);
         va_end(args);
     }
 }
 
 bool OMR::CodeGenerator::enableRefinedAliasSets()
 {
-    if (self()->comp()->getOption(TR_EnableHCR)) {
+    if (comp()->getOption(TR_EnableHCR)) {
         return false; // Methods can change, so remembered alias info is unreliable
     }
 
-    return _enabledFlags.testAny(EnableRefinedAliasSets) && !self()->comp()->getOption(TR_DisableRefinedAliases);
+    return _enabledFlags.testAny(EnableRefinedAliasSets) && !comp()->getOption(TR_DisableRefinedAliases);
 }
 
 void OMR::CodeGenerator::generateCode()
 {
-    LexicalTimer t("Code Generation", self()->comp()->phaseTimer());
-    TR::LexicalMemProfiler mp("Code Generation", self()->comp()->phaseMemProfiler());
+    LexicalTimer t("Code Generation", comp()->phaseTimer());
+    TR::LexicalMemProfiler mp("Code Generation", comp()->phaseMemProfiler());
     LexicalXmlTag cgMsg(self());
 
     self()->getCodeGeneratorPhase().performAll();
@@ -1327,10 +1322,10 @@ void OMR::CodeGenerator::generateCode()
 
 void OMR::CodeGenerator::removeUnusedLocals()
 {
-    if (self()->comp()->getOption(TR_MimicInterpreterFrameShape))
+    if (comp()->getOption(TR_MimicInterpreterFrameShape))
         return;
 
-    self()->comp()->getMethodSymbol()->removeUnusedLocals();
+    comp()->getMethodSymbol()->removeUnusedLocals();
 }
 
 bool OMR::CodeGenerator::areAssignableGPRsScarce()
@@ -1351,12 +1346,12 @@ TR_StorageOverlapKind OMR::CodeGenerator::storageMayOverlap(TR::Node *node1, siz
     if ((node2->getOpCode().isLoadVarOrStore() || node2->getType().isAddress())
         && // node1 is usually an always valid store so check node2 first
         (node1->getOpCode().isLoadVarOrStore() || node1->getType().isAddress())) {
-        TR_StorageInfo node1Info = TR_StorageInfo(node1, length1, self()->comp());
-        TR_StorageInfo node2Info = TR_StorageInfo(node2, length2, self()->comp());
+        TR_StorageInfo node1Info = TR_StorageInfo(node1, length1, comp());
+        TR_StorageInfo node2Info = TR_StorageInfo(node2, length2, comp());
 
         return node1Info.mayOverlapWith(&node2Info);
     } else {
-        logprintf(self()->traceBCDCodeGen(), self()->comp()->log(),
+        logprintf(self()->traceBCDCodeGen(), comp()->log(),
             "overlap=true : node1 %s (%p) and/or node2 %s (%p) are not valid load/store/address nodes\n",
             node1->getOpCode().getName(), node1, node2->getOpCode().getName(), node2);
 
@@ -1388,8 +1383,7 @@ int32_t OMR::CodeGenerator::defaultArrayTranslateMinimumNumberOfIterations(const
 bool OMR::CodeGenerator::isAliasedGRN(TR_GlobalRegisterNumber n)
 {
     TR_ASSERT(self()->isGlobalVRF(n) || self()->isGlobalFPR(n),
-        "Global register number is of incorrect type. Current type: %d (%s)", n,
-        self()->getDebug()->getGlobalRegisterName(n));
+        "Global register number is of incorrect type. Current type: %d (%s)", n, getDebug()->getGlobalRegisterName(n));
     return n >= _firstOverlappedGlobalFPR
         && n <= _lastOverlappedGlobalFPR; // _lastOverlappedFPR includes _lastOverlappingVector
 }
@@ -1397,7 +1391,7 @@ bool OMR::CodeGenerator::isAliasedGRN(TR_GlobalRegisterNumber n)
 TR_GlobalRegisterNumber OMR::CodeGenerator::getOverlappedAliasForGRN(TR_GlobalRegisterNumber n)
 {
     TR_ASSERT(self()->isAliasedGRN(n), "Can only get alias from supported types. Current grn : %d (%s)", n,
-        self()->getDebug()->getGlobalRegisterName(n));
+        getDebug()->getGlobalRegisterName(n));
     TR_ASSERT(self()->getOverlapOffsetBetweenAliasedGRNs() > 0,
         "Overlap offset must be set before invoking this method");
 
@@ -1657,7 +1651,7 @@ uint8_t *OMR::CodeGenerator::allocateCodeMemoryInner(uint32_t warmCodeSizeInByte
     if (codeCache != self()->getCodeCache()) {
         // Either we didn't get a code cache, or the one we got should be reserved
         TR_ASSERT(!codeCache || codeCache->isReserved(), "Substitute code cache isn't marked as reserved");
-        self()->comp()->setRelocatableMethodCodeStart(warmCode);
+        comp()->setRelocatableMethodCodeStart(warmCode);
         self()->switchCodeCacheTo(codeCache);
     }
 
@@ -1784,7 +1778,7 @@ bool OMR::CodeGenerator::convertMultiplyToShift(TR::Node *node)
 
 bool OMR::CodeGenerator::isMemoryUpdate(TR::Node *node)
 {
-    if (self()->comp()->getOption(TR_DisableDirectMemoryOps))
+    if (comp()->getOption(TR_DisableDirectMemoryOps))
         return false;
 
     // See if the given store node can be represented by a direct operation on the
@@ -1806,7 +1800,7 @@ bool OMR::CodeGenerator::isMemoryUpdate(TR::Node *node)
     // effect of swapping children of commutative operations in order to expose the
     // opportunity.
     //
-    if (self()->comp()->target().cpu.isX86() && valueChild->getOpCode().isMul()) {
+    if (comp()->target().cpu.isX86() && valueChild->getOpCode().isMul()) {
         return false;
     }
 
@@ -2167,7 +2161,7 @@ uint8_t *OMR::CodeGenerator::emitSnippets()
                     >= codeOffset,
                 "%s length estimate must be conservatively large (snippet @ " POINTER_PRINTF_FORMAT
                 ", estimate=%d, actual=%d)",
-                self()->getDebug()->getName(*iterator), *iterator,
+                getDebug()->getName(*iterator), *iterator,
                 (*iterator)->getLength(
                     static_cast<int32_t>(self()->getBinaryBufferCursor() - self()->getBinaryBufferStart())),
                 codeOffset - self()->getBinaryBufferCursor());
@@ -2221,13 +2215,12 @@ TR::SymbolReference *OMR::CodeGenerator::allocateLocalTemp(TR::DataType dt, bool
     //
     TR::AutomaticSymbol *temp;
     if (isInternalPointer) {
-        temp = TR::AutomaticSymbol::createInternalPointer(self()->trHeapMemory(), dt, TR::Symbol::convertTypeToSize(dt),
-            self()->fe());
+        temp = TR::AutomaticSymbol::createInternalPointer(trHeapMemory(), dt, TR::Symbol::convertTypeToSize(dt), fe());
     } else {
-        temp = TR::AutomaticSymbol::create(self()->trHeapMemory(), dt, TR::Symbol::convertTypeToSize(dt));
+        temp = TR::AutomaticSymbol::create(trHeapMemory(), dt, TR::Symbol::convertTypeToSize(dt));
     }
-    self()->comp()->getMethodSymbol()->addAutomatic(temp);
-    return new (self()->trHeapMemory()) TR::SymbolReference(self()->comp()->getSymRefTab(), temp);
+    comp()->getMethodSymbol()->addAutomatic(temp);
+    return new (trHeapMemory()) TR::SymbolReference(comp()->getSymRefTab(), temp);
 }
 
 int32_t OMR::CodeGenerator::getFirstBit(TR_BitVector &bv)
@@ -2264,16 +2257,16 @@ bool OMR::CodeGenerator::treeContainsCall(TR::TreeTop *treeTop)
 
 void OMR::CodeGenerator::computeBlocksWithCalls()
 {
-    uint32_t bcount = self()->comp()->getFlowGraph()->getNextNodeNumber();
+    uint32_t bcount = comp()->getFlowGraph()->getNextNodeNumber();
     TR_BitVector bvec;
     TR::TreeTop *pTree, *exitTree;
     TR::Block *block;
     uint32_t bnum, btemp;
 
-    _blocksWithCalls = new (self()->trHeapMemory()) TR_BitVector(bcount, self()->trMemory());
-    bvec.init(bcount, self()->trMemory());
+    _blocksWithCalls = new (trHeapMemory()) TR_BitVector(bcount, trMemory());
+    bvec.init(bcount, trMemory());
 
-    for (pTree = self()->comp()->getStartTree(); pTree != NULL; pTree = exitTree->getNextTreeTop()) {
+    for (pTree = comp()->getStartTree(); pTree != NULL; pTree = exitTree->getNextTreeTop()) {
         block = pTree->getNode()->getBlock();
         exitTree = block->getExit();
         bnum = block->getNumber();
@@ -2291,7 +2284,7 @@ void OMR::CodeGenerator::computeBlocksWithCalls()
         }
     }
 
-    for (pTree = self()->comp()->getStartTree(); pTree != NULL; pTree = exitTree->getNextTreeTop()) {
+    for (pTree = comp()->getStartTree(); pTree != NULL; pTree = exitTree->getNextTreeTop()) {
         block = pTree->getNode()->getBlock();
         exitTree = block->getExit();
         bnum = block->getNumber();
@@ -2389,7 +2382,7 @@ TR::Instruction *OMR::CodeGenerator::getInstructionToBePatched(TR::Instruction *
             continue;
         }
 
-        if (nextI->isPatchBarrier(self()) || self()->comp()->isPICSite(nextI))
+        if (nextI->isPatchBarrier(self()) || comp()->isPICSite(nextI))
             return NULL;
 
         if (nextI->getEstimatedBinaryLength() > 0)
@@ -2436,7 +2429,7 @@ int32_t OMR::CodeGenerator::sizeOfInstructionToBePatchedHCRGuard(TR::Instruction
             continue;
         }
 
-        if (nextI->isPatchBarrier(self()) || self()->comp()->isPICSite(nextI))
+        if (nextI->isPatchBarrier(self()) || comp()->isPICSite(nextI))
             break;
 
         accumulatedSize += nextI->getBinaryLengthLowerBound();
@@ -2545,7 +2538,7 @@ bool OMR::CodeGenerator::canNullChkBeImplicit(TR::Node *node) { return self()->c
 
 bool OMR::CodeGenerator::canNullChkBeImplicit(TR::Node *node, bool doChecks)
 {
-    if (self()->comp()->getOption(TR_DisableTraps))
+    if (comp()->getOption(TR_DisableTraps))
         return false;
 
     if (!doChecks)
@@ -2554,7 +2547,7 @@ bool OMR::CodeGenerator::canNullChkBeImplicit(TR::Node *node, bool doChecks)
     TR::Node *firstChild = node->getFirstChild();
     TR::ILOpCode &opCode = firstChild->getOpCode();
 
-    if (opCode.isLoadVar() || (self()->comp()->target().is64Bit() && opCode.getOpCodeValue() == TR::l2i)) {
+    if (opCode.isLoadVar() || (comp()->target().is64Bit() && opCode.getOpCodeValue() == TR::l2i)) {
         TR::SymbolReference *symRef = NULL;
 
         if (opCode.getOpCodeValue() == TR::l2i)
@@ -2573,7 +2566,7 @@ bool OMR::CodeGenerator::canNullChkBeImplicit(TR::Node *node, bool doChecks)
         && self()->getNumberBytesReadInaccessible() > TR::Compiler->om.offsetOfObjectVftField()) {
         return true;
     } else if (opCode.getOpCodeValue() == TR::iushr
-        && self()->getNumberBytesReadInaccessible() > self()->fe()->getOffsetOfContiguousArraySizeField()) {
+        && self()->getNumberBytesReadInaccessible() > fe()->getOffsetOfContiguousArraySizeField()) {
         return true;
     }
     return false;
@@ -2612,26 +2605,25 @@ TR::Instruction *OMR::CodeGenerator::generateDebugCounter(TR::Instruction *curso
     int8_t fidelity, int32_t staticDelta)
 {
     if (!cursor)
-        cursor = self()->getAppendInstruction();
-    if (!self()->comp()->getOptions()->enableDebugCounters())
+        cursor = getAppendInstruction();
+    if (!comp()->getOptions()->enableDebugCounters())
         return cursor;
     if (delta == 0)
         return cursor;
     TR::DebugCounterAggregation *aggregatedCounters
-        = self()->comp()->getPersistentInfo()->getDynamicCounters()->createAggregation(self()->comp(), name);
-    aggregatedCounters->aggregateStandardCounters(self()->comp(), cursor->getNode(), name, delta, fidelity,
-        staticDelta);
+        = comp()->getPersistentInfo()->getDynamicCounters()->createAggregation(comp(), name);
+    aggregatedCounters->aggregateStandardCounters(comp(), cursor->getNode(), name, delta, fidelity, staticDelta);
     if (!aggregatedCounters->hasAnyCounters())
         return cursor;
 
-    if (TR::DebugCounter::relocatableDebugCounter(self()->comp())
-        && !aggregatedCounters->initializeReloData(self()->comp(), delta, fidelity, staticDelta))
+    if (TR::DebugCounter::relocatableDebugCounter(comp())
+        && !aggregatedCounters->initializeReloData(comp(), delta, fidelity, staticDelta))
         return cursor;
 
-    TR::SymbolReference *symref = aggregatedCounters->getBumpCountSymRef(self()->comp());
+    TR::SymbolReference *symref = aggregatedCounters->getBumpCountSymRef(comp());
 
-    if (TR::DebugCounter::relocatableDebugCounter(self()->comp()))
-        self()->comp()->mapStaticAddressToCounter(symref, aggregatedCounters);
+    if (TR::DebugCounter::relocatableDebugCounter(comp()))
+        comp()->mapStaticAddressToCounter(symref, aggregatedCounters);
 
     return self()->generateDebugCounterBump(cursor, aggregatedCounters, 1, NULL);
 }
@@ -2640,23 +2632,23 @@ TR::Instruction *OMR::CodeGenerator::generateDebugCounter(TR::Instruction *curso
     TR::Register *deltaReg, int8_t fidelity, int32_t staticDelta)
 {
     if (!cursor)
-        cursor = self()->getAppendInstruction();
-    if (!self()->comp()->getOptions()->enableDebugCounters())
+        cursor = getAppendInstruction();
+    if (!comp()->getOptions()->enableDebugCounters())
         return cursor;
     // We won't do any aggregation (histogram buckets, bytecode breakdown, etc.) if we're getting the delta from a
     // register
-    TR::DebugCounter *counter = TR::DebugCounter::getDebugCounter(self()->comp(), name, fidelity, staticDelta);
+    TR::DebugCounter *counter = TR::DebugCounter::getDebugCounter(comp(), name, fidelity, staticDelta);
     if (!counter)
         return cursor;
 
-    if (TR::DebugCounter::relocatableDebugCounter(self()->comp())
-        && !counter->initializeReloData(self()->comp(), 0, fidelity, staticDelta))
+    if (TR::DebugCounter::relocatableDebugCounter(comp())
+        && !counter->initializeReloData(comp(), 0, fidelity, staticDelta))
         return cursor;
 
-    TR::SymbolReference *symref = counter->getBumpCountSymRef(self()->comp());
+    TR::SymbolReference *symref = counter->getBumpCountSymRef(comp());
 
-    if (TR::DebugCounter::relocatableDebugCounter(self()->comp()))
-        self()->comp()->mapStaticAddressToCounter(symref, counter);
+    if (TR::DebugCounter::relocatableDebugCounter(comp()))
+        comp()->mapStaticAddressToCounter(symref, counter);
 
     return self()->generateDebugCounterBump(cursor, counter, deltaReg, NULL);
 }
@@ -2665,26 +2657,25 @@ TR::Instruction *OMR::CodeGenerator::generateDebugCounter(const char *name, TR::
     int32_t delta, int8_t fidelity, int32_t staticDelta, TR::Instruction *cursor)
 {
     if (!cursor)
-        cursor = self()->getAppendInstruction();
-    if (!self()->comp()->getOptions()->enableDebugCounters())
+        cursor = getAppendInstruction();
+    if (!comp()->getOptions()->enableDebugCounters())
         return cursor;
     if (delta == 0)
         return cursor;
     TR::DebugCounterAggregation *aggregatedCounters
-        = self()->comp()->getPersistentInfo()->getDynamicCounters()->createAggregation(self()->comp(), name);
-    aggregatedCounters->aggregateStandardCounters(self()->comp(), cursor->getNode(), name, delta, fidelity,
-        staticDelta);
+        = comp()->getPersistentInfo()->getDynamicCounters()->createAggregation(comp(), name);
+    aggregatedCounters->aggregateStandardCounters(comp(), cursor->getNode(), name, delta, fidelity, staticDelta);
     if (!aggregatedCounters->hasAnyCounters())
         return cursor;
 
-    if (TR::DebugCounter::relocatableDebugCounter(self()->comp())
-        && !aggregatedCounters->initializeReloData(self()->comp(), delta, fidelity, staticDelta))
+    if (TR::DebugCounter::relocatableDebugCounter(comp())
+        && !aggregatedCounters->initializeReloData(comp(), delta, fidelity, staticDelta))
         return cursor;
 
-    TR::SymbolReference *symref = aggregatedCounters->getBumpCountSymRef(self()->comp());
+    TR::SymbolReference *symref = aggregatedCounters->getBumpCountSymRef(comp());
 
-    if (TR::DebugCounter::relocatableDebugCounter(self()->comp()))
-        self()->comp()->mapStaticAddressToCounter(symref, aggregatedCounters);
+    if (TR::DebugCounter::relocatableDebugCounter(comp()))
+        comp()->mapStaticAddressToCounter(symref, aggregatedCounters);
 
     return self()->generateDebugCounterBump(cursor, aggregatedCounters, 1, &cond);
 }
@@ -2693,23 +2684,23 @@ TR::Instruction *OMR::CodeGenerator::generateDebugCounter(const char *name, TR::
     TR::RegisterDependencyConditions &cond, int8_t fidelity, int32_t staticDelta, TR::Instruction *cursor)
 {
     if (!cursor)
-        cursor = self()->getAppendInstruction();
-    if (!self()->comp()->getOptions()->enableDebugCounters())
+        cursor = getAppendInstruction();
+    if (!comp()->getOptions()->enableDebugCounters())
         return cursor;
     // We won't do any aggregation (histogram buckets, bytecode breakdown, etc.) if we're getting the delta from a
     // register
-    TR::DebugCounter *counter = TR::DebugCounter::getDebugCounter(self()->comp(), name, fidelity, staticDelta);
+    TR::DebugCounter *counter = TR::DebugCounter::getDebugCounter(comp(), name, fidelity, staticDelta);
     if (!counter)
         return cursor;
 
-    if (TR::DebugCounter::relocatableDebugCounter(self()->comp())
-        && !counter->initializeReloData(self()->comp(), 0, fidelity, staticDelta))
+    if (TR::DebugCounter::relocatableDebugCounter(comp())
+        && !counter->initializeReloData(comp(), 0, fidelity, staticDelta))
         return cursor;
 
-    TR::SymbolReference *symref = counter->getBumpCountSymRef(self()->comp());
+    TR::SymbolReference *symref = counter->getBumpCountSymRef(comp());
 
-    if (TR::DebugCounter::relocatableDebugCounter(self()->comp()))
-        self()->comp()->mapStaticAddressToCounter(symref, counter);
+    if (TR::DebugCounter::relocatableDebugCounter(comp()))
+        comp()->mapStaticAddressToCounter(symref, counter);
 
     return self()->generateDebugCounterBump(cursor, counter, deltaReg, &cond);
 }
@@ -2718,26 +2709,25 @@ TR::Instruction *OMR::CodeGenerator::generateDebugCounter(const char *name, TR_S
     int32_t delta, int8_t fidelity, int32_t staticDelta, TR::Instruction *cursor)
 {
     if (!cursor)
-        cursor = self()->getAppendInstruction();
-    if (!self()->comp()->getOptions()->enableDebugCounters())
+        cursor = getAppendInstruction();
+    if (!comp()->getOptions()->enableDebugCounters())
         return cursor;
     if (delta == 0)
         return cursor;
     TR::DebugCounterAggregation *aggregatedCounters
-        = self()->comp()->getPersistentInfo()->getDynamicCounters()->createAggregation(self()->comp(), name);
-    aggregatedCounters->aggregateStandardCounters(self()->comp(), cursor->getNode(), name, delta, fidelity,
-        staticDelta);
+        = comp()->getPersistentInfo()->getDynamicCounters()->createAggregation(comp(), name);
+    aggregatedCounters->aggregateStandardCounters(comp(), cursor->getNode(), name, delta, fidelity, staticDelta);
     if (!aggregatedCounters->hasAnyCounters())
         return cursor;
 
-    if (TR::DebugCounter::relocatableDebugCounter(self()->comp())
-        && !aggregatedCounters->initializeReloData(self()->comp(), delta, fidelity, staticDelta))
+    if (TR::DebugCounter::relocatableDebugCounter(comp())
+        && !aggregatedCounters->initializeReloData(comp(), delta, fidelity, staticDelta))
         return cursor;
 
-    TR::SymbolReference *symref = aggregatedCounters->getBumpCountSymRef(self()->comp());
+    TR::SymbolReference *symref = aggregatedCounters->getBumpCountSymRef(comp());
 
-    if (TR::DebugCounter::relocatableDebugCounter(self()->comp()))
-        self()->comp()->mapStaticAddressToCounter(symref, aggregatedCounters);
+    if (TR::DebugCounter::relocatableDebugCounter(comp()))
+        comp()->mapStaticAddressToCounter(symref, aggregatedCounters);
 
     return self()->generateDebugCounterBump(cursor, aggregatedCounters, 1, srm);
 }
@@ -2746,23 +2736,23 @@ TR::Instruction *OMR::CodeGenerator::generateDebugCounter(const char *name, TR::
     TR_ScratchRegisterManager &srm, int8_t fidelity, int32_t staticDelta, TR::Instruction *cursor)
 {
     if (!cursor)
-        cursor = self()->getAppendInstruction();
-    if (!self()->comp()->getOptions()->enableDebugCounters())
+        cursor = getAppendInstruction();
+    if (!comp()->getOptions()->enableDebugCounters())
         return cursor;
     // We won't do any aggregation (histogram buckets, bytecode breakdown, etc.) if we're getting the delta from a
     // register
-    TR::DebugCounter *counter = TR::DebugCounter::getDebugCounter(self()->comp(), name, fidelity, staticDelta);
+    TR::DebugCounter *counter = TR::DebugCounter::getDebugCounter(comp(), name, fidelity, staticDelta);
     if (!counter)
         return cursor;
 
-    if (TR::DebugCounter::relocatableDebugCounter(self()->comp())
-        && !counter->initializeReloData(self()->comp(), 0, fidelity, staticDelta))
+    if (TR::DebugCounter::relocatableDebugCounter(comp())
+        && !counter->initializeReloData(comp(), 0, fidelity, staticDelta))
         return cursor;
 
-    TR::SymbolReference *symref = counter->getBumpCountSymRef(self()->comp());
+    TR::SymbolReference *symref = counter->getBumpCountSymRef(comp());
 
-    if (TR::DebugCounter::relocatableDebugCounter(self()->comp()))
-        self()->comp()->mapStaticAddressToCounter(symref, counter);
+    if (TR::DebugCounter::relocatableDebugCounter(comp()))
+        comp()->mapStaticAddressToCounter(symref, counter);
 
     return self()->generateDebugCounterBump(cursor, counter, deltaReg, srm);
 }
@@ -2779,14 +2769,14 @@ void OMR::CodeGenerator::recordSingleRegisterUse(TR::Register *reg)
         }
     }
 
-    OMR::RegisterUsage *ru = new (self()->trHeapMemory()) OMR::RegisterUsage(reg, 1);
+    OMR::RegisterUsage *ru = new (trHeapMemory()) OMR::RegisterUsage(reg, 1);
     self()->getReferencedRegisterList()->push_front(ru);
 }
 
 void OMR::CodeGenerator::startRecordingRegisterUsage()
 {
-    self()->setReferencedRegisterList(new (self()->trHeapMemory())
-            TR::list<OMR::RegisterUsage *>(getTypedAllocator<OMR::RegisterUsage *>(self()->comp()->allocator())));
+    self()->setReferencedRegisterList(new (trHeapMemory())
+            TR::list<OMR::RegisterUsage *>(getTypedAllocator<OMR::RegisterUsage *>(comp()->allocator())));
     self()->setEnableRegisterUsageTracking();
 }
 
@@ -2809,8 +2799,8 @@ void OMR::CodeGenerator::addExternalRelocation(TR::Relocation *r, const char *ge
     uintptr_t generatingLineNumber, TR::Node *node, TR::ExternalRelocationPositionRequest where)
 {
     TR_ASSERT(generatingFileName, "External relocation location has improper NULL filename specified");
-    if (self()->comp()->compileRelocatableCode()) {
-        TR::RelocationDebugInfo *genData = new (self()->trHeapMemory()) TR::RelocationDebugInfo;
+    if (comp()->compileRelocatableCode()) {
+        TR::RelocationDebugInfo *genData = new (trHeapMemory()) TR::RelocationDebugInfo;
         genData->file = generatingFileName;
         genData->line = generatingLineNumber;
         genData->node = node;
@@ -2821,7 +2811,7 @@ void OMR::CodeGenerator::addExternalRelocation(TR::Relocation *r, const char *ge
 void OMR::CodeGenerator::addExternalRelocation(TR::Relocation *r, TR::RelocationDebugInfo *info,
     TR::ExternalRelocationPositionRequest where)
 {
-    if (self()->comp()->compileRelocatableCode()) {
+    if (comp()->compileRelocatableCode()) {
         TR_ASSERT(info, "External relocation location does not have associated debug information");
         r->setDebugInfo(info);
         switch (where) {
@@ -2858,12 +2848,12 @@ intptr_t OMR::CodeGenerator::hiValue(intptr_t address)
 
 void OMR::CodeGenerator::addToOSRTable(TR::Instruction *instr)
 {
-    self()->comp()->getOSRCompilationData()->addInstruction(instr);
+    comp()->getOSRCompilationData()->addInstruction(instr);
 }
 
 void OMR::CodeGenerator::addToOSRTable(int32_t instructionPC, TR_ByteCodeInfo &bcInfo)
 {
-    self()->comp()->getOSRCompilationData()->addInstruction(instructionPC, bcInfo);
+    comp()->getOSRCompilationData()->addInstruction(instructionPC, bcInfo);
 }
 
 void OMR::CodeGenerator::addAllocatedRegisterPair(TR::RegisterPair *temp)
@@ -2897,14 +2887,14 @@ void OMR::CodeGenerator::addAllocatedRegister(TR::Register *temp)
 
 TR::RegisterPair *OMR::CodeGenerator::allocateRegisterPair(TR::Register *lo, TR::Register *ho)
 {
-    TR::RegisterPair *temp = new (self()->trHeapMemory()) TR::RegisterPair(lo, ho);
+    TR::RegisterPair *temp = new (trHeapMemory()) TR::RegisterPair(lo, ho);
     self()->addAllocatedRegisterPair(temp);
     return temp;
 }
 
 TR::RegisterPair *OMR::CodeGenerator::allocateSinglePrecisionRegisterPair(TR::Register *lo, TR::Register *ho)
 {
-    TR::RegisterPair *temp = new (self()->trHeapMemory()) TR::RegisterPair(TR_FPR);
+    TR::RegisterPair *temp = new (trHeapMemory()) TR::RegisterPair(TR_FPR);
     temp->setLowOrder(lo, self());
     temp->setHighOrder(ho, self());
     self()->addAllocatedRegisterPair(temp);
@@ -2913,7 +2903,7 @@ TR::RegisterPair *OMR::CodeGenerator::allocateSinglePrecisionRegisterPair(TR::Re
 
 TR::RegisterPair *OMR::CodeGenerator::allocateFloatingPointRegisterPair(TR::Register *lo, TR::Register *ho)
 {
-    TR::RegisterPair *temp = new (self()->trHeapMemory()) TR::RegisterPair(lo, ho);
+    TR::RegisterPair *temp = new (trHeapMemory()) TR::RegisterPair(lo, ho);
     temp->setKind(TR_FPR);
     self()->addAllocatedRegisterPair(temp);
     return temp;
@@ -2935,7 +2925,7 @@ bool OMR::CodeGenerator::AddArtificiallyInflatedNodeToStack(TR::Node *n)
 
 bool OMR::CodeGenerator::constantAddressesCanChangeSize(TR::Node *node)
 {
-    if (!self()->comp()->compileRelocatableCode() || self()->comp()->target().is32Bit() || node == NULL)
+    if (!comp()->compileRelocatableCode() || comp()->target().is32Bit() || node == NULL)
         return false;
 
     if (node->getOpCodeValue() == TR::aconst && (node->isClassPointerConstant() || node->isMethodPointerConstant()))
@@ -3011,7 +3001,7 @@ bool OMR::CodeGenerator::isInMemoryInstructionCandidate(TR::Node *node)
     return true;
 }
 
-TR::Linkage *OMR::CodeGenerator::createLinkageForCompilation() { return self()->getLinkage(TR_System); }
+TR::Linkage *OMR::CodeGenerator::createLinkageForCompilation() { return getLinkage(TR_System); }
 
 TR::TreeTop *OMR::CodeGenerator::lowerTree(TR::Node *root, TR::TreeTop *tt)
 {
@@ -3075,7 +3065,7 @@ void OMR::CodeGenerator::redoTrampolineReservationIfNecessary(TR::Instruction *c
     TR_ASSERT_FATAL(calleeSymRef != NULL, "Missing possible re-reservation for trampolines");
 
     if (calleeSymRef->getReferenceNumber() >= TR_numRuntimeHelpers) {
-        self()->fe()->reserveTrampolineIfNecessary(self()->comp(), calleeSymRef, true);
+        fe()->reserveTrampolineIfNecessary(comp(), calleeSymRef, true);
     }
 }
 
@@ -3128,7 +3118,7 @@ void OMR::CodeGenerator::getMethodStats(MethodStats &methodStats)
     if (self()->getLastWarmInstruction())
         codeSize = codeSize - static_cast<uint32_t>(self()->getColdCodeStart() - self()->getWarmCodeEnd());
 
-    for (TR::TreeTop *tt = self()->comp()->getMethodSymbol()->getFirstTreeTop(); tt; tt = tt->getNextTreeTop()) {
+    for (TR::TreeTop *tt = comp->getMethodSymbol()->getFirstTreeTop(); tt; tt = tt->getNextTreeTop()) {
         TR::Node *node = tt->getNode();
 
         TR::Block *block;
@@ -3182,7 +3172,7 @@ void OMR::CodeGenerator::getMethodStats(MethodStats &methodStats)
 
 TR::LabelSymbol *OMR::CodeGenerator::assignConstRefLabel(TR::Node *node)
 {
-    if (!self()->comp()->useConstRefs()) {
+    if (!comp()->useConstRefs()) {
         return NULL;
     }
 
@@ -3201,7 +3191,7 @@ TR::LabelSymbol *OMR::CodeGenerator::assignConstRefLabel(TR::Node *node)
         return NULL;
     }
 
-    TR::KnownObjectTable *knot = self()->comp()->getKnownObjectTable();
+    TR::KnownObjectTable *knot = comp()->getKnownObjectTable();
     TR_ASSERT_FATAL_WITH_NODE(node, symRef == knot->constSymRef(koi), "unexpected known object symref");
 
     return assignConstRefLabel(koi);
@@ -3209,8 +3199,8 @@ TR::LabelSymbol *OMR::CodeGenerator::assignConstRefLabel(TR::Node *node)
 
 TR::LabelSymbol *OMR::CodeGenerator::assignConstRefLabelImpl(TR::KnownObjectTable::Index koi, bool mustBeNew)
 {
-    TR_ASSERT_FATAL(self()->comp()->useConstRefs(), "Expected useConstRefs() to return true");
-    TR::KnownObjectTable *knot = self()->comp()->getKnownObjectTable();
+    TR_ASSERT_FATAL(comp()->useConstRefs(), "Expected useConstRefs() to return true");
+    TR::KnownObjectTable *knot = comp()->getKnownObjectTable();
     TR::KnownObjectTable::Index numKnobs = knot->getEndIndex();
     TR_ASSERT_FATAL(0 <= koi && (size_t)koi < numKnobs, "known object index %d out of bounds (%d)", koi, numKnobs);
 
@@ -3222,7 +3212,7 @@ TR::LabelSymbol *OMR::CodeGenerator::assignConstRefLabelImpl(TR::KnownObjectTabl
     TR_ASSERT_FATAL(!mustBeNew || label == NULL, "obj%d already has a const ref label", koi);
 
     if (label == NULL) {
-        label = TR::LabelSymbol::create(self()->trHeapMemory(), self());
+        label = TR::LabelSymbol::create(trHeapMemory(), self());
         _constRefSortOrder.push_back(koi);
         _hasConstRefs = true;
     }
@@ -3234,7 +3224,7 @@ TR::Linkage *OMR::CodeGenerator::deriveCallingLinkage(TR::Node *node, bool isInd
 {
     TR::SymbolReference *symRef = node->getSymbolReference();
     TR::MethodSymbol *callee = symRef->getSymbol()->castToMethodSymbol();
-    TR::Linkage *linkage = self()->getLinkage(callee->getLinkageConvention());
+    TR::Linkage *linkage = getLinkage(callee->getLinkageConvention());
 
     return linkage;
 }

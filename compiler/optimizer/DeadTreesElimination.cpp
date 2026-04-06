@@ -558,7 +558,6 @@ void TR::DeadTreesElimination::prePerformOnBlocks()
                 for (int32_t i = glRegDeps->getNumChildren() - 1; i >= 0; --i) {
                     TR::Node *dep = glRegDeps->getChild(i);
                     if (dep->getReferenceCount() == 1
-                        && (!dep->getOpCode().isFloatingPoint() || cg()->getSupportsJavaFloatSemantics())
                         && performTransformation(comp(), "%sRemove GlRegDep : %p\n", optDetailString(),
                             glRegDeps->getChild(i)))
 
@@ -830,21 +829,6 @@ int32_t TR::DeadTreesElimination::process(TR::TreeTop *startTree, TR::TreeTop *e
                 }
             }
 
-            // Fix for the case when a float to non-float conversion node swings
-            // down past a branch on IA32; this would cause a FP value to be commoned
-            // across a branch where there was none originally; this causes pblms
-            // as a value is left on the stack.
-            //
-            if (treeTopCanBeEliminated && seenConditionalBranch) {
-                if (!cg()->getSupportsJavaFloatSemantics()) {
-                    if (child->getOpCode().isConversion() || child->getOpCode().isBooleanCompare()) {
-                        if (child->getFirstChild()->getOpCode().isFloatingPoint()
-                            && !child->getOpCode().isFloatingPoint())
-                            treeTopCanBeEliminated = false;
-                    }
-                }
-            }
-
             if (treeTopCanBeEliminated) {
                 TR::NodeChecklist visited(comp());
                 bool containsFloatingPoint = false;
@@ -858,11 +842,6 @@ int32_t TR::DeadTreesElimination::process(TR::TreeTop *startTree, TR::TreeTop *e
                         dumpOptDetails(comp(), "%sGlobal index limit exceeded; stopping\n", optDetailString());
                         return 0;
                     }
-                }
-
-                if (seenConditionalBranch && containsFloatingPoint) {
-                    if (!cg()->getSupportsJavaFloatSemantics())
-                        treeTopCanBeEliminated = false;
                 }
             }
         }

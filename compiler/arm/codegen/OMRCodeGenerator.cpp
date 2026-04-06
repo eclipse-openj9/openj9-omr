@@ -160,7 +160,6 @@ void OMR::ARM::CodeGenerator::initialize()
     _numberBytesReadInaccessible = 0;
     _numberBytesWriteInaccessible = 0;
 
-    cg->setSupportsJavaFloatSemantics();
     cg->setSupportsInliningOfTypeCoersionMethods();
 
     if (comp->target().isLinux()) {

@@ -36,13 +36,7 @@
 #define keepAllStores false
 #define OPT_DETAILS "O^O GLOBAL REGISTER ASSIGNER: "
 
-bool OMR::GlobalRegister::getAutoContainsRegisterValue()
-{
-    return _autoContainsRegisterValue;
-    // &&
-    //      (!getValue()->getOpCode().isFloatingPoint() ||
-    //       comp()->cg()->getSupportsJavaFloatSemantics()));
-}
+bool OMR::GlobalRegister::getAutoContainsRegisterValue() { return _autoContainsRegisterValue; }
 
 void OMR::GlobalRegister::setCurrentRegisterCandidate(TR::RegisterCandidate *rc, vcount_t visitCount,
     TR::Block *currentBlock, int32_t i, TR::Compilation *comp, bool resetOtherHalfOfLong)

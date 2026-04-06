@@ -1778,12 +1778,6 @@ bool TR_SinkStores::treeIsSinkableStore(TR::Node *node, bool sinkIndirectLoads, 
         }
     }
 
-    if (!comp()->cg()->getSupportsJavaFloatSemantics() && node->getOpCode().isFloatingPoint()
-        && (underCommonedNode || node->getReferenceCount() > 1)) {
-        logprints(trace(), log, "         fp store failure\n");
-        return false;
-    }
-
     if (numChildren == 0 && node->getOpCode().isLoadVarDirect() && node->getSymbolReference()->getSymbol()->isStatic()
         && (underCommonedNode || node->getReferenceCount() > 1)) {
         logprintf(trace(), log, "         commoned static load store failure: %p\n", node);

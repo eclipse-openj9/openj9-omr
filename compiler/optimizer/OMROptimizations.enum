@@ -120,3 +120,4 @@
    OPTIMIZATION(methodHandleTransformer)
    OPTIMIZATION(catchBlockProfiler)
    OPTIMIZATION(constRefPrivatization)
+   OPTIMIZATION(constRefRematerialization)

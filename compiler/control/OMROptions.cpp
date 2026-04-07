@@ -430,6 +430,8 @@ TR::OptionTable OMR::Options::_jitOptions[] = {
         "method.", SET_OPTION_BIT(TR_DisableConstProvenance), "F" },
     { "disableConstRefPrivatization", "O\tdisable const ref privatization", TR::Options::disableOptimization,
      constRefPrivatization, 0, "P" },
+    { "disableConstRefRematerialization", "O\tdisable const ref rematerialization", TR::Options::disableOptimization,
+     constRefRematerialization, 0, "P" },
 #ifdef TR_ALLOW_NON_CONST_KNOWN_OBJECTS
     { "disableConstRefs", "I\tdisable constant references", RESET_OPTION_BIT(TR_EnableConstRefs), "F" },
 #endif
@@ -1919,6 +1921,8 @@ TR::OptionTable OMR::Options::_jitOptions[] = {
     { "traceConstProvenance", "L\ttrace constant provenance", SET_OPTION_BIT(TR_TraceConstProvenance), "P" },
     { "traceConstRefPrivatization", "L\ttrace const ref privatization", TR::Options::traceOptimization,
      constRefPrivatization, 0, "P" },
+    { "traceConstRefRematerialization", "L\ttrace const ref rematerialization", TR::Options::traceOptimization,
+     constRefRematerialization, 0, "P" },
     { "traceDeadTreeElimination", "L\ttrace dead tree elimination", TR::Options::traceOptimization,
      deadTreesElimination, 0, "P" },
     { "traceDominators", "L\ttrace dominators and post-dominators", SET_OPTION_BIT(TR_TraceDominators), "P" },

@@ -2503,7 +2503,7 @@ void TR_Debug::print(OMR::Logger *log, TR::ARM64MemSrc1Instruction *instr)
             regSize = TR_DoubleReg;
         } else {
             uint32_t opc = (enc >> 22) & 3; /* bits 22-23 */
-            regSize = (size == 0 && opc == 3) ? TR_VectorReg128 : TR_FloatReg;
+            regSize = (size == 0 && opc == 2) ? TR_VectorReg128 : TR_FloatReg;
         }
     }
 
@@ -2838,14 +2838,91 @@ static const char *getRegisterName(TR::RealRegister::RegNum num, bool is64bit)
     }
 }
 
+static const char *getRegisterName(TR::RealRegister::RegNum num, TR_RegisterSizes size)
+{
+    if (num >= TR::RealRegister::v0 && num <= TR::RealRegister::v31 && size != TR_FloatReg && size != TR_DoubleReg) {
+        switch (num) {
+            case TR::RealRegister::v0:
+                return "v0";
+            case TR::RealRegister::v1:
+                return "v1";
+            case TR::RealRegister::v2:
+                return "v2";
+            case TR::RealRegister::v3:
+                return "v3";
+            case TR::RealRegister::v4:
+                return "v4";
+            case TR::RealRegister::v5:
+                return "v5";
+            case TR::RealRegister::v6:
+                return "v6";
+            case TR::RealRegister::v7:
+                return "v7";
+            case TR::RealRegister::v8:
+                return "v8";
+            case TR::RealRegister::v9:
+                return "v9";
+            case TR::RealRegister::v10:
+                return "v10";
+            case TR::RealRegister::v11:
+                return "v11";
+            case TR::RealRegister::v12:
+                return "v12";
+            case TR::RealRegister::v13:
+                return "v13";
+            case TR::RealRegister::v14:
+                return "v14";
+            case TR::RealRegister::v15:
+                return "v15";
+            case TR::RealRegister::v16:
+                return "v16";
+            case TR::RealRegister::v17:
+                return "v17";
+            case TR::RealRegister::v18:
+                return "v18";
+            case TR::RealRegister::v19:
+                return "v19";
+            case TR::RealRegister::v20:
+                return "v20";
+            case TR::RealRegister::v21:
+                return "v21";
+            case TR::RealRegister::v22:
+                return "v22";
+            case TR::RealRegister::v23:
+                return "v23";
+            case TR::RealRegister::v24:
+                return "v24";
+            case TR::RealRegister::v25:
+                return "v25";
+            case TR::RealRegister::v26:
+                return "v26";
+            case TR::RealRegister::v27:
+                return "v27";
+            case TR::RealRegister::v28:
+                return "v28";
+            case TR::RealRegister::v29:
+                return "v29";
+            case TR::RealRegister::v30:
+                return "v30";
+            case TR::RealRegister::v31:
+                return "v31";
+
+            default:
+                break; // do nothing here
+        }
+    }
+
+    return getRegisterName(num, (size == TR_DoubleWordReg || size == TR_DoubleReg));
+}
+
 const char *TR_Debug::getName(TR::RealRegister *reg, TR_RegisterSizes size)
 {
-    return getRegisterName(reg->getRegisterNumber(), (size == TR_DoubleWordReg || size == TR_DoubleReg));
+    return getRegisterName(reg->getRegisterNumber(), size);
 }
 
 const char *TR_Debug::getName(uint32_t regNum, TR_RegisterSizes size)
 {
-    return getRegisterName((TR::RealRegister::RegNum)regNum, (size == TR_DoubleWordReg || size == TR_DoubleReg));
+    return getRegisterName((TR::RealRegister::RegNum)regNum, size);
 }
 
 const char *TR_Debug::getARM64RegisterName(uint32_t regNum, bool is64bit)

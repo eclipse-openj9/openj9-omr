@@ -63,7 +63,7 @@ void OMR::CodeGenerator::setUpStackSizeForCallNode(TR::Node *node)
     for (int32_t i = node->getFirstArgumentIndex(); i < node->getNumChildren(); ++i) {
         int32_t roundedSize = node->getChild(i)->getRoundedSize();
 
-        if (self()->comp()->target().is64Bit() && node->getChild(i)->getDataType() != TR::Address) {
+        if (comp()->target().is64Bit() && node->getChild(i)->getDataType() != TR::Address) {
             currentArgSize += roundedSize * 2;
         } else {
             currentArgSize += roundedSize;
@@ -77,11 +77,11 @@ void OMR::CodeGenerator::setUpStackSizeForCallNode(TR::Node *node)
 
 void OMR::CodeGenerator::eliminateLoadsOfLocalsThatAreNotStored(TR::Node *node, int32_t childNum)
 {
-    if (node->getVisitCount() == self()->comp()->getVisitCount()) {
+    if (node->getVisitCount() == comp()->getVisitCount()) {
         return;
     }
 
-    node->setVisitCount(self()->comp()->getVisitCount());
+    node->setVisitCount(comp()->getVisitCount());
 
     if (node->getOpCode().isLoadVarDirect() && node->getSymbolReference()->getSymbol()->isAuto()
         && (node->getSymbolReference()->getReferenceNumber() < _numLocalsWhenStoreAnalysisWasDone)
@@ -89,12 +89,11 @@ void OMR::CodeGenerator::eliminateLoadsOfLocalsThatAreNotStored(TR::Node *node, 
         && (!_liveButMaybeUnreferencedLocals
             || !_liveButMaybeUnreferencedLocals->get(node->getSymbol()->castToAutoSymbol()->getLiveLocalIndex()))
         && !_localsThatAreStored->get(node->getSymbolReference()->getReferenceNumber())
-        && performTransformation(self()->comp(), "%sRemoving dead load of sym ref %d at %p\n", OPT_DETAILS,
+        && performTransformation(comp(), "%sRemoving dead load of sym ref %d at %p\n", OPT_DETAILS,
             node->getSymbolReference()->getReferenceNumber(), node))
 
     {
-        TR::Node::recreate(node,
-            self()->comp()->il.opCodeForConst(node->getSymbolReference()->getSymbol()->getDataType()));
+        TR::Node::recreate(node, comp()->il.opCodeForConst(node->getSymbolReference()->getSymbol()->getDataType()));
         node->setLongInt(0);
         return;
     }
@@ -107,7 +106,7 @@ void OMR::CodeGenerator::eliminateLoadsOfLocalsThatAreNotStored(TR::Node *node, 
 
 void OMR::CodeGenerator::prepareNodeForInstructionSelection(TR::Node *node)
 {
-    if (node->getVisitCount() == self()->comp()->getVisitCount()) {
+    if (node->getVisitCount() == comp()->getVisitCount()) {
         if (node->getOpCode().hasSymbolReference() && node->getSymbolReference()->isTempVariableSizeSymRef()) {
             // bcd loads and loadaddr's do not get put into registers so must increment the symbol reference count for
             // commoned nodes too
@@ -126,7 +125,7 @@ void OMR::CodeGenerator::prepareNodeForInstructionSelection(TR::Node *node)
         }
     }
 
-    node->setVisitCount(self()->comp()->getVisitCount());
+    node->setVisitCount(comp()->getVisitCount());
     node->setRegister(NULL);
     node->setHasBeenVisitedForHints(false); // clear this flag for addStorageReferenceHints pass
 

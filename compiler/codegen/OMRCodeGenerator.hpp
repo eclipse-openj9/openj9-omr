@@ -358,9 +358,9 @@ public:
 
     uint32_t setPrePrologueSize(uint32_t s) { return (_prePrologueSize = s); }
 
-    TR_BitVector *getLiveLocals() { return _liveLocals; }
+    OMR_FINAL TR_BitVector *getLiveLocals() { return _liveLocals; }
 
-    TR_BitVector *setLiveLocals(TR_BitVector *v) { return (_liveLocals = v); }
+    OMR_FINAL TR_BitVector *setLiveLocals(TR_BitVector *v) { return (_liveLocals = v); }
 
     /**
      * @brief Returns the first TR::Instruction in the stream of instructions for
@@ -368,7 +368,7 @@ public:
      *
      * @return The first instruction in this method; NULL if not yet set.
      */
-    TR::Instruction *getFirstInstruction() { return _firstInstruction; }
+    OMR_FINAL TR::Instruction *getFirstInstruction() { return _firstInstruction; }
 
     /**
      * @brief Sets the first TR::Instruction in the stream of instructions for
@@ -376,7 +376,7 @@ public:
      *
      * @return The instruction being set.
      */
-    TR::Instruction *setFirstInstruction(TR::Instruction *fi) { return (_firstInstruction = fi); }
+    OMR_FINAL TR::Instruction *setFirstInstruction(TR::Instruction *fi) { return (_firstInstruction = fi); }
 
     /**
      * @brief Returns the last TR::Instruction in the stream of instructions for
@@ -384,7 +384,7 @@ public:
      *
      * @return The last instruction in this method; NULL if not yet set.
      */
-    TR::Instruction *getAppendInstruction() { return _appendInstruction; }
+    OMR_FINAL TR::Instruction *getAppendInstruction() { return _appendInstruction; }
 
     /**
      * @brief Sets the last TR::Instruction in the stream of instructions for
@@ -392,19 +392,19 @@ public:
      *
      * @return The instruction being set.
      */
-    TR::Instruction *setAppendInstruction(TR::Instruction *ai) { return (_appendInstruction = ai); }
+    OMR_FINAL TR::Instruction *setAppendInstruction(TR::Instruction *ai) { return (_appendInstruction = ai); }
 
     TR::Instruction *getLastWarmInstruction() { return _lastWarmInstruction; }
 
     TR::Instruction *setLastWarmInstruction(TR::Instruction *instr) { return (_lastWarmInstruction = instr); }
 
-    TR::TreeTop *getCurrentEvaluationTreeTop() { return _currentEvaluationTreeTop; }
+    OMR_FINAL TR::TreeTop *getCurrentEvaluationTreeTop() { return _currentEvaluationTreeTop; }
 
-    TR::TreeTop *setCurrentEvaluationTreeTop(TR::TreeTop *tt) { return (_currentEvaluationTreeTop = tt); }
+    OMR_FINAL TR::TreeTop *setCurrentEvaluationTreeTop(TR::TreeTop *tt) { return (_currentEvaluationTreeTop = tt); }
 
-    TR::Block *getCurrentEvaluationBlock() { return _currentEvaluationBlock; }
+    OMR_FINAL TR::Block *getCurrentEvaluationBlock() { return _currentEvaluationBlock; }
 
-    TR::Block *setCurrentEvaluationBlock(TR::Block *tt) { return (_currentEvaluationBlock = tt); }
+    OMR_FINAL TR::Block *setCurrentEvaluationBlock(TR::Block *tt) { return (_currentEvaluationBlock = tt); }
 
     TR::Instruction *getImplicitExceptionPoint() { return _implicitExceptionPoint; }
 
@@ -681,13 +681,13 @@ public:
     TR::Linkage *createLinkage(TR_LinkageConventions lc);
     TR::Linkage *createLinkageForCompilation();
 
-    TR::Linkage *getLinkage() { return _bodyLinkage; }
+    OMR_FINAL TR::Linkage *getLinkage() { return _bodyLinkage; }
 
-    TR::Linkage *setLinkage(TR::Linkage *l) { return (_bodyLinkage = l); }
+    OMR_FINAL TR::Linkage *setLinkage(TR::Linkage *l) { return (_bodyLinkage = l); }
 
-    TR::Linkage *getLinkage(TR_LinkageConventions lc);
+    OMR_FINAL TR::Linkage *getLinkage(TR_LinkageConventions lc);
 
-    TR::Linkage *setLinkage(TR_LinkageConventions lc, TR::Linkage *l) { return _linkages[lc] = l; }
+    OMR_FINAL TR::Linkage *setLinkage(TR_LinkageConventions lc, TR::Linkage *l) { return _linkages[lc] = l; }
 
     /**
      * Return the proper linkage for this call, especially for the case when the methodSymbol
@@ -1363,7 +1363,7 @@ public:
      *
      * @return the list of registers which is assigned first time in OOL cold path
      */
-    TR::list<TR::Register *> *getFirstTimeLiveOOLRegisterList() { return _firstTimeLiveOOLRegisterList; }
+    OMR_FINAL TR::list<TR::Register *> *getFirstTimeLiveOOLRegisterList() { return _firstTimeLiveOOLRegisterList; }
 
     /**
      * @brief Sets the list of registers which is assigned first time in OOL cold path
@@ -1371,14 +1371,17 @@ public:
      * @param r : the list of registers which is assigned first time in OOL cold path
      * @return the list of registers
      */
-    TR::list<TR::Register *> *setFirstTimeLiveOOLRegisterList(TR::list<TR::Register *> *r)
+    OMR_FINAL TR::list<TR::Register *> *setFirstTimeLiveOOLRegisterList(TR::list<TR::Register *> *r)
     {
         return _firstTimeLiveOOLRegisterList = r;
     }
 
-    TR::list<TR::Register *> *getSpilledRegisterList() { return _spilledRegisterList; }
+    OMR_FINAL TR::list<TR::Register *> *getSpilledRegisterList() { return _spilledRegisterList; }
 
-    TR::list<TR::Register *> *setSpilledRegisterList(TR::list<TR::Register *> *r) { return _spilledRegisterList = r; }
+    OMR_FINAL TR::list<TR::Register *> *setSpilledRegisterList(TR::list<TR::Register *> *r)
+    {
+        return _spilledRegisterList = r;
+    }
 
     TR_BackingStore *allocateSpill(bool containsCollectedReference, int32_t *offset, bool reuse = true);
     TR_BackingStore *allocateSpill(int32_t size, bool containsCollectedReference, int32_t *offset, bool reuse = true);
@@ -1755,9 +1758,9 @@ public:
 
     bool inlineDirectCall(TR::Node *node, TR::Register *&resultReg) { return false; }
 
-    void setCurrentBlock(TR::Block *b);
+    OMR_FINAL void setCurrentBlock(TR::Block *b);
 
-    TR::Block *getCurrentBlock() { return _currentBlock; }
+    OMR_FINAL TR::Block *getCurrentBlock() { return _currentBlock; }
 
     bool hasCCInfo() { return (_flags2.testAny(HasCCInfo)); }
 

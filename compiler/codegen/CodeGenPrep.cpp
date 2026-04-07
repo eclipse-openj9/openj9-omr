@@ -218,7 +218,7 @@ void OMR::CodeGenerator::lowerTreesPreChildrenVisit(TR::Node *parent, TR::TreeTo
     static const char *disableILMulPwr2Opt = feGetEnv("TR_DisableILMulPwr2Opt");
 
     if (!disableILMulPwr2Opt && ((parent->getOpCodeValue() == TR::imul) || (parent->getOpCodeValue() == TR::lmul))
-        && performTransformation(self()->comp(), "%sPwr of 2 mult opt node %p\n", OPT_DETAILS, parent)) {
+        && performTransformation(comp(), "%sPwr of 2 mult opt node %p\n", OPT_DETAILS, parent)) {
         TR::Node *firstChild = parent->getFirstChild();
         TR::Node *secondChild = parent->getSecondChild();
 
@@ -281,7 +281,7 @@ void OMR::CodeGenerator::lowerTreesPreChildrenVisit(TR::Node *parent, TR::TreeTo
             }
         }
     } else if (parent->getOpCodeValue() == TR::newvalue) {
-        lowerNewValue(self()->comp(), parent, treeTop);
+        lowerNewValue(comp(), parent, treeTop);
     }
 }
 
@@ -299,7 +299,7 @@ void OMR::CodeGenerator::lowerTreeIfNeeded(TR::Node *node, int32_t childNumberOf
         TR::ILOpCodes secondChildOp = secondChild->getOpCodeValue();
 
         if (firstChildOp == TR::iu2l && secondChildOp == TR::iu2l
-            && performTransformation(self()->comp(), "%sReduced ldiv with highWordZero children in node [%p] to idiv\n",
+            && performTransformation(comp(), "%sReduced ldiv with highWordZero children in node [%p] to idiv\n",
                 OPT_DETAILS, node)) {
             TR::Node *idivChild
                 = TR::Node::create(TR::idiv, 2, firstChild->getFirstChild(), secondChild->getFirstChild());
@@ -340,7 +340,7 @@ void OMR::CodeGenerator::lowerTreeIfNeeded(TR::Node *node, int32_t childNumberOf
                     IGNodeColour colourLoad = loadIGNode->getColour();
 
                     if (colourLoad == colourStore && colourLoad != UNCOLOURED
-                        && performTransformation(self()->comp(),
+                        && performTransformation(comp(),
                             "%sCoalescing locals by removing store tree %p, load = %d, store = %d \n", OPT_DETAILS,
                             node, colourLoad, colourStore)) {
                         // if we are removing the initialization of the store local, it will become uninitialized
@@ -354,9 +354,8 @@ void OMR::CodeGenerator::lowerTreeIfNeeded(TR::Node *node, int32_t childNumberOf
                         // and excluding it (incorrectly) from the stack atlas.
                         TR_BitVector *liveButMaybeUnreferencedLocals = self()->getLiveButMaybeUnreferencedLocals();
                         if (!liveButMaybeUnreferencedLocals) {
-                            int32_t numLocals = self()->comp()->getMethodSymbol()->getAutomaticList().getSize();
-                            liveButMaybeUnreferencedLocals
-                                = new (self()->trHeapMemory()) TR_BitVector(numLocals, self()->trMemory());
+                            int32_t numLocals = comp()->getMethodSymbol()->getAutomaticList().getSize();
+                            liveButMaybeUnreferencedLocals = new (trHeapMemory()) TR_BitVector(numLocals, trMemory());
                             self()->setLiveButMaybeUnreferencedLocals(liveButMaybeUnreferencedLocals);
                         }
                         if (!storeLocal->isLiveLocalIndexUninitialized())
@@ -382,12 +381,12 @@ void OMR::CodeGenerator::lowerTreeIfNeeded(TR::Node *node, int32_t childNumberOf
         if (destinationNode) {
             TR::Block *destinationBlock = node->getBranchDestination()->getNode()->getBlock();
 
-            if (destinationBlock && (destinationBlock->getVisitCount() == self()->comp()->getVisitCount()))
-                self()->getCurrentBlock()->setBranchesBackwards();
+            if (destinationBlock && (destinationBlock->getVisitCount() == comp()->getVisitCount()))
+                getCurrentBlock()->setBranchesBackwards();
         }
     }
 
-    if (node->getOpCodeValue() == TR::BBStart && self()->comp()->getFlowGraph()->getStructure() != NULL) {
+    if (node->getOpCodeValue() == TR::BBStart && comp()->getFlowGraph()->getStructure() != NULL) {
         TR::Block *block = node->getBlock();
         TR_Structure *blockStructure = block->getStructureOf();
         if (blockStructure) {
@@ -398,7 +397,7 @@ void OMR::CodeGenerator::lowerTreeIfNeeded(TR::Node *node, int32_t childNumberOf
             }
         }
     } else if (node->getOpCodeValue() == TR::BBEnd) {
-        node->getBlock()->setVisitCount(self()->comp()->getVisitCount());
+        node->getBlock()->setVisitCount(comp()->getVisitCount());
     }
 
     if (node->getOpCode().mustBeLowered()) {
@@ -478,8 +477,7 @@ void OMR::CodeGenerator::identifyUnneededByteConvNodes(TR::Node *parent, TR::Tre
                     if (child->getReferenceCount() > 1
                         && (!treeTop->getNode()->getOpCode().isBooleanCompare()
                             || (childOp != TR::bu2i && childOp != TR::su2i))
-                        && performTransformation(self()->comp(), "%sReplacing shared i2b/b2i node %p\n", OPT_DETAILS,
-                            child)) {
+                        && performTransformation(comp(), "%sReplacing shared i2b/b2i node %p\n", OPT_DETAILS, child)) {
                         TR::Node *newChild = TR::Node::create(childOp, 1, child->getFirstChild());
                         child->decReferenceCount();
                         parent->setAndIncChild(childCount, newChild);
@@ -496,11 +494,11 @@ void OMR::CodeGenerator::identifyUnneededByteConvNodes(TR::Node *parent, TR::Tre
                             || child->getFirstChild()->getOpCodeValue() == TR::i2s
                             || child->getFirstChild()->getOpCodeValue() == TR::l2s
                             || child->getFirstChild()->getOpCodeValue() == TR::iRegLoad)
-                        && performTransformation(self()->comp(), "%sChanging b2i node %p to unsigned conversion\n",
-                            OPT_DETAILS, child)) {
+                        && performTransformation(comp(), "%sChanging b2i node %p to unsigned conversion\n", OPT_DETAILS,
+                            child)) {
                         TR::Node::recreate(child, (storeType == TR::Int8 ? TR::bu2i : TR::su2i));
-                    } else if (performTransformation(self()->comp(), "%sMarking i2b/b2i node %p as unneeded\n",
-                                   OPT_DETAILS, child))
+                    } else if (performTransformation(comp(), "%sMarking i2b/b2i node %p as unneeded\n", OPT_DETAILS,
+                                   child))
                         child->setUnneededConversion(true);
                 }
 
@@ -513,18 +511,17 @@ void OMR::CodeGenerator::identifyUnneededByteConvNodes(TR::Node *parent, TR::Tre
 
 void OMR::CodeGenerator::identifyUnneededByteConvNodes()
 {
-    vcount_t visitCount = self()->comp()->incVisitCount();
+    vcount_t visitCount = comp()->incVisitCount();
 
     TR::Block *block = NULL;
     TR::TreeTop *tt;
     TR::Node *node;
     TR::Block *firstColdBlock = NULL;
 
-    if (!performTransformation(self()->comp(), "%s ===>   Identify and mark Unneeded b2i/i2b conversions  <===\n",
-            OPT_DETAILS))
+    if (!performTransformation(comp(), "%s ===>   Identify and mark Unneeded b2i/i2b conversions  <===\n", OPT_DETAILS))
         return;
 
-    for (tt = self()->comp()->getStartTree(); tt; tt = tt->getNextTreeTop()) {
+    for (tt = comp()->getStartTree(); tt; tt = tt->getNextTreeTop()) {
         node = tt->getNode();
 
         TR_ASSERT(node->getVisitCount() != visitCount, "Code Gen: error in marking b2i nodes");
@@ -571,10 +568,10 @@ bool shouldResetRequiresConditionCodes(TR::Node *node)
 //
 void OMR::CodeGenerator::cleanupFlags(TR::Node *node)
 {
-    if (node->getVisitCount() == self()->comp()->getVisitCount())
+    if (node->getVisitCount() == comp()->getVisitCount())
         return;
 
-    node->setVisitCount(self()->comp()->getVisitCount());
+    node->setVisitCount(comp()->getVisitCount());
 
     // clean up any stale values that might be kicking around from previous phases
     if (shouldResetRequiresConditionCodes(node))
@@ -664,7 +661,7 @@ void OMR::CodeGenerator::insertDebugCounters()
 
         if (node->getOpCodeValue() == TR::BBStart) {
             block = node->getBlock();
-            self()->setCurrentBlock(block);
+            setCurrentBlock(block);
 
             if (comp->getOption(TR_EnableCFGEdgeCounters))
                 self()->addCountersToEdges(block);

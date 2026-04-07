@@ -192,8 +192,8 @@ TR_GlobalRegisterNumber OMR::X86::I386::CodeGenerator::pickRegister(TR::Register
     }
 
     if (!_assignedGlobalRegisters)
-        _assignedGlobalRegisters = new (self()->trStackMemory())
-            TR_BitVector(comp->getSymRefCount(), self()->trMemory(), stackAlloc, growable);
+        _assignedGlobalRegisters
+            = new (self()->trStackMemory()) TR_BitVector(comp->getSymRefCount(), trMemory(), stackAlloc, growable);
 
     if (availableRegisters.get(5))
         return 5; // esi
@@ -363,7 +363,7 @@ int32_t OMR::X86::I386::CodeGenerator::getMaximumNumberOfGPRsAllowedAcrossEdge(T
 
 bool OMR::X86::I386::CodeGenerator::codegenMulDecomposition(int64_t multiplier)
 {
-    bool iMulDecomposeReport = self()->comp()->getOptions()->trace(OMR::treeSimplification);
+    bool iMulDecomposeReport = comp()->getOptions()->trace(OMR::treeSimplification);
     bool answer = false;
     if (iMulDecomposeReport)
         diagnostic("\nCodegen was queried for the value of %d, ", (int32_t)multiplier);

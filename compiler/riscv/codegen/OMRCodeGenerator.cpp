@@ -132,20 +132,19 @@ void OMR::RV::CodeGenerator::beginInstructionSelection()
     TR::Compilation *comp = self()->comp();
     TR::Node *startNode = comp->getStartTree()->getNode();
     if (comp->getMethodSymbol()->getLinkageConvention() == TR_Private) {
-        _returnTypeInfoInstruction
-            = new (self()->trHeapMemory()) TR::DataInstruction(TR::InstOpCode::dd, startNode, 0, self());
+        _returnTypeInfoInstruction = new (trHeapMemory()) TR::DataInstruction(TR::InstOpCode::dd, startNode, 0, self());
     } else {
         _returnTypeInfoInstruction = NULL;
     }
 
-    new (self()->trHeapMemory())
+    new (trHeapMemory())
         TR::AdminInstruction(TR::InstOpCode::proc, startNode, NULL, _returnTypeInfoInstruction, self());
 }
 
 void OMR::RV::CodeGenerator::endInstructionSelection()
 {
     if (_returnTypeInfoInstruction != NULL) {
-        _returnTypeInfoInstruction->setSourceImmediate(static_cast<uint32_t>(self()->comp()->getReturnInfo()));
+        _returnTypeInfoInstruction->setSourceImmediate(static_cast<uint32_t>(comp()->getReturnInfo()));
     }
 }
 
@@ -168,16 +167,16 @@ void OMR::RV::CodeGenerator::doBinaryEncoding()
 {
     TR::Compilation *comp = self()->comp();
     int32_t estimate = 0;
-    TR::Instruction *cursorInstruction = self()->getFirstInstruction();
+    TR::Instruction *cursorInstruction = getFirstInstruction();
 
-    self()->getLinkage()->createPrologue(cursorInstruction);
+    getLinkage()->createPrologue(cursorInstruction);
 
     bool skipOneReturn = false;
     while (cursorInstruction) {
         if (cursorInstruction->getOpCodeValue() == TR::InstOpCode::retn) {
             if (skipOneReturn == false) {
                 TR::Instruction *temp = cursorInstruction->getPrev();
-                self()->getLinkage()->createEpilogue(temp);
+                getLinkage()->createEpilogue(temp);
                 cursorInstruction = temp->getNext();
                 skipOneReturn = true;
             } else {
@@ -198,7 +197,7 @@ void OMR::RV::CodeGenerator::doBinaryEncoding()
 
     self()->setEstimatedCodeLength(estimate);
 
-    cursorInstruction = self()->getFirstInstruction();
+    cursorInstruction = getFirstInstruction();
     uint8_t *coldCode = NULL;
     uint8_t *temp = self()->allocateCodeMemory(self()->getEstimatedCodeLength(), 0, &coldCode);
 
@@ -217,13 +216,13 @@ TR::Linkage *OMR::RV::CodeGenerator::createLinkage(TR_LinkageConventions lc)
     TR::Linkage *linkage;
     switch (lc) {
         case TR_System:
-            linkage = new (self()->trHeapMemory()) TR::RVSystemLinkage(self());
+            linkage = new (trHeapMemory()) TR::RVSystemLinkage(self());
             break;
         default:
             TR_ASSERT(false, "using system linkage for unrecognized convention %d\n", lc);
-            linkage = new (self()->trHeapMemory()) TR::RVSystemLinkage(self());
+            linkage = new (trHeapMemory()) TR::RVSystemLinkage(self());
     }
-    self()->setLinkage(lc, linkage);
+    setLinkage(lc, linkage);
     return linkage;
 }
 
@@ -280,7 +279,7 @@ TR::Register *OMR::RV::CodeGenerator::gprClobberEvaluate(TR::Node *node)
 
         if (sourceReg->containsCollectedReference()) {
             logprintf(trace, log, "Setting containsCollectedReference on register %s\n",
-                self()->getDebug()->getName(targetReg));
+                getDebug()->getName(targetReg));
             targetReg->setContainsCollectedReference();
         }
         if (sourceReg->containsInternalPointer()) {
@@ -288,7 +287,7 @@ TR::Register *OMR::RV::CodeGenerator::gprClobberEvaluate(TR::Node *node)
             logprintf(trace, log,
                 "Setting containsInternalPointer on register %s and setting pinningArrayPointer "
                 "to " POINTER_PRINTF_FORMAT "\n",
-                self()->getDebug()->getName(targetReg), pinningArrayPointer);
+                getDebug()->getName(targetReg), pinningArrayPointer);
             targetReg->setContainsInternalPointer();
             targetReg->setPinningArrayPointer(pinningArrayPointer);
         }
@@ -303,8 +302,8 @@ void OMR::RV::CodeGenerator::buildRegisterMapForInstruction(TR_GCStackMap *map) 
 
 bool OMR::RV::CodeGenerator::directCallRequiresTrampoline(intptr_t targetAddress, intptr_t sourceAddress)
 {
-    return !self()->comp()->target().cpu.isTargetWithinUnconditionalBranchImmediateRange(targetAddress, sourceAddress)
-        || self()->comp()->getOption(TR_StressTrampolines);
+    return !comp()->target().cpu.isTargetWithinUnconditionalBranchImmediateRange(targetAddress, sourceAddress)
+        || comp()->getOption(TR_StressTrampolines);
 }
 
 TR_GlobalRegisterNumber OMR::RV::CodeGenerator::pickRegister(TR::RegisterCandidate *regCan, TR::Block **barr,
@@ -347,7 +346,7 @@ int32_t OMR::RV::CodeGenerator::getMaximumNumbersOfAssignableFPRs()
 
 bool OMR::RV::CodeGenerator::isGlobalRegisterAvailable(TR_GlobalRegisterNumber i, TR::DataType dt)
 {
-    return self()->machine()->getRealRegister((TR::RealRegister::RegNum)self()->getGlobalRegister(i))->getState()
+    return machine()->getRealRegister((TR::RealRegister::RegNum)self()->getGlobalRegister(i))->getState()
         == TR::RealRegister::Free;
 }
 

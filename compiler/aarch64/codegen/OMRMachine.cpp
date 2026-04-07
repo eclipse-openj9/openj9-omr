@@ -100,7 +100,7 @@ TR::RealRegister *OMR::ARM64::Machine::findBestFreeRegister(TR::Instruction *cur
     bool considerUnlatched, TR::Register *virtualReg)
 {
     uint32_t preference = (virtualReg != NULL) ? virtualReg->getAssociation() : 0;
-    bool liveRegOn = (self()->cg()->getLiveRegisters(rk) != NULL);
+    bool liveRegOn = (cg()->getLiveRegisters(rk) != NULL);
     uint32_t interference = 0;
     if (liveRegOn && virtualReg != NULL)
         interference = virtualReg->getInterference();
@@ -150,7 +150,7 @@ TR::RealRegister *OMR::ARM64::Machine::findBestFreeRegister(TR::Instruction *cur
             bestRegister->setState(TR::RealRegister::Free);
         }
 
-        self()->cg()->traceRegisterAssignment("BEST FREE REG by pref for %R is %R", virtualReg, bestRegister);
+        cg()->traceRegisterAssignment("BEST FREE REG by pref for %R is %R", virtualReg, bestRegister);
 
         return bestRegister;
     }
@@ -178,9 +178,9 @@ TR::RealRegister *OMR::ARM64::Machine::findBestFreeRegister(TR::Instruction *cur
     }
 
     if (freeRegister != NULL)
-        self()->cg()->traceRegisterAssignment("BEST FREE REG for %R is %R", virtualReg, freeRegister);
+        cg()->traceRegisterAssignment("BEST FREE REG for %R is %R", virtualReg, freeRegister);
     else
-        self()->cg()->traceRegisterAssignment("BEST FREE REG for %R is NULL (could not find one)", virtualReg);
+        cg()->traceRegisterAssignment("BEST FREE REG for %R is NULL (could not find one)", virtualReg);
 
     return freeRegister;
 }
@@ -189,13 +189,12 @@ TR::RealRegister *OMR::ARM64::Machine::freeBestRegister(TR::Instruction *current
     TR::Register *virtualRegister, TR::RealRegister *forced)
 {
     TR::Register *candidates[NUM_ARM64_MAXR];
-    TR::CodeGenerator *cg = self()->cg();
     TR::RealRegister *best;
     TR::Instruction *cursor;
     TR_RegisterKinds rk = (virtualRegister == NULL) ? TR_GPR : virtualRegister->getKind();
     int numCandidates = 0;
 
-    cg->traceRegisterAssignment("FREE BEST REGISTER FOR %R", virtualRegister);
+    cg()->traceRegisterAssignment("FREE BEST REGISTER FOR %R", virtualRegister);
 
     if (forced != NULL) {
         best = forced;
@@ -221,7 +220,7 @@ TR::RealRegister *OMR::ARM64::Machine::freeBestRegister(TR::Instruction *current
                 TR_ASSERT(false, "Unsupported RegisterKind.");
                 break;
         }
-        if ((cg->getLiveRegisters(rk) != NULL) && (virtualRegister != NULL)) {
+        if ((cg()->getLiveRegisters(rk) != NULL) && (virtualRegister != NULL)) {
             interference = virtualRegister->getInterference();
             preference = virtualRegister->getAssociation();
 
@@ -392,12 +391,12 @@ void OMR::ARM64::Machine::spillRegister(TR::Instruction *currentInstruction, TR:
 TR::RealRegister *OMR::ARM64::Machine::reverseSpillState(TR::Instruction *currentInstruction,
     TR::Register *spilledRegister, TR::RealRegister *targetRegister)
 {
-    TR::Compilation *comp = self()->cg()->comp();
+    TR::Compilation *comp = cg()->comp();
     TR::MemoryReference *tmemref;
     TR_BackingStore *location = spilledRegister->getBackingStorage();
     TR::Node *currentNode = currentInstruction->getNode();
     TR_RegisterKinds rk = spilledRegister->getKind();
-    TR_Debug *debugObj = self()->cg()->getDebug();
+    TR_Debug *debugObj = cg()->getDebug();
     int32_t dataSize = 0;
     TR::InstOpCode::Mnemonic storeOp;
 
@@ -409,13 +408,13 @@ TR::RealRegister *OMR::ARM64::Machine::reverseSpillState(TR::Instruction *curren
         targetRegister->setState(TR::RealRegister::Assigned);
     }
 
-    if (self()->cg()->isOutOfLineColdPath()) {
+    if (cg()->isOutOfLineColdPath()) {
         // the future and total use count might not always reflect register spill state
         // for example a new register assignment in the hot path would cause FC != TC
         // in this case, assign a new register and return
         if (!location) {
             if (debugObj)
-                self()->cg()->traceRegisterAssignment("OOL: Not generating reverse spill for (%s)\n",
+                cg()->traceRegisterAssignment("OOL: Not generating reverse spill for (%s)\n",
                     debugObj->getName(spilledRegister));
             return targetRegister;
         }
@@ -426,7 +425,7 @@ TR::RealRegister *OMR::ARM64::Machine::reverseSpillState(TR::Instruction *curren
             targetRegister->getRegisterName(comp));
     }
 
-    tmemref = TR::MemoryReference::createWithSymRef(self()->cg(), currentNode, location->getSymbolReference());
+    tmemref = TR::MemoryReference::createWithSymRef(cg(), currentNode, location->getSymbolReference());
 
     switch (rk) {
         case TR_GPR:
@@ -442,7 +441,7 @@ TR::RealRegister *OMR::ARM64::Machine::reverseSpillState(TR::Instruction *curren
             TR_ASSERT(false, "Unsupported RegisterKind.");
             break;
     }
-    if (self()->cg()->isOutOfLineColdPath()) {
+    if (cg()->isOutOfLineColdPath()) {
         bool isOOLentryReverseSpill = false;
         if (currentInstruction->isLabel()) {
             if (((TR::ARM64LabelInstruction *)currentInstruction)->getLabelSymbol()->isStartOfColdInstructionStream()) {
@@ -466,53 +465,53 @@ TR::RealRegister *OMR::ARM64::Machine::reverseSpillState(TR::Instruction *curren
             if (location->getMaxSpillDepth() != 0)
                 location->setMaxSpillDepth(0);
             else if (debugObj)
-                self()->cg()->traceRegisterAssignment("\nOOL: reverse spill %s in less dominant path (%d / 3), reverse "
-                                                      "spill on both paths indicated, free spill slot (%p)\n",
+                cg()->traceRegisterAssignment("\nOOL: reverse spill %s in less dominant path (%d / 3), reverse "
+                                              "spill on both paths indicated, free spill slot (%p)\n",
                     debugObj->getName(spilledRegister), location->getMaxSpillDepth(), location);
-            self()->cg()->freeSpill(location, dataSize, 0);
+            cg()->freeSpill(location, dataSize, 0);
 
-            if (!self()->cg()->isFreeSpillListLocked()) {
+            if (!cg()->isFreeSpillListLocked()) {
                 spilledRegister->setBackingStorage(NULL);
             }
         } else {
             if (debugObj)
-                self()->cg()->traceRegisterAssignment(
+                cg()->traceRegisterAssignment(
                     "\nOOL: reverse spill %s in less dominant path (%d / 3), protect spill slot (%p)\n",
                     debugObj->getName(spilledRegister), location->getMaxSpillDepth(), location);
         }
-    } else if (self()->cg()->isOutOfLineHotPath()) {
+    } else if (cg()->isOutOfLineHotPath()) {
         // the spilledRegisterList contains all registers that are spilled before entering
         // the OOL path (in backwards RA). Post dependencies will be generated using this list.
         // Any registers reverse spilled before entering OOL should be removed from the spilled list
         if (debugObj)
-            self()->cg()->traceRegisterAssignment("\nOOL: removing %s from the spilledRegisterList\n",
+            cg()->traceRegisterAssignment("\nOOL: removing %s from the spilledRegisterList\n",
                 debugObj->getName(spilledRegister));
-        self()->cg()->getSpilledRegisterList()->remove(spilledRegister);
+        cg()->getSpilledRegisterList()->remove(spilledRegister);
 
         // Reset maxSpillDepth here so that in the cold path we know to free the spill
         // and so that the spill is not included in future GC points in the hot path while it is protected
         location->setMaxSpillDepth(0);
         if (location->getMaxSpillDepth() == 2) {
-            self()->cg()->freeSpill(location, dataSize, 0);
-            if (!self()->cg()->isFreeSpillListLocked()) {
+            cg()->freeSpill(location, dataSize, 0);
+            if (!cg()->isFreeSpillListLocked()) {
                 spilledRegister->setBackingStorage(NULL);
             }
         } else {
             if (debugObj)
-                self()->cg()->traceRegisterAssignment(
+                cg()->traceRegisterAssignment(
                     "\nOOL: reverse spilling %s in less dominant path (%d / 2), protect spill slot (%p)\n",
                     debugObj->getName(spilledRegister), location->getMaxSpillDepth(), location);
         }
     } else // main line
     {
         if (debugObj)
-            self()->cg()->traceRegisterAssignment("\nOOL: removing %s from the spilledRegisterList)\n",
+            cg()->traceRegisterAssignment("\nOOL: removing %s from the spilledRegisterList)\n",
                 debugObj->getName(spilledRegister));
-        self()->cg()->getSpilledRegisterList()->remove(spilledRegister);
+        cg()->getSpilledRegisterList()->remove(spilledRegister);
         location->setMaxSpillDepth(0);
-        self()->cg()->freeSpill(location, dataSize, 0);
+        cg()->freeSpill(location, dataSize, 0);
 
-        if (!self()->cg()->isFreeSpillListLocked()) {
+        if (!cg()->isFreeSpillListLocked()) {
             spilledRegister->setBackingStorage(NULL);
         }
     }
@@ -530,7 +529,7 @@ TR::RealRegister *OMR::ARM64::Machine::reverseSpillState(TR::Instruction *curren
             TR_ASSERT(false, "Unsupported RegisterKind.");
             break;
     }
-    generateMemSrc1Instruction(self()->cg(), storeOp, currentNode, tmemref, targetRegister, currentInstruction);
+    generateMemSrc1Instruction(cg(), storeOp, currentNode, tmemref, targetRegister, currentInstruction);
 
     return targetRegister;
 }
@@ -626,7 +625,7 @@ static void registerExchange(TR::Instruction *precedingInstruction, TR_RegisterK
 void OMR::ARM64::Machine::coerceRegisterAssignment(TR::Instruction *currentInstruction, TR::Register *virtualRegister,
     TR::RealRegister::RegNum registerNumber)
 {
-    TR::Compilation *comp = self()->cg()->comp();
+    TR::Compilation *comp = cg()->comp();
     TR::RealRegister *targetRegister = _registerFile[registerNumber];
     TR::RealRegister *realReg = virtualRegister->getAssignedRealRegister();
     TR::RealRegister *currentAssignedRegister = realReg ? toRealRegister(realReg) : NULL;
@@ -652,15 +651,15 @@ void OMR::ARM64::Machine::coerceRegisterAssignment(TR::Instruction *currentInstr
 #endif
         if (currentAssignedRegister == NULL) {
             if (virtualRegister->getTotalUseCount() != virtualRegister->getFutureUseCount()) {
-                self()->cg()->setRegisterAssignmentFlag(TR_RegisterReloaded);
+                cg()->setRegisterAssignmentFlag(TR_RegisterReloaded);
                 self()->reverseSpillState(currentInstruction, virtualRegister, targetRegister);
             } else {
-                if (self()->cg()->isOutOfLineColdPath()) {
-                    self()->cg()->getFirstTimeLiveOOLRegisterList()->push_front(virtualRegister);
+                if (cg()->isOutOfLineColdPath()) {
+                    cg()->getFirstTimeLiveOOLRegisterList()->push_front(virtualRegister);
                 }
             }
         } else {
-            registerCopy(currentInstruction, rk, currentAssignedRegister, targetRegister, self()->cg());
+            registerCopy(currentInstruction, rk, currentAssignedRegister, targetRegister, cg());
             currentAssignedRegister->setState(TR::RealRegister::Free);
             currentAssignedRegister->setAssignedRegister(NULL);
         }
@@ -674,34 +673,34 @@ void OMR::ARM64::Machine::coerceRegisterAssignment(TR::Instruction *currentInstr
                 diagnostic(", which is blocked and assigned to %s", currentTargetVirtual->getRegisterName(comp));
 #endif
             if (currentAssignedRegister) {
-                self()->cg()->traceRegAssigned(currentTargetVirtual, currentAssignedRegister);
-                registerExchange(currentInstruction, rk, targetRegister, currentAssignedRegister, self()->cg());
+                cg()->traceRegAssigned(currentTargetVirtual, currentAssignedRegister);
+                registerExchange(currentInstruction, rk, targetRegister, currentAssignedRegister, cg());
                 currentAssignedRegister->setState(TR::RealRegister::Blocked);
                 currentAssignedRegister->setAssignedRegister(currentTargetVirtual);
                 currentTargetVirtual->setAssignedRegister(currentAssignedRegister);
                 // For Non-GPR, spareReg remains FREE.
             } else {
                 spareReg = self()->findBestFreeRegister(currentInstruction, rk, false, currentTargetVirtual);
-                self()->cg()->setRegisterAssignmentFlag(TR_IndirectCoercion);
+                cg()->setRegisterAssignmentFlag(TR_IndirectCoercion);
                 if (spareReg == NULL) {
-                    self()->cg()->setRegisterAssignmentFlag(TR_RegisterSpilled);
+                    cg()->setRegisterAssignmentFlag(TR_RegisterSpilled);
                     virtualRegister->block();
                     spareReg = self()->freeBestRegister(currentInstruction, currentTargetVirtual);
                     virtualRegister->unblock();
                 }
-                self()->cg()->traceRegAssigned(currentTargetVirtual, spareReg);
-                registerCopy(currentInstruction, rk, targetRegister, spareReg, self()->cg());
+                cg()->traceRegAssigned(currentTargetVirtual, spareReg);
+                registerCopy(currentInstruction, rk, targetRegister, spareReg, cg());
                 spareReg->setState(TR::RealRegister::Blocked);
                 currentTargetVirtual->setAssignedRegister(spareReg);
                 spareReg->setAssignedRegister(currentTargetVirtual);
                 // spareReg is assigned.
 
                 if (virtualRegister->getTotalUseCount() != virtualRegister->getFutureUseCount()) {
-                    self()->cg()->setRegisterAssignmentFlag(TR_RegisterReloaded);
+                    cg()->setRegisterAssignmentFlag(TR_RegisterReloaded);
                     self()->reverseSpillState(currentInstruction, virtualRegister, targetRegister);
                 } else {
-                    if (self()->cg()->isOutOfLineColdPath()) {
-                        self()->cg()->getFirstTimeLiveOOLRegisterList()->push_front(virtualRegister);
+                    if (cg()->isOutOfLineColdPath()) {
+                        cg()->getFirstTimeLiveOOLRegisterList()->push_front(virtualRegister);
                     }
                 }
             }
@@ -711,21 +710,21 @@ void OMR::ARM64::Machine::coerceRegisterAssignment(TR::Instruction *currentInstr
                 diagnostic(", which is assigned to %s", currentTargetVirtual->getRegisterName(comp));
 #endif
 
-            self()->cg()->setRegisterAssignmentFlag(TR_IndirectCoercion);
+            cg()->setRegisterAssignmentFlag(TR_IndirectCoercion);
             if (currentAssignedRegister) {
-                self()->cg()->traceRegAssigned(currentTargetVirtual, currentAssignedRegister);
-                registerExchange(currentInstruction, rk, targetRegister, currentAssignedRegister, self()->cg());
+                cg()->traceRegAssigned(currentTargetVirtual, currentAssignedRegister);
+                registerExchange(currentInstruction, rk, targetRegister, currentAssignedRegister, cg());
                 currentAssignedRegister->setState(TR::RealRegister::Assigned);
                 currentAssignedRegister->setAssignedRegister(currentTargetVirtual);
                 currentTargetVirtual->setAssignedRegister(currentAssignedRegister);
             } else {
                 spareReg = self()->findBestFreeRegister(currentInstruction, rk, false, currentTargetVirtual);
                 if (spareReg == NULL) {
-                    self()->cg()->setRegisterAssignmentFlag(TR_RegisterSpilled);
+                    cg()->setRegisterAssignmentFlag(TR_RegisterSpilled);
                     self()->freeBestRegister(currentInstruction, currentTargetVirtual, targetRegister);
                 } else {
-                    self()->cg()->traceRegAssigned(currentTargetVirtual, spareReg);
-                    registerCopy(currentInstruction, rk, targetRegister, spareReg, self()->cg());
+                    cg()->traceRegAssigned(currentTargetVirtual, spareReg);
+                    registerCopy(currentInstruction, rk, targetRegister, spareReg, cg());
                     spareReg->setState(TR::RealRegister::Assigned);
                     spareReg->setAssignedRegister(currentTargetVirtual);
                     currentTargetVirtual->setAssignedRegister(spareReg);
@@ -733,15 +732,15 @@ void OMR::ARM64::Machine::coerceRegisterAssignment(TR::Instruction *currentInstr
                 }
 
                 if (virtualRegister->getTotalUseCount() != virtualRegister->getFutureUseCount()) {
-                    self()->cg()->setRegisterAssignmentFlag(TR_RegisterReloaded);
+                    cg()->setRegisterAssignmentFlag(TR_RegisterReloaded);
                     self()->reverseSpillState(currentInstruction, virtualRegister, targetRegister);
                 } else {
-                    if (self()->cg()->isOutOfLineColdPath()) {
-                        self()->cg()->getFirstTimeLiveOOLRegisterList()->push_front(virtualRegister);
+                    if (cg()->isOutOfLineColdPath()) {
+                        cg()->getFirstTimeLiveOOLRegisterList()->push_front(virtualRegister);
                     }
                 }
             }
-            self()->cg()->resetRegisterAssignmentFlag(TR_IndirectCoercion);
+            cg()->resetRegisterAssignmentFlag(TR_IndirectCoercion);
         } else {
 #ifdef DEBUG
             if (comp->getOption(TR_TraceCG))
@@ -753,7 +752,7 @@ void OMR::ARM64::Machine::coerceRegisterAssignment(TR::Instruction *currentInstr
     targetRegister->setState(TR::RealRegister::Assigned);
     targetRegister->setAssignedRegister(virtualRegister);
     virtualRegister->setAssignedRegister(targetRegister);
-    self()->cg()->traceRegAssigned(virtualRegister, targetRegister);
+    cg()->traceRegAssigned(virtualRegister, targetRegister);
 }
 
 void OMR::ARM64::Machine::spillAllVectorRegisters(TR::Instruction *currentInstruction)
@@ -777,209 +776,209 @@ void OMR::ARM64::Machine::initializeRegisterFile()
     _registerFile[TR::RealRegister::NoReg] = NULL;
     _registerFile[TR::RealRegister::SpilledReg] = NULL;
 
-    _registerFile[TR::RealRegister::x0] = new (self()->cg()->trHeapMemory()) TR::RealRegister(TR_GPR, 0,
-        TR::RealRegister::Free, TR::RealRegister::x0, TR::RealRegister::x0Mask, self()->cg());
+    _registerFile[TR::RealRegister::x0] = new (cg()->trHeapMemory())
+        TR::RealRegister(TR_GPR, 0, TR::RealRegister::Free, TR::RealRegister::x0, TR::RealRegister::x0Mask, cg());
 
-    _registerFile[TR::RealRegister::x1] = new (self()->cg()->trHeapMemory()) TR::RealRegister(TR_GPR, 0,
-        TR::RealRegister::Free, TR::RealRegister::x1, TR::RealRegister::x1Mask, self()->cg());
+    _registerFile[TR::RealRegister::x1] = new (cg()->trHeapMemory())
+        TR::RealRegister(TR_GPR, 0, TR::RealRegister::Free, TR::RealRegister::x1, TR::RealRegister::x1Mask, cg());
 
-    _registerFile[TR::RealRegister::x2] = new (self()->cg()->trHeapMemory()) TR::RealRegister(TR_GPR, 0,
-        TR::RealRegister::Free, TR::RealRegister::x2, TR::RealRegister::x2Mask, self()->cg());
+    _registerFile[TR::RealRegister::x2] = new (cg()->trHeapMemory())
+        TR::RealRegister(TR_GPR, 0, TR::RealRegister::Free, TR::RealRegister::x2, TR::RealRegister::x2Mask, cg());
 
-    _registerFile[TR::RealRegister::x3] = new (self()->cg()->trHeapMemory()) TR::RealRegister(TR_GPR, 0,
-        TR::RealRegister::Free, TR::RealRegister::x3, TR::RealRegister::x3Mask, self()->cg());
+    _registerFile[TR::RealRegister::x3] = new (cg()->trHeapMemory())
+        TR::RealRegister(TR_GPR, 0, TR::RealRegister::Free, TR::RealRegister::x3, TR::RealRegister::x3Mask, cg());
 
-    _registerFile[TR::RealRegister::x4] = new (self()->cg()->trHeapMemory()) TR::RealRegister(TR_GPR, 0,
-        TR::RealRegister::Free, TR::RealRegister::x4, TR::RealRegister::x4Mask, self()->cg());
+    _registerFile[TR::RealRegister::x4] = new (cg()->trHeapMemory())
+        TR::RealRegister(TR_GPR, 0, TR::RealRegister::Free, TR::RealRegister::x4, TR::RealRegister::x4Mask, cg());
 
-    _registerFile[TR::RealRegister::x5] = new (self()->cg()->trHeapMemory()) TR::RealRegister(TR_GPR, 0,
-        TR::RealRegister::Free, TR::RealRegister::x5, TR::RealRegister::x5Mask, self()->cg());
+    _registerFile[TR::RealRegister::x5] = new (cg()->trHeapMemory())
+        TR::RealRegister(TR_GPR, 0, TR::RealRegister::Free, TR::RealRegister::x5, TR::RealRegister::x5Mask, cg());
 
-    _registerFile[TR::RealRegister::x6] = new (self()->cg()->trHeapMemory()) TR::RealRegister(TR_GPR, 0,
-        TR::RealRegister::Free, TR::RealRegister::x6, TR::RealRegister::x6Mask, self()->cg());
+    _registerFile[TR::RealRegister::x6] = new (cg()->trHeapMemory())
+        TR::RealRegister(TR_GPR, 0, TR::RealRegister::Free, TR::RealRegister::x6, TR::RealRegister::x6Mask, cg());
 
-    _registerFile[TR::RealRegister::x7] = new (self()->cg()->trHeapMemory()) TR::RealRegister(TR_GPR, 0,
-        TR::RealRegister::Free, TR::RealRegister::x7, TR::RealRegister::x7Mask, self()->cg());
+    _registerFile[TR::RealRegister::x7] = new (cg()->trHeapMemory())
+        TR::RealRegister(TR_GPR, 0, TR::RealRegister::Free, TR::RealRegister::x7, TR::RealRegister::x7Mask, cg());
 
-    _registerFile[TR::RealRegister::x8] = new (self()->cg()->trHeapMemory()) TR::RealRegister(TR_GPR, 0,
-        TR::RealRegister::Free, TR::RealRegister::x8, TR::RealRegister::x8Mask, self()->cg());
+    _registerFile[TR::RealRegister::x8] = new (cg()->trHeapMemory())
+        TR::RealRegister(TR_GPR, 0, TR::RealRegister::Free, TR::RealRegister::x8, TR::RealRegister::x8Mask, cg());
 
-    _registerFile[TR::RealRegister::x9] = new (self()->cg()->trHeapMemory()) TR::RealRegister(TR_GPR, 0,
-        TR::RealRegister::Free, TR::RealRegister::x9, TR::RealRegister::x9Mask, self()->cg());
+    _registerFile[TR::RealRegister::x9] = new (cg()->trHeapMemory())
+        TR::RealRegister(TR_GPR, 0, TR::RealRegister::Free, TR::RealRegister::x9, TR::RealRegister::x9Mask, cg());
 
-    _registerFile[TR::RealRegister::x10] = new (self()->cg()->trHeapMemory()) TR::RealRegister(TR_GPR, 0,
-        TR::RealRegister::Free, TR::RealRegister::x10, TR::RealRegister::x10Mask, self()->cg());
+    _registerFile[TR::RealRegister::x10] = new (cg()->trHeapMemory())
+        TR::RealRegister(TR_GPR, 0, TR::RealRegister::Free, TR::RealRegister::x10, TR::RealRegister::x10Mask, cg());
 
-    _registerFile[TR::RealRegister::x11] = new (self()->cg()->trHeapMemory()) TR::RealRegister(TR_GPR, 0,
-        TR::RealRegister::Free, TR::RealRegister::x11, TR::RealRegister::x11Mask, self()->cg());
+    _registerFile[TR::RealRegister::x11] = new (cg()->trHeapMemory())
+        TR::RealRegister(TR_GPR, 0, TR::RealRegister::Free, TR::RealRegister::x11, TR::RealRegister::x11Mask, cg());
 
-    _registerFile[TR::RealRegister::x12] = new (self()->cg()->trHeapMemory()) TR::RealRegister(TR_GPR, 0,
-        TR::RealRegister::Free, TR::RealRegister::x12, TR::RealRegister::x12Mask, self()->cg());
+    _registerFile[TR::RealRegister::x12] = new (cg()->trHeapMemory())
+        TR::RealRegister(TR_GPR, 0, TR::RealRegister::Free, TR::RealRegister::x12, TR::RealRegister::x12Mask, cg());
 
-    _registerFile[TR::RealRegister::x13] = new (self()->cg()->trHeapMemory()) TR::RealRegister(TR_GPR, 0,
-        TR::RealRegister::Free, TR::RealRegister::x13, TR::RealRegister::x13Mask, self()->cg());
+    _registerFile[TR::RealRegister::x13] = new (cg()->trHeapMemory())
+        TR::RealRegister(TR_GPR, 0, TR::RealRegister::Free, TR::RealRegister::x13, TR::RealRegister::x13Mask, cg());
 
-    _registerFile[TR::RealRegister::x14] = new (self()->cg()->trHeapMemory()) TR::RealRegister(TR_GPR, 0,
-        TR::RealRegister::Free, TR::RealRegister::x14, TR::RealRegister::x14Mask, self()->cg());
+    _registerFile[TR::RealRegister::x14] = new (cg()->trHeapMemory())
+        TR::RealRegister(TR_GPR, 0, TR::RealRegister::Free, TR::RealRegister::x14, TR::RealRegister::x14Mask, cg());
 
-    _registerFile[TR::RealRegister::x15] = new (self()->cg()->trHeapMemory()) TR::RealRegister(TR_GPR, 0,
-        TR::RealRegister::Free, TR::RealRegister::x15, TR::RealRegister::x15Mask, self()->cg());
+    _registerFile[TR::RealRegister::x15] = new (cg()->trHeapMemory())
+        TR::RealRegister(TR_GPR, 0, TR::RealRegister::Free, TR::RealRegister::x15, TR::RealRegister::x15Mask, cg());
 
-    _registerFile[TR::RealRegister::x16] = new (self()->cg()->trHeapMemory()) TR::RealRegister(TR_GPR, 0,
-        TR::RealRegister::Free, TR::RealRegister::x16, TR::RealRegister::x16Mask, self()->cg());
+    _registerFile[TR::RealRegister::x16] = new (cg()->trHeapMemory())
+        TR::RealRegister(TR_GPR, 0, TR::RealRegister::Free, TR::RealRegister::x16, TR::RealRegister::x16Mask, cg());
 
-    _registerFile[TR::RealRegister::x17] = new (self()->cg()->trHeapMemory()) TR::RealRegister(TR_GPR, 0,
-        TR::RealRegister::Free, TR::RealRegister::x17, TR::RealRegister::x17Mask, self()->cg());
+    _registerFile[TR::RealRegister::x17] = new (cg()->trHeapMemory())
+        TR::RealRegister(TR_GPR, 0, TR::RealRegister::Free, TR::RealRegister::x17, TR::RealRegister::x17Mask, cg());
 
-    _registerFile[TR::RealRegister::x18] = new (self()->cg()->trHeapMemory()) TR::RealRegister(TR_GPR, 0,
-        TR::RealRegister::Free, TR::RealRegister::x18, TR::RealRegister::x18Mask, self()->cg());
+    _registerFile[TR::RealRegister::x18] = new (cg()->trHeapMemory())
+        TR::RealRegister(TR_GPR, 0, TR::RealRegister::Free, TR::RealRegister::x18, TR::RealRegister::x18Mask, cg());
 
-    _registerFile[TR::RealRegister::x19] = new (self()->cg()->trHeapMemory()) TR::RealRegister(TR_GPR, 0,
-        TR::RealRegister::Free, TR::RealRegister::x19, TR::RealRegister::x19Mask, self()->cg());
+    _registerFile[TR::RealRegister::x19] = new (cg()->trHeapMemory())
+        TR::RealRegister(TR_GPR, 0, TR::RealRegister::Free, TR::RealRegister::x19, TR::RealRegister::x19Mask, cg());
 
-    _registerFile[TR::RealRegister::x20] = new (self()->cg()->trHeapMemory()) TR::RealRegister(TR_GPR, 0,
-        TR::RealRegister::Free, TR::RealRegister::x20, TR::RealRegister::x20Mask, self()->cg());
+    _registerFile[TR::RealRegister::x20] = new (cg()->trHeapMemory())
+        TR::RealRegister(TR_GPR, 0, TR::RealRegister::Free, TR::RealRegister::x20, TR::RealRegister::x20Mask, cg());
 
-    _registerFile[TR::RealRegister::x21] = new (self()->cg()->trHeapMemory()) TR::RealRegister(TR_GPR, 0,
-        TR::RealRegister::Free, TR::RealRegister::x21, TR::RealRegister::x21Mask, self()->cg());
+    _registerFile[TR::RealRegister::x21] = new (cg()->trHeapMemory())
+        TR::RealRegister(TR_GPR, 0, TR::RealRegister::Free, TR::RealRegister::x21, TR::RealRegister::x21Mask, cg());
 
-    _registerFile[TR::RealRegister::x22] = new (self()->cg()->trHeapMemory()) TR::RealRegister(TR_GPR, 0,
-        TR::RealRegister::Free, TR::RealRegister::x22, TR::RealRegister::x22Mask, self()->cg());
+    _registerFile[TR::RealRegister::x22] = new (cg()->trHeapMemory())
+        TR::RealRegister(TR_GPR, 0, TR::RealRegister::Free, TR::RealRegister::x22, TR::RealRegister::x22Mask, cg());
 
-    _registerFile[TR::RealRegister::x23] = new (self()->cg()->trHeapMemory()) TR::RealRegister(TR_GPR, 0,
-        TR::RealRegister::Free, TR::RealRegister::x23, TR::RealRegister::x23Mask, self()->cg());
+    _registerFile[TR::RealRegister::x23] = new (cg()->trHeapMemory())
+        TR::RealRegister(TR_GPR, 0, TR::RealRegister::Free, TR::RealRegister::x23, TR::RealRegister::x23Mask, cg());
 
-    _registerFile[TR::RealRegister::x24] = new (self()->cg()->trHeapMemory()) TR::RealRegister(TR_GPR, 0,
-        TR::RealRegister::Free, TR::RealRegister::x24, TR::RealRegister::x24Mask, self()->cg());
+    _registerFile[TR::RealRegister::x24] = new (cg()->trHeapMemory())
+        TR::RealRegister(TR_GPR, 0, TR::RealRegister::Free, TR::RealRegister::x24, TR::RealRegister::x24Mask, cg());
 
-    _registerFile[TR::RealRegister::x25] = new (self()->cg()->trHeapMemory()) TR::RealRegister(TR_GPR, 0,
-        TR::RealRegister::Free, TR::RealRegister::x25, TR::RealRegister::x25Mask, self()->cg());
+    _registerFile[TR::RealRegister::x25] = new (cg()->trHeapMemory())
+        TR::RealRegister(TR_GPR, 0, TR::RealRegister::Free, TR::RealRegister::x25, TR::RealRegister::x25Mask, cg());
 
-    _registerFile[TR::RealRegister::x26] = new (self()->cg()->trHeapMemory()) TR::RealRegister(TR_GPR, 0,
-        TR::RealRegister::Free, TR::RealRegister::x26, TR::RealRegister::x26Mask, self()->cg());
+    _registerFile[TR::RealRegister::x26] = new (cg()->trHeapMemory())
+        TR::RealRegister(TR_GPR, 0, TR::RealRegister::Free, TR::RealRegister::x26, TR::RealRegister::x26Mask, cg());
 
-    _registerFile[TR::RealRegister::x27] = new (self()->cg()->trHeapMemory()) TR::RealRegister(TR_GPR, 0,
-        TR::RealRegister::Free, TR::RealRegister::x27, TR::RealRegister::x27Mask, self()->cg());
+    _registerFile[TR::RealRegister::x27] = new (cg()->trHeapMemory())
+        TR::RealRegister(TR_GPR, 0, TR::RealRegister::Free, TR::RealRegister::x27, TR::RealRegister::x27Mask, cg());
 
-    _registerFile[TR::RealRegister::x28] = new (self()->cg()->trHeapMemory()) TR::RealRegister(TR_GPR, 0,
-        TR::RealRegister::Free, TR::RealRegister::x28, TR::RealRegister::x28Mask, self()->cg());
+    _registerFile[TR::RealRegister::x28] = new (cg()->trHeapMemory())
+        TR::RealRegister(TR_GPR, 0, TR::RealRegister::Free, TR::RealRegister::x28, TR::RealRegister::x28Mask, cg());
 
-    _registerFile[TR::RealRegister::x29] = new (self()->cg()->trHeapMemory()) TR::RealRegister(TR_GPR, 0,
-        TR::RealRegister::Free, TR::RealRegister::x29, TR::RealRegister::x29Mask, self()->cg());
+    _registerFile[TR::RealRegister::x29] = new (cg()->trHeapMemory())
+        TR::RealRegister(TR_GPR, 0, TR::RealRegister::Free, TR::RealRegister::x29, TR::RealRegister::x29Mask, cg());
 
     /* x30 is used as LR on ARM64 */
-    _registerFile[TR::RealRegister::lr] = new (self()->cg()->trHeapMemory()) TR::RealRegister(TR_GPR, 0,
-        TR::RealRegister::Free, TR::RealRegister::lr, TR::RealRegister::x30Mask, self()->cg());
+    _registerFile[TR::RealRegister::lr] = new (cg()->trHeapMemory())
+        TR::RealRegister(TR_GPR, 0, TR::RealRegister::Free, TR::RealRegister::lr, TR::RealRegister::x30Mask, cg());
 
     /* SP */
-    _registerFile[TR::RealRegister::sp] = new (self()->cg()->trHeapMemory()) TR::RealRegister(TR_GPR, 0,
-        TR::RealRegister::Free, TR::RealRegister::sp, TR::RealRegister::x31Mask, self()->cg());
+    _registerFile[TR::RealRegister::sp] = new (cg()->trHeapMemory())
+        TR::RealRegister(TR_GPR, 0, TR::RealRegister::Free, TR::RealRegister::sp, TR::RealRegister::x31Mask, cg());
 
     /* XZR */
-    _registerFile[TR::RealRegister::xzr] = new (self()->cg()->trHeapMemory()) TR::RealRegister(TR_GPR, 0,
-        TR::RealRegister::Free, TR::RealRegister::xzr, TR::RealRegister::x31Mask, self()->cg());
+    _registerFile[TR::RealRegister::xzr] = new (cg()->trHeapMemory())
+        TR::RealRegister(TR_GPR, 0, TR::RealRegister::Free, TR::RealRegister::xzr, TR::RealRegister::x31Mask, cg());
 
-    _registerFile[TR::RealRegister::v0] = new (self()->cg()->trHeapMemory()) TR::RealRegister(TR_FPR, 0,
-        TR::RealRegister::Free, TR::RealRegister::v0, TR::RealRegister::v0Mask, self()->cg());
+    _registerFile[TR::RealRegister::v0] = new (cg()->trHeapMemory())
+        TR::RealRegister(TR_FPR, 0, TR::RealRegister::Free, TR::RealRegister::v0, TR::RealRegister::v0Mask, cg());
 
-    _registerFile[TR::RealRegister::v1] = new (self()->cg()->trHeapMemory()) TR::RealRegister(TR_FPR, 0,
-        TR::RealRegister::Free, TR::RealRegister::v1, TR::RealRegister::v1Mask, self()->cg());
+    _registerFile[TR::RealRegister::v1] = new (cg()->trHeapMemory())
+        TR::RealRegister(TR_FPR, 0, TR::RealRegister::Free, TR::RealRegister::v1, TR::RealRegister::v1Mask, cg());
 
-    _registerFile[TR::RealRegister::v2] = new (self()->cg()->trHeapMemory()) TR::RealRegister(TR_FPR, 0,
-        TR::RealRegister::Free, TR::RealRegister::v2, TR::RealRegister::v2Mask, self()->cg());
+    _registerFile[TR::RealRegister::v2] = new (cg()->trHeapMemory())
+        TR::RealRegister(TR_FPR, 0, TR::RealRegister::Free, TR::RealRegister::v2, TR::RealRegister::v2Mask, cg());
 
-    _registerFile[TR::RealRegister::v3] = new (self()->cg()->trHeapMemory()) TR::RealRegister(TR_FPR, 0,
-        TR::RealRegister::Free, TR::RealRegister::v3, TR::RealRegister::v3Mask, self()->cg());
+    _registerFile[TR::RealRegister::v3] = new (cg()->trHeapMemory())
+        TR::RealRegister(TR_FPR, 0, TR::RealRegister::Free, TR::RealRegister::v3, TR::RealRegister::v3Mask, cg());
 
-    _registerFile[TR::RealRegister::v4] = new (self()->cg()->trHeapMemory()) TR::RealRegister(TR_FPR, 0,
-        TR::RealRegister::Free, TR::RealRegister::v4, TR::RealRegister::v4Mask, self()->cg());
+    _registerFile[TR::RealRegister::v4] = new (cg()->trHeapMemory())
+        TR::RealRegister(TR_FPR, 0, TR::RealRegister::Free, TR::RealRegister::v4, TR::RealRegister::v4Mask, cg());
 
-    _registerFile[TR::RealRegister::v5] = new (self()->cg()->trHeapMemory()) TR::RealRegister(TR_FPR, 0,
-        TR::RealRegister::Free, TR::RealRegister::v5, TR::RealRegister::v5Mask, self()->cg());
+    _registerFile[TR::RealRegister::v5] = new (cg()->trHeapMemory())
+        TR::RealRegister(TR_FPR, 0, TR::RealRegister::Free, TR::RealRegister::v5, TR::RealRegister::v5Mask, cg());
 
-    _registerFile[TR::RealRegister::v6] = new (self()->cg()->trHeapMemory()) TR::RealRegister(TR_FPR, 0,
-        TR::RealRegister::Free, TR::RealRegister::v6, TR::RealRegister::v6Mask, self()->cg());
+    _registerFile[TR::RealRegister::v6] = new (cg()->trHeapMemory())
+        TR::RealRegister(TR_FPR, 0, TR::RealRegister::Free, TR::RealRegister::v6, TR::RealRegister::v6Mask, cg());
 
-    _registerFile[TR::RealRegister::v7] = new (self()->cg()->trHeapMemory()) TR::RealRegister(TR_FPR, 0,
-        TR::RealRegister::Free, TR::RealRegister::v7, TR::RealRegister::v7Mask, self()->cg());
+    _registerFile[TR::RealRegister::v7] = new (cg()->trHeapMemory())
+        TR::RealRegister(TR_FPR, 0, TR::RealRegister::Free, TR::RealRegister::v7, TR::RealRegister::v7Mask, cg());
 
-    _registerFile[TR::RealRegister::v8] = new (self()->cg()->trHeapMemory()) TR::RealRegister(TR_FPR, 0,
-        TR::RealRegister::Free, TR::RealRegister::v8, TR::RealRegister::v8Mask, self()->cg());
+    _registerFile[TR::RealRegister::v8] = new (cg()->trHeapMemory())
+        TR::RealRegister(TR_FPR, 0, TR::RealRegister::Free, TR::RealRegister::v8, TR::RealRegister::v8Mask, cg());
 
-    _registerFile[TR::RealRegister::v9] = new (self()->cg()->trHeapMemory()) TR::RealRegister(TR_FPR, 0,
-        TR::RealRegister::Free, TR::RealRegister::v9, TR::RealRegister::v9Mask, self()->cg());
+    _registerFile[TR::RealRegister::v9] = new (cg()->trHeapMemory())
+        TR::RealRegister(TR_FPR, 0, TR::RealRegister::Free, TR::RealRegister::v9, TR::RealRegister::v9Mask, cg());
 
-    _registerFile[TR::RealRegister::v10] = new (self()->cg()->trHeapMemory()) TR::RealRegister(TR_FPR, 0,
-        TR::RealRegister::Free, TR::RealRegister::v10, TR::RealRegister::v10Mask, self()->cg());
+    _registerFile[TR::RealRegister::v10] = new (cg()->trHeapMemory())
+        TR::RealRegister(TR_FPR, 0, TR::RealRegister::Free, TR::RealRegister::v10, TR::RealRegister::v10Mask, cg());
 
-    _registerFile[TR::RealRegister::v11] = new (self()->cg()->trHeapMemory()) TR::RealRegister(TR_FPR, 0,
-        TR::RealRegister::Free, TR::RealRegister::v11, TR::RealRegister::v11Mask, self()->cg());
+    _registerFile[TR::RealRegister::v11] = new (cg()->trHeapMemory())
+        TR::RealRegister(TR_FPR, 0, TR::RealRegister::Free, TR::RealRegister::v11, TR::RealRegister::v11Mask, cg());
 
-    _registerFile[TR::RealRegister::v12] = new (self()->cg()->trHeapMemory()) TR::RealRegister(TR_FPR, 0,
-        TR::RealRegister::Free, TR::RealRegister::v12, TR::RealRegister::v12Mask, self()->cg());
+    _registerFile[TR::RealRegister::v12] = new (cg()->trHeapMemory())
+        TR::RealRegister(TR_FPR, 0, TR::RealRegister::Free, TR::RealRegister::v12, TR::RealRegister::v12Mask, cg());
 
-    _registerFile[TR::RealRegister::v13] = new (self()->cg()->trHeapMemory()) TR::RealRegister(TR_FPR, 0,
-        TR::RealRegister::Free, TR::RealRegister::v13, TR::RealRegister::v13Mask, self()->cg());
+    _registerFile[TR::RealRegister::v13] = new (cg()->trHeapMemory())
+        TR::RealRegister(TR_FPR, 0, TR::RealRegister::Free, TR::RealRegister::v13, TR::RealRegister::v13Mask, cg());
 
-    _registerFile[TR::RealRegister::v14] = new (self()->cg()->trHeapMemory()) TR::RealRegister(TR_FPR, 0,
-        TR::RealRegister::Free, TR::RealRegister::v14, TR::RealRegister::v14Mask, self()->cg());
+    _registerFile[TR::RealRegister::v14] = new (cg()->trHeapMemory())
+        TR::RealRegister(TR_FPR, 0, TR::RealRegister::Free, TR::RealRegister::v14, TR::RealRegister::v14Mask, cg());
 
-    _registerFile[TR::RealRegister::v15] = new (self()->cg()->trHeapMemory()) TR::RealRegister(TR_FPR, 0,
-        TR::RealRegister::Free, TR::RealRegister::v15, TR::RealRegister::v15Mask, self()->cg());
+    _registerFile[TR::RealRegister::v15] = new (cg()->trHeapMemory())
+        TR::RealRegister(TR_FPR, 0, TR::RealRegister::Free, TR::RealRegister::v15, TR::RealRegister::v15Mask, cg());
 
-    _registerFile[TR::RealRegister::v16] = new (self()->cg()->trHeapMemory()) TR::RealRegister(TR_FPR, 0,
-        TR::RealRegister::Free, TR::RealRegister::v16, TR::RealRegister::v16Mask, self()->cg());
+    _registerFile[TR::RealRegister::v16] = new (cg()->trHeapMemory())
+        TR::RealRegister(TR_FPR, 0, TR::RealRegister::Free, TR::RealRegister::v16, TR::RealRegister::v16Mask, cg());
 
-    _registerFile[TR::RealRegister::v17] = new (self()->cg()->trHeapMemory()) TR::RealRegister(TR_FPR, 0,
-        TR::RealRegister::Free, TR::RealRegister::v17, TR::RealRegister::v17Mask, self()->cg());
+    _registerFile[TR::RealRegister::v17] = new (cg()->trHeapMemory())
+        TR::RealRegister(TR_FPR, 0, TR::RealRegister::Free, TR::RealRegister::v17, TR::RealRegister::v17Mask, cg());
 
-    _registerFile[TR::RealRegister::v18] = new (self()->cg()->trHeapMemory()) TR::RealRegister(TR_FPR, 0,
-        TR::RealRegister::Free, TR::RealRegister::v18, TR::RealRegister::v18Mask, self()->cg());
+    _registerFile[TR::RealRegister::v18] = new (cg()->trHeapMemory())
+        TR::RealRegister(TR_FPR, 0, TR::RealRegister::Free, TR::RealRegister::v18, TR::RealRegister::v18Mask, cg());
 
-    _registerFile[TR::RealRegister::v19] = new (self()->cg()->trHeapMemory()) TR::RealRegister(TR_FPR, 0,
-        TR::RealRegister::Free, TR::RealRegister::v19, TR::RealRegister::v19Mask, self()->cg());
+    _registerFile[TR::RealRegister::v19] = new (cg()->trHeapMemory())
+        TR::RealRegister(TR_FPR, 0, TR::RealRegister::Free, TR::RealRegister::v19, TR::RealRegister::v19Mask, cg());
 
-    _registerFile[TR::RealRegister::v20] = new (self()->cg()->trHeapMemory()) TR::RealRegister(TR_FPR, 0,
-        TR::RealRegister::Free, TR::RealRegister::v20, TR::RealRegister::v20Mask, self()->cg());
+    _registerFile[TR::RealRegister::v20] = new (cg()->trHeapMemory())
+        TR::RealRegister(TR_FPR, 0, TR::RealRegister::Free, TR::RealRegister::v20, TR::RealRegister::v20Mask, cg());
 
-    _registerFile[TR::RealRegister::v21] = new (self()->cg()->trHeapMemory()) TR::RealRegister(TR_FPR, 0,
-        TR::RealRegister::Free, TR::RealRegister::v21, TR::RealRegister::v21Mask, self()->cg());
+    _registerFile[TR::RealRegister::v21] = new (cg()->trHeapMemory())
+        TR::RealRegister(TR_FPR, 0, TR::RealRegister::Free, TR::RealRegister::v21, TR::RealRegister::v21Mask, cg());
 
-    _registerFile[TR::RealRegister::v22] = new (self()->cg()->trHeapMemory()) TR::RealRegister(TR_FPR, 0,
-        TR::RealRegister::Free, TR::RealRegister::v22, TR::RealRegister::v22Mask, self()->cg());
+    _registerFile[TR::RealRegister::v22] = new (cg()->trHeapMemory())
+        TR::RealRegister(TR_FPR, 0, TR::RealRegister::Free, TR::RealRegister::v22, TR::RealRegister::v22Mask, cg());
 
-    _registerFile[TR::RealRegister::v23] = new (self()->cg()->trHeapMemory()) TR::RealRegister(TR_FPR, 0,
-        TR::RealRegister::Free, TR::RealRegister::v23, TR::RealRegister::v23Mask, self()->cg());
+    _registerFile[TR::RealRegister::v23] = new (cg()->trHeapMemory())
+        TR::RealRegister(TR_FPR, 0, TR::RealRegister::Free, TR::RealRegister::v23, TR::RealRegister::v23Mask, cg());
 
-    _registerFile[TR::RealRegister::v24] = new (self()->cg()->trHeapMemory()) TR::RealRegister(TR_FPR, 0,
-        TR::RealRegister::Free, TR::RealRegister::v24, TR::RealRegister::v24Mask, self()->cg());
+    _registerFile[TR::RealRegister::v24] = new (cg()->trHeapMemory())
+        TR::RealRegister(TR_FPR, 0, TR::RealRegister::Free, TR::RealRegister::v24, TR::RealRegister::v24Mask, cg());
 
-    _registerFile[TR::RealRegister::v25] = new (self()->cg()->trHeapMemory()) TR::RealRegister(TR_FPR, 0,
-        TR::RealRegister::Free, TR::RealRegister::v25, TR::RealRegister::v25Mask, self()->cg());
+    _registerFile[TR::RealRegister::v25] = new (cg()->trHeapMemory())
+        TR::RealRegister(TR_FPR, 0, TR::RealRegister::Free, TR::RealRegister::v25, TR::RealRegister::v25Mask, cg());
 
-    _registerFile[TR::RealRegister::v26] = new (self()->cg()->trHeapMemory()) TR::RealRegister(TR_FPR, 0,
-        TR::RealRegister::Free, TR::RealRegister::v26, TR::RealRegister::v26Mask, self()->cg());
+    _registerFile[TR::RealRegister::v26] = new (cg()->trHeapMemory())
+        TR::RealRegister(TR_FPR, 0, TR::RealRegister::Free, TR::RealRegister::v26, TR::RealRegister::v26Mask, cg());
 
-    _registerFile[TR::RealRegister::v27] = new (self()->cg()->trHeapMemory()) TR::RealRegister(TR_FPR, 0,
-        TR::RealRegister::Free, TR::RealRegister::v27, TR::RealRegister::v27Mask, self()->cg());
+    _registerFile[TR::RealRegister::v27] = new (cg()->trHeapMemory())
+        TR::RealRegister(TR_FPR, 0, TR::RealRegister::Free, TR::RealRegister::v27, TR::RealRegister::v27Mask, cg());
 
-    _registerFile[TR::RealRegister::v28] = new (self()->cg()->trHeapMemory()) TR::RealRegister(TR_FPR, 0,
-        TR::RealRegister::Free, TR::RealRegister::v28, TR::RealRegister::v28Mask, self()->cg());
+    _registerFile[TR::RealRegister::v28] = new (cg()->trHeapMemory())
+        TR::RealRegister(TR_FPR, 0, TR::RealRegister::Free, TR::RealRegister::v28, TR::RealRegister::v28Mask, cg());
 
-    _registerFile[TR::RealRegister::v29] = new (self()->cg()->trHeapMemory()) TR::RealRegister(TR_FPR, 0,
-        TR::RealRegister::Free, TR::RealRegister::v29, TR::RealRegister::v29Mask, self()->cg());
+    _registerFile[TR::RealRegister::v29] = new (cg()->trHeapMemory())
+        TR::RealRegister(TR_FPR, 0, TR::RealRegister::Free, TR::RealRegister::v29, TR::RealRegister::v29Mask, cg());
 
-    _registerFile[TR::RealRegister::v30] = new (self()->cg()->trHeapMemory()) TR::RealRegister(TR_FPR, 0,
-        TR::RealRegister::Free, TR::RealRegister::v30, TR::RealRegister::v30Mask, self()->cg());
+    _registerFile[TR::RealRegister::v30] = new (cg()->trHeapMemory())
+        TR::RealRegister(TR_FPR, 0, TR::RealRegister::Free, TR::RealRegister::v30, TR::RealRegister::v30Mask, cg());
 
-    _registerFile[TR::RealRegister::v31] = new (self()->cg()->trHeapMemory()) TR::RealRegister(TR_FPR, 0,
-        TR::RealRegister::Free, TR::RealRegister::v31, TR::RealRegister::v31Mask, self()->cg());
+    _registerFile[TR::RealRegister::v31] = new (cg()->trHeapMemory())
+        TR::RealRegister(TR_FPR, 0, TR::RealRegister::Free, TR::RealRegister::v31, TR::RealRegister::v31Mask, cg());
 }
 
 // Register Association ////////////////////////////////////////////
 void OMR::ARM64::Machine::setRegisterWeightsFromAssociations()
 {
-    TR::ARM64LinkageProperties linkageProperties = self()->cg()->getProperties();
+    TR::ARM64LinkageProperties linkageProperties = cg()->getProperties();
     int32_t first = TR::RealRegister::FirstGPR;
     int32_t last = TR::RealRegister::LastAssignableFPR;
 
@@ -1013,7 +1012,7 @@ void OMR::ARM64::Machine::createRegisterAssociationDirective(TR::Instruction *cu
     int32_t first = TR::RealRegister::FirstGPR;
     int32_t last = TR::RealRegister::LastAssignableFPR;
     TR::RegisterDependencyConditions *associations
-        = new (self()->cg()->trHeapMemory()) TR::RegisterDependencyConditions(0, last, self()->cg()->trMemory());
+        = new (cg()->trHeapMemory()) TR::RegisterDependencyConditions(0, last, cg()->trMemory());
 
     // Go through the current associations held in the machine and put a copy of
     // that state out into the stream after the cursor
@@ -1025,7 +1024,7 @@ void OMR::ARM64::Machine::createRegisterAssociationDirective(TR::Instruction *cu
         associations->addPostCondition(self()->getVirtualAssociatedWithReal(regNum), regNum);
     }
 
-    generateAdminInstruction(self()->cg(), TR::InstOpCode::assocreg, cursor->getNode(), associations, NULL, cursor);
+    generateAdminInstruction(cg(), TR::InstOpCode::assocreg, cursor->getNode(), associations, NULL, cursor);
 }
 
 TR::Register *OMR::ARM64::Machine::setVirtualAssociatedWithReal(TR::RealRegister::RegNum regNum, TR::Register *virtReg)
@@ -1134,7 +1133,7 @@ TR::RegisterDependencyConditions *OMR::ARM64::Machine::createCondForLiveAndSpill
     TR::RegisterDependencyConditions *deps = NULL;
 
     if (c) {
-        deps = new (self()->cg()->trHeapMemory()) TR::RegisterDependencyConditions(0, c, self()->cg()->trMemory());
+        deps = new (cg()->trHeapMemory()) TR::RegisterDependencyConditions(0, c, cg()->trMemory());
         for (i = TR::RealRegister::FirstGPR; i <= TR::RealRegister::LastAssignableFPR; i++) {
             TR::RealRegister *realReg = self()->getRealRegister(static_cast<TR::RealRegister::RegNum>(i));
             if (realReg->getState() == TR::RealRegister::Assigned) {
@@ -1221,11 +1220,11 @@ void OMR::ARM64::Machine::decFutureUseCountAndUnlatch(TR::Instruction *currentIn
     // will revive the register and proceed to allocate registers in the outlined code,
     // where presumably the future use count will finally hit 0.
     if (virtualRegister->getFutureUseCount() == 0
-        || (self()->cg()->isOutOfLineHotPath()
+        || (cg->isOutOfLineHotPath()
             && virtualRegister->getFutureUseCount() == virtualRegister->getOutOfLineUseCount())) {
         if (virtualRegister->getFutureUseCount() != 0) {
             if (debugObj) {
-                self()->cg()->traceRegisterAssignment("\nOOL: %s's remaining uses are out-of-line, unlatching\n",
+                cg->traceRegisterAssignment("\nOOL: %s's remaining uses are out-of-line, unlatching\n",
                     debugObj->getName(virtualRegister));
             }
         }

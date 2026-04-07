@@ -205,7 +205,7 @@ public:
 
     void resetXMMGlobalRegisters();
 
-    TR_Debug *getDebug();
+    OMR_FINAL TR_Debug *getDebug();
 
     uint8_t _numGlobalGPRs, _numGlobal8BitGPRs, _numGlobalFPRs;
 

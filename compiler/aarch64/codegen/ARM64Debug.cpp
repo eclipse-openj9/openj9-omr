@@ -1566,33 +1566,72 @@ void TR_Debug::print(OMR::Logger *log, TR::ARM64Trg1Src1Instruction *instr)
     printPrefix(log, instr);
     TR::InstOpCode::Mnemonic op = instr->getOpCodeValue();
     uint32_t enc = TR::InstOpCode::getOpCodeBinaryEncoding(op);
-    TR_RegisterSizes regSize = TR_UnknownSizeReg;
-    if (useGPR(enc)) {
-        uint32_t sf = getSFbit(enc);
-        regSize = (sf == 1) ? TR_DoubleWordReg : TR_WordReg;
-    } else {
-        switch (getFType(enc)) {
-            case 0:
-                regSize = TR_FloatReg;
-                break;
-            case 1:
-                regSize = TR_DoubleReg;
-                break;
-            default:
-                regSize = TR_VectorReg128;
-                break;
-        }
-    }
-
     log->printf("%s \t", getOpCodeName(&instr->getOpCode()));
-    print(log, instr->getTargetRegister(), regSize);
-    log->prints(", ");
-    print(log, instr->getSource1Register(), regSize);
 
-    if (op >= TR::InstOpCode::vshll_8h && op <= TR::InstOpCode::vshll2_2d) {
-        uint32_t size = (enc >> 22) & 0x3; /* bits 22-23 */
-        uint32_t shiftAmount = 8 << size;
-        log->printf(", %d", shiftAmount);
+    if (op >= TR::InstOpCode::fcvt_stod && op <= TR::InstOpCode::scvtf_xtod) {
+        TR_RegisterSizes regSize1 = TR_UnknownSizeReg; // trg register size
+        TR_RegisterSizes regSize2 = TR_UnknownSizeReg; // src register size
+        uint32_t sf = getSFbit(enc);
+        uint32_t ftype = getFType(enc);
+        if (op == TR::InstOpCode::fcvt_stod) {
+            regSize1 = TR_DoubleReg;
+            regSize2 = TR_FloatReg;
+        } else if (op == TR::InstOpCode::fcvt_dtos) {
+            regSize1 = TR_FloatReg;
+            regSize2 = TR_DoubleReg;
+        } else if (op >= TR::InstOpCode::fcvtzs_stow && op <= TR::InstOpCode::fcvtzs_dtox) {
+            regSize1 = (sf == 1) ? TR_DoubleWordReg : TR_WordReg;
+            switch (ftype) {
+                case 0:
+                    regSize2 = TR_FloatReg;
+                    break;
+                case 1:
+                    regSize2 = TR_DoubleReg;
+                    break;
+            }
+        } else if (op >= TR::InstOpCode::scvtf_wtos && op <= TR::InstOpCode::scvtf_xtod) {
+            switch (ftype) {
+                case 0:
+                    regSize1 = TR_FloatReg;
+                    break;
+                case 1:
+                    regSize1 = TR_DoubleReg;
+                    break;
+            }
+            regSize2 = (sf == 1) ? TR_DoubleWordReg : TR_WordReg;
+        }
+
+        print(log, instr->getTargetRegister(), regSize1);
+        log->prints(", ");
+        print(log, instr->getSource1Register(), regSize2);
+    } else {
+        TR_RegisterSizes regSize = TR_UnknownSizeReg;
+        if (useGPR(enc)) {
+            uint32_t sf = getSFbit(enc);
+            regSize = (sf == 1) ? TR_DoubleWordReg : TR_WordReg;
+        } else {
+            switch (getFType(enc)) {
+                case 0:
+                    regSize = TR_FloatReg;
+                    break;
+                case 1:
+                    regSize = TR_DoubleReg;
+                    break;
+                default:
+                    regSize = TR_VectorReg128;
+                    break;
+            }
+        }
+
+        print(log, instr->getTargetRegister(), regSize);
+        log->prints(", ");
+        print(log, instr->getSource1Register(), regSize);
+
+        if (op >= TR::InstOpCode::vshll_8h && op <= TR::InstOpCode::vshll2_2d) {
+            uint32_t size = (enc >> 22) & 0x3; /* bits 22-23 */
+            uint32_t shiftAmount = 8 << size;
+            log->printf(", %d", shiftAmount);
+        }
     }
 
     log->flush();
@@ -1886,9 +1925,9 @@ void TR_Debug::print(OMR::Logger *log, TR::ARM64Trg1Src1ImmInstruction *instr)
         uint32_t imm = instr->getSourceImmediate();
         uint32_t shiftAmount = isShiftLeft ? (imm - elementSize) : (elementSize * 2 - imm);
         log->printf("%s \t", getOpCodeName(&instr->getOpCode()));
-        print(log, instr->getTargetRegister(), regSize);
+        print(log, instr->getTargetRegister(), TR_VectorReg128);
         log->prints(", ");
-        print(log, instr->getSource1Register(), regSize);
+        print(log, instr->getSource1Register(), TR_VectorReg128);
         log->printf(", %d", shiftAmount);
     } else if ((op >= TR::InstOpCode::vdupe16b) && (op <= TR::InstOpCode::umovxd)) {
         done = true;
@@ -1900,10 +1939,16 @@ void TR_Debug::print(OMR::Logger *log, TR::ARM64Trg1Src1ImmInstruction *instr)
 
         const uint32_t imm5 = instr->getSourceImmediate() & 0x1f;
         const uint32_t index = imm5 >> (elementSizeShift + 1);
+        if (op <= TR::InstOpCode::vdupe2d) {
+            regSize = TR_VectorReg128;
+        } else {
+            // SMOV or UMOV
+            regSize = ((enc >> 30) & 1) ? TR_DoubleWordReg : TR_WordReg;
+        }
         log->printf("%s \t", getOpCodeName(&instr->getOpCode()));
         print(log, instr->getTargetRegister(), regSize);
         log->prints(", ");
-        print(log, instr->getSource1Register(), regSize);
+        print(log, instr->getSource1Register(), TR_VectorReg128);
         log->printf(".[%d]", index);
     } else if ((op >= TR::InstOpCode::vinswb) && (op <= TR::InstOpCode::vinsxd)) {
         done = true;
@@ -1912,10 +1957,10 @@ void TR_Debug::print(OMR::Logger *log, TR::ARM64Trg1Src1ImmInstruction *instr)
         const uint32_t index = imm5 >> (elementSizeShift + 1);
 
         log->printf("%s \t", getOpCodeName(&instr->getOpCode()));
-        print(log, instr->getTargetRegister(), regSize);
+        print(log, instr->getTargetRegister(), TR_VectorReg128);
         log->printf(".[%d]", index);
         log->prints(", ");
-        print(log, instr->getSource1Register(), regSize);
+        print(log, instr->getSource1Register(), ((imm5 % 8) == 0) ? TR_DoubleWordReg : TR_WordReg);
     } else if ((op >= TR::InstOpCode::vinseb) && (op <= TR::InstOpCode::vinsed)) {
         done = true;
         const uint32_t elementSizeShift = op - TR::InstOpCode::vinseb;
@@ -1925,10 +1970,10 @@ void TR_Debug::print(OMR::Logger *log, TR::ARM64Trg1Src1ImmInstruction *instr)
         const uint32_t srcIndex = imm4 >> elementSizeShift;
 
         log->printf("%s \t", getOpCodeName(&instr->getOpCode()));
-        print(log, instr->getTargetRegister(), regSize);
+        print(log, instr->getTargetRegister(), TR_VectorReg128);
         log->printf(".[%d]", dstIndex);
         log->prints(", ");
-        print(log, instr->getSource1Register(), regSize);
+        print(log, instr->getSource1Register(), TR_VectorReg128);
         log->printf(".[%d]", srcIndex);
     }
 

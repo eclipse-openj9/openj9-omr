@@ -980,8 +980,7 @@ private:
         // Available                             = 0x00004000,
         MethodEnterExitTracingEnabled = 0x00008000, ///< trace method enter/exits
         // Available                             = 0x00010000,
-        PushPreservedRegisters
-            = 0x00020000 ///< we've chosen to save/restore preserved regs using push/pop instructions instead of movs
+        // Available                             = 0x00020000
     };
 
     flags32_t _flags;
@@ -1048,10 +1047,6 @@ public:
     bool methodEnterExitTracingEnabled() { return _flags.testAny(MethodEnterExitTracingEnabled); }
 
     void setMethodEnterExitTracingEnabled() { _flags.set(MethodEnterExitTracingEnabled); }
-
-    bool pushPreservedRegisters() { return _flags.testAny(PushPreservedRegisters); }
-
-    void setPushPreservedRegisters() { _flags.set(PushPreservedRegisters); }
 
     // arrayTranslateTableRequiresAlignment is N/A, since we don't have
     // arraytranslate tables.

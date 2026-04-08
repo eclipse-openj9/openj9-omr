@@ -504,7 +504,7 @@ TR::Instruction *TR::X86SystemLinkage::restorePreservedRegisters(TR::Instruction
     const int32_t localSize = _properties.getOffsetToFirstLocal() - bodySymbol->getLocalMappingCursor();
     const int32_t pointerSize = _properties.getPointerSize();
 
-    if (cg()->pushPreservedRegisters()) {
+    if (_properties.getUsesPushesForPreservedRegs()) {
         for (int32_t pindex = 0; pindex < _properties.getMaxRegistersPreservedInPrologue(); pindex++) {
             TR::RealRegister::RegNum idx = _properties.getPreservedRegister((uint32_t)pindex);
             TR::RealRegister *reg = machine()->getRealRegister(idx);
@@ -543,7 +543,7 @@ void TR::X86SystemLinkage::createEpilogue(TR::Instruction *cursor)
     const int32_t localSize = _properties.getOffsetToFirstLocal() - bodySymbol->getLocalMappingCursor();
     int32_t allocSize = _properties.getUsesPushesForPreservedRegs() ? localSize : cg()->getFrameSizeInBytes();
 
-    if (cg()->pushPreservedRegisters()) {
+    if (_properties.getUsesPushesForPreservedRegs()) {
         // Deallocate outgoing arg area in preparation to pop preserved regs
         //
         allocSize = localSize;

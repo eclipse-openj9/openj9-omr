@@ -1577,7 +1577,7 @@ MM_Scavenger::copyObject(MM_EnvironmentStandard *env, MM_ForwardedHeader* forwar
 }
 
 void
-MM_Scavenger::forwardingFailed(MM_EnvironmentStandard *env, MM_ForwardedHeader* forwardedHeader, omrobjectptr_t destinationObjectPtr, MM_CopyScanCacheStandard *copyCache)
+MM_Scavenger::forwardingFailed(MM_EnvironmentStandard *env, MM_ForwardedHeader *forwardedHeader, omrobjectptr_t destinationObjectPtr, MM_CopyScanCacheStandard *copyCache)
 {
 	/* We have not used the reserved space now, but we will for subsequent allocations. If this space was reserved for an individual object,
 	 * we might have created a TLH remainder from previous cache just before reserving this space. This space eventaully can create another remainder.
@@ -2464,7 +2464,7 @@ MM_Scavenger::getNextScanCache(MM_EnvironmentStandard *env)
  * and flushing the cache at the end.
  */
 void
-MM_Scavenger::completeScanCache(MM_EnvironmentStandard *env, MM_CopyScanCacheStandard* scanCache)
+MM_Scavenger::completeScanCache(MM_EnvironmentStandard *env, MM_CopyScanCacheStandard *scanCache)
 {
 	omrobjectptr_t objectPtr = NULL;
 
@@ -2489,7 +2489,7 @@ MM_Scavenger::completeScanCache(MM_EnvironmentStandard *env, MM_CopyScanCacheSta
 			/* Advance the scan pointer to the top of the cache to signify that this has been scanned */
 			scanCache->scanCurrent = scanCache->cacheAlloc;
 			/* Scan the chunk for all live objects */
-			while ((objectPtr = heapChunkIterator.nextObjectNoAdvance()) != NULL) {
+			while ((objectPtr = heapChunkIterator.nextObject()) != NULL) {
 				/* If the object should be remembered and it is in old space, remember it */
 				bool shouldBeRemembered = scavengeObjectSlots(env, scanCache, objectPtr, GC_ObjectScanner::scanHeap, NULL);
 				if (shouldBeRemembered) {
@@ -2517,7 +2517,7 @@ MM_Scavenger::completeScanCache(MM_EnvironmentStandard *env, MM_CopyScanCacheSta
  * the cache is flushed at the end.
  */
 void
-MM_Scavenger::incrementalScanCacheBySlot(MM_EnvironmentStandard *env, MM_CopyScanCacheStandard* scanCache)
+MM_Scavenger::incrementalScanCacheBySlot(MM_EnvironmentStandard *env, MM_CopyScanCacheStandard *scanCache)
 {
 nextCache:
 	/* mark that cache is in use as a scan cache */
@@ -2531,10 +2531,10 @@ nextCache:
 			(omrobjectptr_t)cacheAlloc,
 			false);
 
-		omrobjectptr_t objectPtr;
+		omrobjectptr_t objectPtr = NULL;
 		/* Scan the chunk for live objects, incrementally slot by slot */
-		while ((objectPtr = heapChunkIterator.nextObjectNoAdvance()) != NULL) {
-			MM_CopyScanCacheStandard* nextScanCache = incrementalScavengeObjectSlots(env, objectPtr, scanCache);
+		while ((objectPtr = heapChunkIterator.nextObject()) != NULL) {
+			MM_CopyScanCacheStandard *nextScanCache = incrementalScavengeObjectSlots(env, objectPtr, scanCache);
 
 			/* object was not completely scanned in order to interrupt scan */
 			if (scanCache->_hasPartiallyScannedObject) {

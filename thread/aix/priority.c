@@ -36,19 +36,19 @@
 int priority_map[J9THREAD_PRIORITY_MAX + 1] = J9_PRIORITY_MAP;
 
 #if defined(J9OS_I5)
+
 intptr_t
 initialize_priority_map(void)
 {
-	char *priority_property;
-	int i;
+	int i = 0;
 	const int default_priority[J9THREAD_PRIORITY_MAX + 1] = J9_PRIORITY_MAP;
 	const int alt_priority[J9THREAD_PRIORITY_MAX + 1] = J9_PRIORITY_MAP_ALT;
-#if (defined(J9OS_I5_V5R4)) /* V5R4 doesn't save alt.priority.mapping */
-	priority_property = NULL;
-#else
-	priority_property = Xj9GetPropertyValue("alt.priority.mapping");
-#endif /* J9OS_I5_V5R4 */
-	if (priority_property) {
+#if defined(J9OS_I5_V5R4) /* V5R4 doesn't save alt.priority.mapping */
+	char *priority_property = NULL;
+#else /* defined(J9OS_I5_V5R4) */
+	char *priority_property = Xj9GetPropertyValue("alt.priority.mapping");
+#endif /* defined(J9OS_I5_V5R4) */
+	if (NULL != priority_property) {
 		for (i = 0; i <= J9THREAD_PRIORITY_MAX; i++) {
 			priority_map[i] = alt_priority[i];
 		}
@@ -60,7 +60,7 @@ initialize_priority_map(void)
 	return 0;
 }
 
-#else
+#else /* defined(J9OS_I5) */
 
 intptr_t
 initialize_priority_map(void)
@@ -78,11 +78,10 @@ set_priority_spread(void)
 	return -1;
 }
 
-
 intptr_t
 set_pthread_priority(pthread_t handle, omrthread_prio_t j9ThreadPriority)
 {
-	struct sched_param sched_param;
+	struct sched_param sched_param = { };
 	sched_param.sched_priority = omrthread_get_mapped_priority(j9ThreadPriority);
 	return pthread_setschedparam(handle, omrthread_get_scheduling_policy(j9ThreadPriority), &sched_param);
 }
@@ -90,8 +89,8 @@ set_pthread_priority(pthread_t handle, omrthread_prio_t j9ThreadPriority)
 void
 initialize_thread_priority(omrthread_t thread)
 {
-	int policy, priority, i;
-	struct sched_param sched_param;
+	int policy = 0;
+	struct sched_param sched_param = { };
 
 	/* set the default value */
 	thread->priority = J9THREAD_PRIORITY_NORMAL;
@@ -100,39 +99,38 @@ initialize_thread_priority(omrthread_t thread)
 	if (priority_map[J9THREAD_PRIORITY_MIN] == priority_map[J9THREAD_PRIORITY_MAX]) {
 		return;
 	}
-	if (pthread_getschedparam(thread->handle, &policy, &sched_param)) {
+	if (0 != pthread_getschedparam(thread->handle, &policy, &sched_param)) {
 		/* the call failed */
 		return;
 	}
 
 #if defined(J9_PRIORITY_MAP)
-	if (policy != J9_DEFAULT_SCHED) {
+	if (J9_DEFAULT_SCHED != policy) {
 		/* incompatible policy for our priority mapping */
 		return;
 	}
-#endif
+#endif /* defined(J9_PRIORITY_MAP) */
 
 	/*
-	* Similar story for AIX as IRIX, except AIX uses 1 instead of 0.
-	*
-	* Each thread in AIX starts out as a floating priority SCHED_OTHER thread.
-	* Once we assign a pthread priority it becomes a fixed priority thread with
-	* policy SCHED_OTHER, SCHED_FIFO, SCHED_RR or other.
-	*/
-	if (sched_param.sched_priority == 1) {
+	 * Similar story for AIX as IRIX, except AIX uses 1 instead of 0.
+	 *
+	 * Each thread in AIX starts out as a floating priority SCHED_OTHER thread.
+	 * Once we assign a pthread priority it becomes a fixed priority thread with
+	 * policy SCHED_OTHER, SCHED_FIFO, SCHED_RR or other.
+	 */
+	if (1 == sched_param.sched_priority) {
 		set_pthread_priority(thread->handle, thread->priority);
 		return;
 	}
 
-
-#ifndef J9OS_I5 /* explicitly disabled by iSeries team */
+#if !defined(J9OS_I5) /* explicitly disabled by iSeries team */
 	/* on some platforms (i.e. Solaris) we get out of range values (e.g. 0) for threads with no explicitly set priority */
-	if (sched_param.sched_priority < sched_get_priority_min(policy) || sched_param.sched_priority > sched_get_priority_max(policy)) {
+	if ((sched_param.sched_priority < sched_get_priority_min(policy))
+	||  (sched_param.sched_priority > sched_get_priority_max(policy))
+	) {
 		return;
 	}
-#endif
+#endif /* !defined(J9OS_I5) */
 
 	thread->priority = omrthread_map_native_priority(sched_param.sched_priority);
 }
-
-

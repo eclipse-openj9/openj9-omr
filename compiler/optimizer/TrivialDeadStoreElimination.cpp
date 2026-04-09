@@ -30,6 +30,10 @@ TR::TrivialDeadStoreElimination::TrivialDeadStoreElimination(TR::OptimizationMan
 
 int32_t TR::TrivialDeadStoreElimination::perform()
 {
+    if (!comp()->useConstRefs()) {
+        return 0;
+    }
+
     TR::Region &stackRegion = comp()->trMemory()->currentStackRegion();
 
     TR::vector<bool, TR::Region &> isAutoUsed(stackRegion);

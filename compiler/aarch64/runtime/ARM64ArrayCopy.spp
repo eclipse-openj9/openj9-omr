@@ -26,14 +26,6 @@
 	.global	FUNC_LABEL(__arrayCopy)
 	.global	FUNC_LABEL(__forwardArrayCopy)
 	.global	FUNC_LABEL(__backwardArrayCopy)
-	.global	FUNC_LABEL(__fwHalfWordArrayCopy)
-	.global	FUNC_LABEL(__fwWordArrayCopy)
-	.global	FUNC_LABEL(__fwDoubleWordArrayCopy)
-	.global	FUNC_LABEL(__fwQuadWordArrayCopy)
-	.global	FUNC_LABEL(__bwHalfWordArrayCopy)
-	.global	FUNC_LABEL(__bwWordArrayCopy)
-	.global	FUNC_LABEL(__bwDoubleWordArrayCopy)
-	.global	FUNC_LABEL(__bwQuadWordArrayCopy)
 
 	.text
 	.align	2

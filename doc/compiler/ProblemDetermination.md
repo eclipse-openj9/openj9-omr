@@ -349,8 +349,7 @@ The following table gives some examples.
 | ---------------------- | ------------------------------------------------------ |
 | `- {*(I)*}` | Skip all methods with a single integer parameter |
 | `+ {*.[^a]*}` | Compile all methods whose names do not begin with "a" |
-| `+ {java/lang/[A-M]*}` | Compile all methods of all classes in the `java.lang`
-package whose names start with the letters `A` through `M` |
+| `+ {java/lang/[A-M]*}` | Compile all methods of all classes in the `java.lang` package whose names start with the letters `A` through `M` |
 | `+ {*)[[]*}` | Compile All methods that return any kind of array |
 
 ### Limit file and its command line filter
@@ -361,8 +360,7 @@ a method. The table below lists the four kinds of available filters.
 | **Limit filter** | **Meaning** |
 | ----------------------- | ------------------------------------------------------- |
 | `{regular expression}` | Methods with its signature matching `regular expression`. |
-| `1-0 set index` | Methods specified with one digit number in the limit file
-right after the + or - sign |
+| `1-0 set index` | Methods specified with one digit number in the limit file right after the + or - sign |
 | `[m,n]` | Methods between line `m` and `n` |
 | `[n]` | The method in line `n` in the limit file |
 

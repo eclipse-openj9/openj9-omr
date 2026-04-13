@@ -89,6 +89,7 @@ compiler_library(optimizer
 	${CMAKE_CURRENT_LIST_DIR}/Structure.cpp
 	${CMAKE_CURRENT_LIST_DIR}/SwitchAnalyzer.cpp
 	${CMAKE_CURRENT_LIST_DIR}/TranslateTable.cpp
+	${CMAKE_CURRENT_LIST_DIR}/TrivialDeadStoreElimination.cpp
 	${CMAKE_CURRENT_LIST_DIR}/UnionBitVectorAnalysis.cpp
 	${CMAKE_CURRENT_LIST_DIR}/UseDefInfo.cpp
 	${CMAKE_CURRENT_LIST_DIR}/ValueNumberInfo.cpp

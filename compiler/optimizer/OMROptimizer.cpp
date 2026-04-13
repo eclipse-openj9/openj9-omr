@@ -96,6 +96,7 @@
 #include "optimizer/OrderBlocks.hpp"
 #include "optimizer/RedundantAsyncCheckRemoval.hpp"
 #include "optimizer/Simplifier.hpp"
+#include "optimizer/TrivialDeadStoreElimination.hpp"
 #include "optimizer/VirtualGuardCoalescer.hpp"
 #include "optimizer/VirtualGuardHeadMerger.hpp"
 #include "optimizer/Inliner.hpp"
@@ -908,6 +909,8 @@ OMR::Optimizer::Optimizer(TR::Compilation *comp, TR::ResolvedMethodSymbol *metho
         TR::OptimizationManager(self(), TR::ConstRefPrivatization::create, OMR::constRefPrivatization);
     _opts[OMR::constRefRematerialization] = new (comp->allocator())
         TR::OptimizationManager(self(), TR::ConstRefRematerialization::create, OMR::constRefRematerialization);
+    _opts[OMR::trivialDeadStoreElimination] = new (comp->allocator())
+        TR::OptimizationManager(self(), TR::TrivialDeadStoreElimination::create, OMR::trivialDeadStoreElimination);
     // NOTE: Please add new OMR optimizations here!
 
     // initialize OMR optimization groups

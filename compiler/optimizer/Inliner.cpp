@@ -4226,6 +4226,11 @@ TR_CallSite *TR_InlinerBase::findAndUpdateCallSiteInGraph(TR_CallStack *callStac
             if (findDirectCallSiteTarget(comp(), callsite, this)) {
                 // Can't do a partial inline anymore as the blocks are wrong.
                 callsite->getTarget(0)->_isPartialInliningCandidate = false;
+                // Apply policy (e.g. TR_DontInlineUnloadableMethods) to the
+                // newly added target, since it bypassed the normal path through
+                // getSymbolAndFindInlineTargets() where applyPolicyToTargets()
+                // is called.
+                applyPolicyToTargets(callStack, callsite);
             }
         }
     }

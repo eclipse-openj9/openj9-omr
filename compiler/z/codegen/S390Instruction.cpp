@@ -4744,8 +4744,8 @@ uint8_t *TR::S390NOPInstruction::generateBinaryEncoding()
 
 int32_t TR::S390AlignmentNopInstruction::estimateBinaryLength(int32_t currentEstimate)
 {
-    self()->setEstimatedBinaryLength(_alignment - 2);
-    return currentEstimate + self()->getEstimatedBinaryLength();
+    setEstimatedBinaryLength(_alignment - 2);
+    return currentEstimate + getEstimatedBinaryLength();
 }
 
 uint8_t *TR::S390AlignmentNopInstruction::generateBinaryEncoding()

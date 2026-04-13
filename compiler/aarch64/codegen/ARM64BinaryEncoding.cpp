@@ -47,7 +47,7 @@ uint8_t *OMR::ARM64::Instruction::generateBinaryEncoding()
 int32_t OMR::ARM64::Instruction::estimateBinaryLength(int32_t currentEstimate)
 {
     setEstimatedBinaryLength(ARM64_INSTRUCTION_LENGTH);
-    return currentEstimate + self()->getEstimatedBinaryLength();
+    return currentEstimate + getEstimatedBinaryLength();
 }
 
 uint8_t *TR::ARM64ImmInstruction::generateBinaryEncoding()
@@ -108,7 +108,7 @@ uint8_t *TR::ARM64RelocatableImmInstruction::generateBinaryEncoding()
 int32_t TR::ARM64RelocatableImmInstruction::estimateBinaryLength(int32_t currentEstimate)
 {
     setEstimatedBinaryLength(sizeof(uintptr_t));
-    return currentEstimate + self()->getEstimatedBinaryLength();
+    return currentEstimate + getEstimatedBinaryLength();
 }
 
 uint8_t *TR::ARM64ImmSymInstruction::generateBinaryEncoding()
@@ -525,7 +525,7 @@ uint8_t *TR::ARM64ZeroSrc1ImmInstruction::generateBinaryEncoding()
     // If this memory reference is about my count for recompile,
     // then it's the cmp instruction that I need to patch
     if (comp->getOption(TR_EnableGCRPatching)) {
-        TR::Node *node = self()->getNode();
+        TR::Node *node = getNode();
         if (node && (node->getOpCodeValue() == TR::ificmpeq || node->getOpCodeValue() == TR::ificmpne)) {
             if (node->getFirstChild()->getOpCodeValue() == TR::iload) {
                 TR::SymbolReference *symref = node->getFirstChild()->getSymbolReference();

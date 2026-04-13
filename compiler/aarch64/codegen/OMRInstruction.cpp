@@ -95,8 +95,8 @@ void OMR::ARM64::Instruction::assignRegisters(TR_RegisterKinds kindToBeAssigned)
 {
     TR::RegisterDependencyConditions *cond = OMR::ARM64::Instruction::getDependencyConditions();
     if (cond) {
-        cond->assignPostConditionRegisters(self(), kindToBeAssigned, self()->cg());
-        cond->assignPreConditionRegisters(self()->getPrev(), kindToBeAssigned, self()->cg());
+        cond->assignPostConditionRegisters(self(), kindToBeAssigned, cg());
+        cond->assignPreConditionRegisters(getPrev(), kindToBeAssigned, cg());
     }
 }
 

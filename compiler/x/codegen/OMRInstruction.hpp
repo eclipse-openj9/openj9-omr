@@ -108,7 +108,7 @@ public:
 
     virtual Kind getKind() { return IsNotExtended; }
 
-    OMR::X86::Encoding getEncodingMethod() { return _encodingMethod; }
+    OMR_FINAL OMR::X86::Encoding getEncodingMethod() { return _encodingMethod; }
 
     void setEncodingMethod(OMR::X86::Encoding method) { _encodingMethod = method; }
 
@@ -167,14 +167,14 @@ public:
     // Number of unnecessary REX bytes for instruction expansion and/or padding
     uint8_t rexRepeatCount();
     // Only repeated REX bytes for expansion/padding are generated
-    uint8_t *generateRepeatedRexPrefix(uint8_t *cursor);
+    OMR_FINAL uint8_t *generateRepeatedRexPrefix(uint8_t *cursor);
 
 #if defined(TR_TARGET_64BIT)
     uint8_t operandSizeRexBits();
     // Each subclass should override this as necessary
     virtual uint8_t rexBits();
 #else
-    uint8_t rexBits() { return 0; }
+    OMR_FINAL uint8_t rexBits() { return 0; }
 #endif
 
     // Adjust the VFP state to reflect the execution of this instruction.

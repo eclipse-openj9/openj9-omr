@@ -111,7 +111,7 @@ TR::RegisterDependencyConditions *OMR::Z::Instruction::setDependencyConditionsNo
     // If register dependency conditions exist, merge with the argument conditions
     if (_conditions) {
         TR::RegisterDependencyConditions *n
-            = new (self()->cg()->trHeapMemory()) TR::RegisterDependencyConditions(_conditions, cond, self()->cg());
+            = new (cg()->trHeapMemory()) TR::RegisterDependencyConditions(_conditions, cond, cg());
         _conditions = 0;
         cond = n;
     }
@@ -130,13 +130,13 @@ TR::RegisterDependencyConditions *OMR::Z::Instruction::setDependencyConditions(T
         oldPostAddCursor = _conditions->getAddCursorForPost();
 
         TR::RegisterDependencyConditions *n
-            = new (self()->cg()->trHeapMemory()) TR::RegisterDependencyConditions(_conditions, cond, self()->cg());
+            = new (cg()->trHeapMemory()) TR::RegisterDependencyConditions(_conditions, cond, cg());
         _conditions = 0;
         cond = n;
     }
 
     // Perform book keeping only on argument conditions
-    cond->bookKeepingRegisterUses(self(), self()->cg(), oldPreAddCursor, oldPostAddCursor);
+    cond->bookKeepingRegisterUses(self(), cg(), oldPreAddCursor, oldPostAddCursor);
     cond->setIsUsed();
     if (cond->getPreConditions())
         cond->getPreConditions()->incNumUses();
@@ -156,7 +156,7 @@ TR::RegisterDependencyConditions *OMR::Z::Instruction::updateDependencyCondition
         currentPostCursor = _conditions->getAddCursorForPost();
     }
 
-    cond->bookKeepingRegisterUses(self(), self()->cg(), currentPreCursor, currentPostCursor);
+    cond->bookKeepingRegisterUses(self(), cg(), currentPreCursor, currentPostCursor);
     cond->setIsUsed();
     return _conditions = cond;
 }
@@ -173,7 +173,7 @@ void OMR::Z::Instruction::initialize(TR::Instruction *precedingInstruction, bool
         // Don't want to increment total use counts for assocreg instructions
         // because their register references will confuse the code that tries
         // to determine when the first use of a register takes place
-        if (condFlag || self()->getOpCodeValue() != TR::InstOpCode::assocreg) {
+        if (condFlag || getOpCodeValue() != TR::InstOpCode::assocreg) {
             cond->bookKeepingRegisterUses(self(), cg);
             if (cond->getPreConditions())
                 cond->getPreConditions()->incNumUses();
@@ -211,7 +211,7 @@ uint32_t OMR::Z::Instruction::getEstimatedBinaryOffset()
         uint32_t i;
     } _u;
 
-    _u.p = self()->getBinaryEncoding();
+    _u.p = getBinaryEncoding();
     return _u.i;
 }
 
@@ -223,40 +223,40 @@ void OMR::Z::Instruction::setEstimatedBinaryOffset(uint32_t l)
     } _u;
 
     _u.i = l;
-    self()->setBinaryEncoding(_u.p);
+    setBinaryEncoding(_u.p);
 }
 
 void OMR::Z::Instruction::setCCInfo()
 {
-    if (self()->getNode() == NULL) {
+    if (getNode() == NULL) {
         // play it safe... perhaps this should be changed to an assert that the node should never be NULL?
         self()->clearCCInfo();
         return;
     }
 
     if (_opcode.setsCC()) {
-        if (self()->cg()->ccInstruction() != NULL) {
+        if (cg()->ccInstruction() != NULL) {
             // Check previous CC setting instruction... we can mark its usage as
             // known, since the current instruction will override its CC value.
-            self()->cg()->ccInstruction()->setCCuseKnown();
+            cg()->ccInstruction()->setCCuseKnown();
         }
-        if (!self()->cg()->comp()->getOption(TR_EnableEBBCCInfo)) {
+        if (!cg()->comp()->getOption(TR_EnableEBBCCInfo)) {
             if (_opcode.setsOverflowFlag() || _opcode.setsZeroFlag() || _opcode.setsSignFlag()
                 || _opcode.setsCarryFlag()) {
                 // we have detailed information on the CC setting
-                self()->cg()->setHasCCInfo(true);
-                self()->cg()->setHasCCOverflow(_opcode.setsOverflowFlag() && !self()->getNode()->cannotOverflow());
-                self()->cg()->setHasCCZero(_opcode.setsZeroFlag());
-                self()->cg()->setHasCCSigned(_opcode.setsSignFlag() || _opcode.setsCompareFlag());
-                self()->cg()->setCCInstruction(self());
-                self()->cg()->setHasCCCarry(_opcode.setsCarryFlag());
+                cg()->setHasCCInfo(true);
+                cg()->setHasCCOverflow(_opcode.setsOverflowFlag() && !getNode()->cannotOverflow());
+                cg()->setHasCCZero(_opcode.setsZeroFlag());
+                cg()->setHasCCSigned(_opcode.setsSignFlag() || _opcode.setsCompareFlag());
+                cg()->setCCInstruction(self());
+                cg()->setHasCCCarry(_opcode.setsCarryFlag());
             } else {
                 // the CC setting is generic or
                 // there is no node associated with this instruction,
                 // play it safe and record no information
-                self()->cg()->setHasCCInfo(false);
+                cg()->setHasCCInfo(false);
             }
-            self()->cg()->setCCInstruction(self());
+            cg()->setCCInstruction(self());
         } else {
             if (_opcode.setsOverflowFlag() || _opcode.setsZeroFlag() || _opcode.setsSignFlag()
                 || _opcode.setsCompareFlag() || _opcode.setsCarryFlag())
@@ -266,20 +266,20 @@ void OMR::Z::Instruction::setCCInfo()
             // flags
             {
                 // we have detailed information on the CC setting
-                self()->cg()->setHasCCInfo(true);
-                self()->cg()->setHasCCOverflow(_opcode.setsOverflowFlag() && !self()->getNode()->cannotOverflow());
-                self()->cg()->setHasCCZero(_opcode.setsZeroFlag());
-                self()->cg()->setHasCCSigned(_opcode.setsSignFlag());
-                self()->cg()->setHasCCCompare(_opcode.setsCompareFlag());
-                self()->cg()->setHasCCCarry(_opcode.setsCarryFlag());
-                self()->cg()->setCCInstruction(self());
+                cg()->setHasCCInfo(true);
+                cg()->setHasCCOverflow(_opcode.setsOverflowFlag() && !getNode()->cannotOverflow());
+                cg()->setHasCCZero(_opcode.setsZeroFlag());
+                cg()->setHasCCSigned(_opcode.setsSignFlag());
+                cg()->setHasCCCompare(_opcode.setsCompareFlag());
+                cg()->setHasCCCarry(_opcode.setsCarryFlag());
+                cg()->setCCInstruction(self());
             } else {
                 // the CC setting is generic, such as Load & Test Reg, Test Under Mask etc are not handled; or,
                 // there is no node associated with this instruction,
                 // play it safe and record no information
-                self()->cg()->setHasCCInfo(false);
+                cg()->setHasCCInfo(false);
             }
-            self()->cg()->setCCInstruction(self());
+            cg()->setCCInstruction(self());
         } // if enableEBBCCInfo
     }
 }
@@ -287,19 +287,19 @@ void OMR::Z::Instruction::setCCInfo()
 void OMR::Z::Instruction::readCCInfo()
 {
     if (_opcode.readsCC()) {
-        if (self()->cg()->ccInstruction() != NULL) {
+        if (cg()->ccInstruction() != NULL) {
             // Current instruction reads CC.  Mark the last instruction that
             // set the CC value as having its CC being used.
-            self()->cg()->ccInstruction()->setCCuseKnown();
-            self()->cg()->ccInstruction()->setCCused();
+            cg()->ccInstruction()->setCCuseKnown();
+            cg()->ccInstruction()->setCCused();
         }
     }
 }
 
 void OMR::Z::Instruction::clearCCInfo()
 {
-    self()->cg()->setHasCCInfo(false);
-    self()->cg()->setCCInstruction(NULL);
+    cg()->setHasCCInfo(false);
+    cg()->setCCInstruction(NULL);
 }
 
 bool OMR::Z::Instruction::matchesTargetRegister(TR::Register *reg)
@@ -497,7 +497,7 @@ TR::Instruction *OMR::Z::Instruction::getOutOfLineEXInstr()
 {
     if (!self()->isOutOfLineEX())
         return NULL;
-    switch (self()->getOpCodeValue()) {
+    switch (getOpCodeValue()) {
         case TR::InstOpCode::EX: {
             TR::MemoryReference *tempMR = ((TR::S390RXInstruction *)self())->getMemoryReference();
             TR::S390ConstantInstructionSnippet *cis
@@ -520,8 +520,8 @@ TR::Instruction *OMR::Z::Instruction::getOutOfLineEXInstr()
 // and set appropriate flags
 void OMR::Z::Instruction::setupThrowsImplicitNullPointerException(TR::Node *n, TR::MemoryReference *mr)
 {
-    TR::Compilation *comp = self()->cg()->comp();
-    if (self()->cg()->getSupportsImplicitNullChecks()) {
+    TR::Compilation *comp = cg()->comp();
+    if (cg()->getSupportsImplicitNullChecks()) {
         // this instruction throws an implicit null check if:
         // 1. The treetop node is a NULLCHK node
         // 2. The memory reference of this instruction can cause a null pointer exception
@@ -531,11 +531,11 @@ void OMR::Z::Instruction::setupThrowsImplicitNullPointerException(TR::Node *n, T
 
         // Test conditions 1, 2, and 5
         if (n != NULL & mr != NULL && mr->getCausesImplicitNullPointerException()
-            && self()->cg()->getCurrentEvaluationTreeTop()->getNode()->getOpCode().isNullCheck()
-            && self()->cg()->getImplicitExceptionPoint() == NULL) {
+            && cg()->getCurrentEvaluationTreeTop()->getNode()->getOpCode().isNullCheck()
+            && cg()->getImplicitExceptionPoint() == NULL) {
             // determine what the NULLcheck reference node is
             TR::Node *nullCheckReference;
-            TR::Node *firstChild = self()->cg()->getCurrentEvaluationTreeTop()->getNode()->getFirstChild();
+            TR::Node *firstChild = cg()->getCurrentEvaluationTreeTop()->getNode()->getFirstChild();
             if (comp->useCompressedPointers() && firstChild->getOpCodeValue() == TR::l2a) {
                 TR::ILOpCodes loadOp = comp->il.opCodeForIndirectLoad(TR::Int32);
                 TR::ILOpCodes rdbarOp = comp->il.opCodeForIndirectReadBarrier(TR::Int32);
@@ -543,15 +543,15 @@ void OMR::Z::Instruction::setupThrowsImplicitNullPointerException(TR::Node *n, T
                     firstChild = firstChild->getFirstChild();
                 nullCheckReference = firstChild->getFirstChild();
             } else
-                nullCheckReference = self()->cg()->getCurrentEvaluationTreeTop()->getNode()->getNullCheckReference();
+                nullCheckReference = cg()->getCurrentEvaluationTreeTop()->getNode()->getNullCheckReference();
 
             // Test conditions 3 and 4
-            if ((self()->getNode()->getOpCode().hasSymbolReference()
-                    && self()->getNode()->getSymbolReference() == comp->getSymRefTab()->findVftSymbolRef())
+            if ((getNode()->getOpCode().hasSymbolReference()
+                    && getNode()->getSymbolReference() == comp->getSymRefTab()->findVftSymbolRef())
                 || (n->hasChild(nullCheckReference) && mr->usesRegister(nullCheckReference->getRegister()))) {
                 logprintf(comp->getOption(TR_TraceCG), comp->log(),
                     "Instruction %p throws an implicit NPE, node: %p NPE node: %p\n", self(), n, nullCheckReference);
-                self()->cg()->setImplicitExceptionPoint(self());
+                cg()->setImplicitExceptionPoint(self());
             }
         }
     }
@@ -565,21 +565,21 @@ TR::S390ImmInstruction *OMR::Z::Instruction::getS390ImmInstruction() { return NU
 
 uint8_t *OMR::Z::Instruction::generateBinaryEncoding()
 {
-    uint8_t *instructionStart = self()->cg()->getBinaryBufferCursor();
+    uint8_t *instructionStart = cg()->getBinaryBufferCursor();
     uint8_t *cursor = instructionStart;
-    memset((void *)cursor, 0, self()->getEstimatedBinaryLength());
+    memset((void *)cursor, 0, getEstimatedBinaryLength());
 
-    self()->getOpCode().copyBinaryToBuffer(instructionStart);
-    self()->setBinaryLength(self()->getOpCode().getInstructionLength());
-    self()->setBinaryEncoding(instructionStart);
-    self()->cg()->addAccumulatedInstructionLengthError(self()->getEstimatedBinaryLength() - self()->getBinaryLength());
+    getOpCode().copyBinaryToBuffer(instructionStart);
+    setBinaryLength(getOpCode().getInstructionLength());
+    setBinaryEncoding(instructionStart);
+    cg()->addAccumulatedInstructionLengthError(getEstimatedBinaryLength() - getBinaryLength());
     return cursor;
 }
 
 int32_t OMR::Z::Instruction::estimateBinaryLength(int32_t currentEstimate)
 {
-    self()->setEstimatedBinaryLength(self()->getOpCode().getInstructionLength());
-    return currentEstimate + self()->getEstimatedBinaryLength();
+    setEstimatedBinaryLength(getOpCode().getInstructionLength());
+    return currentEstimate + getEstimatedBinaryLength();
 }
 
 bool OMR::Z::Instruction::dependencyRefsRegister(TR::Register *reg) { return false; }
@@ -725,14 +725,14 @@ static void handleLoadWithRegRanges(TR::Instruction *inst, TR::CodeGenerator *cg
 
 void OMR::Z::Instruction::assignRegisters(TR_RegisterKinds kindToBeAssigned)
 {
-    TR::Compilation *comp = self()->cg()->comp();
+    TR::Compilation *comp = cg()->comp();
 
-    if (self()->getOpCodeValue() != TR::InstOpCode::assocreg) {
+    if (getOpCodeValue() != TR::InstOpCode::assocreg) {
         self()->assignRegistersAndDependencies(kindToBeAssigned);
-    } else if (self()->cg()->enableRegisterAssociations()) {
+    } else if (cg()->enableRegisterAssociations()) {
         // if (kindToBeAssigned == TR_GPR)
         {
-            TR::Machine *machine = self()->cg()->machine();
+            TR::Machine *machine = cg()->machine();
 
             int32_t first = TR::RealRegister::FirstGPR;
             int32_t last = TR::RealRegister::LastAssignableVRF;
@@ -763,9 +763,9 @@ void OMR::Z::Instruction::assignRegisters(TR_RegisterKinds kindToBeAssigned)
     if (outOfLineEXInstr) {
         TR::Instruction *savePrev = outOfLineEXInstr->getPrev();
 
-        outOfLineEXInstr->setPrev(self()->getPrev()); // Temporarily set Prev() instruction of snippet to Prev() of EX
-                                                      // just in case we insert LR_move on assignRegisters()
-        self()->cg()->tracePreRAInstruction(outOfLineEXInstr);
+        outOfLineEXInstr->setPrev(getPrev()); // Temporarily set Prev() instruction of snippet to Prev() of EX
+                                              // just in case we insert LR_move on assignRegisters()
+        cg()->tracePreRAInstruction(outOfLineEXInstr);
         outOfLineEXInstr->assignRegisters(kindToBeAssigned);
         TR::RegisterDependencyConditions *deps = outOfLineEXInstr->getDependencyConditions();
         if (deps) // merge the dependency into the EX deps
@@ -773,24 +773,24 @@ void OMR::Z::Instruction::assignRegisters(TR_RegisterKinds kindToBeAssigned)
             outOfLineEXInstr->resetDependencyConditions();
             TR::RegisterDependencyConditions *exDeps = (self())->getDependencyConditions();
             TR::RegisterDependencyConditions *newDeps
-                = new (self()->cg()->trHeapMemory()) TR::RegisterDependencyConditions(deps, exDeps, self()->cg());
+                = new (cg()->trHeapMemory()) TR::RegisterDependencyConditions(deps, exDeps, cg());
             (self())->setDependencyConditionsNoBookKeeping(newDeps);
         }
 
         outOfLineEXInstr->setPrev(savePrev); // Restore Prev() of snippet
-        self()->cg()->tracePostRAInstruction(outOfLineEXInstr);
+        cg()->tracePostRAInstruction(outOfLineEXInstr);
 
         // Java and other languages probably need the value field to be set to the binary encoding of the instruction
         // This can be done any time after register assignment
         // If the value is set here, the snippet can be handled in an identical fashion to a normal constantdataSnippet
     }
 
-    handleLoadWithRegRanges(self(), self()->cg());
+    handleLoadWithRegRanges(self(), cg());
 }
 
 uint32_t OMR::Z::Instruction::useSourceRegister(TR::Register *reg)
 {
-    TR::Compilation *comp = self()->cg()->comp();
+    TR::Compilation *comp = cg()->comp();
 
     if (_sourceStart < 0) {
         if (_targetStart < 0)
@@ -825,7 +825,7 @@ const char *OMR::Z::Instruction::getName(TR_Debug *debug)
 
 void OMR::Z::Instruction::recordOperand(void *operand, int8_t &operandCount)
 {
-    TR::Compilation *comp = self()->cg()->comp();
+    TR::Compilation *comp = cg()->comp();
     uint32_t n = self()->numOperands();
 
     void **p = (void **)comp->allocator().allocate(sizeof(void *) * (n + 1));
@@ -873,14 +873,14 @@ bool OMR::Z::Instruction::containsRegister(TR::Register *reg)
             return true;
 
     if (self()->isOutOfLineEX()) {
-        if (self()->getOpCodeValue() == TR::InstOpCode::EX) {
+        if (getOpCodeValue() == TR::InstOpCode::EX) {
             TR::MemoryReference *tempMR = ((TR::S390RXInstruction *)self())->getMemoryReference();
             TR::S390ConstantInstructionSnippet *cis
                 = (TR::S390ConstantInstructionSnippet *)tempMR->getConstantDataSnippet();
             TR_ASSERT(cis != NULL, "Out of line EX instruction doesn't have a constantInstructionSnippet\n");
             if (cis->getInstruction()->containsRegister(reg))
                 return true;
-        } else if (self()->getOpCodeValue() == TR::InstOpCode::EXRL) {
+        } else if (getOpCodeValue() == TR::InstOpCode::EXRL) {
             TR::S390ConstantInstructionSnippet *cis
                 = (TR::S390ConstantInstructionSnippet *)((TR::S390RILInstruction *)self())->getTargetSnippet();
             TR_ASSERT(cis != NULL, "Out of line EXRL instruction doesn't have a constantInstructionSnippet\n");
@@ -893,7 +893,7 @@ bool OMR::Z::Instruction::containsRegister(TR::Register *reg)
 
 uint32_t OMR::Z::Instruction::useTargetRegister(TR::Register *reg)
 {
-    TR::Compilation *comp = self()->cg()->comp();
+    TR::Compilation *comp = cg()->comp();
     if (_targetStart < 0) {
         if (_sourceStart < 0)
             _targetStart = 0;
@@ -904,8 +904,8 @@ uint32_t OMR::Z::Instruction::useTargetRegister(TR::Register *reg)
     self()->recordOperand((void *)reg, _targetRegSize);
 
     // Invalidate CC if target kills any of the usesOnlyRegisters of ccInst
-    TR::Instruction *ccInst = self()->cg()->ccInstruction();
-    if (self()->cg()->hasCCInfo() && (self() != ccInst) && ccInst->containsRegister(reg)) {
+    TR::Instruction *ccInst = cg()->ccInstruction();
+    if (cg()->hasCCInfo() && (self() != ccInst) && ccInst->containsRegister(reg)) {
         ccInst->setCCuseKnown();
         self()->clearCCInfo();
     }
@@ -915,10 +915,9 @@ uint32_t OMR::Z::Instruction::useTargetRegister(TR::Register *reg)
     if (reg->getKind() == TR_GPR
         && (_opcode.is64bit() || _opcode.is32to64bit()
             || (comp->target().is64Bit()
-                && (self()->getOpCodeValue() == TR::InstOpCode::LA || self()->getOpCodeValue() == TR::InstOpCode::LAY
-                    || self()->getOpCodeValue() == TR::InstOpCode::LARL
-                    || self()->getOpCodeValue() == TR::InstOpCode::BASR
-                    || self()->getOpCodeValue() == TR::InstOpCode::BRASL)))) {
+                && (getOpCodeValue() == TR::InstOpCode::LA || getOpCodeValue() == TR::InstOpCode::LAY
+                    || getOpCodeValue() == TR::InstOpCode::LARL || getOpCodeValue() == TR::InstOpCode::BASR
+                    || getOpCodeValue() == TR::InstOpCode::BRASL)))) {
         reg->setIs64BitReg(true);
 
         if (reg->getRegisterPair()) {
@@ -934,31 +933,31 @@ uint32_t OMR::Z::Instruction::useTargetRegister(TR::Register *reg)
 bool OMR::Z::Instruction::hasLongDisplacementSupport()
 {
     // Includes all instructions with long displacement support - RXE, RX, RXY, RS, RSY, SI, SIY
-    return self()->getOpCode().hasLongDispSupport();
+    return getOpCode().hasLongDispSupport();
 }
 
 uint32_t OMR::Z::Instruction::useSourceMemoryReference(TR::MemoryReference *memRef)
 {
-    TR::Compilation *comp = self()->cg()->comp();
+    TR::Compilation *comp = cg()->comp();
     TR_ASSERT(!memRef->getMemRefUsedBefore(), "Memory Reference Used Before");
     memRef->setMemRefUsedBefore();
 
     self()->recordOperand(memRef, _sourceMemSize);
 
-    memRef->bookKeepingRegisterUses(self(), self()->cg());
+    memRef->bookKeepingRegisterUses(self(), cg());
 
     return _sourceMemSize - 1; // index into source memref array
 }
 
 uint32_t OMR::Z::Instruction::useTargetMemoryReference(TR::MemoryReference *memRef, TR::MemoryReference *sourceMemRef)
 {
-    TR::Compilation *comp = self()->cg()->comp();
+    TR::Compilation *comp = cg()->comp();
     TR_ASSERT(!memRef->getMemRefUsedBefore(), "Memory Reference Used Before");
     memRef->setMemRefUsedBefore();
 
     self()->recordOperand(memRef, _targetMemSize);
 
-    memRef->bookKeepingRegisterUses(self(), self()->cg());
+    memRef->bookKeepingRegisterUses(self(), cg());
 
     return _targetMemSize - 1; // index into the target memref array
 }
@@ -982,7 +981,7 @@ int OMR::Z::Instruction::gatherRegPairsAtFrontOfArray(TR::Register **regArr, int
 
 TR::Register *OMR::Z::Instruction::assignRegisterNoDependencies(TR::Register *reg)
 {
-    TR::Compilation *comp = self()->cg()->comp();
+    TR::Compilation *comp = cg()->comp();
 
     // preventing assigning Real regs to Real regs
     if (reg->getRealRegister() != NULL) {
@@ -992,7 +991,7 @@ TR::Register *OMR::Z::Instruction::assignRegisterNoDependencies(TR::Register *re
         // BCR R15/R14, GPR0 have hardcoded GPR0 that we should ignore.
         // The register is treated as a NOP branch, and is neither used nor defined.
         bool skipBookkeeping = false;
-        if (self()->getOpCodeValue() == TR::InstOpCode::BCR
+        if (getOpCodeValue() == TR::InstOpCode::BCR
             && toRealRegister(reg)->getRegisterNumber() == TR::RealRegister::GPR0
             && (((TR::S390RegInstruction *)self())->getBranchCondition() == TR::InstOpCode::COND_MASK14
                 || ((TR::S390RegInstruction *)self())->getBranchCondition() == TR::InstOpCode::COND_MASK15))
@@ -1004,7 +1003,7 @@ TR::Register *OMR::Z::Instruction::assignRegisterNoDependencies(TR::Register *re
             realReg->setAssignedRegister(NULL);
             realReg->setState(TR::RealRegister::Free);
 
-            self()->cg()->traceRegFreed(virtReg, realReg);
+            cg()->traceRegFreed(virtReg, realReg);
         }
 
         return reg;
@@ -1024,7 +1023,7 @@ TR::Register *OMR::Z::Instruction::assignRegisterNoDependencies(TR::Register *re
             realRegHigh->setAssignedRegister(NULL);
             realRegHigh->setState(TR::RealRegister::Free);
 
-            self()->cg()->traceRegFreed(virtRegHigh, realRegHigh);
+            cg()->traceRegFreed(virtRegHigh, realRegHigh);
         }
 
         if (realRegLow->getState() != TR::RealRegister::Locked && BOOKKEEPING && virtRegLow
@@ -1033,7 +1032,7 @@ TR::Register *OMR::Z::Instruction::assignRegisterNoDependencies(TR::Register *re
             realRegLow->setAssignedRegister(NULL);
             realRegLow->setState(TR::RealRegister::Free);
 
-            self()->cg()->traceRegFreed(virtRegLow, realRegLow);
+            cg()->traceRegFreed(virtRegLow, realRegLow);
         }
 
         return reg;
@@ -1042,7 +1041,7 @@ TR::Register *OMR::Z::Instruction::assignRegisterNoDependencies(TR::Register *re
     uint64_t regMask = 0xffffffff;
     if (reg->isUsedInMemRef())
         regMask = ~TR::RealRegister::GPR0Mask;
-    return self()->cg()->machine()->assignBestRegister(reg, self(), BOOKKEEPING, regMask);
+    return cg()->machine()->assignBestRegister(reg, self(), BOOKKEEPING, regMask);
 }
 
 // Make sure reg life is really ended.
@@ -1124,7 +1123,7 @@ void OMR::Z::Instruction::assignOrderedRegisters(TR_RegisterKinds kindToBeAssign
     int32_t i;
     int32_t numTrgtPairs = 0;
     bool blockTarget = true;
-    TR::Compilation *comp = self()->cg()->comp();
+    TR::Compilation *comp = cg()->comp();
 
     TR::Register **_sourceReg = self()->sourceRegBase();
     TR::Register **_targetReg = self()->targetRegBase();
@@ -1133,7 +1132,7 @@ void OMR::Z::Instruction::assignOrderedRegisters(TR_RegisterKinds kindToBeAssign
 
     TR::Register *srcRegister = NULL;
     TR::Register *trgtRegister = NULL;
-    TR::Machine *machine = self()->cg()->machine();
+    TR::Machine *machine = cg()->machine();
     TR::RealRegister *postInstrFreeRealReg = NULL;
     TR::Register *postInstrFreeReg = NULL;
 
@@ -1166,15 +1165,15 @@ void OMR::Z::Instruction::assignOrderedRegisters(TR_RegisterKinds kindToBeAssign
         }
     }
 
-    if ((self()->getOpCodeValue() == TR::InstOpCode::XGR || self()->getOpCodeValue() == TR::InstOpCode::XR)
+    if ((getOpCodeValue() == TR::InstOpCode::XGR || getOpCodeValue() == TR::InstOpCode::XR)
         && _sourceReg[0] == _targetReg[0]) {
         postInstrFreeReg = _targetReg[0];
     }
 
     //  If there is only 1 target register we don't need to block
     //
-    if (numTrgtPairs == 0 && _targetReg && _targetRegSize == 1 && _targetMem == NULL
-        && !self()->getOpCode().usesTarget() && // ii: !getOpCode().isRegCopy() &&
+    if (numTrgtPairs == 0 && _targetReg && _targetRegSize == 1 && _targetMem == NULL && !getOpCode().usesTarget()
+        && // ii: !getOpCode().isRegCopy() &&
         !self()->anySpilledRegisters(_sourceReg, _sourceRegSize)
         && !self()->anySpilledRegisters(_sourceMem, _sourceMemSize)) {
         blockTarget = false;
@@ -1248,8 +1247,7 @@ void OMR::Z::Instruction::assignOrderedRegisters(TR_RegisterKinds kindToBeAssign
     }
 
     if (self()->getDependencyConditions()) {
-        self()->getDependencyConditions()->assignPreConditionRegisters(self()->getPrev(), kindToBeAssigned,
-            self()->cg());
+        self()->getDependencyConditions()->assignPreConditionRegisters(getPrev(), kindToBeAssigned, cg());
     }
 
     // unblock blocked targetRegs
@@ -1282,13 +1280,13 @@ void OMR::Z::Instruction::assignOrderedRegisters(TR_RegisterKinds kindToBeAssign
 
     if (_sourceMem) {
         for (i = 0; i < _sourceMemSize; ++i) {
-            _sourceMem[i]->assignRegisters(self(), self()->cg());
+            _sourceMem[i]->assignRegisters(self(), cg());
             _sourceMem[i]->blockRegisters();
         }
     }
     if (_targetMem) {
         for (i = 0; i < _targetMemSize; ++i) {
-            _targetMem[i]->assignRegisters(self(), self()->cg());
+            _targetMem[i]->assignRegisters(self(), cg());
             _targetMem[i]->blockRegisters();
         }
     }
@@ -1307,12 +1305,12 @@ void OMR::Z::Instruction::assignRegistersAndDependencies(TR_RegisterKinds kindTo
     TR::MemoryReference **_targetMem = self()->targetMemBase();
 
     // RIE for CompareAndBranch
-    if (self()->getOpCode().isBranchOp() && self()->getKind() == IsRIE
+    if (getOpCode().isBranchOp() && getKind() == IsRIE
         && ((TR::S390RIEInstruction *)self())->getLabelSymbol()->isStartOfColdInstructionStream()) {
         // Switch to the outlined instruction stream and assign registers.
         //
         TR_S390OutOfLineCodeSection *oi
-            = self()->cg()->findS390OutOfLineCodeSectionFromLabel(((TR::S390RIEInstruction *)self())->getLabelSymbol());
+            = cg()->findS390OutOfLineCodeSectionFromLabel(((TR::S390RIEInstruction *)self())->getLabelSymbol());
         TR_ASSERT(oi, "Could not find S390OutOfLineCodeSection stream from label.  instr=%p, label=%p\n", self(),
             ((TR::S390RIEInstruction *)self())->getLabelSymbol());
         if (!oi->hasBeenRegisterAssigned())
@@ -1324,15 +1322,15 @@ void OMR::Z::Instruction::assignRegistersAndDependencies(TR_RegisterKinds kindTo
     //
     if (self()->getDependencyConditions()) {
         self()->block(_sourceReg, _sourceRegSize, _targetReg, _targetRegSize, _sourceMem, _targetMem);
-        self()->getDependencyConditions()->assignPostConditionRegisters(self(), kindToBeAssigned, self()->cg());
+        self()->getDependencyConditions()->assignPostConditionRegisters(self(), kindToBeAssigned, cg());
 
         // FPR and VRF register files overlap. Some of the FPRs are non-volatile but if they hold vector data
         // that part of the data would not be preserved. This code looks at the data stored in non-volatile FPRs
         // and if it is assigned a vector virtual then it needs to be killed.
-        if (self()->cg()->getSupportsVectorRegisters() && self()->isCall()) {
-            TR::Machine *machine = self()->cg()->machine();
-            TR::Register *dummy = self()->cg()->allocateRegister(TR_FPR);
-            TR::Linkage *linkage = self()->cg()->getLinkage();
+        if (cg()->getSupportsVectorRegisters() && self()->isCall()) {
+            TR::Machine *machine = cg()->machine();
+            TR::Register *dummy = cg()->allocateRegister(TR_FPR);
+            TR::Linkage *linkage = cg()->getLinkage();
             dummy->setPlaceholderReg();
             for (int32_t i = TR::RealRegister::FirstFPR; i <= TR::RealRegister::LastFPR; i++) {
                 if (linkage->getPreserved(REGNUM(i))) {
@@ -1346,7 +1344,7 @@ void OMR::Z::Instruction::assignRegistersAndDependencies(TR_RegisterKinds kindTo
                     }
                 }
             }
-            self()->cg()->stopUsingRegister(dummy);
+            cg()->stopUsingRegister(dummy);
         }
 
         self()->unblock(_sourceReg, _sourceRegSize, _targetReg, _targetRegSize, _sourceMem, _targetMem);
@@ -1378,7 +1376,7 @@ int32_t OMR::Z::Instruction::renameRegister(TR::Register *from, TR::Register *to
     TR::MemoryReference *memRef2 = self()->getMemoryReference2();
     if (memRef1) {
         if (memRef1->getBaseRegister() == from) {
-            memRef1->setBaseRegister(to, self()->cg());
+            memRef1->setBaseRegister(to, cg());
             numReplaced++;
         }
         if (memRef1->getIndexRegister() == from) {
@@ -1388,7 +1386,7 @@ int32_t OMR::Z::Instruction::renameRegister(TR::Register *from, TR::Register *to
     }
     if (memRef2) {
         if (memRef2->getBaseRegister() == from) {
-            memRef2->setBaseRegister(to, self()->cg());
+            memRef2->setBaseRegister(to, cg());
             numReplaced++;
         }
         if (memRef2->getIndexRegister() == from) {
@@ -1480,8 +1478,8 @@ bool OMR::Z::Instruction::checkRegForGPR0Disable(TR::InstOpCode::Mnemonic op, TR
     TR_ASSERT(reg != NULL, "Reg cannot be null!");
 
     if (reg->getRealRegister() == NULL
-        && ((self()->getOpCode().isBranchOp() && self()->getOpCode().getInstructionFormat() == RR_FORMAT)
-            || self()->getOpCodeValue() == TR::InstOpCode::EX || self()->getOpCodeValue() == TR::InstOpCode::EXRL)) {
+        && ((getOpCode().isBranchOp() && getOpCode().getInstructionFormat() == RR_FORMAT)
+            || getOpCodeValue() == TR::InstOpCode::EX || getOpCodeValue() == TR::InstOpCode::EXRL)) {
         reg->setIsUsedInMemRef();
         return true;
     }
@@ -1511,7 +1509,7 @@ void OMR::Z::Instruction::resetUseDefRegisters()
 
 void OMR::Z::Instruction::setUseDefRegisters(bool updateDependencies)
 {
-    TR::Compilation *comp = self()->cg()->comp();
+    TR::Compilation *comp = cg()->comp();
     TR::Register **_sourceReg = self()->sourceRegBase();
     TR::Register **_targetReg = self()->targetRegBase();
     TR::MemoryReference **_sourceMem = self()->sourceMemBase();
@@ -1520,19 +1518,18 @@ void OMR::Z::Instruction::setUseDefRegisters(bool updateDependencies)
     uint32_t indexSource = 0, indexTarget = 0, i;
     TR::RegisterPair *regPair;
     TR::RegisterDependencyConditions *dependencies = self()->getDependencyConditions();
-    if (self()->cg()->getCodeGeneratorPhase() == TR::CodeGenPhase::PeepholePhase) {
+    if (cg()->getCodeGeneratorPhase() == TR::CodeGenPhase::PeepholePhase) {
         // In Peephole Phase, UseDefRegisters need to reset. The check on non Peephole Phase needs to be avoided here.
         if ((_useRegs != NULL && _useRegs->size() != 0) || (_defRegs != NULL && _defRegs->size() != 0)) {
         } else
-            _sourceUsedInMemoryReference
-                = new (self()->cg()->comp()->allocator()) RegisterBitVector(self()->cg()->comp());
+            _sourceUsedInMemoryReference = new (cg()->comp()->allocator()) RegisterBitVector(cg()->comp());
         // allocate arrays
     } else {
         TR_ASSERT(((_useRegs == NULL || _useRegs->size() == 0) || (_defRegs == NULL || _defRegs->size() == 0)),
             "source&target registers have already been set\n");
         if ((_useRegs != NULL && _useRegs->size() != 0) || (_defRegs != NULL && _defRegs->size() != 0))
             return;
-        _sourceUsedInMemoryReference = new (self()->cg()->comp()->allocator()) RegisterBitVector(self()->cg()->comp());
+        _sourceUsedInMemoryReference = new (cg()->comp()->allocator()) RegisterBitVector(cg()->comp());
         // allocate arrays
     }
 
@@ -1541,19 +1538,19 @@ void OMR::Z::Instruction::setUseDefRegisters(bool updateDependencies)
     if ((_sourceReg != NULL) || (_sourceMem != NULL) || (_targetMem != NULL)
         || (self()->implicitlyUsesGPR0() || self()->implicitlyUsesGPR1() || self()->implicitlyUsesGPR2())
         || ((_targetReg != NULL)
-            && (self()->isStore() || self()->isCompare() || self()->isTrap() || self()->getOpCode().usesTarget()))) {
+            && (self()->isStore() || self()->isCompare() || self()->isTrap() || getOpCode().usesTarget()))) {
         if (_useRegs == NULL) {
-            _useRegs = new (self()->cg()->comp()->allocator()) RegisterArray<TR::Register *>(self()->cg()->comp());
+            _useRegs = new (cg()->comp()->allocator()) RegisterArray<TR::Register *>(cg()->comp());
         }
     }
     if ((self()->implicitlySetsGPR0() || self()->implicitlySetsGPR1() || self()->implicitlySetsGPR2())
         || ((_targetReg != NULL)
                 && ((!self()->isStore() && (!self()->isCompare()) && (!self()->isTrap())
-                        && (self()->getOpCodeValue() != TR::InstOpCode::PPA))
+                        && (getOpCodeValue() != TR::InstOpCode::PPA))
                     || self()->isLoad())
             || (dependencies != NULL))) {
         if (_defRegs == NULL) {
-            _defRegs = new (self()->cg()->comp()->allocator()) RegisterArray<TR::Register *>(self()->cg()->comp());
+            _defRegs = new (cg()->comp()->allocator()) RegisterArray<TR::Register *>(cg()->comp());
         }
     }
 
@@ -1572,14 +1569,12 @@ void OMR::Z::Instruction::setUseDefRegisters(bool updateDependencies)
                 // TO-DO:  generalize the TR::InstOpCode::EDMK  support to something
                 // more generic like "usesImpliedSource and setsImpliedTarget"
                 // (rather than handing a specific op-code)
-                if ((self()->getOpCodeValue() == TR::InstOpCode::CPSDR) && (i == 1)) {
+                if ((getOpCodeValue() == TR::InstOpCode::CPSDR) && (i == 1)) {
                     (*_defRegs)[indexTarget++] = _sourceReg[i];
-                } else if (self()->getOpCodeValue() == TR::InstOpCode::EDMK) {
+                } else if (getOpCodeValue() == TR::InstOpCode::EDMK) {
                     (*_useRegs)[indexSource++] = _sourceReg[i];
-                } else if (self()->getOpCodeValue() != TR::InstOpCode::LM
-                    && self()->getOpCodeValue() != TR::InstOpCode::LMG
-                    && self()->getOpCodeValue() != TR::InstOpCode::LMH
-                    && self()->getOpCodeValue() != TR::InstOpCode::LMY) {
+                } else if (getOpCodeValue() != TR::InstOpCode::LM && getOpCodeValue() != TR::InstOpCode::LMG
+                    && getOpCodeValue() != TR::InstOpCode::LMH && getOpCodeValue() != TR::InstOpCode::LMY) {
                     (*_useRegs)[indexSource++] = _sourceReg[i];
                 } else {
                     (*_defRegs)[indexTarget++] = _sourceReg[i];
@@ -1592,38 +1587,36 @@ void OMR::Z::Instruction::setUseDefRegisters(bool updateDependencies)
             regPair = _targetReg[i]->getRegisterPair();
             if (regPair != NULL) {
                 // if it's a store or compare instruction, put all regs in _useRegs
-                if (self()->isStore() || self()->isCompare() || self()->isTrap() || self()->getOpCode().usesTarget()) {
+                if (self()->isStore() || self()->isCompare() || self()->isTrap() || getOpCode().usesTarget()) {
                     (*_useRegs)[indexSource++] = regPair->getHighOrder();
                     (*_useRegs)[indexSource++] = regPair->getLowOrder();
                 }
-                if ((!self()->isStore() && !self()->getOpCode().setsCompareFlag()) || self()->isLoad()) {
+                if ((!self()->isStore() && !getOpCode().setsCompareFlag()) || self()->isLoad()) {
                     (*_defRegs)[indexTarget++] = regPair->getHighOrder();
                     (*_defRegs)[indexTarget++] = regPair->getLowOrder();
                 }
             } else {
                 // if it's a store or compare instruction, put all regs in _useRegs
-                if ((self()->isStore() || self()->isCompare() || self()->isTrap() || self()->getOpCode().usesTarget()
-                        || (self()->getOpCodeValue() == TR::InstOpCode::CPSDR))
-                    && (self()->getOpCodeValue() != TR::InstOpCode::EDMK)
-                    && (self()->getOpCodeValue() != TR::InstOpCode::TRTR)) {
+                if ((self()->isStore() || self()->isCompare() || self()->isTrap() || getOpCode().usesTarget()
+                        || (getOpCodeValue() == TR::InstOpCode::CPSDR))
+                    && (getOpCodeValue() != TR::InstOpCode::EDMK) && (getOpCodeValue() != TR::InstOpCode::TRTR)) {
                     (*_useRegs)[indexSource++] = _targetReg[i];
                 }
                 if ((!self()->isStore() && !self()->isCompare() && !self()->isTrap()
-                        && (self()->getOpCodeValue() != TR::InstOpCode::CPSDR)
-                        && (self()->getOpCodeValue() != TR::InstOpCode::PPA))
-                    || self()->isLoad() || (self()->getOpCodeValue() == TR::InstOpCode::EDMK)
-                    || (self()->getOpCodeValue() == TR::InstOpCode::TRTR)) {
+                        && (getOpCodeValue() != TR::InstOpCode::CPSDR) && (getOpCodeValue() != TR::InstOpCode::PPA))
+                    || self()->isLoad() || (getOpCodeValue() == TR::InstOpCode::EDMK)
+                    || (getOpCodeValue() == TR::InstOpCode::TRTR)) {
                     (*_defRegs)[indexTarget++] = _targetReg[i];
                 }
             }
         }
     }
 
-    if (self()->getOpCodeValue() == TR::InstOpCode::LM || self()->getOpCodeValue() == TR::InstOpCode::LMG
-        || self()->getOpCodeValue() == TR::InstOpCode::LMH || self()->getOpCodeValue() == TR::InstOpCode::LMY)
+    if (getOpCodeValue() == TR::InstOpCode::LM || getOpCodeValue() == TR::InstOpCode::LMG
+        || getOpCodeValue() == TR::InstOpCode::LMH || getOpCodeValue() == TR::InstOpCode::LMY)
         loadOrStoreMultiple = 0; // load
-    else if (self()->getOpCodeValue() == TR::InstOpCode::STM || self()->getOpCodeValue() == TR::InstOpCode::STMG
-        || self()->getOpCodeValue() == TR::InstOpCode::STMH || self()->getOpCodeValue() == TR::InstOpCode::STMY)
+    else if (getOpCodeValue() == TR::InstOpCode::STM || getOpCodeValue() == TR::InstOpCode::STMG
+        || getOpCodeValue() == TR::InstOpCode::STMH || getOpCodeValue() == TR::InstOpCode::STMY)
         loadOrStoreMultiple = 1; // store
 
     if (loadOrStoreMultiple >= 0) {
@@ -1659,7 +1652,7 @@ void OMR::Z::Instruction::setUseDefRegisters(bool updateDependencies)
                 lowRegNum = (lowRegNum == 15) ? 0 : lowRegNum + 1;
                 for (uint32_t i = lowRegNum; i != highRegNum; i = ((i == 15) ? 0 : i + 1)) // wrap around to 0 at 15
                 {
-                    TR::RealRegister *reg = self()->cg()->machine()->getRealRegister(i + TR::RealRegister::GPR0);
+                    TR::RealRegister *reg = cg()->machine()->getRealRegister(i + TR::RealRegister::GPR0);
                     if (loadOrStoreMultiple == 0) // load
                         (*_defRegs)[indexTarget++] = reg;
                     else if (loadOrStoreMultiple == 1) // store
@@ -1700,7 +1693,7 @@ void OMR::Z::Instruction::setUseDefRegisters(bool updateDependencies)
         // dont look at the dependencies for anything other than TR::InstOpCode::DEPEND
         // to avoid double entries due to register pair dependencies
         TR::Register *tempRegister;
-        if ((dependencies != NULL) && ((self()->getOpCode().getOpCodeValue() == TR::InstOpCode::DEPEND))) {
+        if ((dependencies != NULL) && ((getOpCode().getOpCodeValue() == TR::InstOpCode::DEPEND))) {
             TR::RegisterDependencyGroup *preConditions = dependencies->getPreConditions();
             TR::RegisterDependencyGroup *postConditions = dependencies->getPostConditions();
             if (preConditions != NULL) {
@@ -1770,7 +1763,7 @@ bool OMR::Z::Instruction::getOneLocalLocalAllocFreeReg(TR::RealRegister **reg)
 
     for (i = first; i <= last; i++) {
         if ((_binFreeRegs >> cnt) & 0x1) {
-            *reg = self()->cg()->machine()->getRealRegister(cnt + 1);
+            *reg = cg()->machine()->getRealRegister(cnt + 1);
             return true;
         }
         cnt++;
@@ -1792,9 +1785,9 @@ bool OMR::Z::Instruction::getTwoLocalLocalAllocFreeReg(TR::RealRegister **reg1, 
     for (i = first; i <= last; i++) {
         if ((_binFreeRegs >> cnt) & 0x1) {
             if (*reg1 == NULL) {
-                *reg1 = self()->cg()->machine()->getRealRegister(cnt + 1);
+                *reg1 = cg()->machine()->getRealRegister(cnt + 1);
             } else {
-                *reg2 = self()->cg()->machine()->getRealRegister(cnt + 1);
+                *reg2 = cg()->machine()->getRealRegister(cnt + 1);
                 return true;
             }
         }
@@ -1813,14 +1806,14 @@ bool OMR::Z::Instruction::getTwoLocalLocalAllocFreeReg(TR::RealRegister **reg1, 
 TR::RealRegister *OMR::Z::Instruction::assignBestSpillRegister()
 {
     // Possible improvement here would be to pick a register using the SPILL policy
-    return _longDispSpillReg1 = self()->cg()->machine()->findRegNotUsedInInstruction(self());
+    return _longDispSpillReg1 = cg()->machine()->findRegNotUsedInInstruction(self());
 }
 
 // Populate the local-local reg alloc fields
 //  Select the best spill register
 TR::RealRegister *OMR::Z::Instruction::assignBestSpillRegister2()
 {
-    return _longDispSpillReg2 = self()->cg()->machine()->findRegNotUsedInInstruction(self());
+    return _longDispSpillReg2 = cg()->machine()->findRegNotUsedInInstruction(self());
 }
 
 // Setup the bit vect of free regs
@@ -1828,7 +1821,7 @@ TR::RealRegister *OMR::Z::Instruction::assignBestSpillRegister2()
 //  and volatiles (excluding GPR0) are included.
 uint32_t OMR::Z::Instruction::assignFreeRegBitVector()
 {
-    return _binFreeRegs = self()->cg()->machine()->constructFreeRegBitVector(self());
+    return _binFreeRegs = cg()->machine()->constructFreeRegBitVector(self());
 }
 
 bool OMR::Z::Instruction::isCall()
@@ -1867,10 +1860,10 @@ void OMR::Z::Instruction::setThrowsImplicitNullPointerException()
     self()->setThrowsImplicitException();
 }
 
-int32_t OMR::Z::Instruction::getMachineOpCode() { return self()->getOpCodeValue(); }
+int32_t OMR::Z::Instruction::getMachineOpCode() { return getOpCodeValue(); }
 
-bool OMR::Z::Instruction::is4ByteLoad() { return self()->getOpCodeValue() == TR::InstOpCode::L; }
+bool OMR::Z::Instruction::is4ByteLoad() { return getOpCodeValue() == TR::InstOpCode::L; }
 
-bool OMR::Z::Instruction::isRet() { return self()->getOpCodeValue() == TR::InstOpCode::retn; }
+bool OMR::Z::Instruction::isRet() { return getOpCodeValue() == TR::InstOpCode::retn; }
 
 int8_t OMR::Z::Instruction::lastOperandIndex(void) { return self()->numOperands() - 1; }

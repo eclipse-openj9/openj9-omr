@@ -1092,36 +1092,36 @@ static void fillFieldIMM8(TR::Instruction *instr, uint32_t *cursor, uint32_t val
 
 uint8_t *OMR::Power::Instruction::generateBinaryEncoding()
 {
-    uint8_t *instructionStart = self()->cg()->getBinaryBufferCursor();
+    uint8_t *instructionStart = cg()->getBinaryBufferCursor();
     uint8_t *cursor = instructionStart;
-    TR::InstOpCode &opCode = self()->getOpCode();
+    TR::InstOpCode &opCode = getOpCode();
 
     cursor = opCode.copyBinaryToBuffer(cursor);
     self()->fillBinaryEncodingFields(reinterpret_cast<uint32_t *>(cursor));
 
     cursor += opCode.getBinaryLength();
 
-    TR_ASSERT_FATAL_WITH_INSTRUCTION(self(), (cursor - instructionStart) <= self()->getEstimatedBinaryLength(),
-        "Estimated binary length was %u bytes, but actual length was %u bytes", self()->getEstimatedBinaryLength(),
+    TR_ASSERT_FATAL_WITH_INSTRUCTION(self(), (cursor - instructionStart) <= getEstimatedBinaryLength(),
+        "Estimated binary length was %u bytes, but actual length was %u bytes", getEstimatedBinaryLength(),
         static_cast<uint32_t>(cursor - instructionStart));
 
-    self()->setBinaryLength(cursor - instructionStart);
-    self()->setBinaryEncoding(instructionStart);
+    setBinaryLength(cursor - instructionStart);
+    setBinaryEncoding(instructionStart);
 
     return cursor;
 }
 
 void OMR::Power::Instruction::fillBinaryEncodingFields(uint32_t *cursor)
 {
-    switch (self()->getOpCode().getFormat()) {
+    switch (getOpCode().getFormat()) {
         case FORMAT_NONE:
             break;
 
         case FORMAT_DIRECT:
         case FORMAT_DIRECT_PREFIXED:
             // TODO: Split genop into two instructions depending on version of Power in use
-            if (self()->getOpCodeValue() == TR::InstOpCode::genop) {
-                TR::RealRegister *r = self()->cg()->machine()->getRealRegister(
+            if (getOpCodeValue() == TR::InstOpCode::genop) {
+                TR::RealRegister *r = cg()->machine()->getRealRegister(
                     TR::Compiler->target.cpu.isAtLeast(OMR_PROCESSOR_PPC_P7) ? TR::RealRegister::gr2
                                                                              : TR::RealRegister::gr1);
                 fillFieldRA(self(), cursor, r);
@@ -1131,15 +1131,15 @@ void OMR::Power::Instruction::fillBinaryEncodingFields(uint32_t *cursor)
 
         default:
             TR_ASSERT_FATAL_WITH_INSTRUCTION(self(), false, "Format %d cannot be binary encoded by Instruction",
-                self()->getOpCode().getFormat());
+                getOpCode().getFormat());
     }
 }
 
 int32_t OMR::Power::Instruction::estimateBinaryLength(int32_t currentEstimate)
 {
-    int8_t maxLength = self()->getOpCode().getMaxBinaryLength();
+    int8_t maxLength = getOpCode().getMaxBinaryLength();
 
-    self()->setEstimatedBinaryLength(maxLength);
+    setEstimatedBinaryLength(maxLength);
     return currentEstimate + maxLength;
 }
 
@@ -1180,8 +1180,8 @@ uint8_t *TR::PPCAlignmentNopInstruction::generateBinaryEncoding()
 
 int32_t TR::PPCAlignmentNopInstruction::estimateBinaryLength(int32_t currentEstimate)
 {
-    self()->setEstimatedBinaryLength(_alignment - PPC_INSTRUCTION_LENGTH);
-    return currentEstimate + self()->getEstimatedBinaryLength();
+    setEstimatedBinaryLength(_alignment - PPC_INSTRUCTION_LENGTH);
+    return currentEstimate + getEstimatedBinaryLength();
 }
 
 uint8_t TR::PPCAlignmentNopInstruction::getBinaryLengthLowerBound() { return 0; }
@@ -1370,7 +1370,7 @@ int32_t TR::PPCAdminInstruction::estimateBinaryLength(int32_t currentEstimate)
 {
     if (getOpCodeValue() == TR::InstOpCode::proc && cg()->supportsJitMethodEntryAlignment()) {
         cg()->setPreJitMethodEntrySize(currentEstimate);
-        self()->setEstimatedBinaryLength(cg()->getJitMethodEntryAlignmentBoundary() - 1);
+        setEstimatedBinaryLength(cg()->getJitMethodEntryAlignmentBoundary() - 1);
         return currentEstimate + cg()->getJitMethodEntryAlignmentBoundary() - 1;
     } else {
         return self()->TR::Instruction::estimateBinaryLength(currentEstimate);

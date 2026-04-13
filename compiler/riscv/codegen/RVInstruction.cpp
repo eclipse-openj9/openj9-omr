@@ -370,7 +370,7 @@ int32_t TR::BtypeInstruction::estimateBinaryLength(int32_t currentEstimate)
     // expanded to ensure that the binary length estimates are correct.
     setEstimatedBinaryLength(RISCV_INSTRUCTION_LENGTH * 2);
     setEstimatedBinaryLocation(currentEstimate);
-    return currentEstimate + self()->getEstimatedBinaryLength();
+    return currentEstimate + getEstimatedBinaryLength();
 }
 
 TR::BtypeInstruction *TR::BtypeInstruction::getBtypeInstruction() { return this; }

@@ -51,13 +51,13 @@ Instruction::Instruction(TR::CodeGenerator *cg, TR::InstOpCode::Mnemonic op, TR:
 
     TR::Compilation *comp = cg->comp();
 
-    if (self()->getPrev()) {
+    if (getPrev()) {
         _prev->setNext(self());
         cg->setAppendInstruction(self());
         _index = (_prev->getIndex() + INSTRUCTION_INDEX_INCREMENT) & ~FlagsMask;
     } else {
-        self()->setNext(cg->getFirstInstruction());
-        self()->setPrev(0);
+        setNext(cg->getFirstInstruction());
+        setPrev(0);
         TR::Instruction *first = cg->getFirstInstruction();
 
         if (first) {
@@ -100,8 +100,8 @@ Instruction::Instruction(TR::CodeGenerator *cg, TR::Instruction *precedingInstru
     TR::Compilation *comp = cg->comp();
 
     if (precedingInstruction != 0) {
-        self()->setNext(precedingInstruction->getNext());
-        self()->setPrev(precedingInstruction);
+        setNext(precedingInstruction->getNext());
+        setPrev(precedingInstruction);
 
         if (precedingInstruction->getNext()) {
             precedingInstruction->getNext()->setPrev(self());
@@ -121,8 +121,8 @@ Instruction::Instruction(TR::CodeGenerator *cg, TR::Instruction *precedingInstru
             _node = precedingInstruction->_node;
         }
     } else {
-        self()->setNext(cg->getFirstInstruction());
-        self()->setPrev(0);
+        setNext(cg->getFirstInstruction());
+        setPrev(0);
         TR::Instruction *first = cg->getFirstInstruction();
 
         if (first) {
@@ -162,8 +162,8 @@ TR::Instruction *Instruction::move(TR::Instruction *newLocation)
         newLocNext->setPrev(self());
     }
 
-    self()->setNext(newLocNext);
-    self()->setPrev(newLocation);
+    setNext(newLocNext);
+    setPrev(newLocation);
 
     newLocation->setNext(self());
 
@@ -181,47 +181,47 @@ TR::Instruction *Instruction::move(TR::Instruction *newLocation)
 
 void Instruction::remove()
 {
-    if (self()->getPrev())
-        self()->getPrev()->setNext(self()->getNext());
+    if (getPrev())
+        getPrev()->setNext(getNext());
     else
-        self()->cg()->setFirstInstruction(self()->getNext());
+        cg()->setFirstInstruction(getNext());
 
-    if (self()->getNext())
-        self()->getNext()->setPrev(self()->getPrev());
+    if (getNext())
+        getNext()->setPrev(getPrev());
     else
-        self()->cg()->setAppendInstruction(self()->getPrev());
+        cg()->setAppendInstruction(getPrev());
 
-    self()->setPrev(NULL);
-    self()->setNext(NULL);
+    setPrev(NULL);
+    setNext(NULL);
 }
 
 void Instruction::useRegister(TR::Register *reg)
 {
     if (reg->getStartOfRange() == 0
-        || ((reg->getStartOfRange()->getIndex() > self()->getIndex()) && !self()->cg()->getIsInOOLSection())) {
+        || ((reg->getStartOfRange()->getIndex() > self()->getIndex()) && !cg()->getIsInOOLSection())) {
         reg->setStartOfRange(self());
     }
 
     if (reg->getEndOfRange() == 0
-        || ((reg->getEndOfRange()->getIndex() < self()->getIndex()) && !self()->cg()->getIsInOOLSection())) {
+        || ((reg->getEndOfRange()->getIndex() < self()->getIndex()) && !cg()->getIsInOOLSection())) {
         reg->setEndOfRange(self());
     }
 
-    if (self()->cg()->getEnableRegisterUsageTracking()) {
-        self()->cg()->recordSingleRegisterUse(reg);
+    if (cg()->getEnableRegisterUsageTracking()) {
+        cg()->recordSingleRegisterUse(reg);
     }
 
     reg->incTotalUseCount();
 
-    if (self()->cg()->getIsInOOLSection())
+    if (cg()->getIsInOOLSection())
         reg->incOutOfLineUseCount();
 }
 
-bool Instruction::requiresAtomicPatching() { return !(self()->getNode() && self()->getNode()->isStopTheWorldGuard()); }
+bool Instruction::requiresAtomicPatching() { return !(getNode() && getNode()->isStopTheWorldGuard()); }
 
 bool Instruction::isMergeableGuard()
 {
     static char *mergeOnlyHCRGuards = feGetEnv("TR_MergeOnlyHCRGuards");
-    return mergeOnlyHCRGuards ? self()->getNode()->isStopTheWorldGuard() : self()->getNode()->isNopableInlineGuard();
+    return mergeOnlyHCRGuards ? getNode()->isStopTheWorldGuard() : getNode()->isNopableInlineGuard();
 }
 } // namespace OMR

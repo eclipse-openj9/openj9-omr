@@ -117,7 +117,7 @@ OMR::ARM::Instruction::Instruction(TR::Instruction *precedingInstruction, TR::In
 
 void OMR::ARM::Instruction::ARMNeedsGCMap(uint32_t mask)
 {
-    if (self()->cg()->comp()->useRegisterMaps())
+    if (cg()->comp()->useRegisterMaps())
         self()->setNeedsGCMap(mask);
 }
 
@@ -153,14 +153,13 @@ TR::ARMConditionalBranchInstruction *OMR::ARM::Instruction::getARMConditionalBra
 TR::ARMImmInstruction *OMR::ARM::Instruction::getARMImmInstruction() { return NULL; }
 #endif // defined(DEBUG) || defined(PROD_WITH_ASSUMES)
 
-int32_t OMR::ARM::Instruction::getMachineOpCode() { return self()->getOpCodeValue(); }
+int32_t OMR::ARM::Instruction::getMachineOpCode() { return getOpCodeValue(); }
 
 void OMR::ARM::Instruction::assignRegisters(TR_RegisterKinds kindToBeAssigned)
 {
     if (self()->getDependencyConditions()) {
-        self()->getDependencyConditions()->assignPostConditionRegisters(self(), kindToBeAssigned, self()->cg());
-        self()->getDependencyConditions()->assignPreConditionRegisters(self()->getPrev(), kindToBeAssigned,
-            self()->cg());
+        self()->getDependencyConditions()->assignPostConditionRegisters(self(), kindToBeAssigned, cg());
+        self()->getDependencyConditions()->assignPreConditionRegisters(getPrev(), kindToBeAssigned, cg());
     }
 }
 

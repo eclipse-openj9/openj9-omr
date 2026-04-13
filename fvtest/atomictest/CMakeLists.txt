@@ -33,6 +33,6 @@ function(omr_add_atomic_test testname)
 		NAME    "${testname}"
 		COMMAND "${testname}" --gtest_output=xml:${CMAKE_CURRENT_BINARY_DIR}/${testname}-results.xml
 	)
-endfunction(omr_add_core_test)
+endfunction(omr_add_atomic_test)
 
 omr_add_atomic_test(TestCAE)

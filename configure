@@ -727,7 +727,6 @@ OMR_GC_OBJECT_ALLOCATION_NOTIFY
 OMR_GC_LEAF_BITS
 OMR_GC_CONCURRENT_SWEEP
 OMR_GC_CONCURRENT_SCAVENGER
-OMR_GC_DOUBLE_MAP_ARRAYLETS
 OMR_GC_MODRON_SCAVENGER
 OMR_GC_MODRON_CONCURRENT_MARK
 OMR_GC_MODRON_COMPACTION
@@ -883,7 +882,6 @@ enable_OMR_GC_DYNAMIC_CLASS_UNLOADING
 enable_OMR_GC_MODRON_COMPACTION
 enable_OMR_GC_MODRON_CONCURRENT_MARK
 enable_OMR_GC_MODRON_SCAVENGER
-enable_OMR_GC_DOUBLE_MAP_ARRAYLETS
 enable_OMR_GC_CONCURRENT_SCAVENGER
 enable_OMR_GC_CONCURRENT_SWEEP
 enable_OMR_GC_LEAF_BITS
@@ -1657,8 +1655,6 @@ Optional Features:
   --enable-OMR_GC_MODRON_CONCURRENT_MARK
 
   --enable-OMR_GC_MODRON_SCAVENGER
-
-  --enable-OMR_GC_DOUBLE_MAP_ARRAYLETS
 
   --enable-OMR_GC_CONCURRENT_SCAVENGER
 
@@ -4884,11 +4880,11 @@ if test x$ac_prog_cxx_stdcxx = xno
 then :
   { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for $CXX option to enable C++11 features" >&5
 printf %s "checking for $CXX option to enable C++11 features... " >&6; }
-if test ${ac_cv_prog_cxx_11+y}
+if test ${ac_cv_prog_cxx_cxx11+y}
 then :
   printf %s "(cached) " >&6
 else $as_nop
-  ac_cv_prog_cxx_11=no
+  ac_cv_prog_cxx_cxx11=no
 ac_save_CXX=$CXX
 cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
@@ -4930,11 +4926,11 @@ if test x$ac_prog_cxx_stdcxx = xno
 then :
   { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for $CXX option to enable C++98 features" >&5
 printf %s "checking for $CXX option to enable C++98 features... " >&6; }
-if test ${ac_cv_prog_cxx_98+y}
+if test ${ac_cv_prog_cxx_cxx98+y}
 then :
   printf %s "(cached) " >&6
 else $as_nop
-  ac_cv_prog_cxx_98=no
+  ac_cv_prog_cxx_cxx98=no
 ac_save_CXX=$CXX
 cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
@@ -6180,27 +6176,6 @@ else $as_nop
 fi
 else $as_nop
   OMR_GC_MODRON_SCAVENGER=0
-
-
-fi
-
-
-# Check whether --enable-OMR_GC_DOUBLE_MAP_ARRAYLETS was given.
-if test ${enable_OMR_GC_DOUBLE_MAP_ARRAYLETS+y}
-then :
-  enableval=$enable_OMR_GC_DOUBLE_MAP_ARRAYLETS; if test "x${enableval}" = xyes
-then :
-  OMR_GC_DOUBLE_MAP_ARRAYLETS=1
-
-   printf "%s\n" "#define OMR_GC_DOUBLE_MAP_ARRAYLETS 1" >>confdefs.h
-
-else $as_nop
-  OMR_GC_DOUBLE_MAP_ARRAYLETS=0
-
-
-fi
-else $as_nop
-  OMR_GC_DOUBLE_MAP_ARRAYLETS=0
 
 
 fi

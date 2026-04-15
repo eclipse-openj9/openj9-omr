@@ -82,7 +82,6 @@
 #include <nl_types.h>
 #include <langinfo.h>
 
-
 #if defined(J9ZOS390)
 #include "omrgetthent.h"
 #include "omrsimap.h"
@@ -444,7 +443,7 @@ struct {
 #define CGROUP_MEMORY_SWAP_USAGE_IN_BYTES_FILE "memory.memsw.usage_in_bytes"
 
 #define CGROUP_MEMORY_STAT_CACHE_METRIC "cache"
-#define CGROUP_MEMORY_STAT_CACHE_METRIC_SZ (sizeof(CGROUP_MEMORY_STAT_CACHE_METRIC)-1)
+#define CGROUP_MEMORY_STAT_CACHE_METRIC_SZ (sizeof(CGROUP_MEMORY_STAT_CACHE_METRIC) - 1)
 
 /* Cgroup v2 memory files */
 #define CGROUP_MEMORY_MAX_FILE "memory.max"
@@ -453,7 +452,7 @@ struct {
 #define CGROUP_MEMORY_SWAP_CURRENT_FILE "memory.swap.current"
 
 #define CGROUP_MEMORY_STAT_FILE_METRIC "file"
-#define CGROUP_MEMORY_STAT_FILE_METRIC_SZ (sizeof(CGROUP_MEMORY_STAT_FILE_METRIC)-1)
+#define CGROUP_MEMORY_STAT_FILE_METRIC_SZ (sizeof(CGROUP_MEMORY_STAT_FILE_METRIC) - 1)
 
 /* Cgroup v1 cpu files */
 #define CGROUP_CPU_CFS_QUOTA_US_FILE "cpu.cfs_quota_us"
@@ -740,9 +739,7 @@ intptr_t
 omrsysinfo_process_exists(struct OMRPortLibrary *portLibrary, uintptr_t pid)
 {
 	intptr_t rc = 0;
-	int result = 0;
-
-	result = kill(pid, 0);
+	int result = kill(pid, 0);
 	/*
 	 * If sig is 0, then no signal is sent, but error checking is still performed.
 	 * By using signal == 0, kill just checks for the existence and accessibility of the process.
@@ -871,8 +868,7 @@ omrsysinfo_processor_set_feature(struct OMRPortLibrary *portLibrary, OMRProcesso
 
 		if (enable) {
 			desc->features[featureIndex] |= (1u << featureShift);
-		}
-		else {
+		} else {
 			desc->features[featureIndex] &= ~(1u << featureShift);
 		}
 		rc = 0;
@@ -885,7 +881,7 @@ omrsysinfo_processor_set_feature(struct OMRPortLibrary *portLibrary, OMRProcesso
 const char*
 omrsysinfo_get_processor_feature_name(struct OMRPortLibrary *portLibrary, uint32_t feature)
 {
-	const char* rc = "null";
+	const char *rc = "null";
 	Trc_PRT_sysinfo_get_processor_feature_name_Entered(feature);
 #if defined(J9X86) || defined(J9HAMMER)
 	rc = omrsysinfo_get_x86_processor_feature_name(feature);
@@ -900,7 +896,6 @@ omrsysinfo_get_processor_feature_name(struct OMRPortLibrary *portLibrary, uint32
 	return rc;
 }
 
-
 /**
  * Generate the corresponding string literals for the provided OMRProcessorDesc. The buffer will be zero
  * initialized and overwritten with the processor feature output string.
@@ -909,11 +904,10 @@ omrsysinfo_get_processor_feature_name(struct OMRPortLibrary *portLibrary, uint32
  * @param[in] desc The struct that contains the list of processor features to be converted to string.
  * @param[out] buffer The processor feature output string.
  * @param[in] length The size of the buffer in number of bytes.
- *
  * @return 0 on success, -1 if output string size exceeds input length.
  */
 intptr_t
-omrsysinfo_get_processor_feature_string(struct OMRPortLibrary *portLibrary, OMRProcessorDesc *desc, char * buffer, const size_t length)
+omrsysinfo_get_processor_feature_string(struct OMRPortLibrary *portLibrary, OMRProcessorDesc *desc, char *buffer, const size_t length)
 {
 	BOOLEAN start = TRUE;
 	size_t i = 0;
@@ -932,7 +926,7 @@ omrsysinfo_get_processor_feature_string(struct OMRPortLibrary *portLibrary, OMRP
 
 			if (desc->features[i] & (1 << j)) {
 				uint32_t feature = (uint32_t)(i * numberOfBits + j);
-				const char * featureName = omrsysinfo_get_processor_feature_name(portLibrary, feature);
+				const char *featureName = omrsysinfo_get_processor_feature_name(portLibrary, feature);
 				size_t featureLength = strlen(featureName);
 				if ((4 == featureLength) && (0 == strncmp("null", featureName, 4))) {
 					continue;
@@ -979,7 +973,6 @@ omrsysinfo_set_feature(OMRProcessorDesc *desc, uint32_t feature)
 	}
 }
 #endif /* defined(AIXPPC) || defined(S390) || defined(J9ZOS390) || (defined(AARCH64) && defined(OSX)) */
-
 
 #if (defined(LINUXPPC) || defined(AIXPPC))
 
@@ -1073,8 +1066,8 @@ omrsysinfo_get_ppc_processor_feature_name(uint32_t feature)
 static intptr_t
 omrsysinfo_get_linux_ppc_description(struct OMRPortLibrary *portLibrary, OMRProcessorDesc *desc)
 {
-	char* platform = NULL;
-	char* base_platform = NULL;
+	char *platform = NULL;
+	char *base_platform = NULL;
 
 	/* initialize auxv prior to querying the auxv */
 	if (prefetch_auxv() != 0) {
@@ -1103,7 +1096,6 @@ omrsysinfo_get_linux_ppc_description(struct OMRPortLibrary *portLibrary, OMRProc
 	 */
 	desc->features[0] = query_auxv(AT_HWCAP);
 	desc->features[1] = query_auxv(AT_HWCAP2);
-
 	return 0;
 
 _error:
@@ -1112,7 +1104,6 @@ _error:
 	desc->features[0] = 0;
 	desc->features[1] = 0;
 	return -1;
-
 }
 
 /**
@@ -1287,7 +1278,7 @@ omrsysinfo_get_aix_ppc_description(struct OMRPortLibrary *portLibrary, OMRProces
 
 #if (defined(S390) || defined(J9ZOS390))
 
-#define LAST_DOUBLE_WORD	3
+#define LAST_DOUBLE_WORD    3
 
 /**
  * @internal
@@ -1296,7 +1287,6 @@ omrsysinfo_get_aix_ppc_description(struct OMRPortLibrary *portLibrary, OMRProces
  *  see z/Architecture Principles of Operation 4-69
  *
  * @param[in] stfleBit bit to check
- *
  * @return TRUE if bit is 1, FALSE otherwise.
  */
 static BOOLEAN
@@ -1329,25 +1319,25 @@ omrsysinfo_test_stfle(struct OMRPortLibrary *portLibrary, uint64_t stfleBit)
 #ifdef _LP64
 typedef struct pcb_t
 {
-	char pcbeye[8];					/* pcbeye = "CEEPCB" */
-	char dummy[336];				/* Ignore the rest to get to flag6 field */
+	char pcbeye[8];                 /* pcbeye = "CEEPCB" */
+	char dummy[336];                /* Ignore the rest to get to flag6 field */
 	unsigned char ceepcb_flags6;
 } pcb_t;
 typedef struct ceecaa_t
 {
-	char dummy[912];				/* pcb is at offset 912 in 64bit */
+	char dummy[912];                /* pcb is at offset 912 in 64bit */
 	pcb_t *pcb_addr;
 } ceecaa_t;
 #else
 typedef struct pcb_t
 {
-	char pcbeye[8];					/* pcbeye = "CEEPCB" */
-	char dummy[76];					/* Ignore the rest to get to flag6 field */
+	char pcbeye[8];                 /* pcbeye = "CEEPCB" */
+	char dummy[76];                 /* Ignore the rest to get to flag6 field */
 	unsigned char ceepcb_flags6;
 } pcb_t;
 typedef struct ceecaa_t
 {
-	char dummy[756];				/* pcb is at offset 756 in 32bit */
+	char dummy[756];                /* pcb is at offset 756 in 32bit */
 	pcb_t *pcb_addr;
 } ceecaa_t;
 #endif /* ifdef _LP64 */
@@ -1788,7 +1778,7 @@ omrsysinfo_get_s390_description(struct OMRPortLibrary *portLibrary, OMRProcessor
 		desc->processor = OMR_PROCESSOR_S390_Z14;
 	}
 
-    /* z15 facility and processor detection */
+	/* z15 facility and processor detection */
 
 	if (omrsysinfo_test_stfle(portLibrary, OMR_FEATURE_S390_MISCELLANEOUS_INSTRUCTION_EXTENSION_3)) {
 		omrsysinfo_set_feature(desc, OMR_FEATURE_S390_MISCELLANEOUS_INSTRUCTION_EXTENSION_3);
@@ -2721,8 +2711,7 @@ find_executable_name(struct OMRPortLibrary *portLibrary, char **result)
 #else /* defined(OMR_OS_BSD) */
 
 	intptr_t retval = -1;
-	intptr_t length;
-	char *p;
+	char *p = NULL;
 	char *currentName = NULL;
 	char *currentPath = NULL;
 	char *originalWorkingDirectory = NULL;
@@ -8030,10 +8019,10 @@ omrsysinfo_get_block_device_stats(struct OMRPortLibrary *portLibrary, const char
 static char*
 resolveTopBlockDeviceFromMajMin(struct OMRPortLibrary *portLibrary, uint32_t majorNum, uint32_t minorNum)
 {
-    char devpath[PATH_MAX];
+	char devpath[PATH_MAX];
 	char resolved[PATH_MAX];
 	char *cursor = NULL;
-    char *result = NULL;
+	char *result = NULL;
 
 	/*
 	 * /sys/dev/block/<maj>:<min> is typically a symlink, and might look like one of the following examples:
@@ -8051,70 +8040,70 @@ resolveTopBlockDeviceFromMajMin(struct OMRPortLibrary *portLibrary, uint32_t maj
 
 	portLibrary->str_printf(portLibrary, devpath, sizeof(devpath), "/sys/dev/block/%u:%u", majorNum, minorNum);
 
-    if (NULL == realpath(devpath, resolved)) {
-        return NULL;
-    }
+	if (NULL == realpath(devpath, resolved)) {
+		return NULL;
+	}
 
-    cursor = resolved;
+	cursor = resolved;
 
 	/* Starting at the end of the complete resolved path, find the first element that exists in /sys/block. */
-    for (;;) {
-        char *base = NULL;
+	for (;;) {
+		char *base = NULL;
 		char *dir = NULL;
-        char sysblk[PATH_MAX];
+		char sysblk[PATH_MAX];
 
 		/* This code depends on the GNU version of basename; it assumes basename won't modify the string at cursor. */
 		base = basename(cursor);
-        portLibrary->str_printf(portLibrary, sysblk, sizeof(sysblk), "/sys/block/%s", base);
+		portLibrary->str_printf(portLibrary, sysblk, sizeof(sysblk), "/sys/block/%s", base);
 
-        if (0 == access(sysblk, F_OK)) {
+		if (0 == access(sysblk, F_OK)) {
 			/* Found */
 			result = portLibrary->mem_allocate_memory(portLibrary, strlen(base) + 1, OMR_GET_CALLSITE(), OMRMEM_CATEGORY_PORT_LIBRARY);
 			if (NULL != result) {
 				strcpy(result, base);
 			}
-            break;
-        }
+			break;
+		}
 
-        dir = dirname(cursor);
-        if (NULL == dir) {
+		dir = dirname(cursor);
+		if (NULL == dir) {
 			/* Error */
-            break;
-        }
+			break;
+		}
 
 		if ((0 == strcmp(dir, "/")) || (0 == strcmp(dir, "."))) {
 			/*
 			 * Reached the beginning of the resolved path without finding anything in /sys/block.
 			 * This is expected if the target is not stored on a block device (tmpfs, nfs, etc).
 			 */
-            break;
-        }
+			break;
+		}
 
-        cursor = dir;
-    }
+		cursor = dir;
+	}
 
-    return result;
+	return result;
 }
 #endif /* defined(LINUX) && !defined(OMRZTPF) */
 
-char*
+char *
 omrsysinfo_get_block_device_for_path(struct OMRPortLibrary *portLibrary, const char *path)
 {
 #if defined(LINUX) && !defined(OMRZTPF)
 	struct stat st;
 	dev_t dev;
-	uint32_t majorNum;
-	uint32_t minorNum;
+	uint32_t majorNum = 0;
+	uint32_t minorNum = 0;
 
-    if (0 != stat(path, &st)) {
-        return NULL;
-    }
+	if (0 != stat(path, &st)) {
+		return NULL;
+	}
 
-    dev = st.st_dev;
-    majorNum = major(dev);
-    minorNum = minor(dev);
+	dev = st.st_dev;
+	majorNum = major(dev);
+	minorNum = minor(dev);
 
-    return resolveTopBlockDeviceFromMajMin(portLibrary, majorNum, minorNum);
+	return resolveTopBlockDeviceFromMajMin(portLibrary, majorNum, minorNum);
 #else /* defined(LINUX) && !defined(OMRZTPF) */
 	return NULL;
 #endif /* defined(LINUX) && !defined(OMRZTPF) */
@@ -8129,7 +8118,7 @@ omrsysinfo_get_block_device_for_path(struct OMRPortLibrary *portLibrary, const c
  * Returns a pointer to a string representing the device on success, NULL on failure.
  * The pointer needs to be freed via portLibrary->mem_free_memory..
  */
-static char*
+static char *
 getBlockDeviceFromDevNode(struct OMRPortLibrary *portLibrary, const char *path)
 {
 	struct stat st;
@@ -8137,15 +8126,15 @@ getBlockDeviceFromDevNode(struct OMRPortLibrary *portLibrary, const char *path)
 	uint32_t majorNum;
 	uint32_t minorNum;
 
-    if (0 != stat(path, &st) || !S_ISBLK(st.st_mode)) {
-        return NULL;
-    }
+	if (0 != stat(path, &st) || !S_ISBLK(st.st_mode)) {
+		return NULL;
+	}
 
 	rdev = st.st_rdev;
-    majorNum = major(rdev);
-    minorNum = minor(rdev);
+	majorNum = major(rdev);
+	minorNum = minor(rdev);
 
-    return resolveTopBlockDeviceFromMajMin(portLibrary, majorNum, minorNum);
+	return resolveTopBlockDeviceFromMajMin(portLibrary, majorNum, minorNum);
 }
 #endif /* defined(LINUX) && !defined(OMRZTPF) */
 
@@ -8153,60 +8142,60 @@ char*
 omrsysinfo_get_block_device_for_swap(struct OMRPortLibrary *portLibrary)
 {
 #if defined(LINUX) && !defined(OMRZTPF)
-    char *device = NULL;
+	char *device = NULL;
 	BOOLEAN found = FALSE;
-    int32_t highestPriority = INT32_MIN;
-    char highestPriorityType[32];
-    char highestPriorityPath[PATH_MAX];
+	int32_t highestPriority = INT32_MIN;
+	char highestPriorityType[32];
+	char highestPriorityPath[PATH_MAX];
 	char line[1024];
 	FILE *fp = fopen("/proc/swaps", "r");
 
 	if (NULL == fp) {
-        return NULL;
-    }
-
-    /* Skip header */
-    if (NULL == fgets(line, sizeof(line), fp)) {
-        fclose(fp);
-        return NULL;
-    }
-
-    while (NULL != fgets(line, sizeof(line), fp)) {
-        char path[PATH_MAX];
-        char type[32];
-        uint64_t size, used;
-        int32_t priority;
-
-        int32_t fieldsScanned = sscanf(line, "%s %31s %" SCNu64 " %" SCNu64 " %" SCNd32,
-                                       path, type, &size, &used, &priority);
-		/* Skip malformed lines */
-        if (5 != fieldsScanned) {
-            continue;
-        }
-
-        if (priority > highestPriority) {
-			found = TRUE;
-            highestPriority = priority;
-            strncpy(highestPriorityType, type, sizeof(highestPriorityType) - 1);
-            highestPriorityType[sizeof(highestPriorityType) - 1] = '\0';
-            strncpy(highestPriorityPath, path, sizeof(highestPriorityPath) - 1);
-            highestPriorityPath[sizeof(highestPriorityPath) - 1] = '\0';
-        }
-    }
-
-    fclose(fp);
-
-    if (!found) {
-        return NULL;
-    }
-
-    if (0 == strcmp(highestPriorityType, "file")) {
-        device = omrsysinfo_get_block_device_for_path(portLibrary, highestPriorityPath);
-    } else if (0 == strcmp(highestPriorityType, "partition")) {
-        device = getBlockDeviceFromDevNode(portLibrary, highestPriorityPath);
+		return NULL;
 	}
 
-    return device;
+	/* Skip header */
+	if (NULL == fgets(line, sizeof(line), fp)) {
+		fclose(fp);
+		return NULL;
+	}
+
+	while (NULL != fgets(line, sizeof(line), fp)) {
+		char path[PATH_MAX];
+		char type[32];
+		uint64_t size, used;
+		int32_t priority;
+
+		int32_t fieldsScanned = sscanf(line, "%s %31s %" SCNu64 " %" SCNu64 " %" SCNd32,
+									   path, type, &size, &used, &priority);
+		/* Skip malformed lines */
+		if (5 != fieldsScanned) {
+			continue;
+		}
+
+		if (priority > highestPriority) {
+			found = TRUE;
+			highestPriority = priority;
+			strncpy(highestPriorityType, type, sizeof(highestPriorityType) - 1);
+			highestPriorityType[sizeof(highestPriorityType) - 1] = '\0';
+			strncpy(highestPriorityPath, path, sizeof(highestPriorityPath) - 1);
+			highestPriorityPath[sizeof(highestPriorityPath) - 1] = '\0';
+		}
+	}
+
+	fclose(fp);
+
+	if (!found) {
+		return NULL;
+	}
+
+	if (0 == strcmp(highestPriorityType, "file")) {
+		device = omrsysinfo_get_block_device_for_path(portLibrary, highestPriorityPath);
+	} else if (0 == strcmp(highestPriorityType, "partition")) {
+		device = getBlockDeviceFromDevNode(portLibrary, highestPriorityPath);
+	}
+
+	return device;
 #else /* defined(LINUX) && !defined(OMRZTPF) */
 	return NULL;
 #endif /* defined(LINUX) && !defined(OMRZTPF) */

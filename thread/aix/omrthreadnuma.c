@@ -28,7 +28,6 @@
  * Do not enable OMR_PORT_NUMA_SUPPORT until these issues have been resolved
  */
 
-
 /**
  * @file
  * @ingroup Thread
@@ -41,7 +40,6 @@
 #include <sys/rset.h>
 #include <stdio.h> /* for printf debugging */
 #include <dlfcn.h>
-
 
 /* This ifdef is specifically provided to allow compilation on AIX 5.3 of features which we can only use on 6.1 */
 #if !defined(__ENHANCED_AFFINITY)
@@ -86,6 +84,7 @@ extern int ra_attach(rstype_t, rsid_t, rstype_t, rsid_t_MODIFIED, uint_t);
 #else
 extern int ra_attach(rstype_t, rsid_t, rstype_t, rsid_t, uint_t);
 #endif
+
 /* sys/vminfo.h */
 struct vm_srad_meminfo {
 	int vmsrad_in_size;
@@ -110,6 +109,7 @@ static int (*PTR_ra_attach)(rstype_t, rsid_t, rstype_t, rsid_t, uint_t);
 
 static BOOLEAN isNumaAvailable = FALSE;
 
+#if defined(OMR_PORT_NUMA_SUPPORT)
 /**
  * Hides the details of how to assemble the parameters required by ra_attach.
  * @param thread The thread to bind (this thread has started)
@@ -117,10 +117,9 @@ static BOOLEAN isNumaAvailable = FALSE;
  * @return 0 on success or if NUMA is not supported
  */
 static intptr_t bindThreadToNode(omrthread_t thread, uintptr_t nodeNumber);
-
+#endif /* defined(OMR_PORT_NUMA_SUPPORT) */
 
 /**
- *
  * This function must only be called *once*. It is called from omrthread_init().
  */
 void
@@ -252,11 +251,9 @@ omrthread_numa_set_node_affinity(omrthread_t thread, const uintptr_t *numaNodes,
 	intptr_t result = -1;
 
 	if (isNumaAvailable && (NULL != thread)) {
-		if (NULL != thread) {
-			THREAD_LOCK(thread, 0);
-			result = omrthread_numa_set_node_affinity_nolock(thread, numaNodes, nodeCount, 0);
-			THREAD_UNLOCK(thread);
-		}
+		THREAD_LOCK(thread, 0);
+		result = omrthread_numa_set_node_affinity_nolock(thread, numaNodes, nodeCount, 0);
+		THREAD_UNLOCK(thread);
 	} else {
 		result = 0;
 	}
@@ -278,11 +275,11 @@ intptr_t
 omrthread_numa_get_node_affinity(omrthread_t thread, uintptr_t *numaNodes, uintptr_t *nodeCount)
 {
 	intptr_t result = 0;
-	uintptr_t incomingListSize = *nodeCount;
 	uintptr_t nodesSoFar = 0;
 
 #if defined(OMR_PORT_NUMA_SUPPORT)
 	if (isNumaAvailable && (NULL != thread)) {
+		uintptr_t incomingListSize = *nodeCount;
 		uintptr_t node = 0;
 		uintptr_t numaMaxNode = omrthread_numa_get_max_node();
 		THREAD_LOCK(thread, 0);
@@ -307,6 +304,7 @@ omrthread_numa_get_node_affinity(omrthread_t thread, uintptr_t *numaNodes, uintp
 	return result;
 }
 
+#if defined(OMR_PORT_NUMA_SUPPORT)
 static intptr_t
 bindThreadToNode(omrthread_t thread, uintptr_t nodeNumber)
 {
@@ -337,16 +335,18 @@ bindThreadToNode(omrthread_t thread, uintptr_t nodeNumber)
 	}
 	return result;
 }
+#endif /* defined(OMR_PORT_NUMA_SUPPORT) */
 
 uintptr_t
-omrthread_numa_get_current_node(){
+omrthread_numa_get_current_node()
+{
 	sradid_t sradid = SRADID_ANY;
 	if (NULL != PTR_rs_get_homesrad) {
 		sradid = PTR_rs_get_homesrad();
 	}
 
 	/* if we couldn't find the home SRADID return 0, meaning no affinity */
-	if (sradid == SRADID_ANY) {
+	if (SRADID_ANY == sradid) {
 		return 0;
 	} else {
 		return sradid + 1;

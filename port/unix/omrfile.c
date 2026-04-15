@@ -26,7 +26,6 @@
  * @brief file
  */
 
-
 #include <stdlib.h>
 #include <stdio.h>
 #include <unistd.h>
@@ -67,12 +66,7 @@ typedef struct statfs PlatformStatfs;
 typedef struct statvfs PlatformStatfs;
 #endif /* defined(LINUX) || defined(OSX) */
 
-
-static const char *const fileFStatErrorMsgPrefix = "fstat : ";
-static const char *const fileFStatFSErrorMsgPrefix = "fstatfs : ";
-#if defined(AIXPPC) && !defined(J9OS_I5)
-static const char *const fileFStatVFSErrorMsgPrefix = "fstatvfs : ";
-#endif /* defined(AIXPPC) && !defined(J9OS_I5) */
+static const char fileFStatErrorMsgPrefix[] = "fstat : ";
 
 static int32_t EsTranslateOpenFlags(int32_t flags);
 static void setPortableError(OMRPortLibrary *portLibrary, const char *funcName, int32_t portlibErrno, int systemErrno);
@@ -141,7 +135,7 @@ setPortableError(OMRPortLibrary *portLibrary, const char *funcName, int32_t port
 	}
 
 	/*Fill the buffer using str_printf*/
-	portLibrary->str_printf(portLibrary, errmsgbuff, errmsglen, "%s%s", funcName,	strerror(systemErrno));
+	portLibrary->str_printf(portLibrary, errmsgbuff, errmsglen, "%s%s", funcName, strerror(systemErrno));
 
 	/*Set the error message*/
 	portLibrary->error_set_last_error_with_message(portLibrary, portableErrno, errmsgbuff);
@@ -152,14 +146,13 @@ setPortableError(OMRPortLibrary *portLibrary, const char *funcName, int32_t port
 	return;
 }
 
-
 /**
  * @internal
  * Determines the proper portable error code to return given a native error code
  *
  * @param[in] errorCode The error code reported by the OS
  *
- * @return	the (negative) portable error code
+ * @return the (negative) portable error code
  */
 static int32_t
 findError(int32_t errorCode)
@@ -392,7 +385,6 @@ omrfile_unlink(struct OMRPortLibrary *portLibrary, const char *path)
 	return rc;
 }
 
-
 /**
  * Write to a file.
  *
@@ -451,8 +443,6 @@ omrfile_write(struct OMRPortLibrary *portLibrary, intptr_t inFD, const void *buf
 	return rc;
 }
 
-
-
 /**
  * Read bytes from a file descriptor into a user provided buffer.
  *
@@ -479,7 +469,7 @@ omrfile_read(struct OMRPortLibrary *portLibrary, intptr_t inFD, void *buf, intpt
 #ifdef J9ZOS390
 	if (fd == OMRPORT_TTY_IN) {
 		result = fread(buf, sizeof(char), nbytes, stdin);
-	}  else	if (fd < FD_BIAS) {
+	}  else if (fd < FD_BIAS) {
 		/* Cannot read from STDOUT/ERR, and no other FD's should exist <FD_BIAS */
 		Trc_PRT_file_read_Exit(-1);
 		return -1;
@@ -511,8 +501,6 @@ omrfile_read(struct OMRPortLibrary *portLibrary, intptr_t inFD, void *buf, intpt
 	return result;
 
 }
-
-
 
 /**
  * Repositions the offset of the file descriptor to a given offset as per directive whence.
@@ -822,7 +810,6 @@ omrfile_unlinkdir(struct OMRPortLibrary *portLibrary, const char *path)
 #endif
 }
 
-
 /**
  * Synchronize a file's state with the state on disk.
  *
@@ -869,7 +856,7 @@ omrfile_sync(struct OMRPortLibrary *portLibrary, intptr_t inFD)
  *
  * @param[in] portLibrary The port library
  *
- * @return	error message describing the last OS error, may return NULL.
+ * @return error message describing the last OS error, may return NULL.
  *
  * @internal
  * @note  This function gets the last error code from the OS and then returns
@@ -1035,17 +1022,16 @@ omrfile_set_length(struct OMRPortLibrary *portLibrary, intptr_t inFD, int64_t ne
  * This function will acquire a lock of the requested type on the given file, starting at offset bytes
  * from the start of the file and continuing for length bytes
  *
- * @param [in]   portLibrary            The port library
- * @param [in]   fd                              The file descriptor/handle of the file to be locked
- * @param [in]   lockFlags              Flags indicating the type of lock required and whether the call should block
- * @args                                               OMRPORT_FILE_READ_LOCK
- * @args                                               OMRPORT_FILE_WRITE_LOCK
- * @args                                               OMRPORT_FILE_WAIT_FOR_LOCK
- * @args                                               OMRPORT_FILE_NOWAIT_FOR_LOCK
- * @param [in]   offest                       Offset from start of file to start of locked region
- * @param [in]   length                      Number of bytes to be locked
- *
- * @return                                              0 on success, -1 on failure
+ * @param [in]   portLibrary    The port library
+ * @param [in]   fd             The file descriptor/handle of the file to be locked
+ * @param [in]   lockFlags      Flags indicating the type of lock required and whether the call should block
+ * @args                          OMRPORT_FILE_READ_LOCK
+ * @args                          OMRPORT_FILE_WRITE_LOCK
+ * @args                          OMRPORT_FILE_WAIT_FOR_LOCK
+ * @args                          OMRPORT_FILE_NOWAIT_FOR_LOCK
+ * @param [in]   offest         Offset from start of file to start of locked region
+ * @param [in]   length         Number of bytes to be locked
+ * @return 0 on success, -1 on failure
  */
 int32_t
 omrfile_lock_bytes(struct OMRPortLibrary *portLibrary, intptr_t fd, int32_t lockFlags, uint64_t offset, uint64_t length)
@@ -1114,12 +1100,11 @@ omrfile_lock_bytes(struct OMRPortLibrary *portLibrary, intptr_t fd, int32_t lock
  * This function will release the lock on the given file, starting at offset bytes
  * from the start of the file and continuing for length bytes
  *
- * @param [in]   portLibrary            The port library
- * @param [in]   fd                              The file descriptor/handle of the file to be locked
- * @param [in]   offest                       Offset from start of file to start of locked region
- * @param [in]   length                      Number of bytes to be unlocked
- *
- * @return                                              0 on success, -1 on failure
+ * @param [in]   portLibrary    The port library
+ * @param [in]   fd             The file descriptor/handle of the file to be locked
+ * @param [in]   offest         Offset from start of file to start of locked region
+ * @param [in]   length         Number of bytes to be unlocked
+ * @return 0 on success, -1 on failure
  */
 int32_t
 omrfile_unlock_bytes(struct OMRPortLibrary *portLibrary, intptr_t fd, uint64_t offset, uint64_t length)
@@ -1173,6 +1158,7 @@ omrfile_fstat(struct OMRPortLibrary *portLibrary, intptr_t fd, struct J9FileStat
 
 #if (defined(LINUX) && !defined(OMRZTPF)) || defined(OSX)
 	if (0 != fstatfs(localfd - FD_BIAS, &statfsbuf)) {
+		static const char fileFStatFSErrorMsgPrefix[] = "fstatfs : ";
 		intptr_t myerror = errno;
 		Trc_PRT_file_fstat_fstatfsFailed(myerror);
 		setPortableError(portLibrary, fileFStatFSErrorMsgPrefix, OMRPORT_ERROR_FILE_FSTATFS_ERROR, myerror);
@@ -1182,6 +1168,7 @@ omrfile_fstat(struct OMRPortLibrary *portLibrary, intptr_t fd, struct J9FileStat
 	updateJ9FileStat(portLibrary, buf, &statbuf, &statfsbuf);
 #elif defined(AIXPPC) && !defined(J9OS_I5) /* defined(LINUX) || defined(OSX) */
 	if (0 != fstatvfs(localfd - FD_BIAS, &statfsbuf)) {
+		static const char fileFStatVFSErrorMsgPrefix[] = "fstatvfs : ";
 		intptr_t myerror = errno;
 		Trc_PRT_file_fstat_fstatvfsFailed(myerror);
 		setPortableError(portLibrary, fileFStatVFSErrorMsgPrefix, OMRPORT_ERROR_FILE_FSTATVFS_ERROR, myerror);
@@ -1231,7 +1218,6 @@ omrfile_stat(struct OMRPortLibrary *portLibrary, const char *path, uint32_t flag
 	return 0;
 }
 
-
 int32_t
 omrfile_stat_filesystem(struct OMRPortLibrary *portLibrary, const char *path, uint32_t flags, struct J9FileStatFilesystem *buf)
 {
@@ -1253,7 +1239,7 @@ omrfile_stat_filesystem(struct OMRPortLibrary *portLibrary, const char *path, ui
 
 	return 0;
 #else
-    return -4;
+	return -4;
 #endif
 }
 

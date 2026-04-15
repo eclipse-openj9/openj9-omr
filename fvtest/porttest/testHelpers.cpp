@@ -251,7 +251,7 @@ outputErrorMessage(struct OMRPortLibrary *portLibrary, const char *fileName, int
 	}
 	va_end(args);
 
-	portTestEnv->log(LEVEL_ERROR, "%s line %4zi: %s ", fileName, lineNumber, testName);
+	portTestEnv->log(LEVEL_ERROR, "%s line %i: %s ", fileName, lineNumber, testName);
 	portTestEnv->log(LEVEL_ERROR, "%s\n", buf);
 	portTestEnv->log(LEVEL_ERROR, "\t\tLastErrorNumber: %i\n", lastErrorNumber);
 	portTestEnv->log(LEVEL_ERROR, "\t\tLastErrorMessage: %s\n\n", portErrorBuf);

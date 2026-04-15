@@ -26,10 +26,9 @@
  * @brief shared library
  */
 
-
 /*
- *	Standard unix shared libraries
- *	(AIX: 4.2 and higher only)
+ * Standard unix shared libraries
+ * (AIX: 4.2 and higher only)
  */
 #include <stdlib.h>
 #include <string.h>
@@ -47,7 +46,6 @@
 #else
 #include "omriconvhelpers.h"
 #endif
-
 
 #if defined(J9VM_USE_MBTOWC) || defined(J9VM_USE_ICONV)
 #include <nl_types.h>
@@ -71,18 +69,12 @@
 #define PLATFORM_DLL_EXTENSION ".so"
 
 #if (defined(J9VM_USE_MBTOWC)) /* priv. proto (autogen) */
-
 static void convertWithMBTOWC(struct OMRPortLibrary *portLibrary, char *error, char *errBuf, uintptr_t bufLen);
 #endif /* J9VM_USE_MBTOWC (autogen) */
 
-
-
 #if (defined(J9VM_USE_ICONV)) /* priv. proto (autogen) */
-
 static void convertWithIConv(struct OMRPortLibrary *portLibrary, const char *error, char *errBuf, uintptr_t bufLen);
 #endif /* J9VM_USE_ICONV (autogen) */
-
-
 
 static void getDLError(struct OMRPortLibrary *portLibrary, char *errBuf, uintptr_t bufLen);
 static uintptr_t getDirectoryOfLibrary(struct OMRPortLibrary *portLibrary, char *buf, uintptr_t bufLen);
@@ -92,12 +84,11 @@ static uintptr_t getDirectoryOfLibrary(struct OMRPortLibrary *portLibrary, char 
  * This function has the same logic as omrfile_attr(). However, this function does not
  * overwrite the portlib err buffer as omrfile_attr() does.
  *
- * @param[in] portLibrary 	- The port library
- * @param[in] path 			- path to validate
- *
- * @return 	-1 			stat returns error on path
- * 			EsIsDIR 	path is a folder
- * 			EsIsFile	path is a file
+ * @param[in] portLibrary   - The port library
+ * @param[in] path          - path to validate
+ * @return  -1          stat returns error on path
+ *          EsIsDIR     path is a folder
+ *          EsIsFile    path is a file
  */
 static int32_t VMINLINE
 isFile(struct OMRPortLibrary *portLibrary, const char *path)
@@ -436,16 +427,16 @@ exit:
  *
  * argSignature is a C (ie: NUL-terminated) string with the following possible values for each character:
  *
- *		V	- void
- *		Z	- boolean
- *		B	- byte
- *		C	- char (16 bits)
- *		I	- integer (32 bits)
- *		J	- long (64 bits)
- *		F	- float (32 bits)
- *		D	- double (64 bits)
- *		L	- object / pointer (32 or 64, depending on platform)
- *		P	- pointer-width platform data. (in J9 terms an intptr_t)
+ *      V   - void
+ *      Z   - boolean
+ *      B   - byte
+ *      C   - char (16 bits)
+ *      I   - integer (32 bits)
+ *      J   - long (64 bits)
+ *      F   - float (32 bits)
+ *      D   - double (64 bits)
+ *      L   - object / pointer (32 or 64, depending on platform)
+ *      P   - pointer-width platform data. (in J9 terms an intptr_t)
  *
  * Lower case signature characters imply unsigned value.
  * Upper case signature characters imply signed values.
@@ -481,8 +472,7 @@ omrsl_lookup_name(struct OMRPortLibrary *portLibrary, uintptr_t descriptor, char
 static void
 getDLError(struct OMRPortLibrary *portLibrary, char *errBuf, uintptr_t bufLen)
 {
-	const char *error;
-	char charbuf[1024];
+	const char *error = NULL;
 	uintptr_t dlopen_errno = errno;
 
 	if (0 == bufLen) {

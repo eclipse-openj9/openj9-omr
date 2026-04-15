@@ -60,11 +60,6 @@ typedef struct CopyEnvToBufferArgs {
 	uintptr_t numElements;
 } CopyEnvToBufferArgs;
 
-/* Missing from the ALPHA include files */
-#ifndef VER_PLATFORM_WIN32_WINDOWS
-#define VER_PLATFORM_WIN32_WINDOWS 1
-#endif
-
 void
 omrsysinfo_set_number_user_specified_CPUs(struct OMRPortLibrary *portLibrary, uintptr_t number)
 {
@@ -88,13 +83,13 @@ omrsysinfo_get_CPU_architecture(struct OMRPortLibrary *portLibrary)
 {
 #if defined(_PPC_)
 	return OMRPORT_ARCH_PPC;
-#elif defined(_X86_)
+#elif defined(_X86_) /* defined(_PPC_) */
 	return OMRPORT_ARCH_X86;
-#elif defined( _AMD64_)
+#elif defined( _AMD64_) /* defined(_X86_) */
 	return OMRPORT_ARCH_HAMMER;
-#else
+#else /* defined( _AMD64_) */
 	return "unknown";
-#endif
+#endif /* defined(_PPC_) */
 }
 
 intptr_t
@@ -102,12 +97,12 @@ omrsysinfo_get_processor_description(struct OMRPortLibrary *portLibrary, OMRProc
 {
 	intptr_t rc = -1;
 	Trc_PRT_sysinfo_get_processor_description_Entered(desc);
-	
+
 	if (NULL != desc) {
 		memset(desc, 0, sizeof(OMRProcessorDesc));
 		rc = omrsysinfo_get_x86_description(portLibrary, desc);
 	}
-	
+
 	Trc_PRT_sysinfo_get_processor_description_Exit(rc);
 	return rc;
 }
@@ -122,7 +117,7 @@ omrsysinfo_processor_has_feature(struct OMRPortLibrary *portLibrary, OMRProcesso
 		uint32_t featureIndex = feature / 32;
 		uint32_t featureShift = feature % 32;
 
-		rc = OMR_ARE_ALL_BITS_SET(desc->features[featureIndex], 1u << featureShift);
+		rc = OMR_ARE_ANY_BITS_SET(desc->features[featureIndex], 1u << featureShift);
 	}
 
 	Trc_PRT_sysinfo_processor_has_feature_Exit((uintptr_t)rc);
@@ -141,8 +136,7 @@ omrsysinfo_processor_set_feature(struct OMRPortLibrary *portLibrary, OMRProcesso
 
 		if (enable) {
 			desc->features[featureIndex] |= (1u << featureShift);
-		}
-		else {
+		} else {
 			desc->features[featureIndex] &= ~(1u << featureShift);
 		}
 		rc = 0;
@@ -152,10 +146,10 @@ omrsysinfo_processor_set_feature(struct OMRPortLibrary *portLibrary, OMRProcesso
 	return rc;
 }
 
-const char*
+const char *
 omrsysinfo_get_processor_feature_name(struct OMRPortLibrary *portLibrary, uint32_t feature)
 {
-	const char* rc = "null";
+	const char *rc = "null";
 	Trc_PRT_sysinfo_get_processor_feature_name_Entered(feature);
 	rc = omrsysinfo_get_x86_processor_feature_name(feature);
 	Trc_PRT_sysinfo_get_processor_feature_name_Exit(rc);
@@ -163,7 +157,7 @@ omrsysinfo_get_processor_feature_name(struct OMRPortLibrary *portLibrary, uint32
 }
 
 /**
- * Generate the corresponding string literals for the provided OMRProcessorDesc. The buffer will be zero 
+ * Generate the corresponding string literals for the provided OMRProcessorDesc. The buffer will be zero
  * initialized and overwritten with the processor feature output string.
  *
  * @param[in] portLibrary The port library.
@@ -191,9 +185,9 @@ omrsysinfo_get_processor_feature_string(struct OMRPortLibrary *portLibrary, OMRP
 		numberOfBits = CHAR_BIT * sizeof(desc->features[i]);
 		for (j = 0; j < numberOfBits; j++) {
 
-			if (desc->features[i] & (1 << j)) {
-				uint32_t feature = (uint32_t)(i * numberOfBits + j);
-				const char * featureName = omrsysinfo_get_processor_feature_name(portLibrary, feature);
+			if (OMR_ARE_ANY_BITS_SET(desc->features[i], 1u << j)) {
+				uint32_t feature = (uint32_t)((i * numberOfBits) + j);
+				const char *featureName = omrsysinfo_get_processor_feature_name(portLibrary, feature);
 				size_t featureLength = strlen(featureName);
 				if ((4 == featureLength) && (0 == strncmp("null", featureName, 4))) {
 					continue;
@@ -229,7 +223,7 @@ omrsysinfo_get_env(struct OMRPortLibrary *portLibrary, const char *envVar, char 
 	intptr_t result = -1;
 	wchar_t envVarWideCharValueBuffer[ENVVAR_VALUE_BUFFER_LENGTH];
 	wchar_t *envVarWideCharValue = envVarWideCharValueBuffer;
-	wchar_t	*envVarWideCharName = NULL;
+	wchar_t *envVarWideCharName = NULL;
 	wchar_t envVarNameConversionBuffer[ENVVAR_NAME_BUFFER_LENGTH];
 
 	/*
@@ -243,7 +237,7 @@ omrsysinfo_get_env(struct OMRPortLibrary *portLibrary, const char *envVar, char 
 	}
 	rc = GetEnvironmentVariableW(envVarWideCharName, envVarWideCharValue, ENVVAR_VALUE_BUFFER_LENGTH); /* Try with the stack buffer first */
 	if ((ENVVAR_VALUE_BUFFER_LENGTH <= rc) && (0 != rc)) {
-		/* if the value fit, rc, which does not include the null, is at most ENVVAR_VALUE_BUFFER_LENGTH-1. */
+		/* If the value fits, rc, which does not include the null, is at most ENVVAR_VALUE_BUFFER_LENGTH - 1. */
 		DWORD envVarValueLength = rc;
 		envVarWideCharValue = (wchar_t *)portLibrary->mem_allocate_memory(portLibrary, envVarValueLength * sizeof(wchar_t), OMR_GET_CALLSITE(), OMRMEM_CATEGORY_PORT_LIBRARY);
 		if (NULL != envVarWideCharValue) {
@@ -285,8 +279,8 @@ omrsysinfo_get_env(struct OMRPortLibrary *portLibrary, const char *envVar, char 
 		portLibrary->mem_free_memory(portLibrary, envVarWideCharValue);
 	}
 	return result;
-
 }
+
 /**
  * Determine the OS type.
  *
@@ -538,7 +532,8 @@ WIN32_WINNT version constants :
 				DWORD valueSize = 0;
 				/* determine Windows 11 or 10 or server equivalent since they share major and minor version numbers */
 				if ((isServerMajorVersion10 || isClientMajorVersion10)
-					&& (ERROR_SUCCESS == RegQueryValueExA(hKey, CURRENT_BUILD_KEY, NULL, NULL, NULL, &valueSize))) {
+					&& (ERROR_SUCCESS == RegQueryValueExA(hKey, CURRENT_BUILD_KEY, NULL, NULL, NULL, &valueSize))
+				) {
 					char currentbuildBuffer[10]; /* CurrentBuild values have been 5 digits so far, buffer created with extra space */
 					if (sizeof(currentbuildBuffer) >= valueSize) {
 						if (ERROR_SUCCESS == RegQueryValueExA(hKey, CURRENT_BUILD_KEY, NULL, NULL, (LPBYTE)currentbuildBuffer, &valueSize)) {
@@ -550,8 +545,7 @@ WIN32_WINNT version constants :
 								} else {
 									PPG_si_osType = "Windows 10";
 								}
-							}
-							else if (isServerMajorVersion10) {
+							} else if (isServerMajorVersion10) {
 								/* Windows Server 2025 build number cutoff is 26100, Server 2022 build number cutoff is 20348,
 								 * Server 2019 cutoff is 17763 and Server 2016 cutoff is 14393. These versions are currently
 								 * ones with major version 10.
@@ -598,6 +592,7 @@ WIN32_WINNT version constants :
 	}
 	return PPG_si_osType;
 }
+
 /**
  * Determine version information from the operating system.
  *
@@ -612,7 +607,7 @@ omrsysinfo_get_OS_version(struct OMRPortLibrary *portLibrary)
 {
 	/* OS Version format 	: <CurrentVersion> build <CurrentBuildNumber> <CSDVersion>
 	 * Sample				: 6.1 build 7601 Service Pack 1
-	 * */
+	 */
 #if defined(_WIN32_WINNT_WINBLUE) && (_WIN32_WINNT_MAXVER >= _WIN32_WINNT_WINBLUE)
 	if (NULL == PPG_si_osVersion) {
 #if defined(_WIN32_WINNT_WIN10) && (_WIN32_WINNT_MAXVER >= _WIN32_WINNT_WIN10)
@@ -660,8 +655,8 @@ omrsysinfo_get_OS_version(struct OMRPortLibrary *portLibrary)
 	if (NULL == PPG_si_osVersion) {
 		OSVERSIONINFOW versionInfo;
 		int len = sizeof("0123456789.0123456789 build 0123456789 ") + 1;
-		char *buffer;
-		uintptr_t position;
+		char *buffer = NULL;
+		uintptr_t position = 0;
 
 		versionInfo.dwOSVersionInfoSize = sizeof(versionInfo);
 /* GetVersionEx() is deprecated, but still useful to get the Windows 10 build information. Suppress the warning. */
@@ -696,10 +691,8 @@ omrsysinfo_get_OS_version(struct OMRPortLibrary *portLibrary)
 intptr_t
 omrsysinfo_process_exists(struct OMRPortLibrary *portLibrary, uintptr_t pid)
 {
-	HANDLE hProcess;
 	intptr_t rc = 0;
-
-	hProcess = OpenProcess(PROCESS_QUERY_INFORMATION, FALSE, (DWORD)pid);
+	HANDLE hProcess = OpenProcess(PROCESS_QUERY_INFORMATION, FALSE, (DWORD)pid);
 	/* OpenProcess returns NULL if the process does not exist or if the call fails for other reasons */
 
 	if (NULL == hProcess) {
@@ -712,10 +705,8 @@ omrsysinfo_process_exists(struct OMRPortLibrary *portLibrary, uintptr_t pid)
 			rc = 1;
 		}
 	} else {
-		DWORD exitCode;
-		uintptr_t callSucceeded;
-
-		callSucceeded = GetExitCodeProcess(hProcess, (LPDWORD)&exitCode);
+		DWORD exitCode = 0;
+		uintptr_t callSucceeded = GetExitCodeProcess(hProcess, (LPDWORD)&exitCode);
 		if ((0 != callSucceeded) && (STILL_ACTIVE == exitCode)) {
 			rc = 1;
 		}
@@ -768,12 +759,10 @@ omrsysinfo_get_groups(struct OMRPortLibrary *portLibrary, uint32_t **gidList, ui
 static intptr_t
 find_executable_name(struct OMRPortLibrary *portLibrary, char **result)
 {
-	DWORD length;
 	wchar_t unicodeBuffer[UNICODE_BUFFER_SIZE];
-	char *utf8Result;
-
-	length = GetModuleFileNameW(NULL, unicodeBuffer, UNICODE_BUFFER_SIZE);
-	if (!length || (length >= UNICODE_BUFFER_SIZE)) {
+	char *utf8Result = NULL;
+	DWORD length = GetModuleFileNameW(NULL, unicodeBuffer, UNICODE_BUFFER_SIZE);
+	if ((0 == length) || (length >= UNICODE_BUFFER_SIZE)) {
 		return -1;
 	}
 	unicodeBuffer[length] = '\0';
@@ -807,7 +796,7 @@ omrsysinfo_get_executable_name(struct OMRPortLibrary *portLibrary, const char *a
 	/* Clear any pending error conditions. */
 	portLibrary->error_set_last_error(portLibrary, 0, 0);
 
-	if (PPG_si_executableName) {
+	if (NULL != PPG_si_executableName) {
 		*result = PPG_si_executableName;
 		return 0;
 	}
@@ -1018,7 +1007,7 @@ omrsysinfo_get_addressable_physical_memory(struct OMRPortLibrary *portLibrary)
 {
 	uint64_t memoryLimit = 0;
 	uint64_t usableMemory = portLibrary->sysinfo_get_physical_memory(portLibrary);
-	
+
 	if (OMRPORT_LIMIT_LIMITED == portLibrary->sysinfo_get_limit(portLibrary, OMRPORT_RESOURCE_ADDRESS_SPACE, &memoryLimit)) {
 		/* there is a limit on the memory we can use so take the minimum of this usable amount and the physical memory */
 		usableMemory = OMR_MIN(memoryLimit, usableMemory);
@@ -1083,6 +1072,7 @@ omrsysinfo_shutdown(struct OMRPortLibrary *portLibrary)
 		}
 	}
 }
+
 /**
  * PortLibrary startup.
  *
@@ -1112,26 +1102,24 @@ omrsysinfo_startup(struct OMRPortLibrary *portLibrary)
  * Query the operating system for the name of the user associate with the current thread
  *
  * Obtain the value of the name of the user associated with the current thread, and then write it out into the buffer
-* supplied by the user
-*
-* @param[in] portLibrary The port Library
-* @param[out] buffer Buffer for the name of the user
-* @param[in,out] length The length of the buffer
-*
-* @return 0 on success, number of bytes required to hold the
-* information if the output buffer was too small, -1 on failure.
-*
-* @note buffer is undefined on error or when supplied buffer was too small.
-*/
+ * supplied by the user
+ *
+ * @param[in] portLibrary The port Library
+ * @param[out] buffer Buffer for the name of the user
+ * @param[in,out] length The length of the buffer
+ *
+ * @return 0 on success, number of bytes required to hold the
+ * information if the output buffer was too small, -1 on failure.
+ *
+ * @note buffer is undefined on error or when supplied buffer was too small.
+ */
 intptr_t
 omrsysinfo_get_username(struct OMRPortLibrary *portLibrary, char *buffer, uintptr_t length)
 {
-	DWORD rc, nameLength;
-	wchar_t *unicodeBuffer;
-	intptr_t result;
-
-	nameLength = (DWORD)length;
-	unicodeBuffer = portLibrary->mem_allocate_memory(portLibrary, nameLength * 2, OMR_GET_CALLSITE(), OMRMEM_CATEGORY_PORT_LIBRARY);
+	DWORD rc = 0;
+	intptr_t result = 0;
+	DWORD nameLength = (DWORD)length;
+	wchar_t *unicodeBuffer = portLibrary->mem_allocate_memory(portLibrary, nameLength * 2, OMR_GET_CALLSITE(), OMRMEM_CATEGORY_PORT_LIBRARY);
 	if (NULL == unicodeBuffer) {
 		return -1;
 	}
@@ -1167,21 +1155,22 @@ omrsysinfo_get_username(struct OMRPortLibrary *portLibrary, char *buffer, uintpt
 	portLibrary->mem_free_memory(portLibrary, unicodeBuffer);
 	return result;
 }
+
 /**
  * Query the operating system for the name of the group associate with the current thread
  *
  * Obtain the value of the name of the group associated with the current thread, and then write it out into the buffer
-* supplied by the user
-*
-* @param[in] portLibrary The port Library
-* @param[out] buffer Buffer for the name of the group
-* @param[in,out] length The length of the buffer
-*
-* @return 0 on success, number of bytes required to hold the
-* information if the output buffer was too small, -1 on failure.
-*
-* @note buffer is undefined on error or when supplied buffer was too small.
-*/
+ * supplied by the user
+ *
+ * @param[in] portLibrary The port Library
+ * @param[out] buffer Buffer for the name of the group
+ * @param[in,out] length The length of the buffer
+ *
+ * @return 0 on success, number of bytes required to hold the
+ * information if the output buffer was too small, -1 on failure.
+ *
+ * @note buffer is undefined on error or when supplied buffer was too small.
+ */
 intptr_t
 omrsysinfo_get_groupname(struct OMRPortLibrary *portLibrary, char *buffer, uintptr_t length)
 {
@@ -1302,7 +1291,7 @@ omrsysinfo_get_CPU_load(struct OMRPortLibrary *portLibrary, double *cpuLoad)
 	J9SysinfoCPUTime *latestCPUTime = &portLibrary->portGlobals->latestCPUTime;
 
 	intptr_t portLibraryStatus = omrsysinfo_get_CPU_utilization(portLibrary, &currentCPUTime);
-	
+
 	if (portLibraryStatus < 0) {
 		return portLibraryStatus;
 	}
@@ -1325,7 +1314,7 @@ omrsysinfo_get_CPU_load(struct OMRPortLibrary *portLibrary, double *cpuLoad)
 			*latestCPUTime = currentCPUTime;
 		}
 	}
-	
+
 	if (((currentCPUTime.timestamp - oldestCPUTime->timestamp) >= 10000000) && (currentCPUTime.numberOfCpus != 0)) {
 		*cpuLoad = omrsysinfo_calculate_cpu_load(&currentCPUTime, oldestCPUTime);
 		if (*cpuLoad >= 0.0) {
@@ -1363,17 +1352,15 @@ copyEnvToBuffer(struct OMRPortLibrary *portLibrary, void *args)
 	uint8_t *buffer = copyEnvToBufferArgs->buffer;
 	uintptr_t bufferSize = copyEnvToBufferArgs->bufferSizeBytes;
 	BOOLEAN bufferBigEnough = TRUE;
-	BOOLEAN firstEnvVar;
-	int storageRequired;
-	uintptr_t spaceLeft;
-	wchar_t *envVarsPtrW;
-	wchar_t *envVars;
+	BOOLEAN firstEnvVar = FALSE;
+	int storageRequired = 0;
+	uintptr_t spaceLeft = 0;
 	uint8_t *cursor = NULL;
-	int32_t rc;
+	int32_t rc = 0;
 
 	/* grab the environment variables */
-	envVarsPtrW = GetEnvironmentStringsW();
-	envVars = envVarsPtrW;
+	wchar_t *envVarsPtrW = GetEnvironmentStringsW();
+	wchar_t *envVars = envVarsPtrW;
 
 	if (NULL == envVars) {
 		/* failed to get the environment */
@@ -1383,7 +1370,7 @@ copyEnvToBuffer(struct OMRPortLibrary *portLibrary, void *args)
 	/* How much space do we need to store the environment variables? */
 	storageRequired = 0;
 	firstEnvVar = TRUE;
-	while ((0 == envVars[0] && 0 == envVars[1]) == FALSE) {
+	while (FALSE == ((0 == envVars[0]) && (0 == envVars[1]))) {
 		if (firstEnvVar) {
 			firstEnvVar = FALSE;
 		} else {
@@ -1416,8 +1403,8 @@ copyEnvToBuffer(struct OMRPortLibrary *portLibrary, void *args)
 
 	/* copy the environment variables into the user buffer */
 	firstEnvVar = TRUE;
-	while ((0 == envVars[0] && 0 == envVars[1]) == FALSE) {
-		int spaceForThisEntry;
+	while (FALSE == ((0 == envVars[0]) && (0 == envVars[1]))) {
+		int spaceForThisEntry = 0;
 		if (firstEnvVar) {
 			firstEnvVar = FALSE;
 		} else {
@@ -1460,7 +1447,7 @@ copyEnvToBuffer(struct OMRPortLibrary *portLibrary, void *args)
 int32_t
 omrsysinfo_env_iterator_init(struct OMRPortLibrary *portLibrary, J9SysinfoEnvIteratorState *state, void *buffer, uintptr_t bufferSizeBytes)
 {
-	int32_t rc;
+	int32_t rc = 0;
 	CopyEnvToBufferArgs copyEnvToBufferArgs;
 
 	copyEnvToBufferArgs.buffer = buffer;
@@ -1497,7 +1484,7 @@ omrsysinfo_env_iterator_hasNext(struct OMRPortLibrary *portLibrary, J9SysinfoEnv
 		return FALSE;
 	}
 
-	return (*(char *)state->current != '\0');
+	return '\0' != *(char *)state->current;
 }
 
 int32_t
@@ -1544,7 +1531,7 @@ AddCounter(OMRPortLibrary *portLibrary,
 		   const char *cntrName,
 		   PDH_HCOUNTER **cntrPtrRef)
 {
-	register int32_t cpuCntr;
+	register int32_t cpuCntr = 0;
 	PDH_HCOUNTER *cntrPtr = *cntrPtrRef;
 	PDH_STATUS status = ERROR_SUCCESS;
 	TCHAR counterPathBuf[BUFSIZ];
@@ -1708,16 +1695,18 @@ omrsysinfo_get_processor_info(struct OMRPortLibrary *portLibrary, struct J9Proce
 	 */
 	for (cpuCntr = 0; cpuCntr < procInfo->totalProcessorCount + 1; cpuCntr++) {
 		status = PdhGetRawCounterValue(userTimeCounter[cpuCntr], (LPDWORD)NULL, &counterValue);
-		if ((ERROR_SUCCESS == status) &&
-			((PDH_CSTATUS_VALID_DATA == counterValue.CStatus) ||
-			 (PDH_CSTATUS_NEW_DATA == counterValue.CStatus))) {
+		if ((ERROR_SUCCESS == status)
+			&& ((PDH_CSTATUS_VALID_DATA == counterValue.CStatus)
+				|| (PDH_CSTATUS_NEW_DATA == counterValue.CStatus))
+		) {
 			procInfo->procInfoArray[cpuCntr].userTime = counterValue.FirstValue / NS100_TO_USEC;
 		}
 
 		status = PdhGetRawCounterValue(privilegedTimeCounter[cpuCntr], (LPDWORD)NULL, &counterValue);
-		if ((ERROR_SUCCESS == status) &&
-			((PDH_CSTATUS_VALID_DATA == counterValue.CStatus) ||
-			 (PDH_CSTATUS_NEW_DATA == counterValue.CStatus))) {
+		if ((ERROR_SUCCESS == status)
+			&& ((PDH_CSTATUS_VALID_DATA == counterValue.CStatus)
+				|| (PDH_CSTATUS_NEW_DATA == counterValue.CStatus))
+		) {
 			procInfo->procInfoArray[cpuCntr].systemTime = counterValue.FirstValue / NS100_TO_USEC;
 		}
 
@@ -1728,9 +1717,10 @@ omrsysinfo_get_processor_info(struct OMRPortLibrary *portLibrary, struct J9Proce
 				procInfo->procInfoArray[cpuCntr].userTime;
 
 		status = PdhGetRawCounterValue(idleTimeCounter[cpuCntr], (LPDWORD)NULL, &counterValue);
-		if ((ERROR_SUCCESS == status) &&
-			((PDH_CSTATUS_VALID_DATA == counterValue.CStatus) ||
-			 (PDH_CSTATUS_NEW_DATA == counterValue.CStatus))) {
+		if ((ERROR_SUCCESS == status)
+			&& ((PDH_CSTATUS_VALID_DATA == counterValue.CStatus)
+				|| (PDH_CSTATUS_NEW_DATA == counterValue.CStatus))
+		) {
 			procInfo->procInfoArray[cpuCntr].idleTime = counterValue.FirstValue / NS100_TO_USEC;
 
 			/* Get the timestamp here itself. */
@@ -1797,7 +1787,7 @@ omrsysinfo_get_cwd(struct OMRPortLibrary *portLibrary, char *buf, uintptr_t bufL
 	}
 
 	unicodeBufferSizeBytes = (pathLengthInWChars + 1) * sizeof(wchar_t);
-	/*is buflen big enough? */
+	/* Is buflen big enough? */
 	if (bufLen < unicodeBufferSizeBytes) {
 		return unicodeBufferSizeBytes;
 	}
@@ -1878,7 +1868,7 @@ omrsysinfo_get_tmp(struct OMRPortLibrary *portLibrary, char *buf, uintptr_t bufL
 	mutf8Size = portLibrary->str_convert(portLibrary, J9STR_CODE_WIDE, J9STR_CODE_MUTF8, (const char *) unicodeBuffer, (uintptr_t) pathLengthInWChars * sizeof(wchar_t), NULL, 0);
 	if (mutf8Size >= 0) {
 		mutf8Size += 1; /* leave enough space to null-terminate the string */
-		/*is buflen big enough? */
+		/* Is buflen big enough? */
 		if (bufLen < (uintptr_t)mutf8Size) {
 			portLibrary->mem_free_memory(portLibrary, unicodeBuffer);
 			return (intptr_t)mutf8Size;
@@ -2020,7 +2010,7 @@ omrsysinfo_cgroup_subsystem_iterator_metricKey(struct OMRPortLibrary *portLibrar
 int32_t
 omrsysinfo_cgroup_subsystem_iterator_next(struct OMRPortLibrary *portLibrary, struct OMRCgroupMetricIteratorState *state, struct OMRCgroupMetricElement *metricElement)
 {
-	return OMRPORT_ERROR_SYSINFO_CGROUP_UNSUPPORTED_PLATFORM;	
+	return OMRPORT_ERROR_SYSINFO_CGROUP_UNSUPPORTED_PLATFORM;
 }
 
 void
@@ -2178,13 +2168,13 @@ omrsysinfo_get_block_device_stats(struct OMRPortLibrary *portLibrary, const char
 	return OMRPORT_ERROR_NOT_SUPPORTED_ON_THIS_PLATFORM;
 }
 
-char*
+char *
 omrsysinfo_get_block_device_for_path(struct OMRPortLibrary *portLibrary, const char *path)
 {
 	return NULL;
 }
 
-char*
+char *
 omrsysinfo_get_block_device_for_swap(struct OMRPortLibrary *portLibrary)
 {
 	return NULL;

@@ -2647,7 +2647,7 @@ omrthread_resume(omrthread_t thread)
 intptr_t
 omrthread_set_name(omrthread_t thread, const char *name)
 {
-	omrthread_t self;
+	omrthread_t self = NULL;
 
 	ASSERT(thread);
 
@@ -2656,7 +2656,10 @@ omrthread_set_name(omrthread_t thread, const char *name)
 	}
 
 	self = MACRO_SELF();
-	ASSERT(self);
+	/* Help compilers see that self is used, in case ASSERT() doesn't use its argument. */
+	if (NULL == self) {
+		ASSERT(self);
+	}
 	Trc_THR_ThreadSetName(thread, name);
 	return THREAD_SET_NAME(self->handle, thread->handle, name);
 }

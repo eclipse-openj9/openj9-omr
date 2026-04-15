@@ -219,10 +219,13 @@ static void setPortableError(OMRPortLibrary *portLibrary, const char *funcName, 
 static intptr_t readFully(struct OMRPortLibrary *portLibrary, intptr_t file, char **data, uintptr_t *size);
 #endif /* defined(J9ZOS390) || defined(LINUX) */
 
-#if (defined(LINUXPPC) || defined(AIXPPC))
+#if defined(LINUXPPC)
 static OMRProcessorArchitecture omrsysinfo_map_ppc_processor(const char *processorName);
-const char* omrsysinfo_get_ppc_processor_feature_name(uint32_t feature);
-#endif /* (defined(LINUXPPC) || defined(AIXPPC)) */
+#endif /* defined(LINUXPPC) */
+
+#if defined(AIXPPC) || defined(LINUXPPC)
+const char *omrsysinfo_get_ppc_processor_feature_name(uint32_t feature);
+#endif /* defined(AIXPPC) || defined(LINUXPPC) */
 
 #if defined(AIXPPC) || defined(S390) || defined(J9ZOS390) || (defined(AARCH64) && defined(OSX))
 static void omrsysinfo_set_feature(OMRProcessorDesc *desc, uint32_t feature);

@@ -1073,6 +1073,18 @@ static uint32_t getVRbit(uint32_t enc) { return (enc >> 26) & 1; /* bit 26 */ }
 
 static uint32_t getLoadStoreSize(uint32_t enc) { return (enc >> 30); /* bits 30-31 */ }
 
+static TR_RegisterSizes getRegisterSizeFromFType(uint32_t ftype)
+{
+    switch (ftype) {
+        case 0:
+            return TR_FloatReg;
+        case 1:
+            return TR_DoubleReg;
+        default:
+            return TR_VectorReg128;
+    }
+}
+
 const char *TR_Debug::getOpCodeName(TR::InstOpCode *opCode) { return opCodeToNameMap[opCode->getMnemonic()]; }
 
 void TR_Debug::printMemoryReferenceComment(OMR::Logger *log, TR::MemoryReference *mr)
@@ -1581,23 +1593,9 @@ void TR_Debug::print(OMR::Logger *log, TR::ARM64Trg1Src1Instruction *instr)
             regSize2 = TR_DoubleReg;
         } else if (op >= TR::InstOpCode::fcvtzs_stow && op <= TR::InstOpCode::fcvtzs_dtox) {
             regSize1 = (sf == 1) ? TR_DoubleWordReg : TR_WordReg;
-            switch (ftype) {
-                case 0:
-                    regSize2 = TR_FloatReg;
-                    break;
-                case 1:
-                    regSize2 = TR_DoubleReg;
-                    break;
-            }
+            regSize2 = getRegisterSizeFromFType(ftype);
         } else if (op >= TR::InstOpCode::scvtf_wtos && op <= TR::InstOpCode::scvtf_xtod) {
-            switch (ftype) {
-                case 0:
-                    regSize1 = TR_FloatReg;
-                    break;
-                case 1:
-                    regSize1 = TR_DoubleReg;
-                    break;
-            }
+            regSize1 = getRegisterSizeFromFType(ftype);
             regSize2 = (sf == 1) ? TR_DoubleWordReg : TR_WordReg;
         }
 
@@ -1610,17 +1608,7 @@ void TR_Debug::print(OMR::Logger *log, TR::ARM64Trg1Src1Instruction *instr)
             uint32_t sf = getSFbit(enc);
             regSize = (sf == 1) ? TR_DoubleWordReg : TR_WordReg;
         } else {
-            switch (getFType(enc)) {
-                case 0:
-                    regSize = TR_FloatReg;
-                    break;
-                case 1:
-                    regSize = TR_DoubleReg;
-                    break;
-                default:
-                    regSize = TR_VectorReg128;
-                    break;
-            }
+            regSize = getRegisterSizeFromFType(getFType(enc));
         }
 
         print(log, instr->getTargetRegister(), regSize);
@@ -2103,17 +2091,7 @@ void TR_Debug::print(OMR::Logger *log, TR::ARM64Trg1Src2Instruction *instr)
         uint32_t sf = getSFbit(enc);
         regSize = (sf == 1) ? TR_DoubleWordReg : TR_WordReg;
     } else {
-        switch (getFType(enc)) {
-            case 0:
-                regSize = TR_FloatReg;
-                break;
-            case 1:
-                regSize = TR_DoubleReg;
-                break;
-            default:
-                regSize = TR_VectorReg128;
-                break;
-        }
+        regSize = getRegisterSizeFromFType(getFType(enc));
     }
     log->printf("%s \t", getOpCodeName(&instr->getOpCode()));
     print(log, instr->getTargetRegister(), regSize);
@@ -2325,11 +2303,11 @@ void TR_Debug::print(OMR::Logger *log, TR::ARM64Trg1Src2IndexedElementInstructio
     printPrefix(log, instr);
     log->printf("%s \t", getOpCodeName(&instr->getOpCode()));
 
-    print(log, instr->getTargetRegister(), TR_WordReg);
+    print(log, instr->getTargetRegister(), TR_VectorReg128);
     log->prints(", ");
-    print(log, instr->getSource1Register(), TR_WordReg);
+    print(log, instr->getSource1Register(), TR_VectorReg128);
     log->prints(", ");
-    print(log, instr->getSource2Register(), TR_WordReg);
+    print(log, instr->getSource2Register(), TR_VectorReg128);
 
     log->printf(".[%d]", instr->getIndex());
     log->flush();
@@ -2366,17 +2344,7 @@ void TR_Debug::print(OMR::Logger *log, TR::ARM64Trg1Src3Instruction *instr)
         uint32_t sf = getSFbit(enc);
         regSize = (sf == 1) ? TR_DoubleWordReg : TR_WordReg;
     } else {
-        switch (getFType(enc)) {
-            case 0:
-                regSize = TR_FloatReg;
-                break;
-            case 1:
-                regSize = TR_DoubleReg;
-                break;
-            default:
-                regSize = TR_VectorReg128;
-                break;
-        }
+        regSize = getRegisterSizeFromFType(getFType(enc));
     }
     log->printf("%s \t", getOpCodeName(&instr->getOpCode()));
     print(log, instr->getTargetRegister(), regSize);
@@ -2625,7 +2593,12 @@ void TR_Debug::print(OMR::Logger *log, TR::ARM64Src1Instruction *instr)
 {
     printPrefix(log, instr);
     log->printf("%s \t", getOpCodeName(&instr->getOpCode()));
-    print(log, instr->getSource1Register(), TR_WordReg);
+
+    TR::InstOpCode::Mnemonic op = instr->getOpCodeValue();
+    uint32_t enc = TR::InstOpCode::getOpCodeBinaryEncoding(op);
+    TR_RegisterSizes regSize = getRegisterSizeFromFType(getFType(enc));
+
+    print(log, instr->getSource1Register(), regSize);
     log->flush();
 }
 
@@ -2633,9 +2606,14 @@ void TR_Debug::print(OMR::Logger *log, TR::ARM64Src2Instruction *instr)
 {
     printPrefix(log, instr);
     log->printf("%s \t", getOpCodeName(&instr->getOpCode()));
-    print(log, instr->getSource1Register(), TR_WordReg);
+
+    TR::InstOpCode::Mnemonic op = instr->getOpCodeValue();
+    uint32_t enc = TR::InstOpCode::getOpCodeBinaryEncoding(op);
+    TR_RegisterSizes regSize = getRegisterSizeFromFType(getFType(enc));
+
+    print(log, instr->getSource1Register(), regSize);
     log->prints(", ");
-    print(log, instr->getSource2Register(), TR_WordReg);
+    print(log, instr->getSource2Register(), regSize);
 
     log->flush();
 }

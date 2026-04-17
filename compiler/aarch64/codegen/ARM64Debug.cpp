@@ -2099,8 +2099,8 @@ void TR_Debug::print(OMR::Logger *log, TR::ARM64Trg1Src2Instruction *instr)
     TR::InstOpCode::Mnemonic op = instr->getOpCodeValue();
     uint32_t enc = TR::InstOpCode::getOpCodeBinaryEncoding(op);
     TR_RegisterSizes regSize = TR_UnknownSizeReg;
+    uint32_t sf = getSFbit(enc);
     if (useGPR(enc)) {
-        uint32_t sf = getSFbit(enc);
         regSize = (sf == 1) ? TR_DoubleWordReg : TR_WordReg;
     } else {
         switch (getFType(enc)) {
@@ -2115,12 +2115,40 @@ void TR_Debug::print(OMR::Logger *log, TR::ARM64Trg1Src2Instruction *instr)
                 break;
         }
     }
-    log->printf("%s \t", getOpCodeName(&instr->getOpCode()));
-    print(log, instr->getTargetRegister(), regSize);
-    log->prints(", ");
-    print(log, instr->getSource1Register(), regSize);
-    log->prints(", ");
-    print(log, instr->getSource2Register(), regSize);
+
+    bool done = false;
+    if (op == TR::InstOpCode::orrx || op == TR::InstOpCode::orrw) {
+        TR::Register *r = instr->getSource1Register();
+        if (r && r->getRealRegister() && toRealRegister(r)->getRegisterNumber() == TR::RealRegister::xzr) {
+            // mov alias
+            done = true;
+            char suffix = (sf == 1) ? 'x' : 'w';
+            log->printf("mov%c \t", suffix);
+            print(log, instr->getTargetRegister(), regSize);
+            log->prints(", ");
+            print(log, instr->getSource2Register(), regSize);
+        }
+    } else if (op == TR::InstOpCode::subsx || op == TR::InstOpCode::subsw) {
+        TR::Register *r = instr->getTargetRegister();
+        if (r && r->getRealRegister() && toRealRegister(r)->getRegisterNumber() == TR::RealRegister::xzr) {
+            // cmp alias
+            done = true;
+            char suffix = (sf == 1) ? 'x' : 'w';
+            log->printf("cmp%c \t", suffix);
+            print(log, instr->getSource1Register(), regSize);
+            log->prints(", ");
+            print(log, instr->getSource2Register(), regSize);
+        }
+    }
+
+    if (!done) {
+        log->printf("%s \t", getOpCodeName(&instr->getOpCode()));
+        print(log, instr->getTargetRegister(), regSize);
+        log->prints(", ");
+        print(log, instr->getSource1Register(), regSize);
+        log->prints(", ");
+        print(log, instr->getSource2Register(), regSize);
+    }
 
     if (instr->getDependencyConditions())
         print(log, instr->getDependencyConditions());

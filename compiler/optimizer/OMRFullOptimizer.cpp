@@ -76,7 +76,6 @@
 #include "optimizer/DeadStoreElimination.hpp"
 #include "optimizer/DeadTreesElimination.hpp"
 #include "optimizer/CatchBlockRemover.hpp"
-#include "optimizer/CFGSimplifier.hpp"
 #include "optimizer/CompactLocals.hpp"
 #include "optimizer/ConstRefPrivatization.hpp"
 #include "optimizer/CopyPropagation.hpp"
@@ -105,12 +104,10 @@
 #include "optimizer/RegDepCopyRemoval.hpp"
 #include "optimizer/SinkStores.hpp"
 #include "optimizer/PartialRedundancy.hpp"
-#include "optimizer/OSRDefAnalysis.hpp"
 #include "optimizer/StripMiner.hpp"
 #include "optimizer/FieldPrivatizer.hpp"
 #include "optimizer/ReorderIndexExpr.hpp"
 #include "optimizer/GlobalRegisterAllocator.hpp"
-#include "optimizer/RecognizedCallTransformer.hpp"
 #include "optimizer/SwitchAnalyzer.hpp"
 #include "env/RegionProfiler.hpp"
 
@@ -487,30 +484,6 @@ static const OptimizationStrategy idiomRecognitionOpts[] = {
     { OMR::endGroup }
 };
 
-// **************************************************************************
-//
-// Strategy that is run for each non-peeking IlGeneration - this allows early
-// optimizations to be run even before the IL is available to Inliner
-//
-// **************************************************************************
-static const OptimizationStrategy fullIlgenStrategyOpts[] = {
-#ifdef J9_PROJECT_SPECIFIC
-    { OMR::osrLiveRangeAnalysis, OMR::IfOSR },
-    { OMR::osrDefAnalysis, OMR::IfInvoluntaryOSR },
-    { OMR::methodHandleTransformer },
-    { OMR::varHandleTransformer, OMR::MustBeDone },
-    { OMR::handleRecompilationOps, OMR::MustBeDone },
-    { OMR::unsafeFastPath },
-    { OMR::recognizedCallTransformer },
-    { OMR::coldBlockMarker },
-    { OMR::CFGSimplification },
-    { OMR::allocationSinking, OMR::IfNews },
-    { OMR::invariantArgumentPreexistence,
-                              OMR::IfNotClassLoadPhaseAndNotProfiling }, // Should not run if a recompilation is possible
-#endif
-    { OMR::endOpts },
-};
-
 // **********************************************************
 //
 // OMR Strategies
@@ -612,26 +585,8 @@ void OMR::FullOptimizer::enableAllLocalOpts()
 OMR::FullOptimizer::FullOptimizer(TR::Compilation *comp, TR::ResolvedMethodSymbol *methodSymbol, bool isIlGen)
     : TR::SmallOptimizer(comp, methodSymbol, isIlGen)
 {
-#ifdef J9_PROJECT_SPECIFIC
-    // these opts are needed for the fullIlGenStrategyOpts for J9
-    _opts[OMR::osrLiveRangeAnalysis] = new (comp->allocator())
-        TR::OptimizationManager(self(), TR_OSRLiveRangeAnalysis::create, OMR::osrLiveRangeAnalysis);
-    _opts[OMR::osrDefAnalysis]
-        = new (comp->allocator()) TR::OptimizationManager(self(), TR_OSRDefAnalysis::create, OMR::osrDefAnalysis);
-    _opts[OMR::recognizedCallTransformer] = new (comp->allocator())
-        TR::OptimizationManager(self(), TR::RecognizedCallTransformer::create, OMR::recognizedCallTransformer);
-    _opts[OMR::coldBlockMarker]
-        = new (comp->allocator()) TR::OptimizationManager(self(), TR_ColdBlockMarker::create, OMR::coldBlockMarker);
-    _opts[OMR::CFGSimplification]
-        = new (comp->allocator()) TR::OptimizationManager(self(), TR::CFGSimplifier::create, OMR::CFGSimplification);
-    _opts[OMR::invariantArgumentPreexistence] = new (comp->allocator())
-        TR::OptimizationManager(self(), TR_InvariantArgumentPreexistence::create, OMR::invariantArgumentPreexistence);
-#endif
-
     if (isIlGen) {
-        // override whatever strategy SmallOptimizer tries to use
-        setStrategy(fullIlgenStrategyOpts);
-
+        // no difference in ilgen strategy for FullOptimizer
         return; // no need to initialize anything else
     }
 

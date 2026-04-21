@@ -71,8 +71,7 @@ static uintptr_t getDataSegmentPageSize(struct OMRPortLibrary *portLibrary);
 #if !defined(__ENHANCED_AFFINITY)
 #include <sys/systemcfg.h>
 #define __ENHANCED_AFFINITY_MASK    0x1000
-#define __ENHANCED_AFFINITY() \
-           (_system_configuration.kernel & __ENHANCED_AFFINITY_MASK)
+#define __ENHANCED_AFFINITY()       (_system_configuration.kernel & __ENHANCED_AFFINITY_MASK)
 
 /* sys/processor.h */
 typedef short  sradid_t;
@@ -238,7 +237,7 @@ omrvmem_commit_memory(struct OMRPortLibrary *portLibrary, void *address, uintptr
 	Trc_PRT_vmem_omrvmem_commit_memory_Exit(ptr);
 	return ptr;
 
-	/*	return memset(address, 0, byteAmount); */
+	/* return memset(address, 0, byteAmount); */
 	/*
 	 * CMVC 70354 change
 	 * DANGER: memory is already zeroed when it gets faulted in so no memset is required.
@@ -424,10 +423,10 @@ omrvmem_reserve_memory_ex(struct OMRPortLibrary *portLibrary, struct J9PortVmemI
 
 		/* If we were not called with the default page size, we must ensure that we were called with one of our understood sizes.
 		 * AIX offers a total of 4 page sizes:
-		 * 	4 kB (default)
-		 *	64 kB (5.3E or later on POWER5+)
-		 *	16 MB (legacy large page)
-		 *	16 GB (very large page in 5.3E or later on POWER5+)
+		 *  4 kB (default)
+		 *  64 kB (5.3E or later on POWER5+)
+		 *  16 MB (legacy large page)
+		 *  16 GB (very large page in 5.3E or later on POWER5+)
 		 */
 		/* make sure that this is valid page size for this configuration
 		 * check that PREFERRED_DEFAULT_PAGE_SIZE is in list as well - it will be used if original requested allocation is not succeed
@@ -639,23 +638,27 @@ reserveLargePages(struct OMRPortLibrary *portLibrary, struct J9PortVmemIdentifie
 /**
  * Detects the page size of the memory pointed to by memoryPointer
  * and records it in the identifier.
- * @return 	TRUE upon success, FALSE if an error occurs or if the detected
- * 			page size is different from the requested page size and
- * 			OMRPORT_VMEM_STRICT_PAGE_SIZE is set
+ * @return TRUE upon success, FALSE if an error occurs or if the detected
+ *         page size is different from the requested page size and
+ *          OMRPORT_VMEM_STRICT_PAGE_SIZE is set
  */
 static BOOLEAN
 detectAndRecordPageSize(struct OMRPortLibrary *portLibrary, struct J9PortVmemIdentifier *identifier, key_t addressKey, void *memoryPointer, OMRMemCategory *category, uintptr_t pageSize, uintptr_t byteAmount, uintptr_t vmemOptions, uintptr_t mode)
 {
 	struct vm_page_info page_info;
 	int vmgetinfoResult;
+#if defined(OMRVMEM_DEBUG)
 	BOOLEAN vmgetinfoFailedFirstTime = FALSE;
+#endif /* defined(OMRVMEM_DEBUG) */
 #if !(defined(J9OS_I5) && defined(J9OS_I5_V5R4))
 	/* Ensure we got back the correct page size if OMRPORT_VMEM_STRICT_PAGE_SIZE is set */
 	page_info.addr = (uint64_t) memoryPointer;
 	vmgetinfoResult = vmgetinfo(&page_info, VM_PAGE_INFO, sizeof(struct vm_page_info));
 
 	if (0 != vmgetinfoResult) {
+#if defined(OMRVMEM_DEBUG)
 		vmgetinfoFailedFirstTime = TRUE;
+#endif /* defined(OMRVMEM_DEBUG) */
 		page_info.addr = ((uint64_t) memoryPointer) + byteAmount - 1;
 		/* TODO: Find out why original author of code thought that vmgetinfo
 		 * may sometimes fail
@@ -678,7 +681,7 @@ detectAndRecordPageSize(struct OMRPortLibrary *portLibrary, struct J9PortVmemIde
 		} else {
 			portLibrary->tty_printf(portLibrary, "Warning: not enough large pages to satisfy entire allocation\n");
 		}
-#endif
+#endif /* defined(OMRVMEM_DEBUG) */
 
 		if (0 != (OMRPORT_VMEM_STRICT_PAGE_SIZE & vmemOptions)) {
 			return FALSE;
@@ -1037,10 +1040,10 @@ _end:
  * http://publib.boulder.ibm.com/infocenter/systems/index.jsp?topic=/com.ibm.aix.genprogc/doc/genprogc/understanding_mem_mapping.htm
  *
  * @param[in] alignment The required alignment of the address to return (always a multiple of the page size being used)
- * @param[in] currentAddress	The last address at which we attempted to allocate memory
- * @param[in] direction	The direction to follow when scanning through the address range
- * 						1 = bottom-up
- * 						-1 = top-down
+ * @param[in] currentAddress The last address at which we attempted to allocate memory
+ * @param[in] direction The direction to follow when scanning through the address range
+ *                      1 = bottom-up
+ *                      -1 = top-down
  */
 static void *
 getNextPossibleAddress(uintptr_t alignment, void *currentAddress, intptr_t direction)
@@ -1100,7 +1103,6 @@ getNextPossibleAddress(uintptr_t alignment, void *currentAddress, intptr_t direc
 			}
 		}
 	}
-
 
 	if (currentAddress != NULL) {
 		currentAddress = (void *)((uintptr_t)currentAddress & ~(alignment - 1)); /* align */
@@ -1235,12 +1237,11 @@ getMemoryInRangeForDefaultPages(struct OMRPortLibrary *portLibrary, struct J9Por
 	 * See CMVC 178946 for more detail regarding this limitation
 	 *
 	 * Also note, do not use shmem for OMRPORT_VMEM_MEMORY_MODE_EXECUTE memory (JIT codecache) as it causes the following problems:
-	 * 		- 2MB of codeCache will waste a segment of 256MB virtual memory
-	 * 		- Upon JIT start, there are 4 such codecaches created spanning more than 1GB of virtual space.
-	 * 			- Calls from one codeCache to another will need trampolines to jump more than 32MB of distance
-	 * 		- puts pressure on hardware facility of virtual memory translations,
-	 * 			- i.e. SLB(segment lookaside buffer), TLB(table lookaside buffer), and ERAT(effective address to real address table). In particular, each 256MB requires an SLB entry.
-	 *
+	 *   - 2MB of codeCache will waste a segment of 256MB virtual memory
+	 *   - Upon JIT start, there are 4 such codecaches created spanning more than 1GB of virtual space.
+	 *       - Calls from one codeCache to another will need trampolines to jump more than 32MB of distance
+	 *   - puts pressure on hardware facility of virtual memory translations,
+	 *       - i.e. SLB(segment lookaside buffer), TLB(table lookaside buffer), and ERAT(effective address to real address table). In particular, each 256MB requires an SLB entry.
 	 */
 	if (__ENHANCED_AFFINITY() && (OMR_ARE_NO_BITS_SET(mode, OMRPORT_VMEM_MEMORY_MODE_EXECUTE | OMRPORT_VMEM_NO_AFFINITY))) {
 		/* If we have __ENHANCED_AFFINITY() and we're not looking for executable memory */
@@ -1356,7 +1357,6 @@ allocateMemoryForLargePages(struct OMRPortLibrary *portLibrary, struct J9PortVme
 	return ptr;
 }
 
-
 /**
  * Ensures that the requested address and (address + byteAmount) fall
  * within the reserved identifier->address and (identifier->address + identifier->size)
@@ -1436,16 +1436,16 @@ omrvmem_numa_get_node_details(struct OMRPortLibrary *portLibrary, J9MemoryNodeDe
 	 *
 	 * See CMVC 178983 for more detail regarding this limitation.
 	 */
-	sradid_t (*PTR_rs_get_homesrad)(void);
-	int (*PTR_rs_info)(void *out, int command, long arg1, long arg2);
 
-	PTR_rs_get_homesrad = (sradid_t (*)(void))dlsym(RTLD_DEFAULT, "rs_get_homesrad");
-	PTR_rs_info = (int (*)(void *out, int command, long arg1, long arg2))dlsym(RTLD_DEFAULT, "rs_info");
+	sradid_t (*PTR_rs_get_homesrad)(void)
+			= (sradid_t (*)(void))dlsym(RTLD_DEFAULT, "rs_get_homesrad");
+	int (*PTR_rs_info)(void *out, int command, long arg1, long arg2)
+			= (int (*)(void *out, int command, long arg1, long arg2))dlsym(RTLD_DEFAULT, "rs_info");
 	if ((0 != __ENHANCED_AFFINITY()) && (NULL != PTR_rs_get_homesrad) && (NULL != PTR_rs_info)) {
-		sradid_t sid = PTR_rs_get_homesrad();
-		rsethandle_t rs_all =  rs_alloc(RS_ALL);
-		int srad_sdl =  rs_getinfo(NULL, R_SRADSDL, 0);
-		int num_srads =  rs_numrads(rs_all, srad_sdl, 0);
+		PTR_rs_get_homesrad();
+		rsethandle_t rs_all = rs_alloc(RS_ALL);
+		int srad_sdl = rs_getinfo(NULL, R_SRADSDL, 0);
+		int num_srads = rs_numrads(rs_all, srad_sdl, 0);
 		int sradid = 0;
 		uintptr_t nextNodeIndex = 0;
 

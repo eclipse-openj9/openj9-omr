@@ -81,7 +81,8 @@ call_omrthread_init(void)
 
 #if defined(LINUX) || !defined(J9_PRIORITY_MAP) || defined(J9OS_I5) || defined(OSX)
 	if (initialize_priority_map()) {
-		goto thread_init_error;
+		lib->initStatus = -1;
+		return;
 	}
 #endif /* defined(LINUX) || !defined(J9_PRIORITY_MAP) || defined(J9OS_I5) || defined(OSX) */
 
@@ -98,10 +99,6 @@ call_omrthread_init(void)
 #endif
 
 	omrthread_init(lib);
-	return;
-
-thread_init_error:
-	lib->initStatus = -1;
 }
 
 intptr_t
@@ -226,7 +223,6 @@ sem_post_zos(j9sem_t s)
 	return 0;
 }
 
-
 intptr_t
 sem_getvalue_zos(j9sem_t s)
 {
@@ -251,7 +247,6 @@ sem_trywait_zos(j9sem_t s)
 
 	return rval;
 }
-
 
 #endif
 
@@ -291,7 +286,7 @@ initCondAttr(void)
 }
 #endif /* J9THREAD_USE_MONOTONIC_COND_CLOCK */
 
-#if  defined(OMRZTPF)
+#if defined(OMRZTPF)
 /**
  * process scoped settings for the z/TPF operating system.
  *
@@ -299,15 +294,15 @@ initCondAttr(void)
 void
 ztpf_init_proc()
 {
-        /*
-         * Disable heap check mode for the jvm process. See tpf rtc 15110.
-         */
-        tpf_eheap_heapcheck(TPF_EHEAP_HEAPCHECK_DISABLE);
-        /*
-         *  Set ECB attributes, ensure that these attributes are set in child ECBs too.
-         */
-        tpf_easetc(TPF_EASETC_SWITCHABLE, TPF_EASETC_SET_ON+TPF_EASETC_INHERIT_YES);
-        tpf_easetc(TPF_EASETC_NOSTACKVAL, TPF_EASETC_SET_ON+TPF_EASETC_INHERIT_YES);
+	/*
+	 * Disable heap check mode for the jvm process. See tpf rtc 15110.
+	 */
+	tpf_eheap_heapcheck(TPF_EHEAP_HEAPCHECK_DISABLE);
+	/*
+	 * Set ECB attributes, ensure that these attributes are set in child ECBs too.
+	 */
+	tpf_easetc(TPF_EASETC_SWITCHABLE, TPF_EASETC_SET_ON+TPF_EASETC_INHERIT_YES);
+	tpf_easetc(TPF_EASETC_NOSTACKVAL, TPF_EASETC_SET_ON+TPF_EASETC_INHERIT_YES);
 }
 #endif /* defined(OMRZTPF) */
 

@@ -26,7 +26,6 @@
  * @brief Stack backtracing support
  */
 
-
 #include <string.h>
 #include <sys/ldr.h>
 
@@ -34,7 +33,6 @@
 #include "omrportpriv.h"
 #include "omrintrospect.h"
 #include "omrsignal_context.h"
-
 
 char *
 tbtable_name(struct tbtable *table, short *length)
@@ -82,30 +80,27 @@ tbtable_symbol_start(struct tbtable *table)
 	return (void *)((char *)table - table->tb_ext.tb_offset);
 }
 
-
 /* This function constructs a backtrace from a CPU context. Generally there are only one or two
  * values in the context that are actually used to construct the stack but these vary by platform
  * so aren't detailed here. If no heap is specified then this function will use malloc to allocate
  * the memory necessary for the stack frame structures which must be freed by the caller.
  *
  * @param portLbirary a pointer to an initialized port library
- * @param threadInfo the thread structure we want  to attach the backtrace to. Must not be NULL.
+ * @param threadInfo the thread structure we want to attach the backtrace to. Must not be NULL.
  * @param heap a heap from which to allocate any necessary memory. If NULL malloc is used instead.
  * @param signalInfo a platform signal context. If not null the context held in threadInfo is replaced
- *  	  with the signal context before the backtrace is generated.
- *
+ *        with the signal context before the backtrace is generated.
  * @return the number of frames in the backtrace.
  */
 uintptr_t
 omrintrospect_backtrace_thread_raw(struct OMRPortLibrary *portLibrary, J9PlatformThread *threadInfo, J9Heap *heap, void *signalInfo)
 {
 	uintptr_t num_entries = 0;
-	void *r1;
-	AIXStackFrame *frame;
-	J9PlatformStackFrame **nextFrame;
+	AIXStackFrame *frame = NULL;
+	J9PlatformStackFrame **nextFrame = NULL;
 	OMRUnixSignalInfo *sigInfo = (OMRUnixSignalInfo *)signalInfo;
 	const char *regName = "";
-	void **faultingAddress = 0;
+	void **faultingAddress = NULL;
 
 	if (threadInfo == NULL || (threadInfo->context == NULL && sigInfo == NULL)) {
 		return 0;
@@ -159,7 +154,7 @@ omrintrospect_backtrace_thread_raw(struct OMRPortLibrary *portLibrary, J9Platfor
 
 /* This function takes a thread structure already populated with a backtrace by omrintrospect_backtrace_thread
  * and looks up the symbols for the frames. The format of the string generated is:
- * 		symbol_name (statement_id instruction_pointer [module+offset])
+ *     symbol_name (statement_id instruction_pointer [module+offset])
  * If it isn't possible to determine any of the items in the string then they are omitted. If no heap is specified
  * then this function will use malloc to allocate the memory necessary for the symbols which must be freed by the caller.
  *
@@ -167,18 +162,18 @@ omrintrospect_backtrace_thread_raw(struct OMRPortLibrary *portLibrary, J9Platfor
  * @param threadInfo a thread structure populated with a backtrace
  * @param heap a heap from which to allocate any necessary memory. If NULL malloc is used instead.
  * @param options controls how much effort is expended trying to resolve symbols
- *
  * @return the number of frames for which a symbol was constructed.
  */
 uintptr_t
 omrintrospect_backtrace_symbols_raw(struct OMRPortLibrary *portLibrary, J9PlatformThread *threadInfo, J9Heap *heap, uint32_t options)
 {
-	/* 32bit AIX needs 130 slots available for the base VM as of Java6sr7. This allows a little overhead for 3rd party jni libraries */
+	/* 32-bit AIX needs 130 slots available for the base VM as of Java6sr7.
+	 * This allows a little overhead for 3rd party jni libraries.
+	 */
 	struct ld_info buffer[150];
-	int loadqueryResult;
-	int i;
-	uintptr_t count;
-	J9PlatformStackFrame *frame;
+	int loadqueryResult = 0;
+	int i = 0;
+	J9PlatformStackFrame *frame = NULL;
 
 	if (threadInfo == NULL || threadInfo->callstack == NULL) {
 		return 0;
@@ -190,7 +185,7 @@ omrintrospect_backtrace_symbols_raw(struct OMRPortLibrary *portLibrary, J9Platfo
 		char output_buf[512];
 		char *cursor = output_buf;
 		struct ld_info *ldInfo = NULL;
-		uintptr_t length;
+		uintptr_t length = 0;
 		uintptr_t iar = frame->instruction_pointer;
 		char *symbol_name = "";
 		char *module_name = "";

@@ -728,6 +728,7 @@ TR::RealRegister *OMR::Power::Machine::freeBestRegister(TR::Instruction *current
             opCode = TR::InstOpCode::lxvd2x;
             tmemref->setLength(16);
             reloadInstr = generateTrg1MemInstruction(cg(), opCode, currentNode, best, tmemref, currentInstruction);
+            tempIndexRegister->setHasBeenAssignedInMethod(true);
             cg()->stopUsingRegister(tempIndexRegister);
             break;
         case TR_VRF:
@@ -745,6 +746,7 @@ TR::RealRegister *OMR::Power::Machine::freeBestRegister(TR::Instruction *current
             opCode = TR::InstOpCode::lxvd2x;
             tmemref->setLength(16);
             reloadInstr = generateTrg1MemInstruction(cg(), opCode, currentNode, best, tmemref, currentInstruction);
+            tempIndexRegister->setHasBeenAssignedInMethod(true);
             cg()->stopUsingRegister(tempIndexRegister);
             break;
         default:
@@ -907,7 +909,7 @@ TR::RealRegister *OMR::Power::Machine::reverseSpillState(TR::Instruction *curren
         }
     }
 
-    TR::Register *tempIndexRegister = NULL;
+    TR::RealRegister *tempIndexRegister = NULL;
     switch (rk) {
         case TR_GPR:
             spillInstr = generateMemSrc1Instruction(cg(), TR::InstOpCode::Op_st, currentNode, tmemref, targetRegister,
@@ -952,6 +954,7 @@ TR::RealRegister *OMR::Power::Machine::reverseSpillState(TR::Instruction *curren
             tmemref->setLength(16);
             spillInstr
                 = generateMemSrc1Instruction(cg(), opCode, currentNode, tmemref, targetRegister, currentInstruction);
+            tempIndexRegister->setHasBeenAssignedInMethod(true);
             cg()->stopUsingRegister(tempIndexRegister);
             break;
         case TR_VRF:
@@ -970,6 +973,7 @@ TR::RealRegister *OMR::Power::Machine::reverseSpillState(TR::Instruction *curren
             tmemref->setLength(16);
             spillInstr
                 = generateMemSrc1Instruction(cg(), opCode, currentNode, tmemref, targetRegister, currentInstruction);
+            tempIndexRegister->setHasBeenAssignedInMethod(true);
             cg()->stopUsingRegister(tempIndexRegister);
             break;
         default:

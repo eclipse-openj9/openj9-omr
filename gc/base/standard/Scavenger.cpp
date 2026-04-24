@@ -1675,7 +1675,7 @@ MM_Scavenger::copyForVariant(MM_EnvironmentStandard *env, MM_ForwardedHeader* fo
 			Trc_MM_Scavenger_semispaceAllocateFailed(env->getLanguageVMThread(), objectReserveSizeInBytes, "yes");
 
 			uintptr_t spaceAvailableForObject = _activeSubSpace->getMaxSpaceForObjectInEvacuateMemory(forwardedHeader->getObject());
-			Assert_GC_true_with_message4(env, objectCopySizeInBytes <= spaceAvailableForObject,
+			Assert_GC_true_with_message(env, objectCopySizeInBytes <= spaceAvailableForObject,
 					"Corruption in Evacuate at %p: calculated object size %zu larger than available %zu, Forwarded Header at %p\n",
 					forwardedHeader->getObject(), objectCopySizeInBytes, spaceAvailableForObject, forwardedHeader);
 
@@ -1710,7 +1710,7 @@ MM_Scavenger::copyForVariant(MM_EnvironmentStandard *env, MM_ForwardedHeader* fo
 			Trc_MM_Scavenger_tenureAllocateFailed(env->getLanguageVMThread(), objectReserveSizeInBytes, env->_scavengerStats._failedTenureLargest, "yes");
 
 			uintptr_t spaceAvailableForObject = _activeSubSpace->getMaxSpaceForObjectInEvacuateMemory(forwardedHeader->getObject());
-			Assert_GC_true_with_message4(env, objectCopySizeInBytes <= spaceAvailableForObject,
+			Assert_GC_true_with_message(env, objectCopySizeInBytes <= spaceAvailableForObject,
 					"Corruption in Evacuate at %p: calculated object size %zu larger than available %zu, Forwarded Header at %p\n",
 					forwardedHeader->getObject(), objectCopySizeInBytes, spaceAvailableForObject, forwardedHeader);
 

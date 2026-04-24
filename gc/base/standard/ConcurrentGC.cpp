@@ -1538,7 +1538,7 @@ MM_ConcurrentGC::concurrentMark(MM_EnvironmentBase *env, MM_MemorySubSpace *subs
 				Assert_GC_true_with_message(env, (CONCURRENT_ROOT_TRACING < executionMode) && (CONCURRENT_TRACE_ONLY > executionMode), "MM_ConcurrentStats::_executionMode = %zu\n", executionMode);
 				nextExecutionMode = _concurrentDelegate.getNextTracingMode(executionMode);
 				if (_stats.switchExecutionMode(executionMode, nextExecutionMode)) {
-					Assert_GC_true_with_message2(env, (CONCURRENT_ROOT_TRACING < nextExecutionMode) && (CONCURRENT_TRACE_ONLY >= nextExecutionMode), "MM_ConcurrentStats::_executionMode = %zu; MM_ConcurrentMarkingDelegate::getNextTracingMode(MM_ConcurrentStats::_executionMode) = %zu\n", executionMode, nextExecutionMode);
+					Assert_GC_true_with_message(env, (CONCURRENT_ROOT_TRACING < nextExecutionMode) && (CONCURRENT_TRACE_ONLY >= nextExecutionMode), "MM_ConcurrentStats::_executionMode = %zu; MM_ConcurrentMarkingDelegate::getNextTracingMode(MM_ConcurrentStats::_executionMode) = %zu\n", executionMode, nextExecutionMode);
 					/* Collect some roots */
 					bool collectedRoots = false;
 					_concurrentDelegate.collectRoots(env, executionMode, &collectedRoots, &taxPaid);

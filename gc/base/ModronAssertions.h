@@ -77,41 +77,27 @@ extern void omrGcDebugAssertionOutput(OMRPortLibrary *portLibrary, OMR_VMThread 
         assert(0);\
 	} while(0)
 
-/* One printed parameter macro */
-#define Assert_GC_true_with_message(__env__,__condition,__message,__parameter) \
+#define Assert_GC_true_with_message(__env__, __condition, __message, ...) \
 do {\
 	if(!(__condition)) {\
-		omrGcDebugAssertionOutput(__env__->getPortLibrary(), __env__->getOmrVMThread(), __message, __parameter);\
+		omrGcDebugAssertionOutput(__env__->getPortLibrary(), __env__->getOmrVMThread(), __message, __VA_ARGS__);\
 		Assert_MM_unreachable();\
 	}\
 } while (false)
 
+/* Keep next three definitions for compatibility temporary */
 /* Two printed parameters macro */
 #define Assert_GC_true_with_message2(__env__,__condition,__message,__parameter1,__parameter2) \
-do {\
-	if(!(__condition)) {\
-		omrGcDebugAssertionOutput(__env__->getPortLibrary(), __env__->getOmrVMThread(), __message, __parameter1, __parameter2);\
-		Assert_MM_unreachable();\
-	}\
-} while (false)
+		Assert_GC_true_with_message(__env__,__condition,__message,__parameter1,__parameter2)
 
 /* THree printed parameters macro */
 #define Assert_GC_true_with_message3(__env__,__condition,__message,__parameter1,__parameter2,__parameter3) \
-do {\
-	if(!(__condition)) {\
-		omrGcDebugAssertionOutput(__env__->getPortLibrary(), __env__->getOmrVMThread(), __message, __parameter1, __parameter2, __parameter3);\
-		Assert_MM_unreachable();\
-	}\
-} while (false)
+		Assert_GC_true_with_message(__env__,__condition,__message,__parameter1,__parameter2,__parameter3)
+
 
 /* Four printed parameters macro */
 #define Assert_GC_true_with_message4(__env__,__condition,__message,__parameter1,__parameter2,__parameter3,__parameter4) \
-do {\
-	if(!(__condition)) {\
-		omrGcDebugAssertionOutput(__env__->getPortLibrary(), __env__->getOmrVMThread(), __message, __parameter1, __parameter2, __parameter3, __parameter4);\
-		Assert_MM_unreachable();\
-	}\
-} while (false)
+		Assert_GC_true_with_message(__env__,__condition,__message,__parameter1,__parameter2,__parameter3,__parameter4)
 
 #define Assert_MM_objectAligned(__env__,__pointer) \
 do {\
@@ -119,18 +105,22 @@ do {\
 		Assert_GC_true_with_message2(__env__,false, "Pointer: %p has is not object aligned (to %zu bytes) \n", __pointer, __env__->getObjectAlignmentInBytes());\
 	}\
 } while(false)
-#else /* defined(OMR_GC_DEBUG_ASSERTS) */
 
+#else /* defined(OMR_GC_DEBUG_ASSERTS) */
 
 #define Assert_MM_true(arg) Assert_MM_true_internal(arg)
 #define Assert_MM_false(arg) Assert_MM_false_internal(arg)
 #define Assert_MM_unreachable() Assert_MM_unreachable_internal()
 #define Assert_MM_unimplemented() Assert_MM_unimplemented_internal()
 #define Assert_MM_invalidJNICall() Assert_MM_invalidJNICall_internal()
+
 #define Assert_GC_true_with_message(__env__,__condition,__message,__parameter) Assert_MM_true(__condition)
+
+/* Keep next three definitions for compatibility temporary */
 #define Assert_GC_true_with_message2(__env__,__condition,__message,__parameter1,__parameter2) Assert_MM_true(__condition)
 #define Assert_GC_true_with_message3(__env__,__condition,__message,__parameter1,__parameter2,__parameter3) Assert_MM_true(__condition)
 #define Assert_GC_true_with_message4(__env__,__condition,__message,__parameter1,__parameter2,__parameter3,__parameter4) Assert_MM_true(__condition)
+
 #define Assert_MM_objectAligned(__env__,__pointer) Assert_MM_true_internal((uintptr_t)(__pointer) & (__env__->getObjectAlignmentInBytes() - 1))
 #endif /* defined(OMR_GC_DEBUG_ASSERTS) */
 

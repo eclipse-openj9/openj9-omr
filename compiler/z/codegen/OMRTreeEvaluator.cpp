@@ -1112,15 +1112,14 @@ TR::Register *OMR::Z::TreeEvaluator::mTrueCountEvaluator(TR::Node *node, TR::Cod
     TR::Register *zeroReg = cg->allocateRegister(TR_VRF);
     generateVRIaInstruction(cg, TR::InstOpCode::VGBM, node, zeroReg, 0, 0);
 
-    // Sum all lane values to compute the population count.
     // For 8-bit or 16-bit lanes, perform a two-step reduction to avoid overflow.
     if (sizeMask <= 1) {
         // Pre-reduce to 32-bit elements using VSUM before final quadword summation.
         scratchReg = cg->allocateRegister(TR_VRF);
-        generateVRRcInstruction(cg, TR::InstOpCode::VSUM, node, scratchReg, scratchReg, zeroReg, 0, 0, 2);
+        generateVRRcInstruction(cg, TR::InstOpCode::VSUM, node, scratchReg, scratchReg, zeroReg, 0, 0, sizeMask);
         sizeMask = 2;
     }
-    // Perform final quadword summation to produce a 128-bit result.
+    // Perform final quadword summation to produce the result.
     generateVRRcInstruction(cg, TR::InstOpCode::VSUMQ, node, scratchReg, scratchReg, zeroReg, 0, 0, sizeMask);
 
     // Extract the scalar sum from the scratch register into a GPR.

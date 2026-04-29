@@ -1115,7 +1115,6 @@ TR::Register *OMR::Z::TreeEvaluator::mTrueCountEvaluator(TR::Node *node, TR::Cod
     // For 8-bit or 16-bit lanes, perform a two-step reduction to avoid overflow.
     if (sizeMask <= 1) {
         // Pre-reduce to 32-bit elements using VSUM before final quadword summation.
-        scratchReg = cg->allocateRegister(TR_VRF);
         generateVRRcInstruction(cg, TR::InstOpCode::VSUM, node, scratchReg, scratchReg, zeroReg, 0, 0, sizeMask);
         sizeMask = 2;
     }

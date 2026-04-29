@@ -93,7 +93,9 @@
 		inline void __yield() { __asm__ volatile (" nop 0"); }
 #pragma convlit(resume)
 #elif defined(AARCH64) /* defined(J9ZOS390) */
+#if !__has_builtin(__yield)
 		inline void __yield() { __asm__ volatile ("yield"); }
+#endif /* !__has_builtin(__yield) */
 #else /* defined(AARCH64) */
 		inline void __yield() { __asm volatile ("# AtomicOperations::__yield"); }
 #endif /* defined(AIXPPC) */

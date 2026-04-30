@@ -991,7 +991,14 @@ TR_GlobalRegisterNumber OMR::Power::CodeGenerator::pickRegister(TR::RegisterCand
         default:
             if (sym->getDataType().isVector() || sym->getDataType().isMask()) {
                 isVector = true;
-                firstIndex = self()->getFirstGlobalVRF();
+
+                if (!sym->getDataType().isMask()
+                    && (sym->getDataType().getVectorElementType() == TR::Float
+                        || sym->getDataType().getVectorElementType() == TR::Double))
+                    firstIndex = _firstFPR;
+                else
+                    firstIndex = self()->getFirstGlobalVRF();
+
                 lastIndex = self()->getLastGlobalVRF();
                 lastVolIndex = lastIndex;
                 break;
@@ -1004,7 +1011,8 @@ TR_GlobalRegisterNumber OMR::Power::CodeGenerator::pickRegister(TR::RegisterCand
     }
 
     bool gprCandidate = true;
-    if ((sym->getDataType() == TR::Float) || (sym->getDataType() == TR::Double) || sym->getDataType().isVector() || sym->getDataType().isMask())
+    if ((sym->getDataType() == TR::Float) || (sym->getDataType() == TR::Double) || sym->getDataType().isVector()
+        || sym->getDataType().isMask())
         gprCandidate = false;
 
     if (gprCandidate) {

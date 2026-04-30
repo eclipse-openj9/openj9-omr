@@ -2339,7 +2339,11 @@ bool OMR::RegisterCandidates::assign(TR::Block **cfgBlocks, int32_t numberOfBloc
 
             firstRegister = cg->getFirstGlobalFPR(), lastRegister = cg->getLastGlobalFPR();
         } else if (isVector) {
+#if defined(TR_TARGET_POWER) && defined(TR_TARGET_64BIT)
+            firstRegister = cg->getFirstGlobalFPR(), lastRegister = cg->getLastGlobalVRF();
+#else
             firstRegister = cg->getFirstGlobalVRF(), lastRegister = cg->getLastGlobalVRF();
+#endif
         } else {
             firstRegister = cg->getFirstGlobalGPR(), lastRegister = cg->getLastGlobalGPR();
         }

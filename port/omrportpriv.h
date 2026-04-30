@@ -621,6 +621,10 @@ extern J9_CFUNC intptr_t
 omrsysinfo_get_CPU_load(struct OMRPortLibrary *portLibrary, double *cpuLoad);
 extern J9_CFUNC uintptr_t
 omrsysinfo_get_processes(struct OMRPortLibrary *portLibrary, OMRProcessInfoCallback callback, void *userData);
+extern J9_CFUNC intptr_t
+omrsysinfo_get_CPU_usage_stats(struct OMRPortLibrary *portLibrary, CpuUsageStats *usageStats);
+extern J9_CFUNC intptr_t
+omrsysinfo_get_CPU_capacity(struct OMRPortLibrary *portLibrary, double *cpuCapacity);
 extern J9_CFUNC void
 omrsysinfo_set_number_user_specified_CPUs(struct OMRPortLibrary *portLibrary, uintptr_t number);
 extern J9_CFUNC intptr_t

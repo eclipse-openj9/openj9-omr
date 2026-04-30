@@ -39,7 +39,9 @@ typedef enum OMRSysInfoCalculateCpuLoadError {
 	OK,
 	ELAPSED_TIME_NEGATIVE,
 	ELAPSED_TIME_TOO_SMALL,
-	NEGATIVE_INTERVAL
+	NEGATIVE_INTERVAL,
+	INVALID_CPU_COUNT,
+	NOT_IMPLEMENTED
 } OMRSysInfoCalculateCpuLoadError;
 
 static uint32_t indexFromCategoryCode(uintptr_t categories_mapping_size, uint32_t cc);
@@ -49,8 +51,9 @@ static uintptr_t omrtiCalculateSlotsForCategoriesMappingCallback(uint32_t catego
 static void fillInChildAndSiblingCategories(OMR_TI_MemoryCategory *categories_buffer, int32_t written_count);
 static void fillInCategoryDeepCounters(OMR_TI_MemoryCategory *category);
 
+static omr_error_t getOMRSysInfoProcessCpuTimeHelper(OMR_VM *omrVM, OMRSysInfoProcessCpuTime *sysInfo, OMRSysInfoCpuLoadCallStatus *status);
 static omr_error_t getOMRSysInfoProcessCpuTime(OMR_VM *omrVM, OMRSysInfoProcessCpuTime *sysInfo, OMRSysInfoCpuLoadCallStatus *status);
-static OMRSysInfoCalculateCpuLoadError calculateProcessCpuLoad(OMRSysInfoProcessCpuTime const *endRecord, OMRSysInfoProcessCpuTime const *startRecord, double *cpuLoad);
+static OMRSysInfoCalculateCpuLoadError calculateProcessCpuLoad(OMR_VMThread *vmThread, OMRSysInfoProcessCpuTime const *endRecord, OMRSysInfoProcessCpuTime const *startRecord, double *cpuLoad);
 static omr_error_t getOMRSysInfoSystemCpuTime(OMR_VM *omrVM, J9SysinfoCPUTime *sysInfo, OMRSysInfoCpuLoadCallStatus *status);
 static OMRSysInfoCalculateCpuLoadError calculateSystemCpuLoad(J9SysinfoCPUTime const *endRecord, J9SysinfoCPUTime const *startRecord, double *cpuLoad);
 static int64_t computeTimeInterval(const int64_t endNS, const int64_t startNS);
@@ -287,17 +290,40 @@ getOMRSysInfoSystemCpuTime(OMR_VM *omrVM, J9SysinfoCPUTime *systemCpuTime, OMRSy
 }
 
 /**
- * This function returns a record of getOMRSysInfoProcessCpuTime or sets processCpuLoadCallStatus
+ * This helper writes timestamp and number of CPUs to processCpuTime or sets OMRSysInfoCpuLoadCallStatus if the operation fails.
+ *
  * @param[in] omrVM the current OMR VM
  * @param[in,out] vm record of OMRSysInfoProcessCpuTime, it cannot be NULL
  * @param[in,out] status whether GetProcessCpuLoad is supported on this platform or user have sufficient rights, it cannot be NULL
  * @return OMR error code
  */
 static omr_error_t
-getOMRSysInfoProcessCpuTime(OMR_VM *omrVM, OMRSysInfoProcessCpuTime *processCpuTime, OMRSysInfoCpuLoadCallStatus *status)
+getOMRSysInfoProcessCpuTimeHelper(OMR_VM *omrVM, OMRSysInfoProcessCpuTime *processCpuTime, OMRSysInfoCpuLoadCallStatus *status)
 {
 	OMRPORT_ACCESS_FROM_OMRVM(omrVM);
 	omr_error_t rc = OMR_ERROR_NONE;
+
+#if defined(J9ZOS390)
+	/* CPU utilization is read on z/OS via omrsysinfo_get_CPU_load instead of
+	 * omrsysinfo_get_CPU_utilization. Unlike other platforms, it's read
+	 * directly from z/OS control structs. This is why we call individual APIs
+	 * to get timestamp and number of CPUs instead of
+	 * calling omrsysinfo_get_CPU_utilization.
+	 */
+	int32_t numberOfCpus = omrsysinfo_get_number_CPUs_by_type(OMRPORT_CPU_ONLINE);
+	int64_t timestampNS = omrtime_nano_time();
+
+	if (0 == timestampNS) {
+		*status = TIME_STAMP_ERROR;
+		rc = OMR_ERROR_NOT_AVAILABLE;
+	} else if (numberOfCpus <= 0) {
+		*status = CPU_COUNT_NOT_AVAILABLE;
+		rc = OMR_ERROR_NOT_AVAILABLE;
+	} else {
+		processCpuTime->numberOfCpus = numberOfCpus;
+		processCpuTime->timestampNS = timestampNS;
+	}
+#else /* defined(J9ZOS390) */
 	J9SysinfoCPUTime cpuTime;
 	intptr_t portLibraryStatus = omrsysinfo_get_CPU_utilization(&cpuTime);
 
@@ -315,6 +341,28 @@ getOMRSysInfoProcessCpuTime(OMR_VM *omrVM, OMRSysInfoProcessCpuTime *processCpuT
 		}
 		rc = OMR_ERROR_NOT_AVAILABLE;
 	} else {
+		processCpuTime->numberOfCpus = cpuTime.numberOfCpus;
+		processCpuTime->timestampNS = cpuTime.timestamp;
+	}
+#endif /* defined(J9ZOS390) */
+	return rc;
+}
+
+/**
+ * This function returns a record of getOMRSysInfoProcessCpuTime or sets processCpuLoadCallStatus
+ * @param[in] omrVM the current OMR VM
+ * @param[in,out] vm record of OMRSysInfoProcessCpuTime, it cannot be NULL
+ * @param[in,out] status whether GetProcessCpuLoad is supported on this platform or user have sufficient rights, it cannot be NULL
+ * @return OMR error code
+ */
+static omr_error_t
+getOMRSysInfoProcessCpuTime(OMR_VM *omrVM, OMRSysInfoProcessCpuTime *processCpuTime, OMRSysInfoCpuLoadCallStatus *status)
+{
+	omr_error_t rc = OMR_ERROR_NONE;
+
+	rc = getOMRSysInfoProcessCpuTimeHelper(omrVM, processCpuTime, status);
+
+	if (OMR_ERROR_NONE == rc) {
 		omrthread_process_time_t processTime;
 		intptr_t getProcessTimeStatus = omrthread_get_process_times(&processTime);
 
@@ -330,8 +378,6 @@ getOMRSysInfoProcessCpuTime(OMR_VM *omrVM, OMRSysInfoProcessCpuTime *processCpuT
 			}
 			rc = OMR_ERROR_NOT_AVAILABLE;
 		} else {
-			processCpuTime->numberOfCpus = cpuTime.numberOfCpus;
-			processCpuTime->timestampNS = cpuTime.timestamp;
 			processCpuTime->systemCpuTimeNS = processTime._systemTime;
 			processCpuTime->userCpuTimeNS = processTime._userTime;
 		}
@@ -349,6 +395,10 @@ getOMRSysInfoProcessCpuTime(OMR_VM *omrVM, OMRSysInfoProcessCpuTime *processCpuT
 static OMRSysInfoCalculateCpuLoadError
 calculateSystemCpuLoad(J9SysinfoCPUTime const *endRecord, J9SysinfoCPUTime const *startRecord, double *cpuLoad)
 {
+#if defined(J9ZOS390)
+	/* CPU load can be read directly from z/OS control structs via omrsysinfo_get_CPU_load(). */
+	return NOT_IMPLEMENTED;
+#else /* defined(J9ZOS390) */
 	OMRSysInfoCalculateCpuLoadError rc = OK;
 	int64_t timestampDelta = computeTimeInterval(endRecord->timestamp, startRecord->timestamp);
 	if (timestampDelta < 0) {
@@ -364,6 +414,7 @@ calculateSystemCpuLoad(J9SysinfoCPUTime const *endRecord, J9SysinfoCPUTime const
 		*cpuLoad = OMR_MIN(result, 1.0);
 	}
 	return rc;
+#endif /* defined(J9ZOS390) */
 }
 
 /**
@@ -374,7 +425,7 @@ calculateSystemCpuLoad(J9SysinfoCPUTime const *endRecord, J9SysinfoCPUTime const
  * @return a OMRSysInfoCalculateCpuLoadError error code
  */
 static OMRSysInfoCalculateCpuLoadError
-calculateProcessCpuLoad(OMRSysInfoProcessCpuTime const *endRecord, OMRSysInfoProcessCpuTime const *startRecord, double *cpuLoad)
+calculateProcessCpuLoad(OMR_VMThread *vmThread, OMRSysInfoProcessCpuTime const *endRecord, OMRSysInfoProcessCpuTime const *startRecord, double *cpuLoad)
 {
 	OMRSysInfoCalculateCpuLoadError rc = OK;
 	int64_t timestampDelta = computeTimeInterval(endRecord->timestampNS, startRecord->timestampNS);
@@ -392,7 +443,21 @@ calculateProcessCpuLoad(OMRSysInfoProcessCpuTime const *endRecord, OMRSysInfoPro
 			/* operation processTimeDelta = systemCpuTimeDelta + userCpuTimeDelta overflow, set cpuLoad to 1 in this case */
 			*cpuLoad = 1.0;
 		} else {
-			double result = (double)processTimeDelta / (double)(endRecord->numberOfCpus * timestampDelta);
+			double numberOfCpus = 0.0;
+#if defined(J9ZOS390)
+			OMRPORT_ACCESS_FROM_OMRVMTHREAD(vmThread);
+			/* On z/OS, we use the scaled CPU count to reflect the effective gain
+			 * of SMT‑2 and GCPs.
+			 * See retrieveCPUCapacity() in zos390/omrsysinfo_helpers.c for details.
+			 */
+			int32_t ret = omrsysinfo_get_CPU_capacity(&numberOfCpus);
+			if (0 != ret) {
+				return INVALID_CPU_COUNT;
+			}
+#else /* defined(J9ZOS390) */
+			numberOfCpus = endRecord->numberOfCpus;
+#endif /* defined(J9ZOS390) */
+			double result = processTimeDelta / (numberOfCpus * timestampDelta);
 			/* cpuload is in [0, 1] */
 			*cpuLoad = OMR_MIN(result, 1.0);
 		}
@@ -419,6 +484,16 @@ omrtiGetSystemCpuLoad(OMR_VMThread *vmThread, double *systemCpuLoad)
 		if ((SUPPORTED == curSysInfo->systemCpuLoadCallStatus)
 			|| (NO_HISTORY == curSysInfo->systemCpuLoadCallStatus)
 		) {
+#if defined(J9ZOS390)
+			OMRPORT_ACCESS_FROM_OMRVMTHREAD(vmThread);
+			intptr_t cpuLoadError = omrsysinfo_get_CPU_load(systemCpuLoad);
+			if (0 != cpuLoadError) {
+				ret = OMR_ERROR_NOT_AVAILABLE;
+			} else {
+				curSysInfo->systemCpuLoadCallStatus = SUPPORTED;
+				curSysInfo->systemCpuTimeNegativeElapsedTimeCount = 0;
+			}
+#else /* defined(J9ZOS390) */
 			J9SysinfoCPUTime newestSystemCpuTime;
 			ret = getOMRSysInfoSystemCpuTime(vmThread->_vm, &newestSystemCpuTime, &curSysInfo->systemCpuLoadCallStatus);
 			if (OMR_ERROR_NONE != ret) {
@@ -468,6 +543,7 @@ omrtiGetSystemCpuLoad(OMR_VMThread *vmThread, double *systemCpuLoad)
 					}
 				}
 			}
+#endif /* defined(J9ZOS390) */
 		} else {
 			ret = OMR_ERROR_NOT_AVAILABLE;
 		}
@@ -508,7 +584,7 @@ omrtiGetProcessCpuLoad(OMR_VMThread *vmThread, double *processCpuLoad)
 				ret = OMR_ERROR_RETRY;
 			} else {
 				OMRSysInfoCalculateCpuLoadError rc = OK;
-				rc = calculateProcessCpuLoad(&newestProcessCpuTime, &curSysInfo->interimProcessCpuTime, processCpuLoad);
+				rc = calculateProcessCpuLoad(vmThread, &newestProcessCpuTime, &curSysInfo->interimProcessCpuTime, processCpuLoad);
 				if (OK == rc) {
 					/* discard the oldestProcessCpuTime and replace it with interimProcessCpuTime, save newestProcessCpuTime as the new interimProcessCpuTime. */
 					memcpy(&curSysInfo->oldestProcessCpuTime, &curSysInfo->interimProcessCpuTime, sizeof(OMRSysInfoProcessCpuTime));
@@ -520,7 +596,7 @@ omrtiGetProcessCpuLoad(OMR_VMThread *vmThread, double *processCpuLoad)
 						memcpy(&curSysInfo->interimProcessCpuTime, &newestProcessCpuTime, sizeof(OMRSysInfoProcessCpuTime));
 					}
 					/* attempt to recompute using oldestProcessCpuTime. */
-					rc = calculateProcessCpuLoad(&newestProcessCpuTime, &curSysInfo->oldestProcessCpuTime, processCpuLoad);
+					rc = calculateProcessCpuLoad(vmThread, &newestProcessCpuTime, &curSysInfo->oldestProcessCpuTime, processCpuLoad);
 					if (OK == rc) {
 						curSysInfo->processCpuTimeNegativeElapsedTimeCount = 0;
 					} else if (NEGATIVE_INTERVAL == rc) {

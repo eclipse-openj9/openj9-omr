@@ -87,6 +87,8 @@ static OMRPortLibrary MainPortLibraryTable = {
 	omrsysinfo_get_CPU_load, /* sysinfo_get_CPU_load */
 	omrsysinfo_get_processes, /* sysinfo_get_processes */
 	omrsysinfo_get_process_name, /* sysinfo_get_process_name */
+	omrsysinfo_get_CPU_usage_stats, /* sysinfo_get_CPU_usage_stats */
+	omrsysinfo_get_CPU_capacity, /* sysinfo_get_CPU_capacity */
 	omrsysinfo_limit_iterator_init, /* sysinfo_limit_iterator_next */
 	omrsysinfo_limit_iterator_hasNext, /* sysinfo_limit_iterator_hasNext */
 	omrsysinfo_limit_iterator_next, /* sysinfo_limit_iterator_next */

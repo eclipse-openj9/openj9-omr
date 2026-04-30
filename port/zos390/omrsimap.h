@@ -72,8 +72,10 @@ typedef struct J9PVT {
  * Fields of interest:
  *   CCVRBSWT - Recent base system wait time
  *   CCVRBSTD - Recent base time of day
- *   CCVCPUCT - No of online CPUs
- *   CCVUTILP - System CPU utilization
+ *   CCVCPUCT - No. of online CPUs (GCPs and zIIPs combined)
+ *   CCVUTILP - Avg. CPU utilization % for GCPs
+ *   CCVUTILA - Avg. CPU utilization % across GCPs and zIIPs (not marked a Programming Interface)
+ *   CCVUTILS - Avg. CPU utilization % for the zIIPs (not marked a Programming Interface)
  */
 typedef struct J9CCT {
 	uint8_t cctFiller1[72];           /**< 0:72 Ignore fields not relevant to current implementation */
@@ -84,18 +86,37 @@ typedef struct J9CCT {
 	uint16_t ccvutilp;                /**< 102:2 System CPU utilization */
 	uint8_t cctFiller4[6];            /**< 104:6 Ignore fields not relevant to current implementation */
 	uint16_t ccvcpuct;                /**< 110:2 No of online CPUs */
+	uint8_t cctFiller5[10];           /**< 112:10 Ignore fields not relevant to current implementation */
+	uint16_t ccvutila;                /**< 122:2 Avg CPU utilization across GCP and zIIPs */
+	uint8_t cctFiller6[22];           /**< 124:22 Ignore fields not relevant to current implementation */
+	uint16_t ccvutils;                /**< 146:2 Avg CPU utilization for the zIIPs */
 	/**< Ignore rest of the CCT */
 } J9CCT;
+
+/**
+ * Resources Manager Control Table Extension 3 (RMCTX3). Also known as IRARMCTZ.
+ *
+ * Fields of interest:
+ *    RMCTZ_MT_zIIP - bit indicating whether SMT-2 is enabled for zIIP processors
+ */
+typedef struct J9IRARMCTZ {
+	uint8_t rmctzFiller[1270];        /**< 0:1270 Ignore fields not relevant to current implementation */
+	uint8_t rmctz_mt_ziip;            /**< 1270:1 bit indicating whether SMT-2 is enabled for zIIP processors */
+	/**< Ignore rest of the RMCT Extension 3 */
+} J9IRARMCTZ;
 
 /**
  * System Resources Manager Control Table (RMCT)
  * It serves as the origin to locate system resource manager tables and entry points.
  * Fields of interest:
  *   RMCTCCT - CPU Management Control Table
+ *   RMCTIRARMCTZ - Address of RMCT Extension 3 Mapped by IRARMCTZ
  */
 typedef struct J9RMCT {
 	uint8_t rmctname[4];              /**< 0:4 Block Identification */
 	J9CCT *__ptr32 rmctcct;           /**< 4:4 CPU Management Control Table */
+	uint8_t rmctFiller[368];          /**< 8:368 Ignore fields not relevant to current implementation */
+	J9IRARMCTZ *__ptr32 rmctirarmctz; /**< 376:4 Address of RMCT Extention 3 Mapped by IRARMCTZ */
 	/**< Ignore rest of the RMCT */
 } J9RMCT;
 
@@ -133,12 +154,43 @@ typedef struct J9RCE {
 } J9RCE;
 
 /**
+ * Supervisor Vector Table (SVT).
+ * Contains service routine addresses and control blocks used by Supervisor Control.
+ * Fields of interest:
+ *     SVT_SUP_NORMALIZATION - Normalization factor for zIIPs. Multiply zIIP time
+ *                             by this value and divide by
+ *                             SVT_NORMALIZATION_DIVIDE 256 to get the
+ *                             equivalent time on a CP.
+ * Source: https://www.ibm.com/docs/en/zos/3.1.0?topic=xtl-svt-information
+ */
+typedef _Packed struct J9CVTSVT {
+	uint8_t svtFiller1[416];          /**< 0:416 Ignore fields not relevant to current implementation */
+	uint32_t svtSupNormalization;     /**< 416:4 SVT_SUP_NORMALIZATION */
+	uint8_t svtFiller2[460];          /**< 420:460 Ignore fields not relevant to current implementation */
+	uint8_t svtIFAFlags;              /**< 880:1 SVTIFAFLAGS Processor Flags - not just IFAs */
+	/**< Ignore rest of the SVT */
+} J9CVTSVT;
+
+/* Common system data area (CSD). */
+typedef _Packed struct J9CSD {
+	uint8_t cvtFiller1[10];           /**< 0:10 Ignore fields not relevant to current implementation */
+	int16_t online_combined_CP_count; /**< 10:2 CSDCPUOL */
+	uint8_t cvtFiller2[200];          /**< 12:200 Ignore fields not relevant to current implementation */
+	int32_t online_combined_CPUs;     /**< 212:4 32-bit CSD_NUMBER_ONLINE_CPUS */
+	uint8_t cvtFiller3[48];           /**< 216:48 Ignore fields not relevant to current implementation */
+	int32_t online_gcp_count;         /**< 264:4 CSD_NUMBER_ONLINE_STANDARD_CPS */
+	int32_t online_zIIP_count;        /**< 268:4 CSD_NUMBER_ONLINE_ZIIPS */
+	/**< Ignore rest of the CSD */
+} J9CSD;
+
+/**
  * Communications Vector Table (CVT)
  * It contains addresses of other control blocks and tables used by the control
  * program routines.
  * Fields of interest:
  *   CVTPVTP - Address of the page vector table (PVT)
  *   CVTOPCTP - Address of system resource manager (SRM) control table
+ *   CVTCSD - Address of common system data area (CSD)
  *   CVTASMVT - Pointer to auxiliary storage management vector table (ASMVT)
  *   CVTRCEP - Address of the RSM Control & Enumeration Area
  */
@@ -147,11 +199,15 @@ typedef struct J9CVT {
 	J9PVT *__ptr32 cvtpvtp;           /**< 356:4 Address of Page Vector Table (PVT). */
 	uint8_t cvtFiller2[244];          /**< 360:244 Ignore fields not relevant to current implementation */
 	J9RMCT *__ptr32 cvtopctp;         /**< 604:4 Address of system resources manager (SRM) table */
-	uint8_t cvtFiller3[96];           /**< 608:96 Ignore fields not relevant to current implementation */
+	uint8_t cvtFiller3[52];           /**< 608:52 Ignore fields not relevant to current implementation */
+	J9CSD *__ptr32 cvtcsd;            /**< 660:4 Address of common system data area (CSD) */
+	uint8_t cvtFiller4[40];           /**< 664:40 Ignore fields not relevant to current implementation */
 	J9ASMVT *__ptr32 cvtasmvt;        /**< 704:4 Pointer to auxiliary storage management vector table (ASMVT) */
-	uint8_t cvtFiller4[460];          /**< 708:460 Ignore fields not relevant to current implementation */
+	uint8_t cvtFiller5[160];          /**< 708:160 Ignore fields not relevant to current implementation */
+	J9CVTSVT *__ptr32 cvtsvt;         /**< 868:4 Address of Supervisor Vector Table (SVT) */
+	uint8_t cvtFiller6[296];          /**< 872:296 Ignore fields not relevant to current implementation */
 	J9RCE *__ptr32 cvtrcep;           /**< 1168:4 Address of the RSM Control & Enumeration Area */
-	uint8_t cvtFiller5[92];           /**< 1172:1263 Ignore fields not relevant to current implementation */
+	uint8_t cvtFiller7[92];           /**< 1172:92 Ignore fields not relevant to current implementation */
 	uint8_t cvtoslvl[16];             /**< 1264:1279 OS level/feature information */
 	/**< Ignore rest of the CVT */
 } J9CVT;

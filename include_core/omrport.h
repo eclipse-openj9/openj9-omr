@@ -683,6 +683,29 @@ typedef struct J9SysinfoCPUTime {
 	int64_t idleTime; /* total idle time (in CPU ticks) across all CPUs on the system */
 } J9SysinfoCPUTime;
 
+typedef struct CpuUsageStats {
+	double gcpLoad;
+	double perProcessUtilization;
+#if defined(J9ZOS390)
+	double combinedLoad;
+	double ziipLoad;
+	double svtNormalizationFactor;
+	double calculatedCombinedCpuLoad;
+	double ziipCapacity;
+	double cpuCapacity;
+	int32_t onlineZiipCount;
+	int32_t onlineGcpCount;
+#endif /* defined(J9ZOS390) */
+	int32_t onlineCpuCount;
+#if defined(J9ZOS390)
+	int16_t threadsPerZiipCore;
+	BOOLEAN isIipHonorPrioritySet;
+	uint8_t svtIFAFlags;
+#endif /* defined(J9ZOS390) */
+	J9SysinfoCPUTime oldestCpuTime;
+	J9SysinfoCPUTime latestCpuTime;
+} CpuUsageStats;
+
 /* Key memory categories are copied here for DDR access */
 /* Special memory category for memory allocated for unknown categories */
 #define OMRMEM_CATEGORY_UNKNOWN 0x80000000
@@ -770,12 +793,16 @@ typedef struct J9MemoryInfo {
  * not available on a particular platform, this is set to OMRPORT_PROCINFO_NOT_AVAILABLE.
  */
 typedef struct J9ProcessorInfo {
-	uint64_t userTime;			/* Time spent in user mode (in microseconds). */
-	uint64_t systemTime;		/* Time spent in system mode (in microseconds). */
-	uint64_t idleTime;			/* Time spent sitting idle (in microseconds). */
-	uint64_t waitTime;			/* Time spent over IO wait (in microseconds). */
-	uint64_t busyTime;			/* Time spent over useful work (in microseconds). */
-	int32_t proc_id;			/* This processor's id. */
+	uint64_t userTime;                  /* Time spent in user mode (in microseconds). */
+	uint64_t systemTime;                /* Time spent in system mode (in microseconds). */
+	uint64_t idleTime;                  /* Time spent sitting idle (in microseconds). */
+	uint64_t waitTime;                  /* Time spent over IO wait (in microseconds). */
+	uint64_t busyTime;                  /* Time spent over useful work (in microseconds). */
+#if defined(J9ZOS390)
+	uint64_t avgZiipUtilization;        /* Avg CPU utilization % for the zIIPs. */
+	uint64_t combinedAvgCpuUtilization; /* Avg CPU utilization % across GCPs and zIIPs. */
+#endif /* defined(J9ZOS390) */
+	int32_t proc_id;                    /* This processor's id. */
 	/* Was current CPU online when last sampled (OMRPORT_PROCINFO_PROC_ONLINE if online,
 	 * OMRPORT_PROCINFO_PROC_OFFLINE if not).
 	 */
@@ -2139,6 +2166,10 @@ typedef struct OMRPortLibrary {
 	uintptr_t (*sysinfo_get_processes)(struct OMRPortLibrary *portLibrary, OMRProcessInfoCallback callback, void *userData);
 	/** see @ref omrsysinfo.c::omrsysinfo_get_process_name "omrsysinfo_get_process_name" */
 	char *(*sysinfo_get_process_name)(struct OMRPortLibrary *portLibrary, uintptr_t pid);
+	/** see @ref omrsysinfo.c::omrsysinfo_get_CPU_usage_stats "omrsysinfo_get_CPU_usage_stats" */
+	intptr_t (*sysinfo_get_CPU_usage_stats)(struct OMRPortLibrary *portLibrary, CpuUsageStats *usageStats);
+	/** see @ref omrsysinfo.c::omrsysinfo_get_CPU_capacity "omrsysinfo_get_CPU_capacity" */
+	intptr_t (*sysinfo_get_CPU_capacity)(struct OMRPortLibrary *portLibrary, double *cpuCapacity);
 	/** see @ref omrsysinfo.c::omrsysinfo_limit_iterator_init "omrsysinfo_limit_iterator_init"*/
 	int32_t (*sysinfo_limit_iterator_init)(struct OMRPortLibrary *portLibrary, J9SysinfoLimitIteratorState *state) ;
 	/** see @ref omrsysinfo.c::omrsysinfo_limit_iterator_hasNext "omrsysinfo_limit_iterator_hasNext"*/
@@ -3051,6 +3082,8 @@ extern J9_CFUNC int32_t omrport_getVersion(struct OMRPortLibrary *portLibrary);
 #define omrsysinfo_set_number_user_specified_CPUs(param1) privateOmrPortLibrary->sysinfo_set_number_user_specified_CPUs(privateOmrPortLibrary,(param1))
 #define omrsysinfo_get_processes(callback, userData) privateOmrPortLibrary->sysinfo_get_processes(privateOmrPortLibrary, callback, userData)
 #define omrsysinfo_get_process_name(param1) privateOmrPortLibrary->sysinfo_get_process_name(privateOmrPortLibrary, param1)
+#define omrsysinfo_get_CPU_usage_stats(param1) privateOmrPortLibrary->sysinfo_get_CPU_usage_stats(privateOmrPortLibrary, param1)
+#define omrsysinfo_get_CPU_capacity(param1) privateOmrPortLibrary->sysinfo_get_CPU_capacity(privateOmrPortLibrary, param1)
 #define omrfile_startup() privateOmrPortLibrary->file_startup(privateOmrPortLibrary)
 #define omrfile_shutdown() privateOmrPortLibrary->file_shutdown(privateOmrPortLibrary)
 #define omrfile_write(param1,param2,param3) privateOmrPortLibrary->file_write(privateOmrPortLibrary, (param1), (param2), (param3))

@@ -1225,6 +1225,12 @@ omrsysinfo_get_load_average(struct OMRPortLibrary *portLibrary, struct J9PortSys
 }
 
 intptr_t
+omrsysinfo_get_CPU_capacity(struct OMRPortLibrary *portLibrary, double *cpuCapacity)
+{
+	return OMRPORT_ERROR_SYSINFO_NOT_SUPPORTED;
+}
+
+intptr_t
 omrsysinfo_get_CPU_utilization(struct OMRPortLibrary *portLibrary, struct J9SysinfoCPUTime *cpuTime)
 {
 	FILETIME lpIdleTime;
@@ -1325,6 +1331,12 @@ omrsysinfo_get_CPU_load(struct OMRPortLibrary *portLibrary, double *cpuLoad)
 	}
 
 	return OMRPORT_ERROR_OPFAILED;
+}
+
+intptr_t
+omrsysinfo_get_CPU_usage_stats(struct OMRPortLibrary *portLibrary, CpuUsageStats *usageStats)
+{
+    return OMRPORT_ERROR_SYSINFO_NOT_SUPPORTED;
 }
 
 int32_t

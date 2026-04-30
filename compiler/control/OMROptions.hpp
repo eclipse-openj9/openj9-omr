@@ -1108,6 +1108,7 @@ enum TR_VerboseFlags {
     TR_VerboseDependencyTrackingDetails,
     TR_VerboseJITServerSharedProfile,
     TR_VerboseJITServerSharedProfileDetails,
+    TR_VerboseCPUStats,
     // If adding new options add an entry to _verboseOptionNames as well
     TR_NumVerboseOptions // Must be the last one;
 };

@@ -198,6 +198,7 @@ list(APPEND OBJECTS
 	omrsl.c
 	omrstr.c
 	omrsysinfo.c
+	omrnetwork.c
 )
 
 list(APPEND OBJECTS omrsysinfo_helpers.c)
@@ -473,5 +474,5 @@ if(OMR_OS_OSX)
 endif()
 
 if(OMR_OS_WINDOWS)
-	target_link_libraries(omrport PRIVATE psapi pdh)
+	target_link_libraries(omrport PRIVATE psapi pdh Iphlpapi)
 endif()

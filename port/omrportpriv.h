@@ -1128,5 +1128,7 @@ omrcuda_streamSynchronize(struct OMRPortLibrary *portLibrary, uint32_t deviceId,
 extern J9_CFUNC int32_t
 omrcuda_streamWaitEvent(struct OMRPortLibrary *portLibrary, uint32_t deviceId, J9CudaStream stream, J9CudaEvent event);
 #endif /* OMR_OPT_CUDA */
+extern J9_CFUNC uintptr_t
+omrnetwork_get_network_interfaces(struct OMRPortLibrary *portLibrary, OMRNetworkInterfaceCallback callback, void *userData);
 
 #endif /* omrportlibraryprivatedefines_h */

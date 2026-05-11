@@ -2761,7 +2761,7 @@ TR::Register *OMR::RV::TreeEvaluator::BBStartEvaluator(TR::Node *node, TR::CodeG
         int32_t i;
         TR::Node *child = node->getFirstChild();
         cg->evaluate(child);
-        deps = generateRegisterDependencyConditions(cg, child, 0);
+        deps = RegDeps(cg, child, 0);
         if (cg->getCurrentEvaluationTreeTop() == comp->getStartTree()) {
             for (i = 0; i < child->getNumChildren(); i++) {
                 TR::ParameterSymbol *sym = child->getChild(i)->getSymbol()->getParmSymbol();
@@ -2811,7 +2811,7 @@ TR::Register *OMR::RV::TreeEvaluator::BBEndEvaluator(TR::Node *node, TR::CodeGen
     if (node->getNumChildren() > 0 && (!nextTT || !nextTT->getNode()->getBlock()->isExtensionOfPreviousBlock())) {
         TR::Node *child = node->getFirstChild();
         cg->evaluate(child);
-        deps = generateRegisterDependencyConditions(cg, child, 0);
+        deps = RegDeps(cg, child, 0);
         child->decReferenceCount();
     }
 

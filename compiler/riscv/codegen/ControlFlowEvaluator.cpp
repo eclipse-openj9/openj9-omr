@@ -36,8 +36,7 @@ TR::Register *genericReturnEvaluator(TR::Node *node, TR::RealRegister::RegNum rn
     TR::Node *firstChild = node->getFirstChild();
     TR::Register *returnRegister = cg->evaluate(firstChild);
 
-    TR::RegisterDependencyConditions *deps
-        = new (cg->trHeapMemory()) TR::RegisterDependencyConditions(1, 0, cg->trMemory());
+    TR::RegisterDependencyConditions *deps = RegDeps(1, 0, cg);
     deps->addPreCondition(returnRegister, rnum);
     Inst_ADMIN(OP::retn, node, deps, cg);
 
@@ -77,7 +76,7 @@ TR::Register *OMR::RV::TreeEvaluator::gotoEvaluator(TR::Node *node, TR::CodeGene
     if (node->getNumChildren() > 0) {
         TR::Node *child = node->getFirstChild();
         cg->evaluate(child);
-        Inst_JTYPE(OP::_jal, node, zero, gotoLabel, generateRegisterDependencyConditions(cg, child, 0), cg);
+        Inst_JTYPE(OP::_jal, node, zero, gotoLabel, RegDeps(cg, child, 0), cg);
         cg->decReferenceCount(child);
     } else {
         Inst_JTYPE(OP::_jal, node, zero, gotoLabel, cg);
@@ -108,9 +107,9 @@ static bool virtualGuardHelper(TR::Node *node, TR::CodeGenerator *cg)
     if (node->getNumChildren() == 3) {
         TR::Node *third = node->getChild(2);
         cg->evaluate(third);
-        deps = generateRegisterDependencyConditions(cg, third, 0);
+        deps = RegDeps(cg, third, 0);
     } else
-        deps = new (cg->trHeapMemory()) TR::RegisterDependencyConditions(0, 0, cg->trMemory());
+        deps = RegDeps(0, 0, cg);
 
     if (virtualGuard->shouldGenerateChildrenCode())
         cg->evaluateChildrenWithMultipleRefCount(node);
@@ -148,7 +147,7 @@ static TR::Instruction *ificmpHelper(TR::InstOpCode::Mnemonic op, TR::Node *node
 
       cg->evaluate(thirdChild);
 
-      TR::RegisterDependencyConditions *deps = generateRegisterDependencyConditions(cg, thirdChild, 0);
+      TR::RegisterDependencyConditions *deps = RegDeps(cg, thirdChild, 0);
       result = generateConditionalBranchInstruction(cg, TR::InstOpCode::b_cond, node, dstLabel, cc, deps);
 #endif
     } else {
@@ -521,8 +520,7 @@ TR::Register *OMR::RV::TreeEvaluator::iselectEvaluator(TR::Node *node, TR::CodeG
     startLabel->setStartInternalControlFlow();
     joinLabel->setEndInternalControlFlow();
 
-    TR::RegisterDependencyConditions *deps
-        = new (cg->trHeapMemory()) TR::RegisterDependencyConditions(0, 3, cg->trMemory());
+    TR::RegisterDependencyConditions *deps = RegDeps(0, 3, cg);
     deps->addPostCondition(condReg, TR::RealRegister::NoReg);
     deps->addPostCondition(trueReg, TR::RealRegister::NoReg);
     deps->addPostCondition(falseReg, TR::RealRegister::NoReg);
@@ -605,8 +603,7 @@ static TR::Register *commonMinMaxEvaluator(TR::Node *node, TR::InstOpCode::Mnemo
     startLabel->setStartInternalControlFlow();
     joinLabel->setEndInternalControlFlow();
 
-    TR::RegisterDependencyConditions *deps
-        = new (cg->trHeapMemory()) TR::RegisterDependencyConditions(0, 2, cg->trMemory());
+    TR::RegisterDependencyConditions *deps = RegDeps(0, 2, cg);
     deps->addPostCondition(src1Reg, TR::RealRegister::NoReg);
     deps->addPostCondition(src2Reg, TR::RealRegister::NoReg);
 

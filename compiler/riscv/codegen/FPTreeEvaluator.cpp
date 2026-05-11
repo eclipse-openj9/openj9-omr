@@ -300,8 +300,7 @@ static TR::Register *commonFPtoINTconversionEvaluator(TR::Node *node, TR::InstOp
     startLabel->setStartInternalControlFlow();
     joinLabel->setEndInternalControlFlow();
 
-    TR::RegisterDependencyConditions *deps
-        = new (cg->trHeapMemory()) TR::RegisterDependencyConditions(0, 2, cg->trMemory());
+    TR::RegisterDependencyConditions *deps = RegDeps(0, 2, cg);
 
     deps->addPostCondition(trgReg, TR::RealRegister::NoReg);
     deps->addPostCondition(src1Reg, TR::RealRegister::NoReg);
@@ -691,8 +690,7 @@ static TR::Register *commonFpMinMaxEvaluator(TR::Node *node, TR::InstOpCode::Mne
     startLabel->setStartInternalControlFlow();
     joinLabel->setEndInternalControlFlow();
 
-    TR::RegisterDependencyConditions *deps
-        = new (cg->trHeapMemory()) TR::RegisterDependencyConditions(0, 4, cg->trMemory());
+    TR::RegisterDependencyConditions *deps = RegDeps(0, 4, cg);
     deps->addPostCondition(cmpReg, TR::RealRegister::NoReg);
     deps->addPostCondition(trgReg, TR::RealRegister::NoReg);
     deps->addPostCondition(src1Reg, TR::RealRegister::NoReg);
@@ -958,8 +956,7 @@ static TR::Register *compareThreeWayHelper(TR::Node *node, bool unorderedIsLess,
     startLabel->setStartInternalControlFlow();
     joinLabel->setEndInternalControlFlow();
 
-    TR::RegisterDependencyConditions *deps
-        = new (cg->trHeapMemory()) TR::RegisterDependencyConditions(0, 4, cg->trMemory());
+    TR::RegisterDependencyConditions *deps = RegDeps(0, 4, cg);
     deps->addPostCondition(tmpReg, TR::RealRegister::NoReg);
     deps->addPostCondition(trgReg, TR::RealRegister::NoReg);
     deps->addPostCondition(src1Reg, TR::RealRegister::NoReg);
@@ -1028,8 +1025,7 @@ static TR::Register *commonFpSelectEvaluator(TR::Node *node, bool isDouble, TR::
     startLabel->setStartInternalControlFlow();
     joinLabel->setEndInternalControlFlow();
 
-    TR::RegisterDependencyConditions *deps
-        = new (cg->trHeapMemory()) TR::RegisterDependencyConditions(0, 3, cg->trMemory());
+    TR::RegisterDependencyConditions *deps = RegDeps(0, 3, cg);
     deps->addPostCondition(condReg, TR::RealRegister::NoReg);
     deps->addPostCondition(trueReg, TR::RealRegister::NoReg);
     deps->addPostCondition(falseReg, TR::RealRegister::NoReg);

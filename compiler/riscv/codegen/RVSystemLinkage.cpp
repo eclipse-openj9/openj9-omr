@@ -683,8 +683,8 @@ TR::Register *TR::RVSystemLinkage::buildDispatch(TR::Node *callNode)
         target = cg()->evaluate(callNode->getFirstChild());
     }
 
-    TR::RegisterDependencyConditions *dependencies = new (trHeapMemory()) TR::RegisterDependencyConditions(
-        pp.getNumberOfDependencyRegisters(), pp.getNumberOfDependencyRegisters(), trMemory());
+    TR::RegisterDependencyConditions *dependencies
+        = RegDeps(pp.getNumberOfDependencyRegisters(), pp.getNumberOfDependencyRegisters(), cg());
 
     int32_t totalSize = buildArgs(callNode, dependencies);
     if (totalSize > 0) {

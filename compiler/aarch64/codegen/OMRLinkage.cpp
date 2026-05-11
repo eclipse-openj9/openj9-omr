@@ -312,7 +312,7 @@ void OMR::ARM64::Linkage::setParameterLinkageRegisterIndex(TR::ResolvedMethodSym
 TR::MemoryReference *OMR::ARM64::Linkage::getOutgoingArgumentMemRef(TR::Register *baseReg, int32_t offset,
     TR::Register *argReg, TR::InstOpCode::Mnemonic opCode, TR::ARM64MemoryArgument &memArg)
 {
-    TR::MemoryReference *result = TR::MemoryReference::createWithDisplacement(cg(), baseReg, offset);
+    TR::MemoryReference *result = MRef_disp(cg(), baseReg, offset);
     memArg.argRegister = argReg;
     memArg.argMemory = result;
     memArg.opCode = opCode;
@@ -514,7 +514,7 @@ TR::Instruction *OMR::ARM64::Linkage::copyParametersToHomeLocation(TR::Instructi
                     diagnostic("copyParametersToHomeLocation: Loading %d\n", ai);
 
                 // ai := stack
-                TR::MemoryReference *stackMR = TR::MemoryReference::createWithDisplacement(cg(), stackPtr, offset);
+                TR::MemoryReference *stackMR = MRef_disp(cg(), stackPtr, offset);
                 loadCursor = generateTrg1MemInstruction(cg(), getOpCodeForParmLoads(paramType), NULL,
                     machine->getRealRegister(ai), stackMR, loadCursor);
             }
@@ -536,7 +536,7 @@ TR::Instruction *OMR::ARM64::Linkage::copyParametersToHomeLocation(TR::Instructi
                         diagnostic("copyParametersToHomeLocation: Storing %d\n", sourceIndex);
 
                     TR::RealRegister *linkageReg = machine->getRealRegister(sourceIndex);
-                    TR::MemoryReference *stackMR = TR::MemoryReference::createWithDisplacement(cg(), stackPtr, offset);
+                    TR::MemoryReference *stackMR = MRef_disp(cg(), stackPtr, offset);
                     cursor = generateMemSrc1Instruction(cg(), getOpCodeForParmStores(paramType), NULL, stackMR,
                         linkageReg, cursor);
                 }

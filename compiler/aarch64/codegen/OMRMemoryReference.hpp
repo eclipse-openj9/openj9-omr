@@ -513,4 +513,16 @@ private:
 
 }} // namespace OMR::ARM64
 
+/////////////////////////////////////////////////////////////////////
+// TR::MemoryReference factory functions
+/////////////////////////////////////////////////////////////////////
+namespace TR {
+TR::MemoryReference *MRef(TR::CodeGenerator *cg);
+TR::MemoryReference *MRef_idxReg(TR::CodeGenerator *cg, TR::Register *baseReg, TR::Register *indexReg,
+    uint8_t scale = 0);
+TR::MemoryReference *MRef_disp(TR::CodeGenerator *cg, TR::Register *baseReg, int64_t displacement);
+TR::MemoryReference *MRef_node(TR::CodeGenerator *cg, TR::Node *rootLoadOrStore);
+TR::MemoryReference *MRef_sym(TR::CodeGenerator *cg, TR::Node *node, TR::SymbolReference *symRef);
+} // namespace TR
+
 #endif

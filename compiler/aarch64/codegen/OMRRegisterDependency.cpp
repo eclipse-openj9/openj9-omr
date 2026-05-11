@@ -413,7 +413,7 @@ void OMR::ARM64::RegisterDependencyGroup::assignRegisters(TR::Instruction *curre
                 logprints(trace, log, "\nOOL: Found register spilled in main line and re-assigned inside OOL");
                 TR::Node *currentNode = currentInstruction->getNode();
                 TR::RealRegister *assignedReg = toRealRegister(virtReg->getAssignedRegister());
-                TR::MemoryReference *tempMR = TR::MemoryReference::createWithSymRef(cg, currentNode,
+                TR::MemoryReference *tempMR = MRef_sym(cg, currentNode,
                     (TR::SymbolReference *)virtReg->getBackingStorage()->getSymbolReference());
                 TR_RegisterKinds rk = virtReg->getKind();
                 TR::InstOpCode::Mnemonic opCode;

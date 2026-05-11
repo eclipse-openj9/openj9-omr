@@ -324,8 +324,7 @@ void OMR::ARM64::Machine::spillRegister(TR::Instruction *currentInstruction, TR:
 
     registerToSpill->setBackingStorage(location);
 
-    TR::MemoryReference *tmemref
-        = TR::MemoryReference::createWithSymRef(cg, currentNode, location->getSymbolReference());
+    TR::MemoryReference *tmemref = MRef_sym(cg, currentNode, location->getSymbolReference());
 
     if (!cg->isOutOfLineColdPath()) {
         // the spilledRegisterList contains all registers that are spilled before entering
@@ -425,7 +424,7 @@ TR::RealRegister *OMR::ARM64::Machine::reverseSpillState(TR::Instruction *curren
             targetRegister->getRegisterName(comp));
     }
 
-    tmemref = TR::MemoryReference::createWithSymRef(cg(), currentNode, location->getSymbolReference());
+    tmemref = MRef_sym(cg(), currentNode, location->getSymbolReference());
 
     switch (rk) {
         case TR_GPR:

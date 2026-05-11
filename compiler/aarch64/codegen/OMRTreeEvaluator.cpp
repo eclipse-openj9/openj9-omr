@@ -5528,7 +5528,7 @@ TR::Register *commonLoadEvaluator(TR::Node *node, TR::InstOpCode::Mnemonic op, i
     bool needSync = cg->comp()->target().isSMP() && sym->isAtLeastOrStrongerThanAcquireRelease();
 
     node->setRegister(targetReg);
-    TR::MemoryReference *tempMR = TR::MemoryReference::createWithRootLoadOrStore(cg, node);
+    TR::MemoryReference *tempMR = MRef_node(cg, node);
     tempMR->validateImmediateOffsetAlignment(node, size, cg);
 
     generateTrg1MemInstruction(cg, op, node, targetReg, tempMR);
@@ -5588,7 +5588,7 @@ TR::Register *OMR::ARM64::TreeEvaluator::aloadEvaluator(TR::Node *node, TR::Code
         op = TR::InstOpCode::ldrimmx;
         size = 8;
     }
-    TR::MemoryReference *tempMR = TR::MemoryReference::createWithRootLoadOrStore(cg, node);
+    TR::MemoryReference *tempMR = MRef_node(cg, node);
     tempMR->validateImmediateOffsetAlignment(node, size, cg);
 
     generateTrg1MemInstruction(cg, op, node, tempReg, tempMR);
@@ -5639,7 +5639,7 @@ TR::Register *OMR::ARM64::TreeEvaluator::awrtbarEvaluator(TR::Node *node, TR::Co
 
 TR::Register *commonStoreEvaluator(TR::Node *node, TR::InstOpCode::Mnemonic op, int32_t size, TR::CodeGenerator *cg)
 {
-    TR::MemoryReference *tempMR = TR::MemoryReference::createWithRootLoadOrStore(cg, node);
+    TR::MemoryReference *tempMR = MRef_node(cg, node);
     tempMR->validateImmediateOffsetAlignment(node, size, cg);
     TR::Symbol *sym = node->getSymbolReference()->getSymbol();
     TR::Node *valueChild;
@@ -5728,7 +5728,7 @@ TR::Register *OMR::ARM64::TreeEvaluator::bstoreEvaluator(TR::Node *node, TR::Cod
         if (symref) {
             TR::Symbol *symbol = symref->getSymbol();
             if (symbol->isGCRPatchPoint()) {
-                TR::MemoryReference *tempMR = TR::MemoryReference::createWithRootLoadOrStore(cg, node);
+                TR::MemoryReference *tempMR = MRef_node(cg, node);
                 TR::SymbolReference *patchGCRHelperRef
                     = cg->symRefTab()->findOrCreateRuntimeHelper(TR_ARM64PatchGCRHelper);
                 auto *deps = RegDeps(0, 2, cg);
@@ -5983,8 +5983,8 @@ TR::Register *OMR::ARM64::TreeEvaluator::arraysetEvaluator(TR::Node *node, TR::C
             if (length >= 32) {
                 int64_t lenMod32 = length & 0x1f;
                 if (length >= alignmentThresholdLength) {
-                    generateMemSrc2Instruction(cg, TR::InstOpCode::vstpoffq, node,
-                        TR::MemoryReference::createWithDisplacement(cg, dstReg, 0), vectorValueReg, vectorValueReg);
+                    generateMemSrc2Instruction(cg, TR::InstOpCode::vstpoffq, node, MRef_disp(cg, dstReg, 0),
+                        vectorValueReg, vectorValueReg);
                     TR::Register *dstEndReg = srm->findOrCreateScratchRegister();
                     if (constantIsUnsignedImm12(length) || constantIsUnsignedImm12Shifted(length)) {
                         generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::addimmx, node, dstEndReg, dstReg, length);
@@ -6003,71 +6003,63 @@ TR::Register *OMR::ARM64::TreeEvaluator::arraysetEvaluator(TR::Node *node, TR::C
                         generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::subsimmx, node, countReg, countReg, 1);
                         for (int i = 1; i <= 7; i++) {
                             generateMemSrc2Instruction(cg, TR::InstOpCode::vstpoffq, node,
-                                TR::MemoryReference::createWithDisplacement(cg, dstReg, i * 32), vectorValueReg,
-                                vectorValueReg);
+                                MRef_disp(cg, dstReg, i * 32), vectorValueReg, vectorValueReg);
                         }
-                        generateMemSrc2Instruction(cg, TR::InstOpCode::vstppreq, node,
-                            TR::MemoryReference::createWithDisplacement(cg, dstReg, 256), vectorValueReg,
-                            vectorValueReg);
+                        generateMemSrc2Instruction(cg, TR::InstOpCode::vstppreq, node, MRef_disp(cg, dstReg, 256),
+                            vectorValueReg, vectorValueReg);
                         generateConditionalBranchInstruction(cg, node, loopLabel, TR::CC_GT);
                         srm->reclaimScratchRegister(countReg);
                     }
                     int64_t remainingLength = useLoop ? ((length - 32) % constLoopLen) : (length - 32);
                     for (int i = 32; i <= remainingLength; i += 32) {
-                        generateMemSrc2Instruction(cg, TR::InstOpCode::vstpoffq, node,
-                            TR::MemoryReference::createWithDisplacement(cg, dstReg, i), vectorValueReg, vectorValueReg);
+                        generateMemSrc2Instruction(cg, TR::InstOpCode::vstpoffq, node, MRef_disp(cg, dstReg, i),
+                            vectorValueReg, vectorValueReg);
                     }
                     if (lenMod32 <= elementSize) {
                         /*
                          * If (remainingLength mod 32) <= elementSize, then the left over is not larger than 16 bytes.
                          */
-                        generateMemSrc1Instruction(cg, TR::InstOpCode::vsturq, node,
-                            TR::MemoryReference::createWithDisplacement(cg, dstEndReg, -16), vectorValueReg);
+                        generateMemSrc1Instruction(cg, TR::InstOpCode::vsturq, node, MRef_disp(cg, dstEndReg, -16),
+                            vectorValueReg);
                     } else if (lenMod32 <= (16 + elementSize)) {
                         /*
                          * If (remainingLength mod 32) <= (16 + elementSize), then the left over is not larger than 32
                          * bytes.
                          */
-                        generateMemSrc2Instruction(cg, TR::InstOpCode::vstpoffq, node,
-                            TR::MemoryReference::createWithDisplacement(cg, dstEndReg, -32), vectorValueReg,
-                            vectorValueReg);
+                        generateMemSrc2Instruction(cg, TR::InstOpCode::vstpoffq, node, MRef_disp(cg, dstEndReg, -32),
+                            vectorValueReg, vectorValueReg);
                     } else {
                         generateMemSrc1Instruction(cg, TR::InstOpCode::vstrimmq, node,
-                            TR::MemoryReference::createWithDisplacement(cg, dstReg, (remainingLength + 32) & (~0x1f)),
-                            vectorValueReg);
+                            MRef_disp(cg, dstReg, (remainingLength + 32) & (~0x1f)), vectorValueReg);
                         /* now the left over is not larger than 32 bytes. */
-                        generateMemSrc2Instruction(cg, TR::InstOpCode::vstpoffq, node,
-                            TR::MemoryReference::createWithDisplacement(cg, dstEndReg, -32), vectorValueReg,
-                            vectorValueReg);
+                        generateMemSrc2Instruction(cg, TR::InstOpCode::vstpoffq, node, MRef_disp(cg, dstEndReg, -32),
+                            vectorValueReg, vectorValueReg);
                     }
                     srm->reclaimScratchRegister(dstEndReg);
                 } else {
                     if (lenMod32 == 0) {
                         for (int i = 0; i < length; i += 32) {
-                            generateMemSrc2Instruction(cg, TR::InstOpCode::vstpoffq, node,
-                                TR::MemoryReference::createWithDisplacement(cg, dstReg, i), vectorValueReg,
-                                vectorValueReg);
+                            generateMemSrc2Instruction(cg, TR::InstOpCode::vstpoffq, node, MRef_disp(cg, dstReg, i),
+                                vectorValueReg, vectorValueReg);
                         }
                     } else {
                         for (int i = 0; i < length - 32; i += 32) {
-                            generateMemSrc2Instruction(cg, TR::InstOpCode::vstpoffq, node,
-                                TR::MemoryReference::createWithDisplacement(cg, dstReg, i), vectorValueReg,
-                                vectorValueReg);
+                            generateMemSrc2Instruction(cg, TR::InstOpCode::vstpoffq, node, MRef_disp(cg, dstReg, i),
+                                vectorValueReg, vectorValueReg);
                         }
                         if (lenMod32 == 16) {
                             generateMemSrc1Instruction(cg, TR::InstOpCode::vstrimmq, node,
-                                TR::MemoryReference::createWithDisplacement(cg, dstReg, length - 16), vectorValueReg);
+                                MRef_disp(cg, dstReg, length - 16), vectorValueReg);
                         } else {
                             TR::Register *dstEndReg = srm->findOrCreateScratchRegister();
                             generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::addimmx, node, dstEndReg, dstReg,
                                 length);
                             if (lenMod32 > 16) {
                                 generateMemSrc2Instruction(cg, TR::InstOpCode::vstpoffq, node,
-                                    TR::MemoryReference::createWithDisplacement(cg, dstEndReg, -32), vectorValueReg,
-                                    vectorValueReg);
+                                    MRef_disp(cg, dstEndReg, -32), vectorValueReg, vectorValueReg);
                             } else {
                                 generateMemSrc1Instruction(cg, TR::InstOpCode::vsturq, node,
-                                    TR::MemoryReference::createWithDisplacement(cg, dstEndReg, -16), vectorValueReg);
+                                    MRef_disp(cg, dstEndReg, -16), vectorValueReg);
                             }
                             srm->reclaimScratchRegister(dstEndReg);
                         }
@@ -6077,8 +6069,7 @@ TR::Register *OMR::ARM64::TreeEvaluator::arraysetEvaluator(TR::Node *node, TR::C
                 TR::InstOpCode::Mnemonic op = (length == 16) ? TR::InstOpCode::vstrimmq
                     : (length == 8)                          ? TR::InstOpCode::vstrimmd
                                                              : TR::InstOpCode::vstrimms;
-                generateMemSrc1Instruction(cg, op, node, TR::MemoryReference::createWithDisplacement(cg, dstReg, 0),
-                    vectorValueReg);
+                generateMemSrc1Instruction(cg, op, node, MRef_disp(cg, dstReg, 0), vectorValueReg);
             } else {
                 TR::InstOpCode::Mnemonic op = (length >= 16) ? TR::InstOpCode::vstrimmq
                     : (length >= 8)                          ? TR::InstOpCode::vstrimmd
@@ -6086,10 +6077,8 @@ TR::Register *OMR::ARM64::TreeEvaluator::arraysetEvaluator(TR::Node *node, TR::C
                 int32_t offset = (length >= 16) ? -16 : (length >= 8) ? -8 : -4;
                 TR::Register *dstEndReg = srm->findOrCreateScratchRegister();
                 generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::addimmx, node, dstEndReg, dstReg, length);
-                generateMemSrc1Instruction(cg, op, node, TR::MemoryReference::createWithDisplacement(cg, dstReg, 0),
-                    vectorValueReg);
-                generateMemSrc1Instruction(cg, op, node,
-                    TR::MemoryReference::createWithDisplacement(cg, dstEndReg, offset), vectorValueReg);
+                generateMemSrc1Instruction(cg, op, node, MRef_disp(cg, dstReg, 0), vectorValueReg);
+                generateMemSrc1Instruction(cg, op, node, MRef_disp(cg, dstEndReg, offset), vectorValueReg);
                 srm->reclaimScratchRegister(dstEndReg);
             }
         } else {
@@ -6102,8 +6091,7 @@ TR::Register *OMR::ARM64::TreeEvaluator::arraysetEvaluator(TR::Node *node, TR::C
                                                      : TR::InstOpCode::vstrimmd;
             valueReg = isValueZero ? cg->allocateRegister() : cg->evaluate(valueNode);
             for (int i = 0; i < length / elementSize; i++) {
-                generateMemSrc1Instruction(cg, strOpCode, node,
-                    TR::MemoryReference::createWithDisplacement(cg, dstReg, i * elementSize), valueReg);
+                generateMemSrc1Instruction(cg, strOpCode, node, MRef_disp(cg, dstReg, i * elementSize), valueReg);
             }
         }
         if ((valueReg != NULL) && isValueZero) {
@@ -6181,8 +6169,8 @@ TR::Register *OMR::ARM64::TreeEvaluator::arraysetEvaluator(TR::Node *node, TR::C
         generateCompareImmInstruction(cg, node, lengthReg, 32, true);
         auto branchToLessThan32LabelInstr = generateConditionalBranchInstruction(cg, node, lessThan32Label, TR::CC_CC);
 
-        generateMemSrc2Instruction(cg, TR::InstOpCode::vstpoffq, node,
-            TR::MemoryReference::createWithDisplacement(cg, dstReg, 0), vectorValueReg, vectorValueReg);
+        generateMemSrc2Instruction(cg, TR::InstOpCode::vstpoffq, node, MRef_disp(cg, dstReg, 0), vectorValueReg,
+            vectorValueReg);
 
         TR::LabelSymbol *lessThanOrEqual96Label = generateLabelSymbol(cg);
         generateCompareImmInstruction(cg, node, lengthReg, 96, true);
@@ -6217,16 +6205,16 @@ TR::Register *OMR::ARM64::TreeEvaluator::arraysetEvaluator(TR::Node *node, TR::C
         TR::LabelSymbol *mainLoopLabel = generateLabelSymbol(cg);
         auto mainLoopLabelInstr = generateLabelInstruction(cg, TR::InstOpCode::label, node, mainLoopLabel);
         generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::subsimmx, node, lengthReg, lengthReg, 64);
-        generateMemSrc2Instruction(cg, TR::InstOpCode::vstpoffq, node,
-            TR::MemoryReference::createWithDisplacement(cg, dstReg, 32), vectorValueReg, vectorValueReg);
-        generateMemSrc2Instruction(cg, TR::InstOpCode::vstppreq, node,
-            TR::MemoryReference::createWithDisplacement(cg, dstReg, 64), vectorValueReg, vectorValueReg);
+        generateMemSrc2Instruction(cg, TR::InstOpCode::vstpoffq, node, MRef_disp(cg, dstReg, 32), vectorValueReg,
+            vectorValueReg);
+        generateMemSrc2Instruction(cg, TR::InstOpCode::vstppreq, node, MRef_disp(cg, dstReg, 64), vectorValueReg,
+            vectorValueReg);
         auto branchBackToMainLoopLabelInstr = generateConditionalBranchInstruction(cg, node, mainLoopLabel, TR::CC_HI);
         auto adjustDstRegInstr = generateTrg1Src2Instruction(cg, TR::InstOpCode::addx, node, dstReg, dstReg, lengthReg);
-        generateMemSrc2Instruction(cg, TR::InstOpCode::vstpoffq, node,
-            TR::MemoryReference::createWithDisplacement(cg, dstReg, 32), vectorValueReg, vectorValueReg);
-        generateMemSrc2Instruction(cg, TR::InstOpCode::vstpoffq, node,
-            TR::MemoryReference::createWithDisplacement(cg, dstReg, 64), vectorValueReg, vectorValueReg);
+        generateMemSrc2Instruction(cg, TR::InstOpCode::vstpoffq, node, MRef_disp(cg, dstReg, 32), vectorValueReg,
+            vectorValueReg);
+        generateMemSrc2Instruction(cg, TR::InstOpCode::vstpoffq, node, MRef_disp(cg, dstReg, 64), vectorValueReg,
+            vectorValueReg);
 
         if (debugObj) {
             debugObj->addInstructionComment(mainLoopLabelInstr, "mainLoopLabel");
@@ -6245,11 +6233,11 @@ TR::Register *OMR::ARM64::TreeEvaluator::arraysetEvaluator(TR::Node *node, TR::C
             = generateLabelInstruction(cg, TR::InstOpCode::label, node, lessThanOrEqual96Label);
         auto branchToLessThan64LabelInstr
             = generateTestBitBranchInstruction(cg, TR::InstOpCode::tbz, node, lengthReg, 6, lessThan64Label);
-        generateMemSrc2Instruction(cg, TR::InstOpCode::vstpoffq, node,
-            TR::MemoryReference::createWithDisplacement(cg, dstReg, 32), vectorValueReg, vectorValueReg);
+        generateMemSrc2Instruction(cg, TR::InstOpCode::vstpoffq, node, MRef_disp(cg, dstReg, 32), vectorValueReg,
+            vectorValueReg);
         auto lessThan64LabelInstr = generateLabelInstruction(cg, TR::InstOpCode::label, node, lessThan64Label);
-        generateMemSrc2Instruction(cg, TR::InstOpCode::vstpoffq, node,
-            TR::MemoryReference::createWithDisplacement(cg, dstEndReg, -32), vectorValueReg, vectorValueReg);
+        generateMemSrc2Instruction(cg, TR::InstOpCode::vstpoffq, node, MRef_disp(cg, dstEndReg, -32), vectorValueReg,
+            vectorValueReg);
         auto branchToDoneLabelInstr3 = generateLabelInstruction(cg, TR::InstOpCode::b, node, doneLabel);
         if (debugObj) {
             debugObj->addInstructionComment(lessThanOrEqual96LabelInstr, "lessThanOrEqual96Label");
@@ -6268,10 +6256,8 @@ TR::Register *OMR::ARM64::TreeEvaluator::arraysetEvaluator(TR::Node *node, TR::C
             debugObj->addInstructionComment(branchToLessThan16LabelInstr, "Jumps to lessThan16Label if length < 16.");
         }
 
-        generateMemSrc1Instruction(cg, TR::InstOpCode::vstrimmq, node,
-            TR::MemoryReference::createWithDisplacement(cg, dstReg, 0), vectorValueReg);
-        generateMemSrc1Instruction(cg, TR::InstOpCode::vsturq, node,
-            TR::MemoryReference::createWithDisplacement(cg, dstEndReg, -16), vectorValueReg);
+        generateMemSrc1Instruction(cg, TR::InstOpCode::vstrimmq, node, MRef_disp(cg, dstReg, 0), vectorValueReg);
+        generateMemSrc1Instruction(cg, TR::InstOpCode::vsturq, node, MRef_disp(cg, dstEndReg, -16), vectorValueReg);
 
         auto branchToDoneLabelInstr4 = generateLabelInstruction(cg, TR::InstOpCode::b, node, doneLabel);
         if (debugObj) {
@@ -6282,7 +6268,7 @@ TR::Register *OMR::ARM64::TreeEvaluator::arraysetEvaluator(TR::Node *node, TR::C
         if (elementSize == 8) {
             generateMemSrc1Instruction(cg,
                 valueNode->getDataType().isFloatingPoint() ? TR::InstOpCode::vstrimmd : TR::InstOpCode::strimmx, node,
-                TR::MemoryReference::createWithDisplacement(cg, dstReg, 0), valueReg);
+                MRef_disp(cg, dstReg, 0), valueReg);
         } else {
             TR::LabelSymbol *elementLoopLabel = generateLabelSymbol(cg);
             auto elementLoopLabelInstr = generateLabelInstruction(cg, TR::InstOpCode::label, node, elementLoopLabel);
@@ -6294,8 +6280,7 @@ TR::Register *OMR::ARM64::TreeEvaluator::arraysetEvaluator(TR::Node *node, TR::C
                                                : TR::InstOpCode::strpostx)
                 : valueNode->getDataType().isFloat() ? TR::InstOpCode::vstrposts
                                                      : TR::InstOpCode::vstrpostd;
-            generateMemSrc1Instruction(cg, strOpCode, node,
-                TR::MemoryReference::createWithDisplacement(cg, dstReg, elementSize), valueReg);
+            generateMemSrc1Instruction(cg, strOpCode, node, MRef_disp(cg, dstReg, elementSize), valueReg);
             auto branchBackToElementLoopLabelInstr
                 = generateConditionalBranchInstruction(cg, node, elementLoopLabel, TR::CC_HI);
             if (debugObj) {
@@ -6497,10 +6482,8 @@ static TR::Register *arraycmpEvaluatorHelper(TR::Node *node, TR::CodeGenerator *
     TR::LabelSymbol *loop16Label = generateLabelSymbol(cg);
     {
         auto loop16LabelInstr = generateLabelInstruction(cg, TR::InstOpCode::label, node, loop16Label);
-        generateTrg2MemInstruction(cg, TR::InstOpCode::ldppostx, node, data1Reg, data3Reg,
-            TR::MemoryReference::createWithDisplacement(cg, src1Reg, 16));
-        generateTrg2MemInstruction(cg, TR::InstOpCode::ldppostx, node, data2Reg, data4Reg,
-            TR::MemoryReference::createWithDisplacement(cg, src2Reg, 16));
+        generateTrg2MemInstruction(cg, TR::InstOpCode::ldppostx, node, data1Reg, data3Reg, MRef_disp(cg, src1Reg, 16));
+        generateTrg2MemInstruction(cg, TR::InstOpCode::ldppostx, node, data2Reg, data4Reg, MRef_disp(cg, src2Reg, 16));
         if (isArrayCmpLen) {
             generateTrg1Src2Instruction(cg, TR::InstOpCode::subsx, node, data1Reg, data1Reg, data2Reg);
         } else {
@@ -6598,10 +6581,8 @@ static TR::Register *arraycmpEvaluatorHelper(TR::Node *node, TR::CodeGenerator *
 
         auto lessThan16LabelInstr = generateLabelInstruction(cg, TR::InstOpCode::label, node, lessThan16Label);
         generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::subsimmx, node, lengthReg, lengthReg, 1);
-        generateTrg1MemInstruction(cg, TR::InstOpCode::ldrbpost, node, data1Reg,
-            TR::MemoryReference::createWithDisplacement(cg, src1Reg, 1));
-        generateTrg1MemInstruction(cg, TR::InstOpCode::ldrbpost, node, data2Reg,
-            TR::MemoryReference::createWithDisplacement(cg, src2Reg, 1));
+        generateTrg1MemInstruction(cg, TR::InstOpCode::ldrbpost, node, data1Reg, MRef_disp(cg, src1Reg, 1));
+        generateTrg1MemInstruction(cg, TR::InstOpCode::ldrbpost, node, data2Reg, MRef_disp(cg, src2Reg, 1));
         generateConditionalCompareInstruction(cg, node, data1Reg, data2Reg, 0, TR::CC_HI);
         auto branchBacktoLessThan16LabelInstr
             = generateConditionalBranchInstruction(cg, node, lessThan16Label, TR::CC_EQ);
@@ -6702,23 +6683,15 @@ static void inlineConstantLengthForwardArrayCopy(TR::Node *node, int64_t byteLen
         generateLabelInstruction(cg, TR::InstOpCode::label, node, loopLabel);
 
         // Copy 32x4 bytes in a loop
-        generateTrg2MemInstruction(cg, TR::InstOpCode::vldppostq, node, dataReg1, dataReg2,
-            TR::MemoryReference::createWithDisplacement(cg, srcReg, 32));
-        generateMemSrc2Instruction(cg, TR::InstOpCode::vstppostq, node,
-            TR::MemoryReference::createWithDisplacement(cg, dstReg, 32), dataReg1, dataReg2);
-        generateTrg2MemInstruction(cg, TR::InstOpCode::vldppostq, node, dataReg1, dataReg2,
-            TR::MemoryReference::createWithDisplacement(cg, srcReg, 32));
-        generateMemSrc2Instruction(cg, TR::InstOpCode::vstppostq, node,
-            TR::MemoryReference::createWithDisplacement(cg, dstReg, 32), dataReg1, dataReg2);
-        generateTrg2MemInstruction(cg, TR::InstOpCode::vldppostq, node, dataReg1, dataReg2,
-            TR::MemoryReference::createWithDisplacement(cg, srcReg, 32));
-        generateMemSrc2Instruction(cg, TR::InstOpCode::vstppostq, node,
-            TR::MemoryReference::createWithDisplacement(cg, dstReg, 32), dataReg1, dataReg2);
-        generateTrg2MemInstruction(cg, TR::InstOpCode::vldppostq, node, dataReg1, dataReg2,
-            TR::MemoryReference::createWithDisplacement(cg, srcReg, 32));
+        generateTrg2MemInstruction(cg, TR::InstOpCode::vldppostq, node, dataReg1, dataReg2, MRef_disp(cg, srcReg, 32));
+        generateMemSrc2Instruction(cg, TR::InstOpCode::vstppostq, node, MRef_disp(cg, dstReg, 32), dataReg1, dataReg2);
+        generateTrg2MemInstruction(cg, TR::InstOpCode::vldppostq, node, dataReg1, dataReg2, MRef_disp(cg, srcReg, 32));
+        generateMemSrc2Instruction(cg, TR::InstOpCode::vstppostq, node, MRef_disp(cg, dstReg, 32), dataReg1, dataReg2);
+        generateTrg2MemInstruction(cg, TR::InstOpCode::vldppostq, node, dataReg1, dataReg2, MRef_disp(cg, srcReg, 32));
+        generateMemSrc2Instruction(cg, TR::InstOpCode::vstppostq, node, MRef_disp(cg, dstReg, 32), dataReg1, dataReg2);
+        generateTrg2MemInstruction(cg, TR::InstOpCode::vldppostq, node, dataReg1, dataReg2, MRef_disp(cg, srcReg, 32));
         generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::subimmx, node, cntReg, cntReg, 1);
-        generateMemSrc2Instruction(cg, TR::InstOpCode::vstppostq, node,
-            TR::MemoryReference::createWithDisplacement(cg, dstReg, 32), dataReg1, dataReg2);
+        generateMemSrc2Instruction(cg, TR::InstOpCode::vstppostq, node, MRef_disp(cg, dstReg, 32), dataReg1, dataReg2);
         generateCompareBranchInstruction(cg, TR::InstOpCode::cbnzx, node, cntReg, loopLabel);
 
         TR::LabelSymbol *loopEndLabel = generateLabelSymbol(cg);
@@ -6729,10 +6702,8 @@ static void inlineConstantLengthForwardArrayCopy(TR::Node *node, int64_t byteLen
     }
 
     while (residue >= 32) {
-        generateTrg2MemInstruction(cg, TR::InstOpCode::vldppostq, node, dataReg1, dataReg2,
-            TR::MemoryReference::createWithDisplacement(cg, srcReg, 32));
-        generateMemSrc2Instruction(cg, TR::InstOpCode::vstppostq, node,
-            TR::MemoryReference::createWithDisplacement(cg, dstReg, 32), dataReg1, dataReg2);
+        generateTrg2MemInstruction(cg, TR::InstOpCode::vldppostq, node, dataReg1, dataReg2, MRef_disp(cg, srcReg, 32));
+        generateMemSrc2Instruction(cg, TR::InstOpCode::vstppostq, node, MRef_disp(cg, dstReg, 32), dataReg1, dataReg2);
         residue -= 32;
     }
 
@@ -6765,10 +6736,8 @@ static void inlineConstantLengthForwardArrayCopy(TR::Node *node, int64_t byteLen
             dataSize = 1;
         }
 
-        generateTrg1MemInstruction(cg, loadOp, node, dataReg,
-            TR::MemoryReference::createWithDisplacement(cg, srcReg, offset));
-        generateMemSrc1Instruction(cg, storeOp, node, TR::MemoryReference::createWithDisplacement(cg, dstReg, offset),
-            dataReg);
+        generateTrg1MemInstruction(cg, loadOp, node, dataReg, MRef_disp(cg, srcReg, offset));
+        generateMemSrc1Instruction(cg, storeOp, node, MRef_disp(cg, dstReg, offset), dataReg);
         offset += dataSize;
         residue -= dataSize;
     }
@@ -6813,23 +6782,15 @@ static void inlineConstantLengthBackwardArrayCopy(TR::Node *node, int64_t byteLe
         generateLabelInstruction(cg, TR::InstOpCode::label, node, loopLabel);
 
         // Copy 32x4 bytes in a loop
-        generateTrg2MemInstruction(cg, TR::InstOpCode::vldppreq, node, dataReg1, dataReg2,
-            TR::MemoryReference::createWithDisplacement(cg, srcReg, -32));
-        generateMemSrc2Instruction(cg, TR::InstOpCode::vstppreq, node,
-            TR::MemoryReference::createWithDisplacement(cg, dstReg, -32), dataReg1, dataReg2);
-        generateTrg2MemInstruction(cg, TR::InstOpCode::vldppreq, node, dataReg1, dataReg2,
-            TR::MemoryReference::createWithDisplacement(cg, srcReg, -32));
-        generateMemSrc2Instruction(cg, TR::InstOpCode::vstppreq, node,
-            TR::MemoryReference::createWithDisplacement(cg, dstReg, -32), dataReg1, dataReg2);
-        generateTrg2MemInstruction(cg, TR::InstOpCode::vldppreq, node, dataReg1, dataReg2,
-            TR::MemoryReference::createWithDisplacement(cg, srcReg, -32));
-        generateMemSrc2Instruction(cg, TR::InstOpCode::vstppreq, node,
-            TR::MemoryReference::createWithDisplacement(cg, dstReg, -32), dataReg1, dataReg2);
-        generateTrg2MemInstruction(cg, TR::InstOpCode::vldppreq, node, dataReg1, dataReg2,
-            TR::MemoryReference::createWithDisplacement(cg, srcReg, -32));
+        generateTrg2MemInstruction(cg, TR::InstOpCode::vldppreq, node, dataReg1, dataReg2, MRef_disp(cg, srcReg, -32));
+        generateMemSrc2Instruction(cg, TR::InstOpCode::vstppreq, node, MRef_disp(cg, dstReg, -32), dataReg1, dataReg2);
+        generateTrg2MemInstruction(cg, TR::InstOpCode::vldppreq, node, dataReg1, dataReg2, MRef_disp(cg, srcReg, -32));
+        generateMemSrc2Instruction(cg, TR::InstOpCode::vstppreq, node, MRef_disp(cg, dstReg, -32), dataReg1, dataReg2);
+        generateTrg2MemInstruction(cg, TR::InstOpCode::vldppreq, node, dataReg1, dataReg2, MRef_disp(cg, srcReg, -32));
+        generateMemSrc2Instruction(cg, TR::InstOpCode::vstppreq, node, MRef_disp(cg, dstReg, -32), dataReg1, dataReg2);
+        generateTrg2MemInstruction(cg, TR::InstOpCode::vldppreq, node, dataReg1, dataReg2, MRef_disp(cg, srcReg, -32));
         generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::subimmx, node, cntReg, cntReg, 1);
-        generateMemSrc2Instruction(cg, TR::InstOpCode::vstppreq, node,
-            TR::MemoryReference::createWithDisplacement(cg, dstReg, -32), dataReg1, dataReg2);
+        generateMemSrc2Instruction(cg, TR::InstOpCode::vstppreq, node, MRef_disp(cg, dstReg, -32), dataReg1, dataReg2);
         generateCompareBranchInstruction(cg, TR::InstOpCode::cbnzx, node, cntReg, loopLabel);
 
         TR::LabelSymbol *loopEndLabel = generateLabelSymbol(cg);
@@ -6840,10 +6801,8 @@ static void inlineConstantLengthBackwardArrayCopy(TR::Node *node, int64_t byteLe
     }
 
     while (residue >= 32) {
-        generateTrg2MemInstruction(cg, TR::InstOpCode::vldppreq, node, dataReg1, dataReg2,
-            TR::MemoryReference::createWithDisplacement(cg, srcReg, -32));
-        generateMemSrc2Instruction(cg, TR::InstOpCode::vstppreq, node,
-            TR::MemoryReference::createWithDisplacement(cg, dstReg, -32), dataReg1, dataReg2);
+        generateTrg2MemInstruction(cg, TR::InstOpCode::vldppreq, node, dataReg1, dataReg2, MRef_disp(cg, srcReg, -32));
+        generateMemSrc2Instruction(cg, TR::InstOpCode::vstppreq, node, MRef_disp(cg, dstReg, -32), dataReg1, dataReg2);
         residue -= 32;
     }
 
@@ -6875,10 +6834,8 @@ static void inlineConstantLengthBackwardArrayCopy(TR::Node *node, int64_t byteLe
             dataSize = 1;
         }
 
-        generateTrg1MemInstruction(cg, loadOp, node, dataReg,
-            TR::MemoryReference::createWithDisplacement(cg, srcReg, -dataSize));
-        generateMemSrc1Instruction(cg, storeOp, node,
-            TR::MemoryReference::createWithDisplacement(cg, dstReg, -dataSize), dataReg);
+        generateTrg1MemInstruction(cg, loadOp, node, dataReg, MRef_disp(cg, srcReg, -dataSize));
+        generateMemSrc1Instruction(cg, storeOp, node, MRef_disp(cg, dstReg, -dataSize), dataReg);
         residue -= dataSize;
     }
 
@@ -7006,58 +6963,48 @@ static void inlinePrimitiveForwardArraycopy(TR::Node *node, TR::Register *srcAdd
     TR::LabelSymbol *fwAC16Label = generateLabelSymbol(cg);
     generateTestBitBranchInstruction(cg, TR::InstOpCode::tbz, node, lengthReg, 5, fwAC16Label);
     generateTrg2MemInstruction(cg, TR::InstOpCode::vldppostq, node, v30ScratchReg, v31ScratchReg,
-        TR::MemoryReference::createWithDisplacement(cg, srcAddrReg, 32));
-    generateMemSrc2Instruction(cg, TR::InstOpCode::vstppostq, node,
-        TR::MemoryReference::createWithDisplacement(cg, dstAddrReg, 32), v30ScratchReg, v31ScratchReg);
+        MRef_disp(cg, srcAddrReg, 32));
+    generateMemSrc2Instruction(cg, TR::InstOpCode::vstppostq, node, MRef_disp(cg, dstAddrReg, 32), v30ScratchReg,
+        v31ScratchReg);
 
     // Copy 16 bytes
     //
     generateLabelInstruction(cg, TR::InstOpCode::label, node, fwAC16Label);
     TR::LabelSymbol *fwAC8Label = generateLabelSymbol(cg);
     generateTestBitBranchInstruction(cg, TR::InstOpCode::tbz, node, lengthReg, 4, fwAC8Label);
-    generateTrg1MemInstruction(cg, TR::InstOpCode::vldrpostq, node, v30ScratchReg,
-        TR::MemoryReference::createWithDisplacement(cg, srcAddrReg, 16));
-    generateMemSrc1Instruction(cg, TR::InstOpCode::vstrpostq, node,
-        TR::MemoryReference::createWithDisplacement(cg, dstAddrReg, 16), v30ScratchReg);
+    generateTrg1MemInstruction(cg, TR::InstOpCode::vldrpostq, node, v30ScratchReg, MRef_disp(cg, srcAddrReg, 16));
+    generateMemSrc1Instruction(cg, TR::InstOpCode::vstrpostq, node, MRef_disp(cg, dstAddrReg, 16), v30ScratchReg);
 
     // Copy 8 bytes
     //
     generateLabelInstruction(cg, TR::InstOpCode::label, node, fwAC8Label);
     TR::LabelSymbol *fwAC4Label = generateLabelSymbol(cg);
     generateTestBitBranchInstruction(cg, TR::InstOpCode::tbz, node, lengthReg, 3, fwAC4Label);
-    generateTrg1MemInstruction(cg, TR::InstOpCode::ldrpostx, node, x3ScratchReg,
-        TR::MemoryReference::createWithDisplacement(cg, srcAddrReg, 8));
-    generateMemSrc1Instruction(cg, TR::InstOpCode::strpostx, node,
-        TR::MemoryReference::createWithDisplacement(cg, dstAddrReg, 8), x3ScratchReg);
+    generateTrg1MemInstruction(cg, TR::InstOpCode::ldrpostx, node, x3ScratchReg, MRef_disp(cg, srcAddrReg, 8));
+    generateMemSrc1Instruction(cg, TR::InstOpCode::strpostx, node, MRef_disp(cg, dstAddrReg, 8), x3ScratchReg);
 
     // Copy 4 bytes
     //
     generateLabelInstruction(cg, TR::InstOpCode::label, node, fwAC4Label);
     TR::LabelSymbol *fwAC2Label = generateLabelSymbol(cg);
     generateTestBitBranchInstruction(cg, TR::InstOpCode::tbz, node, lengthReg, 2, fwAC2Label);
-    generateTrg1MemInstruction(cg, TR::InstOpCode::ldrpostw, node, x3ScratchReg,
-        TR::MemoryReference::createWithDisplacement(cg, srcAddrReg, 4));
-    generateMemSrc1Instruction(cg, TR::InstOpCode::strpostw, node,
-        TR::MemoryReference::createWithDisplacement(cg, dstAddrReg, 4), x3ScratchReg);
+    generateTrg1MemInstruction(cg, TR::InstOpCode::ldrpostw, node, x3ScratchReg, MRef_disp(cg, srcAddrReg, 4));
+    generateMemSrc1Instruction(cg, TR::InstOpCode::strpostw, node, MRef_disp(cg, dstAddrReg, 4), x3ScratchReg);
 
     // Copy 2 bytes
     //
     generateLabelInstruction(cg, TR::InstOpCode::label, node, fwAC2Label);
     TR::LabelSymbol *fwAC1Label = generateLabelSymbol(cg);
     generateTestBitBranchInstruction(cg, TR::InstOpCode::tbz, node, lengthReg, 1, fwAC1Label);
-    generateTrg1MemInstruction(cg, TR::InstOpCode::ldrhpost, node, x3ScratchReg,
-        TR::MemoryReference::createWithDisplacement(cg, srcAddrReg, 2));
-    generateMemSrc1Instruction(cg, TR::InstOpCode::strhpost, node,
-        TR::MemoryReference::createWithDisplacement(cg, dstAddrReg, 2), x3ScratchReg);
+    generateTrg1MemInstruction(cg, TR::InstOpCode::ldrhpost, node, x3ScratchReg, MRef_disp(cg, srcAddrReg, 2));
+    generateMemSrc1Instruction(cg, TR::InstOpCode::strhpost, node, MRef_disp(cg, dstAddrReg, 2), x3ScratchReg);
 
     // Copy 1 byte
     //
     generateLabelInstruction(cg, TR::InstOpCode::label, node, fwAC1Label);
     generateTestBitBranchInstruction(cg, TR::InstOpCode::tbz, node, lengthReg, 0, doneLabel);
-    generateTrg1MemInstruction(cg, TR::InstOpCode::ldrbpost, node, x3ScratchReg,
-        TR::MemoryReference::createWithDisplacement(cg, srcAddrReg, 1));
-    generateMemSrc1Instruction(cg, TR::InstOpCode::strbpost, node,
-        TR::MemoryReference::createWithDisplacement(cg, dstAddrReg, 1), x3ScratchReg);
+    generateTrg1MemInstruction(cg, TR::InstOpCode::ldrbpost, node, x3ScratchReg, MRef_disp(cg, srcAddrReg, 1));
+    generateMemSrc1Instruction(cg, TR::InstOpCode::strbpost, node, MRef_disp(cg, dstAddrReg, 1), x3ScratchReg);
 
     generateLabelInstruction(cg, TR::InstOpCode::label, node, doneLabel, deps);
 
@@ -7258,7 +7205,7 @@ TR::Register *OMR::ARM64::TreeEvaluator::loadaddrEvaluator(TR::Node *node, TR::C
 {
     TR::Register *resultReg;
     TR::Symbol *sym = node->getSymbol();
-    TR::MemoryReference *mref = TR::MemoryReference::createWithSymRef(cg, node, node->getSymbolReference());
+    TR::MemoryReference *mref = MRef_sym(cg, node, node->getSymbolReference());
 
     if (mref->getUnresolvedSnippet() != NULL) {
         resultReg = sym->isLocalObject() ? cg->allocateCollectedReferenceRegister() : cg->allocateRegister();
@@ -7585,8 +7532,7 @@ static TR::Register *intrinsicAtomicAdd(TR::Node *node, TR::CodeGenerator *cg)
          * convention is somewhat confusing. Its `treg` register actually is a source register and `sreg` register is a
          * target register. This needs to be fixed at some point.
          */
-        generateTrg1MemSrc1Instruction(cg, op, node, valueReg,
-            TR::MemoryReference::createWithDisplacement(cg, addressReg, 0), newValueReg);
+        generateTrg1MemSrc1Instruction(cg, op, node, valueReg, MRef_disp(cg, addressReg, 0), newValueReg);
     } else {
         /*
          * Generating non-intuitive instruction sequence which uses load exclusive register
@@ -7617,16 +7563,14 @@ static TR::Register *intrinsicAtomicAdd(TR::Node *node, TR::CodeGenerator *cg)
         generateLabelInstruction(cg, TR::InstOpCode::label, node, loopLabel);
 
         auto loadop = is64Bit ? TR::InstOpCode::ldxrx : TR::InstOpCode::ldxrw;
-        generateTrg1MemInstruction(cg, loadop, node, oldValueReg,
-            TR::MemoryReference::createWithDisplacement(cg, addressReg, 0));
+        generateTrg1MemInstruction(cg, loadop, node, oldValueReg, MRef_disp(cg, addressReg, 0));
 
         generateTrg1Src2Instruction(cg, (is64Bit ? TR::InstOpCode::addx : TR::InstOpCode::addw), node, newValueReg,
             oldValueReg, valueReg);
 
         // store release exclusive register
         auto storeop = is64Bit ? TR::InstOpCode::stlxrx : TR::InstOpCode::stlxrw;
-        generateTrg1MemSrc1Instruction(cg, storeop, node, oldValueReg,
-            TR::MemoryReference::createWithDisplacement(cg, addressReg, 0), newValueReg);
+        generateTrg1MemSrc1Instruction(cg, storeop, node, oldValueReg, MRef_disp(cg, addressReg, 0), newValueReg);
         generateCompareBranchInstruction(cg, TR::InstOpCode::cbnzx, node, oldValueReg, loopLabel);
 
         generateSynchronizationInstruction(cg, TR::InstOpCode::dmb, node, TR::InstOpCode::ish);
@@ -7698,8 +7642,7 @@ TR::Register *intrinsicAtomicFetchAndAdd(TR::Node *node, TR::CodeGenerator *cg)
          * convention is somewhat confusing. Its `treg` register actually is a source register and `sreg` register is a
          * target register. This needs to be fixed at some point.
          */
-        generateTrg1MemSrc1Instruction(cg, op, node, valueReg,
-            TR::MemoryReference::createWithDisplacement(cg, addressReg, 0), oldValueReg);
+        generateTrg1MemSrc1Instruction(cg, op, node, valueReg, MRef_disp(cg, addressReg, 0), oldValueReg);
     } else {
         int64_t value = 0;
         bool negate = false;
@@ -7759,8 +7702,7 @@ TR::Register *intrinsicAtomicFetchAndAdd(TR::Node *node, TR::CodeGenerator *cg)
 
         // load acquire exclusive register
         auto loadop = is64Bit ? TR::InstOpCode::ldxrx : TR::InstOpCode::ldxrw;
-        generateTrg1MemInstruction(cg, loadop, node, oldValueReg,
-            TR::MemoryReference::createWithDisplacement(cg, addressReg, 0));
+        generateTrg1MemInstruction(cg, loadop, node, oldValueReg, MRef_disp(cg, addressReg, 0));
 
         if (valueReg == NULL) {
             if (!negate) {
@@ -7776,8 +7718,7 @@ TR::Register *intrinsicAtomicFetchAndAdd(TR::Node *node, TR::CodeGenerator *cg)
         }
         // store release exclusive register
         auto storeop = is64Bit ? TR::InstOpCode::stlxrx : TR::InstOpCode::stlxrw;
-        generateTrg1MemSrc1Instruction(cg, storeop, node, tempReg,
-            TR::MemoryReference::createWithDisplacement(cg, addressReg, 0), newValueReg);
+        generateTrg1MemSrc1Instruction(cg, storeop, node, tempReg, MRef_disp(cg, addressReg, 0), newValueReg);
         generateCompareBranchInstruction(cg, TR::InstOpCode::cbnzx, node, tempReg, loopLabel);
 
         generateSynchronizationInstruction(cg, TR::InstOpCode::dmb, node, TR::InstOpCode::ish);
@@ -7854,8 +7795,7 @@ TR::Register *intrinsicAtomicSwap(TR::Node *node, TR::CodeGenerator *cg)
          * convention is somewhat confusing. Its `treg` register actually is a source register and `sreg` register is a
          * target register. This needs to be fixed at some point.
          */
-        generateTrg1MemSrc1Instruction(cg, op, node, valueReg,
-            TR::MemoryReference::createWithDisplacement(cg, addressReg, 0), oldValueReg);
+        generateTrg1MemSrc1Instruction(cg, op, node, valueReg, MRef_disp(cg, addressReg, 0), oldValueReg);
     } else {
         /*
          * Generating non-intuitive instruction sequence which uses load exclusive register
@@ -7886,13 +7826,11 @@ TR::Register *intrinsicAtomicSwap(TR::Node *node, TR::CodeGenerator *cg)
 
         // load acquire exclusive register
         auto loadop = is64Bit ? TR::InstOpCode::ldxrx : TR::InstOpCode::ldxrw;
-        generateTrg1MemInstruction(cg, loadop, node, oldValueReg,
-            TR::MemoryReference::createWithDisplacement(cg, addressReg, 0));
+        generateTrg1MemInstruction(cg, loadop, node, oldValueReg, MRef_disp(cg, addressReg, 0));
 
         // store release exclusive register
         auto storeop = is64Bit ? TR::InstOpCode::stlxrx : TR::InstOpCode::stlxrw;
-        generateTrg1MemSrc1Instruction(cg, storeop, node, tempReg,
-            TR::MemoryReference::createWithDisplacement(cg, addressReg, 0), valueReg);
+        generateTrg1MemSrc1Instruction(cg, storeop, node, tempReg, MRef_disp(cg, addressReg, 0), valueReg);
         generateCompareBranchInstruction(cg, TR::InstOpCode::cbnzx, node, tempReg, loopLabel);
 
         generateSynchronizationInstruction(cg, TR::InstOpCode::dmb, node, TR::InstOpCode::ish);

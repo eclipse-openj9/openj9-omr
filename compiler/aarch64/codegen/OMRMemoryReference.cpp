@@ -1428,3 +1428,26 @@ uint32_t OMR::ARM64::MemoryReference::estimateBinaryLength(TR::InstOpCode op)
 
     return 0;
 }
+
+TR::MemoryReference *TR::MRef(TR::CodeGenerator *cg) { return TR::MemoryReference::create(cg); }
+
+TR::MemoryReference *TR::MRef_idxReg(TR::CodeGenerator *cg, TR::Register *baseReg, TR::Register *indexReg,
+    uint8_t scale)
+{
+    return TR::MemoryReference::createWithIndexReg(cg, baseReg, indexReg, scale);
+}
+
+TR::MemoryReference *TR::MRef_disp(TR::CodeGenerator *cg, TR::Register *baseReg, int64_t displacement)
+{
+    return TR::MemoryReference::createWithDisplacement(cg, baseReg, displacement);
+}
+
+TR::MemoryReference *TR::MRef_node(TR::CodeGenerator *cg, TR::Node *rootLoadOrStore)
+{
+    return TR::MemoryReference::createWithRootLoadOrStore(cg, rootLoadOrStore);
+}
+
+TR::MemoryReference *TR::MRef_sym(TR::CodeGenerator *cg, TR::Node *node, TR::SymbolReference *symRef)
+{
+    return TR::MemoryReference::createWithSymRef(cg, node, symRef);
+}

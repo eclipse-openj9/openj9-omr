@@ -2434,7 +2434,7 @@ TR::Register *commonLoadEvaluator(TR::Node *node, TR::InstOpCode::Mnemonic op, i
         tempReg = cg->allocateRegister();
     }
     node->setRegister(tempReg);
-    TR::MemoryReference *tempMR = new (cg->trHeapMemory()) TR::MemoryReference(node, memSize, cg);
+    TR::MemoryReference *tempMR = MRef_Node(node, cg);
     Inst_LOAD(op, node, tempReg, tempMR, cg);
 
     /*
@@ -2476,7 +2476,7 @@ TR::Register *OMR::RV::TreeEvaluator::aloadEvaluator(TR::Node *node, TR::CodeGen
 
     node->setRegister(tempReg);
 
-    TR::MemoryReference *tempMR = new (cg->trHeapMemory()) TR::MemoryReference(node, 8, cg);
+    TR::MemoryReference *tempMR = MRef_Node(node, cg);
     Inst_LOAD(OP::_ld, node, tempReg, tempMR, cg);
 
 #ifdef J9_PROJECT_SPECIFIC
@@ -2529,7 +2529,7 @@ TR::Register *OMR::RV::TreeEvaluator::awrtbarEvaluator(TR::Node *node, TR::CodeG
 
 TR::Register *commonStoreEvaluator(TR::Node *node, TR::InstOpCode::Mnemonic op, int32_t memSize, TR::CodeGenerator *cg)
 {
-    TR::MemoryReference *tempMR = new (cg->trHeapMemory()) TR::MemoryReference(node, memSize, cg);
+    TR::MemoryReference *tempMR = MRef_Node(node, cg);
     TR::Node *valueChild;
 
     if (node->getOpCode().isIndirect()) {

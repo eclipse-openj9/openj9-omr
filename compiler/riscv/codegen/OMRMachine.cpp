@@ -161,7 +161,7 @@ TR::RealRegister *OMR::RV::Machine::freeBestRegister(TR::Instruction *currentIns
 
     candidates[0]->setBackingStorage(location);
 
-    tmemref = new (cg()->trHeapMemory()) TR::MemoryReference(currentNode, location->getSymbolReference(), 8, cg());
+    tmemref = MRef_Sym(currentNode, location->getSymbolReference(), cg());
 
     if (!cg()->isOutOfLineColdPath()) {
         TR_Debug *debugObj = cg()->getDebug();
@@ -259,7 +259,7 @@ TR::RealRegister *OMR::RV::Machine::reverseSpillState(TR::Instruction *currentIn
             targetRegister->getRegisterName(comp));
     }
 
-    tmemref = new (cg()->trHeapMemory()) TR::MemoryReference(currentNode, location->getSymbolReference(), 8, cg());
+    tmemref = MRef_Sym(currentNode, location->getSymbolReference(), cg());
 
     switch (rk) {
         case TR_GPR:

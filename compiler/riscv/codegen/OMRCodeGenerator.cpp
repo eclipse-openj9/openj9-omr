@@ -133,13 +133,12 @@ void OMR::RV::CodeGenerator::beginInstructionSelection()
     TR::Compilation *comp = self()->comp();
     TR::Node *startNode = comp->getStartTree()->getNode();
     if (comp->getMethodSymbol()->getLinkageConvention() == TR_Private) {
-        _returnTypeInfoInstruction
-            = static_cast<TR::DataInstruction *>(Inst_DATA(TR::InstOpCode::dd, startNode, 0, self()));
+        _returnTypeInfoInstruction = static_cast<TR::DataInstruction *>(Inst_DATA(OP::dd, startNode, 0, self()));
     } else {
         _returnTypeInfoInstruction = NULL;
     }
 
-    Inst_ADMIN(TR::InstOpCode::proc, startNode, self(), NULL, _returnTypeInfoInstruction);
+    Inst_ADMIN(OP::proc, startNode, self(), NULL, _returnTypeInfoInstruction);
 }
 
 void OMR::RV::CodeGenerator::endInstructionSelection()
@@ -174,7 +173,7 @@ void OMR::RV::CodeGenerator::doBinaryEncoding()
 
     bool skipOneReturn = false;
     while (cursorInstruction) {
-        if (cursorInstruction->getOpCodeValue() == TR::InstOpCode::retn) {
+        if (cursorInstruction->getOpCodeValue() == OP::retn) {
             if (skipOneReturn == false) {
                 TR::Instruction *temp = cursorInstruction->getPrev();
                 getLinkage()->createEpilogue(temp);
@@ -276,7 +275,7 @@ TR::Register *OMR::RV::CodeGenerator::gprClobberEvaluate(TR::Node *node)
     if (node->getReferenceCount() > 1) {
         TR::Register *sourceReg = self()->evaluate(node);
         TR::Register *targetReg = self()->allocateRegister();
-        Inst_ITYPE(TR::InstOpCode::_addi, node, targetReg, sourceReg, 0, self());
+        Inst_ITYPE(OP::_addi, node, targetReg, sourceReg, 0, self());
 
         if (sourceReg->containsCollectedReference()) {
             logprintf(trace, log, "Setting containsCollectedReference on register %s\n",

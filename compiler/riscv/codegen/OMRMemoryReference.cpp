@@ -178,14 +178,14 @@ void OMR::RV::MemoryReference::addToOffset(TR::Node *node, intptr_t amount, TR::
 
         if (_baseRegister != NULL) {
             if (node->getOpCode().isLoadConst() && node->getRegister()) {
-                Inst_RTYPE(TR::InstOpCode::_add, node, newBase, _baseRegister, node->getRegister(), cg);
+                Inst_RTYPE(OP::_add, node, newBase, _baseRegister, node->getRegister(), cg);
             } else {
                 if (VALID_ITYPE_IMM(displacement)) {
-                    Inst_ITYPE(TR::InstOpCode::_addi, node, newBase, _baseRegister, displacement, cg);
+                    Inst_ITYPE(OP::_addi, node, newBase, _baseRegister, displacement, cg);
                 } else {
                     TR::Register *tempReg = cg->allocateRegister();
                     loadConstant64(cg, node, displacement, tempReg);
-                    Inst_RTYPE(TR::InstOpCode::_add, node, newBase, _baseRegister, tempReg, cg);
+                    Inst_RTYPE(OP::_add, node, newBase, _baseRegister, tempReg, cg);
                     cg->stopUsingRegister(tempReg);
                 }
             }
@@ -311,7 +311,7 @@ void OMR::RV::MemoryReference::consolidateRegisters(TR::Register *srcReg, TR::No
             else
                 tempTargetRegister = cg->allocateRegister();
 
-            Inst_RTYPE(TR::InstOpCode::_add, srcTree, tempTargetRegister, _baseRegister, srcReg, cg);
+            Inst_RTYPE(OP::_add, srcTree, tempTargetRegister, _baseRegister, srcReg, cg);
 
             if (_baseRegister != tempTargetRegister) {
                 self()->decNodeReferenceCounts(cg);

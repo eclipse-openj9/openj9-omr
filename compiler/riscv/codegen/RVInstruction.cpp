@@ -391,10 +391,10 @@ void TR::BtypeInstruction::expandIntoFarBranch()
     TR::LabelSymbol *skipBranchLabel = generateLabelSymbol(cg());
     skipBranchLabel->setEstimatedCodeLocation(getEstimatedBinaryLocation() + RISCV_INSTRUCTION_LENGTH);
 
-    TR::Instruction *branchInstr = Inst_JTYPE(TR::InstOpCode::_jal, getNode(), zero, getLabelSymbol(), cg(), self());
+    TR::Instruction *branchInstr = Inst_JTYPE(OP::_jal, getNode(), zero, getLabelSymbol(), cg(), self());
     branchInstr->setEstimatedBinaryLength(RISCV_INSTRUCTION_LENGTH);
 
-    TR::Instruction *labelInstr = Inst_LABEL(TR::InstOpCode::label, getNode(), skipBranchLabel, cg(), branchInstr);
+    TR::Instruction *labelInstr = Inst_LABEL(OP::label, getNode(), skipBranchLabel, cg(), branchInstr);
     labelInstr->setEstimatedBinaryLength(0);
 
     setLabelSymbol(skipBranchLabel);
@@ -583,7 +583,7 @@ uint8_t *TR::VGNOPInstruction::generateBinaryEncoding()
 
     setBinaryEncoding(cursor);
     uint32_t *iPtr = (uint32_t *)cursor;
-    *iPtr = TR_RISCV_ITYPE(TR::InstOpCode::getOpCodeBinaryEncoding(TR::InstOpCode::_addi), 0, 0, 0);
+    *iPtr = TR_RISCV_ITYPE(TR::InstOpCode::getOpCodeBinaryEncoding(OP::_addi), 0, 0, 0);
     length = RISCV_INSTRUCTION_LENGTH;
     setBinaryLength(length);
     return cursor + length;

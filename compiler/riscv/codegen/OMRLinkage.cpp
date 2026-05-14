@@ -201,14 +201,14 @@ static inline TR::InstOpCode::Mnemonic getOpCodeForParmLoads(TR::DataTypes type)
 {
     switch (type) {
         case TR::Double:
-            return TR::InstOpCode::_fld;
+            return OP::_fld;
         case TR::Float:
-            return TR::InstOpCode::_flw;
+            return OP::_flw;
         case TR::Int64:
         case TR::Address:
-            return TR::InstOpCode::_ld;
+            return OP::_ld;
         default:
-            return TR::InstOpCode::_lw;
+            return OP::_lw;
     }
 }
 
@@ -223,14 +223,14 @@ static inline TR::InstOpCode::Mnemonic getOpCodeForParmStores(TR::DataTypes type
 {
     switch (type) {
         case TR::Double:
-            return TR::InstOpCode::_fsd;
+            return OP::_fsd;
         case TR::Float:
-            return TR::InstOpCode::_fsw;
+            return OP::_fsw;
         case TR::Int64:
         case TR::Address:
-            return TR::InstOpCode::_sd;
+            return OP::_sd;
         default:
-            return TR::InstOpCode::_sw;
+            return OP::_sw;
     }
 }
 
@@ -412,11 +412,10 @@ TR::Instruction *OMR::RV::Linkage::copyParametersToHomeLocation(TR::Instruction 
                 TR::Register *trgReg = machine->getRealRegister(regCursor);
                 TR::Register *srcReg = machine->getRealRegister(source);
                 if ((paramType == TR::Double) || (paramType == TR::Float)) {
-                    cursor = Inst_RTYPE((paramType == TR::Double) ? TR::InstOpCode::_fsgnj_d : TR::InstOpCode::_fsgnj_s,
-                        NULL, trgReg, srcReg, srcReg, cg(), cursor);
+                    cursor = Inst_RTYPE((paramType == TR::Double) ? OP::_fsgnj_d : OP::_fsgnj_s, NULL, trgReg, srcReg,
+                        srcReg, cg(), cursor);
                 } else {
-                    cursor = Inst_ITYPE((paramType == TR::Int64) || (paramType == TR::Address) ? TR::InstOpCode::_addi
-                                                                                               : TR::InstOpCode::_addiw,
+                    cursor = Inst_ITYPE((paramType == TR::Int64) || (paramType == TR::Address) ? OP::_addi : OP::_addiw,
                         NULL, trgReg, srcReg, 0, cg(), cursor);
                 }
 

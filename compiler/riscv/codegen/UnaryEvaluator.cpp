@@ -71,7 +71,7 @@ TR::Register *OMR::RV::TreeEvaluator::inegEvaluator(TR::Node *node, TR::CodeGene
     TR::Register *reg = cg->gprClobberEvaluate(firstChild);
     TR::Register *zero = cg->machine()->getRealRegister(TR::RealRegister::zero);
 
-    Inst_RTYPE(TR::InstOpCode::_sub, node, reg, zero, reg, cg);
+    Inst_RTYPE(OP::_sub, node, reg, zero, reg, cg);
 
     firstChild->decReferenceCount();
     return node->setRegister(reg);
@@ -84,9 +84,9 @@ static TR::Register *commonIntegerAbsEvaluator(TR::Node *node, TR::CodeGenerator
     TR::Register *tempReg = cg->allocateRegister();
     bool is64bit = node->getDataType().isInt64();
 
-    Inst_ITYPE(TR::InstOpCode::_srai, node, tempReg, reg, is64bit ? 63 : 31, cg);
-    Inst_RTYPE(TR::InstOpCode::_xor, node, reg, reg, tempReg, cg);
-    Inst_RTYPE(TR::InstOpCode::_sub, node, reg, reg, tempReg, cg);
+    Inst_ITYPE(OP::_srai, node, tempReg, reg, is64bit ? 63 : 31, cg);
+    Inst_RTYPE(OP::_xor, node, reg, reg, tempReg, cg);
+    Inst_RTYPE(OP::_sub, node, reg, reg, tempReg, cg);
 
     cg->stopUsingRegister(tempReg);
     node->setRegister(reg);

@@ -233,10 +233,10 @@ void OMR::RV::RegisterDependencyGroup::assignRegisters(TR::Instruction *currentI
                 TR::InstOpCode::Mnemonic opCode;
                 switch (rk) {
                     case TR_GPR:
-                        opCode = TR::InstOpCode::_ld;
+                        opCode = OP::_ld;
                         break;
                     case TR_FPR:
-                        opCode = TR::InstOpCode::_fld;
+                        opCode = OP::_fld;
                         break;
                     default:
                         TR_ASSERT(0, "\nRegister kind not supported in OOL spill\n");

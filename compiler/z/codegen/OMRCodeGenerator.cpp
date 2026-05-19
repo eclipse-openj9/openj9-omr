@@ -4357,6 +4357,14 @@ bool OMR::Z::CodeGenerator::getSupportsOpCodeForAutoSIMD(TR::CPU *cpu, TR::ILOpC
         case TR::vmpopcnt:
         case TR::vbitselect:
         case TR::vblend:
+        case TR::vreductionAdd:
+        case TR::vmreductionAdd:
+        case TR::vreductionMul:
+        case TR::vmreductionMul:
+        case TR::vreductionMax:
+        case TR::vmreductionMax:
+        case TR::vreductionMin:
+        case TR::vmreductionMin:
             return true;
         case TR::vmul:
         case TR::vmmul:

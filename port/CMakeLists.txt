@@ -474,5 +474,5 @@ if(OMR_OS_OSX)
 endif()
 
 if(OMR_OS_WINDOWS)
-	target_link_libraries(omrport PRIVATE psapi pdh Iphlpapi)
+	target_link_libraries(omrport PRIVATE psapi pdh Iphlpapi version)
 endif()

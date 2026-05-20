@@ -6689,10 +6689,16 @@ static void inlineConstantLengthForwardArrayCopy(TR::Node *node, int64_t byteLen
     TR::Register *dataReg3 = ((iteration > 1) || (residue & 0xF)) ? cg->allocateRegister() : NULL;
 
     if (iteration > 1) {
+        TR::RegisterDependencyConditions *deps = RegDeps(0, 2, cg);
+
+        deps->addPostCondition(srcReg, TR::RealRegister::NoReg);
+        deps->addPostCondition(dstReg, TR::RealRegister::NoReg);
+
         TR::Register *cntReg = dataReg3;
         loadConstant64(cg, node, iteration, cntReg);
 
         TR::LabelSymbol *loopLabel = generateLabelSymbol(cg);
+        loopLabel->setStartInternalControlFlow();
         generateLabelInstruction(cg, TR::InstOpCode::label, node, loopLabel);
 
         // Copy 32x4 bytes in a loop
@@ -6714,6 +6720,10 @@ static void inlineConstantLengthForwardArrayCopy(TR::Node *node, int64_t byteLen
         generateMemSrc2Instruction(cg, TR::InstOpCode::vstppostq, node,
             TR::MemoryReference::createWithDisplacement(cg, dstReg, 32), dataReg1, dataReg2);
         generateCompareBranchInstruction(cg, TR::InstOpCode::cbnzx, node, cntReg, loopLabel);
+
+        TR::LabelSymbol *loopEndLabel = generateLabelSymbol(cg);
+        loopEndLabel->setEndInternalControlFlow();
+        generateLabelInstruction(cg, TR::InstOpCode::label, node, loopEndLabel, deps);
     } else if (iteration == 1) {
         residue += 128;
     }
@@ -6790,10 +6800,16 @@ static void inlineConstantLengthBackwardArrayCopy(TR::Node *node, int64_t byteLe
     addConstant64(cg, node, dstReg, dstReg, byteLen);
 
     if (iteration > 1) {
+        TR::RegisterDependencyConditions *deps = RegDeps(0, 2, cg);
+
+        deps->addPostCondition(srcReg, TR::RealRegister::NoReg);
+        deps->addPostCondition(dstReg, TR::RealRegister::NoReg);
+
         TR::Register *cntReg = dataReg3;
         loadConstant64(cg, node, iteration, cntReg);
 
         TR::LabelSymbol *loopLabel = generateLabelSymbol(cg);
+        loopLabel->setStartInternalControlFlow();
         generateLabelInstruction(cg, TR::InstOpCode::label, node, loopLabel);
 
         // Copy 32x4 bytes in a loop
@@ -6815,6 +6831,10 @@ static void inlineConstantLengthBackwardArrayCopy(TR::Node *node, int64_t byteLe
         generateMemSrc2Instruction(cg, TR::InstOpCode::vstppreq, node,
             TR::MemoryReference::createWithDisplacement(cg, dstReg, -32), dataReg1, dataReg2);
         generateCompareBranchInstruction(cg, TR::InstOpCode::cbnzx, node, cntReg, loopLabel);
+
+        TR::LabelSymbol *loopEndLabel = generateLabelSymbol(cg);
+        loopEndLabel->setEndInternalControlFlow();
+        generateLabelInstruction(cg, TR::InstOpCode::label, node, loopEndLabel, deps);
     } else if (iteration == 1) {
         residue += 128;
     }

@@ -1242,25 +1242,27 @@ static void
 mainASynchSignalHandler(int signal, siginfo_t *sigInfo, void *contextInfo)
 #endif /* defined(S390) && defined(LINUX) */
 {
-	for (;;) {
-		uintptr_t tail = signalPidTails[signal];
-		uintptr_t nextTail = (tail + 1) % NUM_SIGNAL_PIDS;
-		uintptr_t head = signalPidHeads[signal];
-		if (nextTail == head) {
-			/* Stop: there is no room. */
-			break;
-		}
-		if (sizeof(sigInfo->si_pid) == sizeof(uintptr_t)) {
-			if (0 == compareAndSwapUDATA((uintptr_t *)&signalPids[signal][tail], 0, sigInfo->si_pid)) {
-				/* The pid is written before the tail is incremented. */
-				signalPidTails[signal] = nextTail;
+	if (NULL != sigInfo) {
+		for (;;) {
+			uintptr_t tail = signalPidTails[signal];
+			uintptr_t nextTail = (tail + 1) % NUM_SIGNAL_PIDS;
+			uintptr_t head = signalPidHeads[signal];
+			if (nextTail == head) {
+				/* Stop: there is no room. */
 				break;
 			}
-		} else {
-			if (0 == compareAndSwapU32((uint32_t *)&signalPids[signal][tail], 0, sigInfo->si_pid)) {
-				/* The pid is written before the tail is incremented. */
-				signalPidTails[signal] = nextTail;
-				break;
+			if (sizeof(sigInfo->si_pid) == sizeof(uintptr_t)) {
+				if (0 == compareAndSwapUDATA((uintptr_t *)&signalPids[signal][tail], 0, sigInfo->si_pid)) {
+					/* The pid is written before the tail is incremented. */
+					signalPidTails[signal] = nextTail;
+					break;
+				}
+			} else {
+				if (0 == compareAndSwapU32((uint32_t *)&signalPids[signal][tail], 0, sigInfo->si_pid)) {
+					/* The pid is written before the tail is incremented. */
+					signalPidTails[signal] = nextTail;
+					break;
+				}
 			}
 		}
 	}

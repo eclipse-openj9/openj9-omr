@@ -35,24 +35,83 @@ extern "C" {
 
 /*
  * The purpose of moving of the body of macros GC Assertions with message to separate function is to prevent inlining
- * on fast path to keep stack frames small
+ * on fast path to keep stack frames small.
  */
 
+/**
+ * Print assertion message and duplicate it in the snap trace.
+ * Internal implementation.
+ *
+ * @param portLibrary - pointer to Port Library
+ * @param omrVMThread - pointer to current OMR VM Thread
+ * @param format - pointer to format string
+ * @param args - variadic list of parameters
+ */
 void
-omrGcDebugAssertionOutput(OMRPortLibrary *portLibrary, OMR_VMThread *omrVMThread, const char *format, ...)
+omrGcDebugAssertionOutput(OMRPortLibrary *portLibrary, OMR_VMThread *omrVMThread, const char *format, va_list args)
 {
 	char buffer[ASSERTION_MESSAGE_BUFFER_SIZE];
 
-	va_list args;
-	va_start(args, format);
 	portLibrary->str_vprintf(portLibrary, buffer, ASSERTION_MESSAGE_BUFFER_SIZE, format, args);
-	va_end(args);
 
 	if (NULL != omrVMThread) {
-		/* omrVMThread might be NULL if Environment is partially initialized at startup time */
+		/* omrVMThread might be NULL if Environment is partially initialized at startup time. */
 		Trc_MM_AssertionWithMessage_outputMessage(omrVMThread->_language_vmthread, buffer);
 	}
 	portLibrary->tty_printf(portLibrary, "%s", buffer);
+}
+
+/**
+ * Print assertion message and duplicate it in the snap trace.
+ * Front end call for the case OMR_VMThread is passed.
+ *
+ * @param portLibrary - pointer to Port Library
+ * @param omrVMThread - pointer to current OMR VM Thread
+ * @param format - pointer to format string
+ * @param ... - variadic list of parameters
+ */
+void
+omrGcDebugAssertionOutputThread(OMRPortLibrary *portLibrary, OMR_VMThread *omrVMThread, const char *format, ...)
+{
+	if (NULL != portLibrary) {
+		va_list args;
+		va_start(args, format);
+		omrGcDebugAssertionOutput(portLibrary, omrVMThread, format, args);
+		va_end(args);
+	}
+}
+
+/**
+ * Print assertion message and duplicate it in the snap trace.
+ * Front end call for the case OMR_VM is passed.
+ * Current OMR VM thread is going to be read from TLS area.
+ *
+ * @param omrVM - pointer to OMR VM
+ * @param format - pointer to format string
+ * @param ... - variadic list of parameters
+ */
+void
+omrGcDebugAssertionOutputVM(OMR_VM *omrVM, const char *format, ...)
+{
+	if ((NULL != omrVM) && (NULL != omrVM->_runtime)) {
+		OMRPortLibrary *portLibrary = omrVM->_runtime->_portLibrary;
+
+		if (NULL != portLibrary) {
+			OMR_VMThread *omrVMThread = NULL;
+			omrthread_t omrthread = omrthread_self();
+
+			if ((NULL != omrthread) && (omrVM->_vmThreadKey > 0)) {
+				/* Read omrVMThread from thread's TLS area. */
+				omrVMThread = (OMR_VMThread *)omrthread_tls_get(omrthread, omrVM->_vmThreadKey);
+			}
+
+			/* NULL for omrVMThread is accepted. */
+			va_list args;
+			va_start(args, format);
+			omrGcDebugAssertionOutput(portLibrary, omrVMThread, format, args);
+			va_end(args);
+		}
+	}
 }
 
 #endif /* defined(OMR_GC_DEBUG_ASSERTS) */

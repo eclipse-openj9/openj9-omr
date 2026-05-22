@@ -41,7 +41,8 @@ extern "C" {
 /* Currently, there are startup errors pointed out by these assertions so only enable them on combination spec until they are fixed for everyone */
 #if defined(OMR_GC_DEBUG_ASSERTS)
 
-extern void omrGcDebugAssertionOutput(OMRPortLibrary *portLibrary, OMR_VMThread *omrVMThread, const char *format, ...);
+extern void omrGcDebugAssertionOutputThread(OMRPortLibrary *portLibrary, OMR_VMThread *omrVMThread, const char *format, ...);
+extern void omrGcDebugAssertionOutputVM(OMR_VM *omrVM, const char *format, ...);
 
 #define Assert_MM_true(arg) \
 	do {\
@@ -80,7 +81,15 @@ extern void omrGcDebugAssertionOutput(OMRPortLibrary *portLibrary, OMR_VMThread 
 #define Assert_GC_true_with_message(__env__, __condition, __message, ...) \
 do {\
 	if(!(__condition)) {\
-		omrGcDebugAssertionOutput(__env__->getPortLibrary(), __env__->getOmrVMThread(), __message, __VA_ARGS__);\
+		omrGcDebugAssertionOutputThread(__env__->getPortLibrary(), __env__->getOmrVMThread(), __message, __VA_ARGS__);\
+		Assert_MM_unreachable();\
+	}\
+} while (false)
+
+#define Assert_GC_true_with_messageVM(__OMRVM__, __condition, __message, ...) \
+do {\
+	if(!(__condition)) {\
+		omrGcDebugAssertionOutputVM(__OMRVM__, __message, __VA_ARGS__);\
 		Assert_MM_unreachable();\
 	}\
 } while (false)
@@ -100,7 +109,8 @@ do {\
 #define Assert_MM_unimplemented() Assert_MM_unimplemented_internal()
 #define Assert_MM_invalidJNICall() Assert_MM_invalidJNICall_internal()
 
-#define Assert_GC_true_with_message(__env__,__condition,__message,__parameter) Assert_MM_true(__condition)
+#define Assert_GC_true_with_message(__env__, __condition, __message, ...) Assert_MM_true(__condition)
+#define Assert_GC_true_with_messageVM(__OMRVM__, __condition, __message, ...) Assert_MM_true(__condition)
 
 #define Assert_MM_objectAligned(__env__,__pointer) Assert_MM_true_internal((uintptr_t)(__pointer) & (__env__->getObjectAlignmentInBytes() - 1))
 #endif /* defined(OMR_GC_DEBUG_ASSERTS) */

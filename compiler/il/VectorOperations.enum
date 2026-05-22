@@ -1185,7 +1185,10 @@ VECTOR_OPERATION_MACRO(\
    /* .reverseBranchOperation  = */ TR::vBadOperation, \
    /* .booleanCompareOpCode    = */ TR::BadILOp, \
    /* .ifCompareOpCode         = */ TR::BadILOp, \
-   /* .description             =    vector expand based on mask: opposite of compress */ \
+   /* .description             =    vector expand based on mask: The first element of the source is placed in the \
+                                    position of the first true lane in the mask. The second element is placed in \
+                                    the position of the second true lane, and so forth. All lanes not selected by \
+                                    the mask are set to zero. */ \
 )
 VECTOR_OPERATION_MACRO(\
    /* .operation               = */ vshl, \

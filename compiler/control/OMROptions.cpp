@@ -6070,9 +6070,6 @@ void OMR::Options::setAggressiveThroughput()
         TR_DontDowngradeToCold); // This will prevent AOT compilations as well, unless -Xaot:forceaot is present
     self()->setOption(TR_DisableSelectiveNoOptServer);
 #ifdef J9_PROJECT_SPECIFIC
-    TR::Options::_scorchingSampleThreshold = 500; // 6% CPU
-    TR::Options::_veryHotSampleThreshold = 1000; // 3% CPU
-
     /**
      * Certain optimizations may work against overall throughput goals because
      * the transformations may yield artifacts (e.g., stack local objects,

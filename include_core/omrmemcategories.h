@@ -90,6 +90,8 @@ typedef struct OMRMemCategorySet {
 #define OMRMEM_CATEGORY_CLASSES_SHC_CACHE 0x80000012
 #endif /* OMR_SHARED_CACHE */
 
+#define OMRMEM_CATEGORY_MM_RUNTIME_HEAP_SPARSE 0x80000013
+
 /* Helper macro to convert the category codes to indices starting from 0 */
 #define OMRMEM_LANGUAGE_CATEGORY_LIMIT 0x7FFFFFFF
 #define OMRMEM_OMR_CATEGORY_INDEX_FROM_CODE(code) (((uint32_t)0x7FFFFFFF) & (code))

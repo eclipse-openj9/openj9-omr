@@ -1293,12 +1293,106 @@ TR::Register *OMR::Z::TreeEvaluator::mLastTrueEvaluator(TR::Node *node, TR::Code
 
 TR::Register *OMR::Z::TreeEvaluator::mToLongBitsEvaluator(TR::Node *node, TR::CodeGenerator *cg)
 {
-    return TR::TreeEvaluator::unImpOpEvaluator(node, cg);
+    /*
+     * Converts a vector mask to a compact bit representation in a GPR, where each bit corresponds to one vector lane.
+     * A bit value of 0 indicates a false lane, and 1 indicates a true lane.
+     * The rightmost bit (LSB) in the result corresponds to the first lane of the mask vector.
+     */
+    TR_ASSERT_FATAL_WITH_NODE(node, cg->comp()->target().cpu.isAtLeast(OMR_PROCESSOR_S390_Z14),
+        "mToLongBits opcode is only supported on z14 onwards");
+    TR::Node *sourceNode = node->getFirstChild();
+    TR_ASSERT_FATAL_WITH_NODE(node, sourceNode->getDataType().getVectorLength() == TR::VectorLength128,
+        "A 128-bit vector was expected as the child node but %s was provided!", sourceNode->getDataType().toString());
+    TR::Register *maskRegister = cg->evaluate(sourceNode);
+    TR::Register *scratchReg = cg->allocateRegister(TR_VRF);
+
+    // Initialize the control register for VBPERM. Values 128-255 in the control register
+    // will set the corresponding output bit to zero. We use 128 as the default (zero) value.
+    uint8_t bitMask[16] = { 128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128 };
+    int32_t numBitsInElement = getVectorElementSize(sourceNode) * 8;
+    // Configure the control register so that the last element points to the rightmost bit of the first lane.
+    for (int32_t bitIndex = numBitsInElement - 1, maskIndex = 15; bitIndex < 128;
+         bitIndex += numBitsInElement, maskIndex--) {
+        bitMask[maskIndex] = static_cast<uint8_t>(bitIndex);
+    }
+    // Load the control register values into the vector register.
+    TR::MemoryReference *bitMaskMemRef
+        = generateS390MemoryReference(cg->findOrCreateConstant(node, bitMask, 16), cg, 0, node);
+    generateVRXInstruction(cg, TR::InstOpCode::VL, node, scratchReg, bitMaskMemRef);
+    // Execute VBPERM (Vector Bit Permute) to extract and compact the mask bits according to the control register.
+    generateVRRcInstruction(cg, TR::InstOpCode::VBPERM, node, scratchReg, maskRegister, scratchReg, 0);
+    // Extract the compacted bit result from the vector register and store it in a GPR.
+    TR::Register *resultRegister = cg->allocateRegister();
+    generateVRScInstruction(cg, TR::InstOpCode::VLGV, node, resultRegister, scratchReg,
+        generateS390MemoryReference(0, cg), 3);
+    cg->decReferenceCount(sourceNode);
+    cg->stopUsingRegister(scratchReg);
+    node->setRegister(resultRegister);
+    return resultRegister;
 }
 
 TR::Register *OMR::Z::TreeEvaluator::mLongBitsToMaskEvaluator(TR::Node *node, TR::CodeGenerator *cg)
 {
-    return TR::TreeEvaluator::unImpOpEvaluator(node, cg);
+    /*
+     * Converts a compact bit representation in a GPR to a vector mask, where each bit in the long value
+     * determines the state of the corresponding vector lane. The LSB of the long value controls the first lane,
+     * the next bit controls the second lane, and so on.
+     */
+    TR_ASSERT_FATAL_WITH_NODE(node, node->getDataType().getVectorLength() == TR::VectorLength128,
+        "A 128-bit vector was expected as the child node but %s was provided!", node->getDataType().toString());
+    TR::Node *sourceNode = node->getFirstChild();
+    uint8_t elementSizeMask = getVectorElementSizeMask(node);
+    TR::Register *maskRegister = cg->allocateRegister(TR_VRF);
+    TR::Register *scratchReg = cg->allocateRegister(TR_VRF);
+    TR::Register *sourceRegister = cg->evaluate(sourceNode);
+
+    // Load the source long value into element 1 of the vector register.
+    generateVRSbInstruction(cg, TR::InstOpCode::VLVG, node, maskRegister, sourceRegister,
+        generateS390MemoryReference(1, cg), 3);
+    if (elementSizeMask == 0) {
+        // For int8 vectors, there are 16 lanes requiring 16 bits from the long value.
+        // Since each int8 lane can only hold 8 bits, we replicate the upper 8 bits separately in scratchReg.
+        generateVRIcInstruction(cg, TR::InstOpCode::VREP, node, scratchReg, maskRegister, 14, 0);
+    }
+    // Replicate the lower 8 bits of the long value across all lanes of the vector.
+    generateVRIcInstruction(cg, TR::InstOpCode::VREP, node, maskRegister, maskRegister, 15, 0);
+    // Initialize the control register bit mask array with zeros.
+    uint8_t bitMask[16] = { 0 };
+    int32_t elementSize = getVectorElementSize(node);
+    if (elementSizeMask == 0) {
+        // For int8 vectors: merge the lower 8 bits (in maskRegister) with the upper 8 bits (in scratchReg).
+        // After merging, the left half of maskRegister contains the lower 8 bits, and the right half contains the upper
+        // 8 bits.
+        generateVRRcInstruction(cg, TR::InstOpCode::VMRH, node, maskRegister, maskRegister, scratchReg, 3);
+
+        // For int8 vectors: set up the control register so that lane 0 tests bit 0, lane 1 tests bit 1, etc.
+        // Lanes 0-7 test bits 0-7 (lower byte), and lanes 8-15 test bits 0-7 (upper byte).
+        for (int32_t maskIndex = 0, bitIndex = 1; maskIndex < 8; maskIndex++, bitIndex = bitIndex << 1) {
+            bitMask[maskIndex] = static_cast<uint8_t>(bitIndex);
+            bitMask[maskIndex + 8] = static_cast<uint8_t>(bitIndex);
+        }
+    } else {
+        // For int16/32/64 vectors: set up the control register so that each lane tests its corresponding bit
+        // in the long bitIndex (lane 0 tests bit 0, lane 1 tests bit 1, etc.).
+        for (int32_t maskIndex = elementSize - 1, bitIndex = 1; maskIndex < 16;
+             maskIndex += elementSize, bitIndex = bitIndex << 1) {
+            bitMask[maskIndex] = static_cast<uint8_t>(bitIndex);
+        }
+    }
+    // Load the control register bit mask into the vector register.
+    TR::MemoryReference *bitMaskMemRef
+        = generateS390MemoryReference(cg->findOrCreateConstant(node, bitMask, 16), cg, 0, node);
+    generateVRXInstruction(cg, TR::InstOpCode::VL, node, scratchReg, bitMaskMemRef);
+
+    // Perform bitwise AND to isolate each lane's bit, then compare with the control register.
+    // If the bit was set in the original long value, the comparison will match, setting that lane to true.
+    generateVRRcInstruction(cg, TR::InstOpCode::VN, node, maskRegister, maskRegister, scratchReg, 0);
+    generateVRRbInstruction(cg, TR::InstOpCode::VCEQ, node, maskRegister, maskRegister, scratchReg, 0, elementSizeMask);
+
+    cg->stopUsingRegister(scratchReg);
+    cg->decReferenceCount(sourceNode);
+    node->setRegister(maskRegister);
+    return maskRegister;
 }
 
 TR::Register *OMR::Z::TreeEvaluator::mRegLoadEvaluator(TR::Node *node, TR::CodeGenerator *cg)
@@ -15601,28 +15695,6 @@ int32_t getVectorElementSize(TR::Node *node)
     }
 }
 
-int32_t getVectorElementLength(TR::Node *node)
-{
-    TR_ASSERT_FATAL_WITH_NODE(node, node->getDataType().getVectorLength() == TR::VectorLength128,
-        "Only 128-bit vectors are supported %s", node->getDataType().toString());
-
-    switch (node->getDataType().getVectorElementType()) {
-        case TR::Int8:
-            return 8;
-        case TR::Int16:
-            return 16;
-        case TR::Int32:
-        case TR::Float:
-            return 32;
-        case TR::Int64:
-        case TR::Double:
-            return 64;
-        default:
-            TR_ASSERT(false, "Unknown vector node type %s for element size\n", node->getDataType().toString());
-            return 0;
-    }
-}
-
 int32_t getVectorElementSizeMask(TR::Node *node)
 {
     TR_ASSERT_FATAL_WITH_NODE(node, node->getDataType().getVectorLength() == TR::VectorLength128,
@@ -16384,7 +16456,7 @@ static TR::Register *integralMinMaxReductionHelper(TR::Node *node, TR::CodeGener
 
     // The value is left‑aligned in a 64‑bit GPR. If the lane width is smaller than 64 bits, arithmetic shift right
     // to obtain the correct sign‑extended result.
-    int laneLength = getVectorElementLength(firstChild);
+    int laneLength = getVectorElementSize(firstChild) * 8;
     if (laneLength < 64)
         generateRSInstruction(cg, TR::InstOpCode::SRAG, node, resultReg, resultReg, 64 - laneLength);
 
@@ -16398,7 +16470,7 @@ TR::Register *OMR::Z::TreeEvaluator::vreductionMaxEvaluator(TR::Node *node, TR::
 {
     TR::DataType type = node->getFirstChild()->getDataType().getVectorElementType();
     if (type.isIntegral()) {
-        int64_t identityValue = INT64_MIN >> (64 - getVectorElementLength(node->getFirstChild()));
+        int64_t identityValue = INT64_MIN >> (64 - (getVectorElementSize(node->getFirstChild()) * 8));
         return integralMinMaxReductionHelper(node, cg, TR::InstOpCode::VMX, identityValue);
     } else if (type.isFloat()) {
         return floatReductionHelper(node, cg, TR::InstOpCode::VFMAX, FLOAT_NEG_INFINITY /* identityValue */);
@@ -16415,7 +16487,7 @@ TR::Register *OMR::Z::TreeEvaluator::vreductionMinEvaluator(TR::Node *node, TR::
 {
     TR::DataType type = node->getFirstChild()->getDataType().getVectorElementType();
     if (type.isIntegral()) {
-        int64_t identityValue = INT64_MAX >> (64 - getVectorElementLength(node->getFirstChild()));
+        int64_t identityValue = INT64_MAX >> (64 - (getVectorElementSize(node->getFirstChild()) * 8));
         return integralMinMaxReductionHelper(node, cg, TR::InstOpCode::VMN, identityValue);
     } else if (type.isFloat()) {
         return floatReductionHelper(node, cg, TR::InstOpCode::VFMIN, FLOAT_POS_INFINITY /* identityValue */);
@@ -16537,7 +16609,7 @@ static TR::Register *logicalReductionHelper(TR::Node *node, TR::CodeGenerator *c
         3);
     generateVRScInstruction(cg, TR::InstOpCode::VLGV, node, scratchReg, sourceReg, generateS390MemoryReference(1, cg),
         3);
-    int laneLength = getVectorElementLength(firstChild);
+    int laneLength = getVectorElementSize(firstChild) * 8;
     for (int dataLength = 64; dataLength >= laneLength; dataLength /= 2) {
         if (dataLength < 64) {
             // Iteratively split the data in half, load the second half into the scratch register, and apply the

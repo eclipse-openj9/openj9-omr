@@ -4463,7 +4463,10 @@ bool OMR::Z::CodeGenerator::getSupportsOpCodeForAutoSIMD(TR::CPU *cpu, TR::ILOpC
         case TR::mTrueCount:
         case TR::mFirstTrue:
         case TR::mLastTrue:
+        case TR::mLongBitsToMask:
             return true;
+        case TR::mToLongBits:
+            return cpu->isAtLeast(OMR_PROCESSOR_S390_Z14);
         case TR::vushr:
         case TR::vmushr:
         case TR::vshr:

@@ -478,7 +478,7 @@ static bool checkOffset(TR::Node *node, TR::CodeGenerator *cg, uint32_t offset, 
 
 void OMR::ARM64::MemoryReference::moveIndexToBase(TR::Node *node, TR::CodeGenerator *cg)
 {
-    if ((_baseRegister != NULL) || self()->isIndexSignExtended() || (_scale != 0)) {
+    if ((_baseRegister != NULL) || self()->isIndexSignExtendedWord() || (_scale != 0)) {
         self()->consolidateRegisters(node, cg);
     } else {
         if (self()->isIndexModifiable()) {
@@ -716,26 +716,24 @@ void OMR::ARM64::MemoryReference::consolidateRegisters(TR::Node *srcTree, TR::Co
         tempTargetRegister = cg->allocateRegister();
 
     if (_baseRegister != NULL) {
-        if (self()->isIndexSignExtended()) {
+        if (self()->isIndexSignExtendedWord()) {
             generateTrg1Src2ExtendedInstruction(cg, TR::InstOpCode::addextx, srcTree, tempTargetRegister, _baseRegister,
-                _indexRegister, self()->getIndexExtendCode(), _scale);
+                _indexRegister, TR::EXT_SXTW, _scale);
         } else {
             generateTrg1Src2ShiftedInstruction(cg, TR::InstOpCode::addx, srcTree, tempTargetRegister, _baseRegister,
                 _indexRegister, TR::SH_LSL, _scale);
         }
     } else if (_scale != 0) {
         generateLogicalShiftLeftImmInstruction(cg, srcTree, tempTargetRegister, _indexRegister, _scale, true);
-        if (self()->isIndexSignExtended()) {
-            uint32_t imm = (self()->isIndexSignExtendedWord() ? 31 : (self()->isIndexSignExtendedHalf() ? 15 : 7));
+        if (self()->isIndexSignExtendedWord()) {
             generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::sbfmx, srcTree, tempTargetRegister, tempTargetRegister,
-                imm);
+                31);
         }
-    } else if (self()->isIndexSignExtended()) {
-        uint32_t imm = (self()->isIndexSignExtendedWord() ? 31 : (self()->isIndexSignExtendedHalf() ? 15 : 7));
-        generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::sbfmx, srcTree, tempTargetRegister, _indexRegister, imm);
+    } else if (self()->isIndexSignExtendedWord()) {
+        generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::sbfmx, srcTree, tempTargetRegister, _indexRegister, 31);
     } else {
         TR_ASSERT_FATAL(false,
-            "consolidateRegister() expects (_baseRegister != NULL) || (_scale != 0) || isIndexSignExtended()");
+            "consolidateRegister() expects (_baseRegister != NULL) || (_scale != 0) || isIndexSignExtendedWord()");
     }
 
     if (_baseRegister != tempTargetRegister) {
@@ -753,7 +751,7 @@ void OMR::ARM64::MemoryReference::consolidateRegisters(TR::Node *srcTree, TR::Co
     _indexRegister = NULL;
     _scale = 0;
     self()->clearIndexModifiable();
-    self()->clearIndexSignExtended();
+    self()->clearIndexSignExtendedWord();
 }
 
 void OMR::ARM64::MemoryReference::bookKeepingRegisterUses(TR::Instruction *instr, TR::CodeGenerator *cg)
@@ -1098,8 +1096,6 @@ uint8_t *OMR::ARM64::MemoryReference::generateBinaryEncoding(TR::Instruction *cu
 
             if (index) {
                 TR_ASSERT(displacement == 0, "Non-zero offset with index register.");
-                TR_ASSERT_FATAL(!(self()->isIndexSignExtendedByte() || self()->isIndexSignExtendedHalf()),
-                    "Extend code for memory access must not be SXTB or SXTH.");
 
                 if (isRegisterOffsetInstruction(enc)) {
                     base->setRegisterFieldRN(wcursor);

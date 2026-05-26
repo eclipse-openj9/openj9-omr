@@ -134,8 +134,8 @@ public:
     typedef enum {
         TR_ARM64MemoryReferenceControl_Base_Modifiable = 0x01,
         TR_ARM64MemoryReferenceControl_Index_Modifiable = 0x02,
-        TR_ARM64MemoryReferenceControl_Index_SignExtendedByte = 0x04,
-        TR_ARM64MemoryReferenceControl_Index_SignExtendedHalf = 0x08,
+        // 0x04: Available
+        // 0x08: Available
         TR_ARM64MemoryReferenceControl_Index_SignExtendedWord = 0x10,
         TR_ARM64MemoryReferenceControl_DelayedOffsetDone = 0x20
         /* To be added more if necessary */
@@ -328,41 +328,10 @@ public:
     void clearIndexModifiable() { _flag &= ~TR_ARM64MemoryReferenceControl_Index_Modifiable; }
 
     /**
-     * @brief Index register is sign extended or not
-     * @return true when index register is sign extended
-     */
-    bool isIndexSignExtended()
-    {
-        return (isIndexSignExtendedWord() || isIndexSignExtendedHalf() || isIndexSignExtendedByte());
-    }
-
-    /**
-     * @brief The extend code for the index register is SXTB or not
-     * @return true when the extend code for index register is SXTB
-     */
-    bool isIndexSignExtendedByte() { return ((_flag & TR_ARM64MemoryReferenceControl_Index_SignExtendedByte) != 0); }
-
-    /**
-     * @brief The extend code for the index register is SXTH or not
-     * @return true when the extend code for index register is SXTH
-     */
-    bool isIndexSignExtendedHalf() { return ((_flag & TR_ARM64MemoryReferenceControl_Index_SignExtendedHalf) != 0); }
-
-    /**
      * @brief The extend code for the index register is SXTW or not
      * @return true when the extend code for index register is SXTW
      */
     bool isIndexSignExtendedWord() { return ((_flag & TR_ARM64MemoryReferenceControl_Index_SignExtendedWord) != 0); }
-
-    /**
-     * @brief Sets the IndexSignExtendedByte flag
-     */
-    void setIndexSignExtendedByte() { _flag |= TR_ARM64MemoryReferenceControl_Index_SignExtendedByte; }
-
-    /**
-     * @brief Sets the IndexSignExtendedHalf flag
-     */
-    void setIndexSignExtendedHalf() { _flag |= TR_ARM64MemoryReferenceControl_Index_SignExtendedHalf; }
 
     /**
      * @brief Sets the IndexSignExtendedWord flag
@@ -370,14 +339,9 @@ public:
     void setIndexSignExtendedWord() { _flag |= TR_ARM64MemoryReferenceControl_Index_SignExtendedWord; }
 
     /**
-     * @brief Clears the IndexSignExtende flag
+     * @brief Clears the IndexSignExtendedWord flag
      */
-    void clearIndexSignExtended()
-    {
-        _flag &= ~(TR_ARM64MemoryReferenceControl_Index_SignExtendedByte
-            | TR_ARM64MemoryReferenceControl_Index_SignExtendedHalf
-            | TR_ARM64MemoryReferenceControl_Index_SignExtendedWord);
-    }
+    void clearIndexSignExtendedWord() { _flag &= ~TR_ARM64MemoryReferenceControl_Index_SignExtendedWord; }
 
     /**
      * @brief Gets the flag indicating whether the delayed offset has already been applied.
@@ -406,10 +370,6 @@ public:
     {
         if (isIndexSignExtendedWord()) {
             return TR::EXT_SXTW;
-        } else if (isIndexSignExtendedHalf()) {
-            return TR::EXT_SXTH;
-        } else if (isIndexSignExtendedByte()) {
-            return TR::EXT_SXTB;
         } else {
             return TR::EXT_UXTX;
         }

@@ -1150,7 +1150,7 @@ void OMR::Z::CodeGenerator::insertInstructionPrefetches()
                 TR::InstOpCode op = first->getOpCode();
                 if (!op.isAdmin()) {
                     real = first;
-                    if (op.isLabel() || op.isCall()) {
+                    if (op.isLabel() || op.isCall() || first->getOpCodeValue() == TR::InstOpCode::TEND) {
                         break;
                     }
                     count++;

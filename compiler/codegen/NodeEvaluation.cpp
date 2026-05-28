@@ -293,6 +293,57 @@ int32_t OMR::CodeGenerator::whichChildToEvaluate(TR::Node *node)
     return bestChild;
 }
 
+static int descendingFreqComparator(const void *element1, const void *element2)
+{
+    OMR::SwitchCaseOrdering *index1 = (OMR::SwitchCaseOrdering *)element1;
+    OMR::SwitchCaseOrdering *index2 = (OMR::SwitchCaseOrdering *)element2;
+
+    if (index1->frequency > index2->frequency)
+        return -1;
+    else if (index1->frequency == index2->frequency)
+        return 0;
+    else
+        return 1;
+}
+
+OMR::SwitchCaseOrdering *OMR::CodeGenerator::sortSwitchCases(TR::Node *node)
+{
+    OMR::SwitchCaseOrdering *ordering = (OMR::SwitchCaseOrdering *)trMemory()->allocateHeapMemory(
+        node->getCaseIndexUpperBound() * sizeof(OMR::SwitchCaseOrdering));
+
+    int32_t i;
+
+    // Initialize with default frequency values
+    for (i = 0; i < node->getCaseIndexUpperBound(); i++) {
+        ordering[i].index = i;
+        ordering[i].frequency = 0;
+    }
+
+    TR::CFG *cfg = comp()->getFlowGraph();
+    if (cfg->getMaxFrequency() < 0)
+        return ordering;
+
+    int32_t *uniqTargetCnts = (int32_t *)trMemory()->allocateHeapMemory(cfg->getNextNodeNumber() * sizeof(int32_t));
+    memset(uniqTargetCnts, 0, cfg->getNextNodeNumber() * sizeof(int32_t));
+    for (i = 1; i < node->getCaseIndexUpperBound(); i++) {
+        TR::Block *childTarget = node->getChild(i)->getBranchDestination()->getNode()->getBlock();
+        uniqTargetCnts[childTarget->getNumber()]++;
+    }
+
+    // Normalize the frequency for a reasonable estimation
+    for (i = 1; i < node->getCaseIndexUpperBound(); i++) {
+        TR::Block *childTarget = node->getChild(i)->getBranchDestination()->getNode()->getBlock();
+        ordering[i].frequency = childTarget->getFrequency() / uniqTargetCnts[childTarget->getNumber()];
+    }
+
+    // Sort the children in descending frequency order
+    // Notice: child 0(selector value) and 1 (default case) don't participate in the sorting
+    J9_SORT(&ordering[2], node->getCaseIndexUpperBound() - 2, sizeof(OMR::SwitchCaseOrdering),
+        descendingFreqComparator);
+
+    return ordering;
+}
+
 int32_t OMR::CodeGenerator::getEvaluationPriority(TR::Node *node)
 {
     // Evaluation priority is the depth of the sub-tree.

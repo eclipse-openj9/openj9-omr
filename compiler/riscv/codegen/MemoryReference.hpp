@@ -23,6 +23,7 @@
 #define TR_MEMORYREFERENCE_INCL
 
 #include "codegen/OMRMemoryReference.hpp"
+#include "codegen/CodeGenerator.hpp"
 
 #include <stdint.h>
 
@@ -85,6 +86,55 @@ public:
         : OMR::MemoryReferenceConnector(node, symRef, len, cg)
     {}
 };
+
+/**
+ * @brief Create a memory reference using base register and displacement.
+ *
+ * @param[in] br : base register
+ * @param[in] disp : displacement
+ * @param[in] cg : CodeGenerator object
+ * @return New memory reference.
+ */
+inline TR::MemoryReference *MRef_BaseDisp(TR::Register *br, int32_t disp, TR::CodeGenerator *cg)
+{
+    return new (cg->trHeapMemory()) TR::MemoryReference(br, disp, cg);
+}
+
+/**
+ * @brief Create a memory reference using base register only - the displacement is zero.
+ * Equivalent to `MRef_Base(br, 0, cg)`.
+ *
+ * @param[in] br : base register
+ * @param[in] cg : CodeGenerator object
+ * @return New memory reference.
+ */
+inline TR::MemoryReference *MRef_Base(TR::Register *br, TR::CodeGenerator *cg) { return MRef_BaseDisp(br, 0, cg); }
+
+/**
+ * @brief Creates a memory reference from given load or store IL node.
+ *
+ * @param[in] node : load or store node
+ * @param[in] cg : CodeGenerator object
+ * @return New memory reference.
+ */
+inline TR::MemoryReference *MRef_Node(TR::Node *node, TR::CodeGenerator *cg)
+{
+    return new (cg->trHeapMemory()) TR::MemoryReference(node, node->getSize(), cg);
+}
+
+/**
+ * @brief Creates a memory reference from given node and symbol reference.
+ *
+ * @param[in] node : node
+ * @param[in] symRef : symbol reference.
+ * @param[in] cg : CodeGenerator object
+ * @return New memory reference.
+ */
+inline TR::MemoryReference *MRef_Sym(TR::Node *node, TR::SymbolReference *symRef, TR::CodeGenerator *cg)
+{
+    return new (cg->trHeapMemory()) TR::MemoryReference(node, node->getSize(), cg);
+}
+
 } // namespace TR
 
 #endif

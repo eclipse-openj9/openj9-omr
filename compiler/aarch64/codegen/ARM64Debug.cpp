@@ -2711,12 +2711,15 @@ void TR_Debug::print(OMR::Logger *log, TR::MemoryReference *mr)
             : TR_DoubleWordReg;
         print(log, mr->getIndexRegister(), indexSize);
 
-        if ((extendCode != TR::ARM64ExtendCode::EXT_UXTX) || (scale != 0)) {
-            if (extendCode != TR::ARM64ExtendCode::EXT_UXTX) {
-                log->printf(", %s %d", ARM64ExtendCodeNames[extendCode], scale);
-            } else {
-                log->printf(", lsl %d", scale);
+        if (extendCode != TR::ARM64ExtendCode::EXT_LSL) {
+            log->printf(", %s", ARM64ExtendCodeNames[extendCode]);
+            if (scale != 0) {
+                log->printf(" %d", scale);
             }
+        } else if (scale != 0) {
+            log->printf(", lsl %d", scale);
+        } else {
+            // print nothing for EXT_LSL with 0 scale (default)
         }
     } else
         log->printf("%d", mr->getOffset(true));

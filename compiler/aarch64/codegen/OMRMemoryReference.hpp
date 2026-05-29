@@ -135,7 +135,7 @@ public:
         TR_ARM64MemoryReferenceControl_Base_Modifiable = 0x01,
         TR_ARM64MemoryReferenceControl_Index_Modifiable = 0x02,
         // 0x04: Available
-        // 0x08: Available
+        TR_ARM64MemoryReferenceControl_Index_ZeroExtendedWord = 0x08,
         TR_ARM64MemoryReferenceControl_Index_SignExtendedWord = 0x10,
         TR_ARM64MemoryReferenceControl_DelayedOffsetDone = 0x20
         /* To be added more if necessary */
@@ -328,6 +328,17 @@ public:
     void clearIndexModifiable() { _flag &= ~TR_ARM64MemoryReferenceControl_Index_Modifiable; }
 
     /**
+     * @brief The extend code for the index register is UXTW or not
+     * @return true when the extend code for index register is UXTW
+     */
+    bool isIndexZeroExtendedWord() { return ((_flag & TR_ARM64MemoryReferenceControl_Index_ZeroExtendedWord) != 0); }
+
+    /**
+     * @brief Sets the IndexZeroExtendedWord flag
+     */
+    void setIndexZeroExtendedWord() { _flag |= TR_ARM64MemoryReferenceControl_Index_ZeroExtendedWord; }
+
+    /**
      * @brief The extend code for the index register is SXTW or not
      * @return true when the extend code for index register is SXTW
      */
@@ -339,9 +350,19 @@ public:
     void setIndexSignExtendedWord() { _flag |= TR_ARM64MemoryReferenceControl_Index_SignExtendedWord; }
 
     /**
-     * @brief Clears the IndexSignExtendedWord flag
+     * @brief Index register is extended or not
+     * @return true when index register is zero-extended or sign-extended
      */
-    void clearIndexSignExtendedWord() { _flag &= ~TR_ARM64MemoryReferenceControl_Index_SignExtendedWord; }
+    bool isIndexExtended() { return (isIndexZeroExtendedWord() || isIndexSignExtendedWord()); }
+
+    /**
+     * @brief Clears the IndexExtended flags
+     */
+    void clearIndexExtended()
+    {
+        _flag &= ~(TR_ARM64MemoryReferenceControl_Index_ZeroExtendedWord
+            | TR_ARM64MemoryReferenceControl_Index_SignExtendedWord);
+    }
 
     /**
      * @brief Gets the flag indicating whether the delayed offset has already been applied.
@@ -368,10 +389,12 @@ public:
      */
     TR::ARM64ExtendCode getIndexExtendCode()
     {
-        if (isIndexSignExtendedWord()) {
+        if (isIndexZeroExtendedWord()) {
+            return TR::EXT_UXTW;
+        } else if (isIndexSignExtendedWord()) {
             return TR::EXT_SXTW;
         } else {
-            return TR::EXT_UXTX;
+            return TR::EXT_LSL; // default extend code
         }
     }
 

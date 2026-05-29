@@ -1015,6 +1015,24 @@ TR_GlobalRegisterNumber OMR::Power::CodeGenerator::pickRegister(TR::RegisterCand
         || sym->getDataType().isMask())
         gprCandidate = false;
 
+    static char *pMaxVSRsForGRA = feGetEnv("TR_MaxVSRsForGRA");
+    if (pMaxVSRsForGRA && (sym->getDataType().isVector() || sym->getDataType().isMask())) {
+        static uint32_t maxVSRsForGRA = atoi(pMaxVSRsForGRA);
+
+        // count how many registers have been allocated (i.e.: how many are not available)
+        int numAllocated;
+
+        if (sym->getDataType().getVectorElementType() == TR::Float
+            || sym->getDataType().getVectorElementType() == TR::Double)
+            numAllocated = 64 - availRegs.elementCount();
+        else
+            numAllocated = 32 - availRegs.elementCount();
+
+        // if max has already been met, exit
+        if (numAllocated >= maxVSRsForGRA)
+            return -1;
+    }
+
     if (gprCandidate) {
         int32_t numExtraRegs = 0;
         int32_t maxRegisterPressure = 0;

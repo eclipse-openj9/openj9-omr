@@ -34,6 +34,7 @@
 #include "il/Node.hpp"
 #include "il/Node_inlines.hpp"
 #include "ras/Logger.hpp"
+#include "GenerateInstructions.hpp"
 
 OMR::RV::CodeGenerator::CodeGenerator(TR::Compilation *comp)
     : OMR::CodeGenerator(comp)
@@ -132,13 +133,13 @@ void OMR::RV::CodeGenerator::beginInstructionSelection()
     TR::Compilation *comp = self()->comp();
     TR::Node *startNode = comp->getStartTree()->getNode();
     if (comp->getMethodSymbol()->getLinkageConvention() == TR_Private) {
-        _returnTypeInfoInstruction = new (trHeapMemory()) TR::DataInstruction(TR::InstOpCode::dd, startNode, 0, self());
+        _returnTypeInfoInstruction
+            = static_cast<TR::DataInstruction *>(Inst_DATA(TR::InstOpCode::dd, startNode, 0, self()));
     } else {
         _returnTypeInfoInstruction = NULL;
     }
 
-    new (trHeapMemory())
-        TR::AdminInstruction(TR::InstOpCode::proc, startNode, NULL, _returnTypeInfoInstruction, self());
+    Inst_ADMIN(TR::InstOpCode::proc, startNode, self(), NULL, _returnTypeInfoInstruction);
 }
 
 void OMR::RV::CodeGenerator::endInstructionSelection()
@@ -275,7 +276,7 @@ TR::Register *OMR::RV::CodeGenerator::gprClobberEvaluate(TR::Node *node)
     if (node->getReferenceCount() > 1) {
         TR::Register *sourceReg = self()->evaluate(node);
         TR::Register *targetReg = self()->allocateRegister();
-        generateITYPE(TR::InstOpCode::_addi, node, targetReg, sourceReg, 0, self());
+        Inst_ITYPE(TR::InstOpCode::_addi, node, targetReg, sourceReg, 0, self());
 
         if (sourceReg->containsCollectedReference()) {
             logprintf(trace, log, "Setting containsCollectedReference on register %s\n",

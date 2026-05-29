@@ -48,8 +48,8 @@ static void truncate(TR::Node *node, TR::Register *reg, TR::CodeGenerator *cg)
         return;
     }
 
-    generateITYPE(TR::InstOpCode::_slli, node, reg, reg, 64 - bitwidth, cg);
-    generateITYPE(TR::InstOpCode::_srai, node, reg, reg, 64 - bitwidth, cg);
+    Inst_ITYPE(TR::InstOpCode::_slli, node, reg, reg, 64 - bitwidth, cg);
+    Inst_ITYPE(TR::InstOpCode::_srai, node, reg, reg, 64 - bitwidth, cg);
 }
 
 /*
@@ -76,14 +76,14 @@ static TR::Register *RorIhelper(TR::Node *node, TR::InstOpCode::Mnemonic opr, TR
             if (opr == TR::InstOpCode::_sub || opr == TR::InstOpCode::_subw) {
                 value = -value;
             }
-            generateITYPE(opi, node, trgReg, src1Reg, value, cg);
+            Inst_ITYPE(opi, node, trgReg, src1Reg, value, cg);
         } else {
             TR::Register *src2Reg = cg->evaluate(secondChild);
-            generateRTYPE(opr, node, trgReg, src1Reg, src2Reg, cg);
+            Inst_RTYPE(opr, node, trgReg, src1Reg, src2Reg, cg);
         }
     } else {
         TR::Register *src2Reg = cg->evaluate(secondChild);
-        generateRTYPE(opr, node, trgReg, src1Reg, src2Reg, cg);
+        Inst_RTYPE(opr, node, trgReg, src1Reg, src2Reg, cg);
     }
 
     truncate(node, trgReg, cg);
@@ -105,7 +105,7 @@ static TR::Register *Rhelper(TR::Node *node, TR::InstOpCode::Mnemonic op, TR::Co
     TR::Register *src2Reg = cg->evaluate(secondChild);
     TR::Register *trgReg = cg->allocateRegister();
 
-    generateRTYPE(op, node, trgReg, src1Reg, src2Reg, cg);
+    Inst_RTYPE(op, node, trgReg, src1Reg, src2Reg, cg);
 
     truncate(node, trgReg, cg);
 
@@ -132,14 +132,14 @@ TR::Register *OMR::RV::TreeEvaluator::laddEvaluator(TR::Node *node, TR::CodeGene
     if (secondChild->getOpCode().isLoadConst() && secondChild->getRegister() == NULL) {
         int64_t value = secondChild->getLongInt();
         if (VALID_ITYPE_IMM(value)) {
-            generateITYPE(TR::InstOpCode::_addi, node, trgReg, src1Reg, value, cg);
+            Inst_ITYPE(TR::InstOpCode::_addi, node, trgReg, src1Reg, value, cg);
         } else {
             TR::Register *src2Reg = cg->evaluate(secondChild);
-            generateRTYPE(TR::InstOpCode::_add, node, trgReg, src1Reg, src2Reg, cg);
+            Inst_RTYPE(TR::InstOpCode::_add, node, trgReg, src1Reg, src2Reg, cg);
         }
     } else {
         TR::Register *src2Reg = cg->evaluate(secondChild);
-        generateRTYPE(TR::InstOpCode::_add, node, trgReg, src1Reg, src2Reg, cg);
+        Inst_RTYPE(TR::InstOpCode::_add, node, trgReg, src1Reg, src2Reg, cg);
     }
 
     if ((node->getOpCodeValue() == TR::aiadd || node->getOpCodeValue() == TR::aladd) && node->isInternalPointer()) {
@@ -202,23 +202,22 @@ TR::Register *OMR::RV::TreeEvaluator::imulEvaluator(TR::Node *node, TR::CodeGene
             trgReg = cg->allocateRegister();
             if (value == 0) {
                 TR::Register *zero = cg->machine()->getRealRegister(TR::RealRegister::zero);
-                generateITYPE(TR::InstOpCode::_addi, node, trgReg, zero, 0, cg);
+                Inst_ITYPE(TR::InstOpCode::_addi, node, trgReg, zero, 0, cg);
             } else if (value == 1) {
-                generateITYPE(TR::InstOpCode::_addi, node, trgReg, src1Reg, 0, cg);
+                Inst_ITYPE(TR::InstOpCode::_addi, node, trgReg, src1Reg, 0, cg);
             } else if (value == -1) {
                 TR::Register *zero = cg->machine()->getRealRegister(TR::RealRegister::zero);
-                generateRTYPE(is32bit ? TR::InstOpCode::_subw : TR::InstOpCode::_sub, node, trgReg, zero, src1Reg, cg);
+                Inst_RTYPE(is32bit ? TR::InstOpCode::_subw : TR::InstOpCode::_sub, node, trgReg, zero, src1Reg, cg);
             } else {
                 TR::Register *src2Reg = cg->evaluate(secondChild);
                 trgReg = cg->allocateRegister();
-                generateRTYPE(is32bit ? TR::InstOpCode::_mulw : TR::InstOpCode::_mul, node, trgReg, src1Reg, src2Reg,
-                    cg);
+                Inst_RTYPE(is32bit ? TR::InstOpCode::_mulw : TR::InstOpCode::_mul, node, trgReg, src1Reg, src2Reg, cg);
             }
         }
     } else {
         TR::Register *src2Reg = cg->evaluate(secondChild);
         trgReg = cg->allocateRegister();
-        generateRTYPE(is32bit ? TR::InstOpCode::_mulw : TR::InstOpCode::_mul, node, trgReg, src1Reg, src2Reg, cg);
+        Inst_RTYPE(is32bit ? TR::InstOpCode::_mulw : TR::InstOpCode::_mul, node, trgReg, src1Reg, src2Reg, cg);
     }
 
     truncate(node, trgReg, cg);
@@ -237,8 +236,8 @@ TR::Register *OMR::RV::TreeEvaluator::imulhEvaluator(TR::Node *node, TR::CodeGen
     TR::Register *src2Reg = cg->evaluate(secondChild);
     TR::Register *trgReg = cg->allocateRegister();
 
-    generateRTYPE(TR::InstOpCode::_mul, node, trgReg, src1Reg, src2Reg, cg);
-    generateITYPE(TR::InstOpCode::_srai, node, trgReg, trgReg, 32, cg);
+    Inst_RTYPE(TR::InstOpCode::_mul, node, trgReg, src1Reg, src2Reg, cg);
+    Inst_ITYPE(TR::InstOpCode::_srai, node, trgReg, trgReg, 32, cg);
 
     firstChild->decReferenceCount();
     secondChild->decReferenceCount();
@@ -327,11 +326,11 @@ TR::Register *OMR::RV::TreeEvaluator::ishlEvaluator(TR::Node *node, TR::CodeGene
             src1Reg = cg->evaluate(firstChild);
             trgReg = cg->allocateRegister(TR_GPR);
             if (width < 32) {
-                generateITYPE(TR::InstOpCode::_slliw, node, trgReg, src1Reg, 32 - width + shamt, cg);
-                generateITYPE(TR::InstOpCode::_sraiw, node, trgReg, trgReg, 32 - width, cg);
+                Inst_ITYPE(TR::InstOpCode::_slliw, node, trgReg, src1Reg, 32 - width + shamt, cg);
+                Inst_ITYPE(TR::InstOpCode::_sraiw, node, trgReg, trgReg, 32 - width, cg);
             } else {
-                generateITYPE(width == 64 ? TR::InstOpCode::_slli : TR::InstOpCode::_slliw, node, trgReg, src1Reg,
-                    shamt, cg);
+                Inst_ITYPE(width == 64 ? TR::InstOpCode::_slli : TR::InstOpCode::_slliw, node, trgReg, src1Reg, shamt,
+                    cg);
             }
         } else {
             trgReg = cg->evaluate(firstChild);
@@ -359,13 +358,12 @@ TR::Register *OMR::RV::TreeEvaluator::ishlEvaluator(TR::Node *node, TR::CodeGene
              * Here we temporarily use trgReg to hold shift amount with high
              * bits cleared (using andi).
              */
-            generateITYPE(TR::InstOpCode::_andi, node, trgReg, src2Reg, (width - 1), cg);
-            generateRTYPE(TR::InstOpCode::_sllw, node, trgReg, src1Reg, trgReg, cg);
-            generateITYPE(TR::InstOpCode::_slli, node, trgReg, trgReg, 64 - width, cg);
-            generateITYPE(TR::InstOpCode::_srai, node, trgReg, trgReg, 64 - width, cg);
+            Inst_ITYPE(TR::InstOpCode::_andi, node, trgReg, src2Reg, (width - 1), cg);
+            Inst_RTYPE(TR::InstOpCode::_sllw, node, trgReg, src1Reg, trgReg, cg);
+            Inst_ITYPE(TR::InstOpCode::_slli, node, trgReg, trgReg, 64 - width, cg);
+            Inst_ITYPE(TR::InstOpCode::_srai, node, trgReg, trgReg, 64 - width, cg);
         } else {
-            generateRTYPE(width == 64 ? TR::InstOpCode::_sll : TR::InstOpCode::_sllw, node, trgReg, src1Reg, src2Reg,
-                cg);
+            Inst_RTYPE(width == 64 ? TR::InstOpCode::_sll : TR::InstOpCode::_sllw, node, trgReg, src1Reg, src2Reg, cg);
         }
     }
 
@@ -405,8 +403,7 @@ TR::Register *OMR::RV::TreeEvaluator::ishrEvaluator(TR::Node *node, TR::CodeGene
             src1Reg = cg->evaluate(firstChild);
             trgReg = cg->allocateRegister(TR_GPR);
 
-            generateITYPE(width == 64 ? TR::InstOpCode::_srai : TR::InstOpCode::_sraiw, node, trgReg, src1Reg, shamt,
-                cg);
+            Inst_ITYPE(width == 64 ? TR::InstOpCode::_srai : TR::InstOpCode::_sraiw, node, trgReg, src1Reg, shamt, cg);
         } else {
             trgReg = cg->evaluate(firstChild);
         }
@@ -434,11 +431,10 @@ TR::Register *OMR::RV::TreeEvaluator::ishrEvaluator(TR::Node *node, TR::CodeGene
              * Here we temporarily use trgReg to hold shift amount with high
              * bits cleared (using andi).
              */
-            generateITYPE(TR::InstOpCode::_andi, node, trgReg, src2Reg, width - 1, cg);
-            generateRTYPE(TR::InstOpCode::_sraw, node, trgReg, src1Reg, trgReg, cg);
+            Inst_ITYPE(TR::InstOpCode::_andi, node, trgReg, src2Reg, width - 1, cg);
+            Inst_RTYPE(TR::InstOpCode::_sraw, node, trgReg, src1Reg, trgReg, cg);
         } else {
-            generateRTYPE(width == 64 ? TR::InstOpCode::_sra : TR::InstOpCode::_sraw, node, trgReg, src1Reg, src2Reg,
-                cg);
+            Inst_RTYPE(width == 64 ? TR::InstOpCode::_sra : TR::InstOpCode::_sraw, node, trgReg, src1Reg, src2Reg, cg);
         }
     }
 
@@ -490,11 +486,11 @@ TR::Register *OMR::RV::TreeEvaluator::iushrEvaluator(TR::Node *node, TR::CodeGen
             trgReg = cg->allocateRegister(TR_GPR);
 
             if (width < 32) {
-                generateITYPE(TR::InstOpCode::_slliw, node, trgReg, src1Reg, 32 - width, cg);
-                generateITYPE(TR::InstOpCode::_srliw, node, trgReg, trgReg, 32 - width + shamt, cg);
+                Inst_ITYPE(TR::InstOpCode::_slliw, node, trgReg, src1Reg, 32 - width, cg);
+                Inst_ITYPE(TR::InstOpCode::_srliw, node, trgReg, trgReg, 32 - width + shamt, cg);
             } else {
-                generateITYPE(width == 64 ? TR::InstOpCode::_srli : TR::InstOpCode::_srliw, node, trgReg, src1Reg,
-                    shamt, cg);
+                Inst_ITYPE(width == 64 ? TR::InstOpCode::_srli : TR::InstOpCode::_srliw, node, trgReg, src1Reg, shamt,
+                    cg);
             }
         } else {
             trgReg = cg->evaluate(firstChild);
@@ -531,10 +527,10 @@ TR::Register *OMR::RV::TreeEvaluator::iushrEvaluator(TR::Node *node, TR::CodeGen
              * value.
              */
             if (width == 8) {
-                generateITYPE(TR::InstOpCode::_andi, node, trgReg, src1Reg, 0xFF, cg);
+                Inst_ITYPE(TR::InstOpCode::_andi, node, trgReg, src1Reg, 0xFF, cg);
             } else {
-                generateITYPE(TR::InstOpCode::_slliw, node, trgReg, src1Reg, 16, cg);
-                generateITYPE(TR::InstOpCode::_srliw, node, trgReg, trgReg, 16, cg);
+                Inst_ITYPE(TR::InstOpCode::_slliw, node, trgReg, src1Reg, 16, cg);
+                Inst_ITYPE(TR::InstOpCode::_srliw, node, trgReg, trgReg, 16, cg);
             }
             src1Reg = trgReg;
 
@@ -543,12 +539,12 @@ TR::Register *OMR::RV::TreeEvaluator::iushrEvaluator(TR::Node *node, TR::CodeGen
              * into src2Reg.
              */
             src2Reg = cg->allocateRegister(TR_GPR);
-            generateITYPE(TR::InstOpCode::_andi, node, src2Reg, cg->evaluate(secondChild), width - 1, cg);
+            Inst_ITYPE(TR::InstOpCode::_andi, node, src2Reg, cg->evaluate(secondChild), width - 1, cg);
         } else {
             src2Reg = cg->evaluate(secondChild);
         }
 
-        generateRTYPE(width == 64 ? TR::InstOpCode::_srl : TR::InstOpCode::_srlw, node, trgReg, src1Reg, src2Reg, cg);
+        Inst_RTYPE(width == 64 ? TR::InstOpCode::_srl : TR::InstOpCode::_srlw, node, trgReg, src1Reg, src2Reg, cg);
         truncate(node, trgReg, cg);
     }
 
@@ -589,14 +585,14 @@ TR::Register *OMR::RV::TreeEvaluator::irolEvaluator(TR::Node *node, TR::CodeGene
 
         if (shift != 0) {
             if (is64bit) {
-                generateITYPE(TR::InstOpCode::_slli, node, tmpReg, trgReg, shift, cg);
-                generateITYPE(TR::InstOpCode::_srli, node, trgReg, trgReg, 64 - shift, cg);
-                generateRTYPE(TR::InstOpCode::_or, node, trgReg, trgReg, tmpReg, cg);
+                Inst_ITYPE(TR::InstOpCode::_slli, node, tmpReg, trgReg, shift, cg);
+                Inst_ITYPE(TR::InstOpCode::_srli, node, trgReg, trgReg, 64 - shift, cg);
+                Inst_RTYPE(TR::InstOpCode::_or, node, trgReg, trgReg, tmpReg, cg);
             } else {
-                generateITYPE(TR::InstOpCode::_slliw, node, tmpReg, trgReg, shift, cg);
-                generateITYPE(TR::InstOpCode::_srliw, node, trgReg, trgReg, 32 - shift, cg);
-                generateRTYPE(TR::InstOpCode::_or, node, trgReg, trgReg, tmpReg, cg);
-                generateITYPE(TR::InstOpCode::_addiw, node, trgReg, trgReg, 0, cg);
+                Inst_ITYPE(TR::InstOpCode::_slliw, node, tmpReg, trgReg, shift, cg);
+                Inst_ITYPE(TR::InstOpCode::_srliw, node, trgReg, trgReg, 32 - shift, cg);
+                Inst_RTYPE(TR::InstOpCode::_or, node, trgReg, trgReg, tmpReg, cg);
+                Inst_ITYPE(TR::InstOpCode::_addiw, node, trgReg, trgReg, 0, cg);
             }
         }
     } else {
@@ -604,16 +600,16 @@ TR::Register *OMR::RV::TreeEvaluator::irolEvaluator(TR::Node *node, TR::CodeGene
         TR::Register *shift2Reg = cg->allocateRegister();
         TR::Register *zero = cg->machine()->getRealRegister(TR::RealRegister::zero);
 
-        generateRTYPE(TR::InstOpCode::_subw, node, shift2Reg, zero, shift1Reg, cg);
+        Inst_RTYPE(TR::InstOpCode::_subw, node, shift2Reg, zero, shift1Reg, cg);
         if (is64bit) {
-            generateRTYPE(TR::InstOpCode::_sll, node, tmpReg, trgReg, shift1Reg, cg);
-            generateRTYPE(TR::InstOpCode::_srl, node, trgReg, trgReg, shift2Reg, cg);
-            generateRTYPE(TR::InstOpCode::_or, node, trgReg, trgReg, tmpReg, cg);
+            Inst_RTYPE(TR::InstOpCode::_sll, node, tmpReg, trgReg, shift1Reg, cg);
+            Inst_RTYPE(TR::InstOpCode::_srl, node, trgReg, trgReg, shift2Reg, cg);
+            Inst_RTYPE(TR::InstOpCode::_or, node, trgReg, trgReg, tmpReg, cg);
         } else {
-            generateRTYPE(TR::InstOpCode::_sllw, node, tmpReg, trgReg, shift1Reg, cg);
-            generateRTYPE(TR::InstOpCode::_srlw, node, trgReg, trgReg, shift2Reg, cg);
-            generateRTYPE(TR::InstOpCode::_or, node, trgReg, trgReg, tmpReg, cg);
-            generateITYPE(TR::InstOpCode::_addiw, node, trgReg, trgReg, 0, cg);
+            Inst_RTYPE(TR::InstOpCode::_sllw, node, tmpReg, trgReg, shift1Reg, cg);
+            Inst_RTYPE(TR::InstOpCode::_srlw, node, trgReg, trgReg, shift2Reg, cg);
+            Inst_RTYPE(TR::InstOpCode::_or, node, trgReg, trgReg, tmpReg, cg);
+            Inst_ITYPE(TR::InstOpCode::_addiw, node, trgReg, trgReg, 0, cg);
         }
         cg->stopUsingRegister(shift2Reg);
     }

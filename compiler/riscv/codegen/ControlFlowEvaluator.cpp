@@ -39,7 +39,7 @@ TR::Register *genericReturnEvaluator(TR::Node *node, TR::RealRegister::RegNum rn
     TR::RegisterDependencyConditions *deps
         = new (cg->trHeapMemory()) TR::RegisterDependencyConditions(1, 0, cg->trMemory());
     deps->addPreCondition(returnRegister, rnum);
-    generateADMIN(cg, TR::InstOpCode::retn, node, deps);
+    Inst_ADMIN(TR::InstOpCode::retn, node, deps, cg);
 
     cg->comp()->setReturnInfo(i);
     cg->decReferenceCount(firstChild);
@@ -65,7 +65,7 @@ TR::Register *OMR::RV::TreeEvaluator::areturnEvaluator(TR::Node *node, TR::CodeG
 // void return
 TR::Register *OMR::RV::TreeEvaluator::returnEvaluator(TR::Node *node, TR::CodeGenerator *cg)
 {
-    generateADMIN(cg, TR::InstOpCode::retn, node);
+    Inst_ADMIN(TR::InstOpCode::retn, node, cg);
     cg->comp()->setReturnInfo(TR_VoidReturn);
     return NULL;
 }
@@ -77,11 +77,10 @@ TR::Register *OMR::RV::TreeEvaluator::gotoEvaluator(TR::Node *node, TR::CodeGene
     if (node->getNumChildren() > 0) {
         TR::Node *child = node->getFirstChild();
         cg->evaluate(child);
-        generateJTYPE(TR::InstOpCode::_jal, node, zero, gotoLabel, generateRegisterDependencyConditions(cg, child, 0),
-            cg);
+        Inst_JTYPE(TR::InstOpCode::_jal, node, zero, gotoLabel, generateRegisterDependencyConditions(cg, child, 0), cg);
         cg->decReferenceCount(child);
     } else {
-        generateJTYPE(TR::InstOpCode::_jal, node, zero, gotoLabel, cg);
+        Inst_JTYPE(TR::InstOpCode::_jal, node, zero, gotoLabel, cg);
     }
     return NULL;
 }
@@ -117,7 +116,7 @@ static bool virtualGuardHelper(TR::Node *node, TR::CodeGenerator *cg)
         cg->evaluateChildrenWithMultipleRefCount(node);
 
     TR::LabelSymbol *label = node->getBranchDestination()->getNode()->getLabel();
-    generateVGNOP(node, site, deps, label, cg);
+    Inst_VGNOP(node, site, deps, label, cg);
     cg->recursivelyDecReferenceCount(node->getFirstChild());
     cg->recursivelyDecReferenceCount(node->getSecondChild());
 
@@ -154,9 +153,9 @@ static TR::Instruction *ificmpHelper(TR::InstOpCode::Mnemonic op, TR::Node *node
 #endif
     } else {
         if (reverse)
-            result = generateBTYPE(op, node, dstLabel, src2Reg, src1Reg, cg);
+            result = Inst_BTYPE(op, node, dstLabel, src2Reg, src1Reg, cg);
         else
-            result = generateBTYPE(op, node, dstLabel, src1Reg, src2Reg, cg);
+            result = Inst_BTYPE(op, node, dstLabel, src1Reg, src2Reg, cg);
     }
 
     firstChild->decReferenceCount();
@@ -304,12 +303,12 @@ static TR::Register *icmpHelper(TR::InstOpCode::Mnemonic op1, TR::InstOpCode::Mn
     TR::Instruction *result = nullptr;
 
     if (reverse)
-        result = generateRTYPE(op1, node, trgReg, src2Reg, src1Reg, cg);
+        result = Inst_RTYPE(op1, node, trgReg, src2Reg, src1Reg, cg);
     else
-        result = generateRTYPE(op1, node, trgReg, src1Reg, src2Reg, cg);
+        result = Inst_RTYPE(op1, node, trgReg, src1Reg, src2Reg, cg);
 
     if (op2 != TR::InstOpCode::bad) {
-        result = generateITYPE(op2, node, trgReg, trgReg, imm2, cg, result);
+        result = Inst_ITYPE(op2, node, trgReg, trgReg, imm2, cg, result);
     }
 
     node->setRegister(trgReg);
@@ -343,8 +342,8 @@ TR::Register *OMR::RV::TreeEvaluator::icmpneEvaluator(TR::Node *node, TR::CodeGe
     TR::Register *zero = cg->machine()->getRealRegister(TR::RealRegister::zero);
     TR::Instruction *result = nullptr;
 
-    result = generateRTYPE(TR::InstOpCode::_sub, node, trgReg, src1Reg, src2Reg, cg);
-    result = generateRTYPE(TR::InstOpCode::_sltu, node, trgReg, zero, trgReg, cg);
+    result = Inst_RTYPE(TR::InstOpCode::_sub, node, trgReg, src1Reg, src2Reg, cg);
+    result = Inst_RTYPE(TR::InstOpCode::_sltu, node, trgReg, zero, trgReg, cg);
 
     node->setRegister(trgReg);
     firstChild->decReferenceCount();
@@ -467,8 +466,8 @@ TR::Register *OMR::RV::TreeEvaluator::lcmpEvaluator(TR::Node *node, TR::CodeGene
      *  - tmpReg = 1  iff  src1Reg > src2Reg
      *
      */
-    generateRTYPE(TR::InstOpCode::_slt, node, trgReg, src1Reg, src2Reg, cg);
-    generateRTYPE(TR::InstOpCode::_slt, node, tmpReg, src2Reg, src1Reg, cg);
+    Inst_RTYPE(TR::InstOpCode::_slt, node, trgReg, src1Reg, src2Reg, cg);
+    Inst_RTYPE(TR::InstOpCode::_slt, node, tmpReg, src2Reg, src1Reg, cg);
 
     /*
      * There are three outcomes possible:
@@ -477,7 +476,7 @@ TR::Register *OMR::RV::TreeEvaluator::lcmpEvaluator(TR::Node *node, TR::CodeGene
      *  (ii) trgReg = 1, tmpReg = 0  => lcmp => -1
      * (iii) trgReg = 0, tmpReg = 0  => lcmp =>  0
      */
-    generateRTYPE(TR::InstOpCode::_sub, node, trgReg, tmpReg, trgReg, cg);
+    Inst_RTYPE(TR::InstOpCode::_sub, node, trgReg, tmpReg, trgReg, cg);
 
     cg->stopUsingRegister(tmpReg);
 
@@ -528,10 +527,10 @@ TR::Register *OMR::RV::TreeEvaluator::iselectEvaluator(TR::Node *node, TR::CodeG
     deps->addPostCondition(trueReg, TR::RealRegister::NoReg);
     deps->addPostCondition(falseReg, TR::RealRegister::NoReg);
 
-    generateLABEL(cg, TR::InstOpCode::label, node, startLabel);
-    generateBTYPE(TR::InstOpCode::_bne, node, joinLabel, condReg, zero, cg);
-    generateITYPE(TR::InstOpCode::_addi, node, trueReg, falseReg, 0, cg);
-    generateLABEL(cg, TR::InstOpCode::label, node, joinLabel, deps);
+    Inst_LABEL(TR::InstOpCode::label, node, startLabel, cg);
+    Inst_BTYPE(TR::InstOpCode::_bne, node, joinLabel, condReg, zero, cg);
+    Inst_ITYPE(TR::InstOpCode::_addi, node, trueReg, falseReg, 0, cg);
+    Inst_LABEL(TR::InstOpCode::label, node, joinLabel, deps, cg);
 
     node->setRegister(trueReg);
     cg->decReferenceCount(condNode);
@@ -611,10 +610,10 @@ static TR::Register *commonMinMaxEvaluator(TR::Node *node, TR::InstOpCode::Mnemo
     deps->addPostCondition(src1Reg, TR::RealRegister::NoReg);
     deps->addPostCondition(src2Reg, TR::RealRegister::NoReg);
 
-    generateLABEL(cg, TR::InstOpCode::label, node, startLabel);
-    generateBTYPE(op, node, joinLabel, src1Reg, src2Reg, cg);
-    generateITYPE(TR::InstOpCode::_addi, node, src1Reg, src2Reg, 0, cg);
-    generateLABEL(cg, TR::InstOpCode::label, node, joinLabel, deps);
+    Inst_LABEL(TR::InstOpCode::label, node, startLabel, cg);
+    Inst_BTYPE(op, node, joinLabel, src1Reg, src2Reg, cg);
+    Inst_ITYPE(TR::InstOpCode::_addi, node, src1Reg, src2Reg, 0, cg);
+    Inst_LABEL(TR::InstOpCode::label, node, joinLabel, deps, cg);
 
     node->setRegister(src1Reg);
     cg->decReferenceCount(firstChild);

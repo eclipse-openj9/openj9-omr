@@ -339,7 +339,7 @@ void TR::RVSystemLinkage::createPrologue(TR::Instruction *cursor, List<TR::Param
     // allocate stack space
     uint32_t frameSize = cg->getFrameSizeInBytes();
     if (VALID_ITYPE_IMM(frameSize)) {
-        cursor = generateITYPE(TR::InstOpCode::_addi, firstNode, sp, sp, -frameSize, cg, cursor);
+        cursor = Inst_ITYPE(TR::InstOpCode::_addi, firstNode, sp, sp, -frameSize, cg, cursor);
     } else {
         TR_UNIMPLEMENTED();
     }
@@ -347,7 +347,7 @@ void TR::RVSystemLinkage::createPrologue(TR::Instruction *cursor, List<TR::Param
     // save link register (ra)
     if (machine->getLinkRegisterKilled()) {
         TR::MemoryReference *stackSlot = new (trHeapMemory()) TR::MemoryReference(sp, 0, cg);
-        cursor = generateSTORE(TR::InstOpCode::_sd, firstNode, stackSlot, ra, cg, cursor);
+        cursor = Inst_STORE(TR::InstOpCode::_sd, firstNode, stackSlot, ra, cg, cursor);
     }
 
     // spill argument registers
@@ -370,7 +370,7 @@ void TR::RVSystemLinkage::createPrologue(TR::Instruction *cursor, List<TR::Param
             case TR::Address:
                 if (nextIntArgReg < getProperties().getNumIntArgRegs()) {
                     op = (parameter->getSize() == 8) ? TR::InstOpCode::_sd : TR::InstOpCode::_sw;
-                    cursor = generateSTORE(op, firstNode, stackSlot,
+                    cursor = Inst_STORE(op, firstNode, stackSlot,
                         machine->getRealRegister(getProperties().getIntegerArgumentRegister(nextIntArgReg)), cg,
                         cursor);
                     nextIntArgReg++;
@@ -382,12 +382,12 @@ void TR::RVSystemLinkage::createPrologue(TR::Instruction *cursor, List<TR::Param
             case TR::Double:
                 if (nextFltArgReg < getProperties().getNumFloatArgRegs()) {
                     op = (parameter->getSize() == 8) ? TR::InstOpCode::_fsd : TR::InstOpCode::_fsw;
-                    cursor = generateSTORE(op, firstNode, stackSlot,
+                    cursor = Inst_STORE(op, firstNode, stackSlot,
                         machine->getRealRegister(getProperties().getFloatArgumentRegister(nextFltArgReg)), cg, cursor);
                     nextFltArgReg++;
                 } else if (nextIntArgReg < getProperties().getNumIntArgRegs()) {
                     op = (parameter->getSize() == 8) ? TR::InstOpCode::_sd : TR::InstOpCode::_sw;
-                    cursor = generateSTORE(op, firstNode, stackSlot,
+                    cursor = Inst_STORE(op, firstNode, stackSlot,
                         machine->getRealRegister(getProperties().getIntegerArgumentRegister(nextIntArgReg)), cg,
                         cursor);
                     nextIntArgReg++;
@@ -407,7 +407,7 @@ void TR::RVSystemLinkage::createPrologue(TR::Instruction *cursor, List<TR::Param
     uint32_t offset = bodySymbol->getLocalMappingCursor();
     FOR_EACH_ASSIGNED_CALLEE_SAVED_REGISTER(
         machine, _properties, TR::MemoryReference *stackSlot = new (trHeapMemory()) TR::MemoryReference(sp, offset, cg);
-        cursor = generateSTORE(TR::InstOpCode::_sd, firstNode, stackSlot, reg, this->cg(), cursor); offset += 8;)
+        cursor = Inst_STORE(TR::InstOpCode::_sd, firstNode, stackSlot, reg, this->cg(), cursor); offset += 8;)
 }
 
 void TR::RVSystemLinkage::createEpilogue(TR::Instruction *cursor)
@@ -424,25 +424,25 @@ void TR::RVSystemLinkage::createEpilogue(TR::Instruction *cursor)
     uint32_t offset = bodySymbol->getLocalMappingCursor();
     FOR_EACH_ASSIGNED_CALLEE_SAVED_REGISTER(
         machine, _properties, TR::MemoryReference *stackSlot = new (trHeapMemory()) TR::MemoryReference(sp, offset, cg);
-        cursor = generateLOAD(TR::InstOpCode::_ld, lastNode, reg, stackSlot, this->cg(), cursor); offset += 8;)
+        cursor = Inst_LOAD(TR::InstOpCode::_ld, lastNode, reg, stackSlot, this->cg(), cursor); offset += 8;)
 
     // restore link register (x30)
     TR::RealRegister *ra = machine->getRealRegister(TR::RealRegister::ra);
     if (machine->getLinkRegisterKilled()) {
         TR::MemoryReference *stackSlot = new (trHeapMemory()) TR::MemoryReference(sp, 0, cg);
-        cursor = generateLOAD(TR::InstOpCode::_ld, lastNode, ra, stackSlot, this->cg(), cursor);
+        cursor = Inst_LOAD(TR::InstOpCode::_ld, lastNode, ra, stackSlot, this->cg(), cursor);
     }
 
     // remove space for preserved registers
     uint32_t frameSize = cg->getFrameSizeInBytes();
     if (VALID_ITYPE_IMM(frameSize)) {
-        cursor = generateITYPE(TR::InstOpCode::_addi, lastNode, sp, sp, frameSize, cg, cursor);
+        cursor = Inst_ITYPE(TR::InstOpCode::_addi, lastNode, sp, sp, frameSize, cg, cursor);
     } else {
         TR_UNIMPLEMENTED();
     }
 
     // return
-    cursor = generateITYPE(TR::InstOpCode::_jalr, lastNode, zero, ra, 0, cg, cursor);
+    cursor = Inst_ITYPE(TR::InstOpCode::_jalr, lastNode, zero, ra, 0, cg, cursor);
 }
 
 int32_t TR::RVSystemLinkage::buildArgs(TR::Node *callNode, TR::RegisterDependencyConditions *dependencies)
@@ -543,7 +543,7 @@ int32_t TR::RVSystemLinkage::buildArgs(TR::Node *callNode, TR::RegisterDependenc
                             tempReg = cg()->allocateCollectedReferenceRegister();
                         else
                             tempReg = cg()->allocateRegister();
-                        generateITYPE(TR::InstOpCode::_addi, callNode, tempReg, argRegister, 0, cg());
+                        Inst_ITYPE(TR::InstOpCode::_addi, callNode, tempReg, argRegister, 0, cg());
                         argRegister = tempReg;
                     }
                     if (numIntegerArgs == 0 && (resType.isAddress() || resType.isInt32() || resType.isInt64())) {
@@ -586,7 +586,7 @@ int32_t TR::RVSystemLinkage::buildArgs(TR::Node *callNode, TR::RegisterDependenc
                         // TODO: check if this is the best way to move floating point values
                         // between regs
                         op = (childType == TR::Float) ? TR::InstOpCode::_fsgnj_d : TR::InstOpCode::_fsgnj_s;
-                        generateRTYPE(op, callNode, tempReg, argRegister, argRegister, cg());
+                        Inst_RTYPE(op, callNode, tempReg, argRegister, argRegister, cg());
                         argRegister = tempReg;
                     }
                     if ((numFloatArgs == 0 && resType.isFloatingPoint())) {
@@ -606,7 +606,7 @@ int32_t TR::RVSystemLinkage::buildArgs(TR::Node *callNode, TR::RegisterDependenc
                     TR::Register *gprRegister = cg()->allocateRegister(TR_GPR);
                     TR::Register *zero = cg()->machine()->getRealRegister(TR::RealRegister::zero);
                     op = (childType == TR::Float) ? TR::InstOpCode::_fmv_x_s : TR::InstOpCode::_fmv_x_d;
-                    generateRTYPE(op, callNode, gprRegister, argRegister, zero, cg());
+                    Inst_RTYPE(op, callNode, gprRegister, argRegister, zero, cg());
 
                     TR::addDependency(dependencies, gprRegister,
                         properties.getIntegerArgumentRegister(numIntegerArgs + numFloatArgsPassedInGPRs), TR_GPR, cg());
@@ -658,11 +658,11 @@ int32_t TR::RVSystemLinkage::buildArgs(TR::Node *callNode, TR::RegisterDependenc
 
     if (numMemArgs > 0) {
         TR::RealRegister *sp = cg()->machine()->getRealRegister(properties.getStackPointerRegister());
-        generateITYPE(TR::InstOpCode::_addi, callNode, argMemReg, sp, -totalSize, cg());
+        Inst_ITYPE(TR::InstOpCode::_addi, callNode, argMemReg, sp, -totalSize, cg());
 
         for (argIndex = 0; argIndex < numMemArgs; argIndex++) {
             TR::Register *aReg = pushToMemory[argIndex].argRegister;
-            generateSTORE(pushToMemory[argIndex].opCode, callNode, pushToMemory[argIndex].argMemory, aReg, cg());
+            Inst_STORE(pushToMemory[argIndex].opCode, callNode, pushToMemory[argIndex].argMemory, aReg, cg());
             cg()->stopUsingRegister(aReg);
         }
 
@@ -689,14 +689,14 @@ TR::Register *TR::RVSystemLinkage::buildDispatch(TR::Node *callNode)
     int32_t totalSize = buildArgs(callNode, dependencies);
     if (totalSize > 0) {
         if (VALID_ITYPE_IMM(-totalSize)) {
-            generateITYPE(TR::InstOpCode::_addi, callNode, sp, sp, -totalSize, cg());
+            Inst_ITYPE(TR::InstOpCode::_addi, callNode, sp, sp, -totalSize, cg());
         } else {
             TR_ASSERT_FATAL(false, "Too many arguments.");
         }
     }
 
     if (callNode->getOpCode().isCallIndirect()) {
-        generateITYPE(TR::InstOpCode::_jalr, callNode, ra, target, 0, dependencies, cg());
+        Inst_ITYPE(TR::InstOpCode::_jalr, callNode, ra, target, 0, dependencies, cg());
     } else {
         auto targetAddr = callNode->getSymbolReference()->getMethodAddress();
 
@@ -707,8 +707,7 @@ TR::Register *TR::RVSystemLinkage::buildDispatch(TR::Node *callNode)
              *
              * This is the case of recursive calls.
              */
-            generateJTYPE(TR::InstOpCode::_jal, callNode, ra, 0, dependencies, callNode->getSymbolReference(), NULL,
-                cg());
+            Inst_JTYPE(TR::InstOpCode::_jal, callNode, ra, 0, dependencies, callNode->getSymbolReference(), NULL, cg());
         } else {
             /*
              * If the target address is known, we load it into a register and generate `jalr`. This may be
@@ -723,7 +722,7 @@ TR::Register *TR::RVSystemLinkage::buildDispatch(TR::Node *callNode)
              * anyways and this way we do not need to allocate another one.
              */
             loadConstant64(cg(), callNode, reinterpret_cast<int64_t>(targetAddr), ra);
-            generateITYPE(TR::InstOpCode::_jalr, callNode, ra, ra, 0, dependencies, cg());
+            Inst_ITYPE(TR::InstOpCode::_jalr, callNode, ra, ra, 0, dependencies, cg());
         }
     }
 
@@ -731,7 +730,7 @@ TR::Register *TR::RVSystemLinkage::buildDispatch(TR::Node *callNode)
 
     if (totalSize > 0) {
         if (VALID_ITYPE_IMM(totalSize)) {
-            generateITYPE(TR::InstOpCode::_addi, callNode, sp, sp, totalSize, cg());
+            Inst_ITYPE(TR::InstOpCode::_addi, callNode, sp, sp, totalSize, cg());
         } else {
             TR_ASSERT_FATAL(false, "Too many arguments.");
         }

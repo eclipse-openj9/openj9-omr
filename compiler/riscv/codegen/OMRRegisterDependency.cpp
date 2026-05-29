@@ -243,7 +243,7 @@ void OMR::RV::RegisterDependencyGroup::assignRegisters(TR::Instruction *currentI
                         break;
                 }
 
-                TR::Instruction *inst = generateLOAD(opCode, currentNode, assignedReg, tempMR, cg, currentInstruction);
+                TR::Instruction *inst = Inst_LOAD(opCode, currentNode, assignedReg, tempMR, cg, currentInstruction);
 
                 assignedReg->setAssignedRegister(NULL);
                 virtReg->setAssignedRegister(NULL);

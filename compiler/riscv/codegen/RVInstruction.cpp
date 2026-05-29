@@ -391,10 +391,10 @@ void TR::BtypeInstruction::expandIntoFarBranch()
     TR::LabelSymbol *skipBranchLabel = generateLabelSymbol(cg());
     skipBranchLabel->setEstimatedCodeLocation(getEstimatedBinaryLocation() + RISCV_INSTRUCTION_LENGTH);
 
-    TR::Instruction *branchInstr = generateJTYPE(TR::InstOpCode::_jal, getNode(), zero, getLabelSymbol(), cg(), self());
+    TR::Instruction *branchInstr = Inst_JTYPE(TR::InstOpCode::_jal, getNode(), zero, getLabelSymbol(), cg(), self());
     branchInstr->setEstimatedBinaryLength(RISCV_INSTRUCTION_LENGTH);
 
-    TR::Instruction *labelInstr = generateLABEL(cg(), TR::InstOpCode::label, getNode(), skipBranchLabel, branchInstr);
+    TR::Instruction *labelInstr = Inst_LABEL(TR::InstOpCode::label, getNode(), skipBranchLabel, cg(), branchInstr);
     labelInstr->setEstimatedBinaryLength(0);
 
     setLabelSymbol(skipBranchLabel);

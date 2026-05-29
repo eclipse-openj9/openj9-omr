@@ -306,7 +306,7 @@ TR::Instruction *OMR::RV::Linkage::copyParametersToHomeLocation(TR::Instruction 
 
                 // ai := stack
                 TR::MemoryReference *stackMR = new (cg()->trHeapMemory()) TR::MemoryReference(stackPtr, offset, cg());
-                loadCursor = generateLOAD(getOpCodeForParmLoads(paramType), NULL, machine->getRealRegister(ai), stackMR,
+                loadCursor = Inst_LOAD(getOpCodeForParmLoads(paramType), NULL, machine->getRealRegister(ai), stackMR,
                     cg(), loadCursor);
             }
         } else // It's in a linkage register
@@ -329,7 +329,7 @@ TR::Instruction *OMR::RV::Linkage::copyParametersToHomeLocation(TR::Instruction 
                     TR::RealRegister *linkageReg = machine->getRealRegister(sourceIndex);
                     TR::MemoryReference *stackMR
                         = new (cg()->trHeapMemory()) TR::MemoryReference(stackPtr, offset, cg());
-                    cursor = generateSTORE(getOpCodeForParmStores(paramType), NULL, stackMR, linkageReg, cg(), cursor);
+                    cursor = Inst_STORE(getOpCodeForParmStores(paramType), NULL, stackMR, linkageReg, cg(), cursor);
                 }
             }
 
@@ -412,14 +412,12 @@ TR::Instruction *OMR::RV::Linkage::copyParametersToHomeLocation(TR::Instruction 
                 TR::Register *trgReg = machine->getRealRegister(regCursor);
                 TR::Register *srcReg = machine->getRealRegister(source);
                 if ((paramType == TR::Double) || (paramType == TR::Float)) {
-                    cursor
-                        = generateRTYPE((paramType == TR::Double) ? TR::InstOpCode::_fsgnj_d : TR::InstOpCode::_fsgnj_s,
-                            NULL, trgReg, srcReg, srcReg, cg(), cursor);
+                    cursor = Inst_RTYPE((paramType == TR::Double) ? TR::InstOpCode::_fsgnj_d : TR::InstOpCode::_fsgnj_s,
+                        NULL, trgReg, srcReg, srcReg, cg(), cursor);
                 } else {
-                    cursor
-                        = generateITYPE((paramType == TR::Int64) || (paramType == TR::Address) ? TR::InstOpCode::_addi
+                    cursor = Inst_ITYPE((paramType == TR::Int64) || (paramType == TR::Address) ? TR::InstOpCode::_addi
                                                                                                : TR::InstOpCode::_addiw,
-                            NULL, trgReg, srcReg, 0, cg(), cursor);
+                        NULL, trgReg, srcReg, 0, cg(), cursor);
                 }
 
                 // Update movStatus as we go so we don't generate redundant moves

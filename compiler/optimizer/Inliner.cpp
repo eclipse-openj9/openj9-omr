@@ -4226,6 +4226,20 @@ TR_CallSite *TR_InlinerBase::findAndUpdateCallSiteInGraph(TR_CallStack *callStac
             if (findDirectCallSiteTarget(comp(), callsite, this)) {
                 // Can't do a partial inline anymore as the blocks are wrong.
                 callsite->getTarget(0)->_isPartialInliningCandidate = false;
+                // The new target bypasses the normal applyPolicyToTargets()
+                // path (since getSymbolAndFindInlineTargets() is called with
+                // findNewTargets=false below). Apply the
+                // TR_DontInlineUnloadableMethods check explicitly here to
+                // prevent attempts to create bonds during physical inlining.
+                // Note: the full applyPolicyToTargets() cannot be called here
+                // because it invokes exceedsSizeThreshold(), which accesses
+                // block information that is no longer valid at this point.
+                TR_CallTarget *newTarget = callsite->getTarget(0);
+                if (comp()->getOption(TR_DontInlineUnloadableMethods)
+                    && !callsite->_retainedMethods->willRemainLoaded(newTarget->_calleeMethod)) {
+                    tracer()->insertCounter(Unloadable_Callee, callsite->_callNodeTreeTop);
+                    callsite->removecalltarget(0, tracer(), Unloadable_Callee);
+                }
             }
         }
     }

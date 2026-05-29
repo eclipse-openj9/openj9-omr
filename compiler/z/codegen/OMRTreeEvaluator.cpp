@@ -15804,9 +15804,13 @@ TR::Register *OMR::Z::TreeEvaluator::arraycmpSIMDHelper(TR::Node *node, TR::Code
     if (isFoldedIf && isIfxcmpBrCondContainEqual) {
         generateS390CompareAndBranchInstruction(cg, TR::InstOpCode::getCmpLogicalRegOpCode(), node, firstAddrReg,
             secondAddrReg, TR::InstOpCode::COND_BE, compareTarget, compareTargetRDC);
+        generateS390CompareAndBranchInstruction(cg, TR::InstOpCode::getCmpOpCode(), node, lastByteIndexReg, 0,
+            TR::InstOpCode::COND_BE, compareTarget, compareTargetRDC);
     } else {
         generateS390CompareAndBranchInstruction(cg, TR::InstOpCode::getCmpLogicalRegOpCode(), node, firstAddrReg,
             secondAddrReg, TR::InstOpCode::COND_BE, cFlowRegionEnd);
+        generateS390CompareAndBranchInstruction(cg, TR::InstOpCode::getCmpOpCode(), node, lastByteIndexReg, 0,
+            TR::InstOpCode::COND_BE, cFlowRegionEnd);
     }
 
     // VLL uses lastByteIndexReg as the highest 0-based index to load, which is length - 1

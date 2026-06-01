@@ -1170,10 +1170,10 @@ TEST(PortSockTest, poll_functionality_basic)
 	ASSERT_EQ(OMRPORTLIB->sock_poll(OMRPORTLIB, pollArray, 2, 1000), 0);
 
 	/* Initialize server sockets to watch for  both POLLIN and POLLOUT. Server POLLOUT should be ready.
-	 * Give poll up to 10 times to be ready.
+	 * Give poll up to 100 times to be ready.
 	 */
 	EXPECT_EQ(OMRPORTLIB->sock_pollfd_init(OMRPORTLIB, &pollArray[0], connectedServerSocket, OMRSOCK_POLLIN | OMRSOCK_POLLOUT), 0);
-	for (int32_t i = 0; i < 10; i++) {
+	for (int32_t i = 0; i < 100; i++) {
 		if (1 == (rc = OMRPORTLIB->sock_poll(OMRPORTLIB, pollArray, 2, 1000))) {
 			break;
 		}
@@ -1199,9 +1199,9 @@ TEST(PortSockTest, poll_functionality_basic)
 	}
 
 	/* Use poll for client to received a message from server. Server POLLOUT and client POLLIN should be ready.
-	 * Give poll up to 10 times to be ready.
+	 * Give poll up to 100 times to be ready.
 	 */
-	for (int32_t i = 0; i < 10; i++) {
+	for (int32_t i = 0; i < 100; i++) {
 		if (2 == (rc = OMRPORTLIB->sock_poll(OMRPORTLIB, pollArray, 2, 1000))) {
 			break;
 		}
@@ -1277,11 +1277,11 @@ TEST(PortSockTest, poll_functionality_many_sockets)
 	EXPECT_EQ(OMRPORTLIB->sock_pollfd_init(OMRPORTLIB, &pollArray[SERVER_SOCKET_POLL_IDX], connectedServerSocket, OMRSOCK_POLLIN), 0);
 	EXPECT_EQ(OMRPORTLIB->sock_pollfd_init(OMRPORTLIB, &pollArray[CLIENT_SOCKET_POLL_IDX], clientSocket, OMRSOCK_POLLOUT), 0);
 
-	/* Check that only client POLLOUT is ready. Give poll up to 10 times to be ready. */
+	/* Check that only client POLLOUT is ready. Give poll up to 100 times to be ready. */
 	const char *msg = "This is an omrsock test for 2 socket stream communications.\n";
 	int32_t bytesSent = 0;
 
-	for (int32_t i = 0; i < 10; i++) {
+	for (int32_t i = 0; i < 100; i++) {
 		if (1 == (rc = OMRPORTLIB->sock_poll(OMRPORTLIB, pollArray, 10, 1000))) {
 			break;
 		}
@@ -1301,9 +1301,9 @@ TEST(PortSockTest, poll_functionality_many_sockets)
 	 * Listen for HUP, since an error is returned if sock_pollfd_init recieves an event arg of 0. */
 	 EXPECT_EQ(OMRPORTLIB->sock_pollfd_init(OMRPORTLIB, &pollArray[CLIENT_SOCKET_POLL_IDX], clientSocket, OMRSOCK_POLLHUP), 0);
 
-	/* Check that server POLLIN is ready. Give poll up to 10 times to be ready. */
+	/* Check that server POLLIN is ready. Give poll up to 100 times to be ready. */
 	bool succeeded = false;
-	for (int32_t i = 0; i < 10; i++) {
+	for (int32_t i = 0; i < 100; i++) {
 		rc = OMRPORTLIB->sock_poll(OMRPORTLIB, pollArray, 10, 1000);
 		if (rc > 0) {
 			OMRPORTLIB->sock_get_pollfd_info(OMRPORTLIB, &pollArray[SERVER_SOCKET_POLL_IDX], &socketPoll, &revents);

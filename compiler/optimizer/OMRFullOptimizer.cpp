@@ -158,10 +158,12 @@ static const OptimizationStrategy reorderArrayIndexOpts[] = {
 };
 
 /*temp for openj9 static*/ const OptimizationStrategy eachEscapeAnalysisPassOpts[] = {
+#ifdef J9_PROJECT_SPECIFIC
     { OMR::preEscapeAnalysis, OMR::IfOSR },
     { OMR::escapeAnalysis },
     { OMR::postEscapeAnalysis, OMR::IfOSR },
     { OMR::eachEscapeAnalysisPassGroup, OMR::IfEnabled }, // if another pass requested
+#endif
     { OMR::endGroup }
 };
 

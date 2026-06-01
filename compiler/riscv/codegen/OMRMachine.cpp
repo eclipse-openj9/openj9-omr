@@ -116,8 +116,8 @@ TR::RealRegister *OMR::RV::Machine::freeBestRegister(TR::Instruction *currentIns
         }
 
         cursor = currentInstruction;
-        while (numCandidates > 1 && cursor != NULL && cursor->getOpCodeValue() != TR::InstOpCode::label
-            && cursor->getOpCodeValue() != TR::InstOpCode::proc) {
+        while (numCandidates > 1 && cursor != NULL && cursor->getOpCodeValue() != OP::label
+            && cursor->getOpCodeValue() != OP::proc) {
             for (int32_t i = 0; i < numCandidates; i++) {
                 if (cursor->refsRegister(candidates[i])) {
                     candidates[i] = candidates[--numCandidates];
@@ -161,7 +161,7 @@ TR::RealRegister *OMR::RV::Machine::freeBestRegister(TR::Instruction *currentIns
 
     candidates[0]->setBackingStorage(location);
 
-    tmemref = new (cg()->trHeapMemory()) TR::MemoryReference(currentNode, location->getSymbolReference(), 8, cg());
+    tmemref = MRef_Sym(currentNode, location->getSymbolReference(), cg());
 
     if (!cg()->isOutOfLineColdPath()) {
         TR_Debug *debugObj = cg()->getDebug();
@@ -202,16 +202,16 @@ TR::RealRegister *OMR::RV::Machine::freeBestRegister(TR::Instruction *currentIns
 
     switch (rk) {
         case TR_GPR:
-            loadOp = TR::InstOpCode::_ld;
+            loadOp = OP::_ld;
             break;
         case TR_FPR:
-            loadOp = TR::InstOpCode::_fld;
+            loadOp = OP::_fld;
             break;
         default:
             TR_ASSERT(false, "Unsupported RegisterKind.");
             break;
     }
-    generateLOAD(loadOp, currentNode, best, tmemref, cg(), currentInstruction);
+    Inst_LOAD(loadOp, currentNode, best, tmemref, cg(), currentInstruction);
 
     cg()->traceRegFreed(candidates[0], best);
 
@@ -259,7 +259,7 @@ TR::RealRegister *OMR::RV::Machine::reverseSpillState(TR::Instruction *currentIn
             targetRegister->getRegisterName(comp));
     }
 
-    tmemref = new (cg()->trHeapMemory()) TR::MemoryReference(currentNode, location->getSymbolReference(), 8, cg());
+    tmemref = MRef_Sym(currentNode, location->getSymbolReference(), cg());
 
     switch (rk) {
         case TR_GPR:
@@ -348,17 +348,17 @@ TR::RealRegister *OMR::RV::Machine::reverseSpillState(TR::Instruction *currentIn
     }
     switch (rk) {
         case TR_GPR:
-            storeOp = TR::InstOpCode::_sd;
+            storeOp = OP::_sd;
             break;
         case TR_FPR:
-            storeOp = TR::InstOpCode::_fsd;
+            storeOp = OP::_fsd;
             break;
         default:
             TR_ASSERT(false, "Unsupported RegisterKind.");
             break;
     }
 
-    generateSTORE(storeOp, currentNode, tmemref, targetRegister, cg(), currentInstruction);
+    Inst_STORE(storeOp, currentNode, tmemref, targetRegister, cg(), currentInstruction);
 
     return targetRegister;
 }
@@ -408,13 +408,13 @@ static void registerCopy(TR::Instruction *precedingInstruction, TR_RegisterKinds
     TR::Node *node = precedingInstruction->getNode();
     switch (rk) {
         case TR_GPR:
-            generateITYPE(TR::InstOpCode::_addi, node, targetReg, sourceReg, 0, cg, precedingInstruction);
+            Inst_ITYPE(OP::_addi, node, targetReg, sourceReg, 0, cg, precedingInstruction);
             break;
         case TR_FPR:
             TR_ASSERT_FATAL(sourceReg->isSinglePrecision() == targetReg->isSinglePrecision(),
                 "Source and target register size mismatch");
-            generateRTYPE(sourceReg->isSinglePrecision() ? TR::InstOpCode::_fsgnj_s : TR::InstOpCode::_fsgnj_d, node,
-                targetReg, sourceReg, sourceReg, cg, precedingInstruction);
+            Inst_RTYPE(sourceReg->isSinglePrecision() ? OP::_fsgnj_s : OP::_fsgnj_d, node, targetReg, sourceReg,
+                sourceReg, cg, precedingInstruction);
             break;
         default:
             TR_ASSERT_FATAL(false, "Unsupported RegisterKind.");
@@ -430,9 +430,9 @@ static void registerExchange(TR::Instruction *precedingInstruction, TR_RegisterK
 
     TR::Node *node = precedingInstruction->getNode();
     if (rk == TR_GPR) {
-        generateRTYPE(TR::InstOpCode::_xor, node, targetReg, targetReg, sourceReg, cg, precedingInstruction);
-        generateRTYPE(TR::InstOpCode::_xor, node, sourceReg, targetReg, sourceReg, cg, precedingInstruction);
-        generateRTYPE(TR::InstOpCode::_xor, node, targetReg, targetReg, sourceReg, cg, precedingInstruction);
+        Inst_RTYPE(OP::_xor, node, targetReg, targetReg, sourceReg, cg, precedingInstruction);
+        Inst_RTYPE(OP::_xor, node, sourceReg, targetReg, sourceReg, cg, precedingInstruction);
+        Inst_RTYPE(OP::_xor, node, targetReg, targetReg, sourceReg, cg, precedingInstruction);
     } else {
         registerCopy(precedingInstruction, rk, middleReg, targetReg, cg);
         registerCopy(precedingInstruction, rk, targetReg, sourceReg, cg);

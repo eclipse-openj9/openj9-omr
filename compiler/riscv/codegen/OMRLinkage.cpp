@@ -93,8 +93,7 @@ TR::MemoryReference *OMR::RV::Linkage::getOutgoingArgumentMemRef(TR::Register *a
     TR::Machine *machine = cg()->machine();
     const TR::RVLinkageProperties &properties = self()->getProperties();
 
-    TR::MemoryReference *result
-        = new (self()->trHeapMemory()) TR::MemoryReference(argMemReg, offset, cg()); // post-increment
+    TR::MemoryReference *result = MRef_BaseDisp(argMemReg, offset, cg()); // post-increment
     memArg.argRegister = argReg;
     memArg.argMemory = result;
     memArg.opCode = opCode; // opCode must be post-index form
@@ -201,14 +200,14 @@ static inline TR::InstOpCode::Mnemonic getOpCodeForParmLoads(TR::DataTypes type)
 {
     switch (type) {
         case TR::Double:
-            return TR::InstOpCode::_fld;
+            return OP::_fld;
         case TR::Float:
-            return TR::InstOpCode::_flw;
+            return OP::_flw;
         case TR::Int64:
         case TR::Address:
-            return TR::InstOpCode::_ld;
+            return OP::_ld;
         default:
-            return TR::InstOpCode::_lw;
+            return OP::_lw;
     }
 }
 
@@ -223,14 +222,14 @@ static inline TR::InstOpCode::Mnemonic getOpCodeForParmStores(TR::DataTypes type
 {
     switch (type) {
         case TR::Double:
-            return TR::InstOpCode::_fsd;
+            return OP::_fsd;
         case TR::Float:
-            return TR::InstOpCode::_fsw;
+            return OP::_fsw;
         case TR::Int64:
         case TR::Address:
-            return TR::InstOpCode::_sd;
+            return OP::_sd;
         default:
-            return TR::InstOpCode::_sw;
+            return OP::_sw;
     }
 }
 
@@ -305,8 +304,8 @@ TR::Instruction *OMR::RV::Linkage::copyParametersToHomeLocation(TR::Instruction 
                     diagnostic("copyParametersToHomeLocation: Loading %d\n", ai);
 
                 // ai := stack
-                TR::MemoryReference *stackMR = new (cg()->trHeapMemory()) TR::MemoryReference(stackPtr, offset, cg());
-                loadCursor = generateLOAD(getOpCodeForParmLoads(paramType), NULL, machine->getRealRegister(ai), stackMR,
+                TR::MemoryReference *stackMR = MRef_BaseDisp(stackPtr, offset, cg());
+                loadCursor = Inst_LOAD(getOpCodeForParmLoads(paramType), NULL, machine->getRealRegister(ai), stackMR,
                     cg(), loadCursor);
             }
         } else // It's in a linkage register
@@ -327,9 +326,8 @@ TR::Instruction *OMR::RV::Linkage::copyParametersToHomeLocation(TR::Instruction 
                         diagnostic("copyParametersToHomeLocation: Storing %d\n", sourceIndex);
 
                     TR::RealRegister *linkageReg = machine->getRealRegister(sourceIndex);
-                    TR::MemoryReference *stackMR
-                        = new (cg()->trHeapMemory()) TR::MemoryReference(stackPtr, offset, cg());
-                    cursor = generateSTORE(getOpCodeForParmStores(paramType), NULL, stackMR, linkageReg, cg(), cursor);
+                    TR::MemoryReference *stackMR = MRef_BaseDisp(stackPtr, offset, cg());
+                    cursor = Inst_STORE(getOpCodeForParmStores(paramType), NULL, stackMR, linkageReg, cg(), cursor);
                 }
             }
 
@@ -412,14 +410,11 @@ TR::Instruction *OMR::RV::Linkage::copyParametersToHomeLocation(TR::Instruction 
                 TR::Register *trgReg = machine->getRealRegister(regCursor);
                 TR::Register *srcReg = machine->getRealRegister(source);
                 if ((paramType == TR::Double) || (paramType == TR::Float)) {
-                    cursor
-                        = generateRTYPE((paramType == TR::Double) ? TR::InstOpCode::_fsgnj_d : TR::InstOpCode::_fsgnj_s,
-                            NULL, trgReg, srcReg, srcReg, cg(), cursor);
+                    cursor = Inst_RTYPE((paramType == TR::Double) ? OP::_fsgnj_d : OP::_fsgnj_s, NULL, trgReg, srcReg,
+                        srcReg, cg(), cursor);
                 } else {
-                    cursor
-                        = generateITYPE((paramType == TR::Int64) || (paramType == TR::Address) ? TR::InstOpCode::_addi
-                                                                                               : TR::InstOpCode::_addiw,
-                            NULL, trgReg, srcReg, 0, cg(), cursor);
+                    cursor = Inst_ITYPE((paramType == TR::Int64) || (paramType == TR::Address) ? OP::_addi : OP::_addiw,
+                        NULL, trgReg, srcReg, 0, cg(), cursor);
                 }
 
                 // Update movStatus as we go so we don't generate redundant moves

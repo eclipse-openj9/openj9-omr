@@ -237,7 +237,7 @@ void TR_Debug::print(OMR::Logger *log, TR::LabelInstruction *instr)
 
     TR::LabelSymbol *label = instr->getLabelSymbol();
     TR::Snippet *snippet = label ? label->getSnippet() : NULL;
-    if (instr->getOpCodeValue() == TR::InstOpCode::label) {
+    if (instr->getOpCodeValue() == OP::label) {
         print(log, label);
         log->printc(':');
         if (label->isStartInternalControlFlow())

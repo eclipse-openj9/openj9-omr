@@ -2313,7 +2313,7 @@ TR::Instruction *loadConstant32(TR::CodeGenerator *cg, TR::Node *node, int32_t v
 
     if (VALID_ITYPE_IMM(value)) {
         TR::Register *zero = cg->machine()->getRealRegister(TR::RealRegister::zero);
-        cursor = generateITYPE(TR::InstOpCode::_addiw, node, trgReg, zero, value, cg);
+        cursor = Inst_ITYPE(OP::_addiw, node, trgReg, zero, value, cg);
     } else {
         /* Since value is too big to fit in 12bit immediate, we have to generate
            a sequence
@@ -2332,8 +2332,8 @@ TR::Instruction *loadConstant32(TR::CodeGenerator *cg, TR::Node *node, int32_t v
             hi += 1 << RISCV_IMM_BITS;
         }
 
-        cursor = generateUTYPE(TR::InstOpCode::_lui, node, hi, trgReg, cg);
-        cursor = generateITYPE(TR::InstOpCode::_addiw, node, trgReg, trgReg, lo, cg);
+        cursor = Inst_UTYPE(OP::_lui, node, hi, trgReg, cg);
+        cursor = Inst_ITYPE(OP::_addiw, node, trgReg, trgReg, lo, cg);
     }
 
     if (!insertingInstructions)
@@ -2377,8 +2377,8 @@ TR::Instruction *loadConstant64(TR::CodeGenerator *cg, TR::Node *node, int64_t v
         toShift += hi32 == 0 ? 0 : nbits;
         if (bits) {
             if (toShift)
-                cursor = generateITYPE(TR::InstOpCode::_slli, node, trgReg, trgReg, toShift, cg, cursor);
-            cursor = generateITYPE(TR::InstOpCode::_addi, node, trgReg, trgReg, bits, cg, cursor);
+                cursor = Inst_ITYPE(OP::_slli, node, trgReg, trgReg, toShift, cg, cursor);
+            cursor = Inst_ITYPE(OP::_addi, node, trgReg, trgReg, bits, cg, cursor);
             toShift = 0;
         }
 
@@ -2389,8 +2389,8 @@ TR::Instruction *loadConstant64(TR::CodeGenerator *cg, TR::Node *node, int64_t v
         toShift += nbits;
         if (bits) {
             if (toShift)
-                cursor = generateITYPE(TR::InstOpCode::_slli, node, trgReg, trgReg, toShift, cg, cursor);
-            cursor = generateITYPE(TR::InstOpCode::_addi, node, trgReg, trgReg, bits, cg, cursor);
+                cursor = Inst_ITYPE(OP::_slli, node, trgReg, trgReg, toShift, cg, cursor);
+            cursor = Inst_ITYPE(OP::_addi, node, trgReg, trgReg, bits, cg, cursor);
             toShift = 0;
         }
 
@@ -2400,9 +2400,9 @@ TR::Instruction *loadConstant64(TR::CodeGenerator *cg, TR::Node *node, int64_t v
         bits = extractBits(value, 31 - 2 * nbits, 0);
         toShift += 31 - 2 * nbits + 1;
         if (toShift)
-            cursor = generateITYPE(TR::InstOpCode::_slli, node, trgReg, trgReg, toShift, cg, cursor);
+            cursor = Inst_ITYPE(OP::_slli, node, trgReg, trgReg, toShift, cg, cursor);
         if (bits) {
-            cursor = generateITYPE(TR::InstOpCode::_addi, node, trgReg, trgReg, bits, cg, cursor);
+            cursor = Inst_ITYPE(OP::_addi, node, trgReg, trgReg, bits, cg, cursor);
         }
     }
 
@@ -2426,23 +2426,23 @@ TR::Register *OMR::RV::TreeEvaluator::badILOpEvaluator(TR::Node *node, TR::CodeG
 TR::Register *commonLoadEvaluator(TR::Node *node, TR::InstOpCode::Mnemonic op, int32_t memSize, TR::CodeGenerator *cg)
 {
     TR::Register *tempReg;
-    if (op == TR::InstOpCode::_flw) {
+    if (op == OP::_flw) {
         tempReg = cg->allocateSinglePrecisionRegister();
-    } else if (op == TR::InstOpCode::_fld) {
+    } else if (op == OP::_fld) {
         tempReg = cg->allocateRegister(TR_FPR);
     } else {
         tempReg = cg->allocateRegister();
     }
     node->setRegister(tempReg);
-    TR::MemoryReference *tempMR = new (cg->trHeapMemory()) TR::MemoryReference(node, memSize, cg);
-    generateLOAD(op, node, tempReg, tempMR, cg);
+    TR::MemoryReference *tempMR = MRef_Node(node, cg);
+    Inst_LOAD(op, node, tempReg, tempMR, cg);
 
     /*
      * Enable this part when dmb instruction becomes available
     bool needSync = (node->getSymbolReference()->getSymbol()->isAtLeastOrStrongerThanAcquireRelease() &&
     cg->comp()->target().isSMP()); if (needSync)
        {
-       generateInstruction(cg, TR::InstOpCode::dmb, node);
+       Inst(cg, TR::InstOpCode::dmb, node);
        }
      */
     tempMR->decNodeReferenceCounts(cg);
@@ -2453,7 +2453,7 @@ TR::Register *commonLoadEvaluator(TR::Node *node, TR::InstOpCode::Mnemonic op, i
 // also handles iloadi
 TR::Register *OMR::RV::TreeEvaluator::iloadEvaluator(TR::Node *node, TR::CodeGenerator *cg)
 {
-    return commonLoadEvaluator(node, TR::InstOpCode::_lw, 4, cg);
+    return commonLoadEvaluator(node, OP::_lw, 4, cg);
 }
 
 // also handles aloadi
@@ -2476,8 +2476,8 @@ TR::Register *OMR::RV::TreeEvaluator::aloadEvaluator(TR::Node *node, TR::CodeGen
 
     node->setRegister(tempReg);
 
-    TR::MemoryReference *tempMR = new (cg->trHeapMemory()) TR::MemoryReference(node, 8, cg);
-    generateLOAD(TR::InstOpCode::_ld, node, tempReg, tempMR, cg);
+    TR::MemoryReference *tempMR = MRef_Node(node, cg);
+    Inst_LOAD(OP::_ld, node, tempReg, tempMR, cg);
 
 #ifdef J9_PROJECT_SPECIFIC
     /*
@@ -2496,7 +2496,7 @@ TR::Register *OMR::RV::TreeEvaluator::aloadEvaluator(TR::Node *node, TR::CodeGen
     bool needSync = (node->getSymbolReference()->getSymbol()->isAtLeastOrStrongerThanAcquireRelease() &&
     cg->comp()->target().isSMP()); if (needSync)
        {
-       generateInstruction(cg, TR::InstOpCode::dmb, node);
+       Inst(cg, TR::InstOpCode::dmb, node);
        }
      */
     tempMR->decNodeReferenceCounts(cg);
@@ -2507,19 +2507,19 @@ TR::Register *OMR::RV::TreeEvaluator::aloadEvaluator(TR::Node *node, TR::CodeGen
 // also handles lloadi
 TR::Register *OMR::RV::TreeEvaluator::lloadEvaluator(TR::Node *node, TR::CodeGenerator *cg)
 {
-    return commonLoadEvaluator(node, TR::InstOpCode::_ld, 8, cg);
+    return commonLoadEvaluator(node, OP::_ld, 8, cg);
 }
 
 // also handles bloadi
 TR::Register *OMR::RV::TreeEvaluator::bloadEvaluator(TR::Node *node, TR::CodeGenerator *cg)
 {
-    return commonLoadEvaluator(node, TR::InstOpCode::_lb, 1, cg);
+    return commonLoadEvaluator(node, OP::_lb, 1, cg);
 }
 
 // also handles sloadi
 TR::Register *OMR::RV::TreeEvaluator::sloadEvaluator(TR::Node *node, TR::CodeGenerator *cg)
 {
-    return commonLoadEvaluator(node, TR::InstOpCode::_lh, 2, cg);
+    return commonLoadEvaluator(node, OP::_lh, 2, cg);
 }
 
 TR::Register *OMR::RV::TreeEvaluator::awrtbarEvaluator(TR::Node *node, TR::CodeGenerator *cg)
@@ -2529,7 +2529,7 @@ TR::Register *OMR::RV::TreeEvaluator::awrtbarEvaluator(TR::Node *node, TR::CodeG
 
 TR::Register *commonStoreEvaluator(TR::Node *node, TR::InstOpCode::Mnemonic op, int32_t memSize, TR::CodeGenerator *cg)
 {
-    TR::MemoryReference *tempMR = new (cg->trHeapMemory()) TR::MemoryReference(node, memSize, cg);
+    TR::MemoryReference *tempMR = MRef_Node(node, cg);
     TR::Node *valueChild;
 
     if (node->getOpCode().isIndirect()) {
@@ -2543,15 +2543,15 @@ TR::Register *commonStoreEvaluator(TR::Node *node, TR::InstOpCode::Mnemonic op, 
     if (node->getSymbolReference()->getSymbol()->isAtLeastOrStrongerThanAcquireRelease() &&
     cg->comp()->target().isSMP())
        {
-       generateInstruction(cg, TR::InstOpCode::dmb, node);
+       Inst(cg, TR::InstOpCode::dmb, node);
        }
      */
-    generateSTORE(op, node, tempMR, cg->evaluate(valueChild), cg);
+    Inst_STORE(op, node, tempMR, cg->evaluate(valueChild), cg);
     /*
      * Enable this part when dmb instruction becomes available
     if (node->getSymbolReference()->getSymbol()->isVolatile() && cg->comp()->target().isSMP())
        {
-       generateInstruction(cg, TR::InstOpCode::dmb, node);
+       Inst(cg, TR::InstOpCode::dmb, node);
        }
      */
 
@@ -2564,25 +2564,25 @@ TR::Register *commonStoreEvaluator(TR::Node *node, TR::InstOpCode::Mnemonic op, 
 // also handles lstorei, astore, astorei
 TR::Register *OMR::RV::TreeEvaluator::lstoreEvaluator(TR::Node *node, TR::CodeGenerator *cg)
 {
-    return commonStoreEvaluator(node, TR::InstOpCode::_sd, 8, cg);
+    return commonStoreEvaluator(node, OP::_sd, 8, cg);
 }
 
 // also handles bstorei
 TR::Register *OMR::RV::TreeEvaluator::bstoreEvaluator(TR::Node *node, TR::CodeGenerator *cg)
 {
-    return commonStoreEvaluator(node, TR::InstOpCode::_sb, 1, cg);
+    return commonStoreEvaluator(node, OP::_sb, 1, cg);
 }
 
 // also handles sstorei
 TR::Register *OMR::RV::TreeEvaluator::sstoreEvaluator(TR::Node *node, TR::CodeGenerator *cg)
 {
-    return commonStoreEvaluator(node, TR::InstOpCode::_sh, 2, cg);
+    return commonStoreEvaluator(node, OP::_sh, 2, cg);
 }
 
 // also handles istorei
 TR::Register *OMR::RV::TreeEvaluator::istoreEvaluator(TR::Node *node, TR::CodeGenerator *cg)
 {
-    return commonStoreEvaluator(node, TR::InstOpCode::_sw, 4, cg);
+    return commonStoreEvaluator(node, OP::_sw, 4, cg);
 }
 
 TR::Register *OMR::RV::TreeEvaluator::monentEvaluator(TR::Node *node, TR::CodeGenerator *cg)
@@ -2761,7 +2761,7 @@ TR::Register *OMR::RV::TreeEvaluator::BBStartEvaluator(TR::Node *node, TR::CodeG
         int32_t i;
         TR::Node *child = node->getFirstChild();
         cg->evaluate(child);
-        deps = generateRegisterDependencyConditions(cg, child, 0);
+        deps = RegDeps(cg, child, 0);
         if (cg->getCurrentEvaluationTreeTop() == comp->getStartTree()) {
             for (i = 0; i < child->getNumChildren(); i++) {
                 TR::ParameterSymbol *sym = child->getChild(i)->getSymbol()->getParmSymbol();
@@ -2775,11 +2775,11 @@ TR::Register *OMR::RV::TreeEvaluator::BBStartEvaluator(TR::Node *node, TR::CodeG
     }
 
     if (node->getLabel() != NULL) {
-        node->getLabel()->setInstruction(generateLABEL(cg, TR::InstOpCode::label, node, node->getLabel(), deps));
+        node->getLabel()->setInstruction(Inst_LABEL(OP::label, node, node->getLabel(), deps, cg));
     }
 
     TR::Node *fenceNode = TR::Node::createRelative32BitFenceNode(node, &block->getInstructionBoundaries()._startPC);
-    TR::Instruction *fence = generateADMIN(cg, TR::InstOpCode::fence, node, fenceNode);
+    TR::Instruction *fence = Inst_ADMIN(OP::fence, node, cg, fenceNode);
 
     if (block->isCatchBlock()) {
         cg->generateCatchBlockBBStartPrologue(node, fence);
@@ -2798,10 +2798,10 @@ TR::Register *OMR::RV::TreeEvaluator::BBEndEvaluator(TR::Node *node, TR::CodeGen
     if (NULL == block->getNextBlock()) {
         TR::Instruction *lastInstruction = cg->getAppendInstruction();
         TR::InstOpCode::Mnemonic lastInstructionOp = lastInstruction->getOpCodeValue();
-        if ((lastInstructionOp == TR::InstOpCode::_jal || lastInstructionOp == TR::InstOpCode::_jalr)
+        if ((lastInstructionOp == OP::_jal || lastInstructionOp == OP::_jalr)
             && 0 /* TODO: check that jump stores return address into some register (not x0 / zero) */
             && lastInstruction->getNode()->getSymbolReference()->getReferenceNumber() == TR_aThrow) {
-            lastInstruction = generateInstruction(cg, TR::InstOpCode::bad, node, lastInstruction);
+            lastInstruction = Inst(OP::bad, node, cg, lastInstruction);
         }
     }
 
@@ -2811,12 +2811,12 @@ TR::Register *OMR::RV::TreeEvaluator::BBEndEvaluator(TR::Node *node, TR::CodeGen
     if (node->getNumChildren() > 0 && (!nextTT || !nextTT->getNode()->getBlock()->isExtensionOfPreviousBlock())) {
         TR::Node *child = node->getFirstChild();
         cg->evaluate(child);
-        deps = generateRegisterDependencyConditions(cg, child, 0);
+        deps = RegDeps(cg, child, 0);
         child->decReferenceCount();
     }
 
     // put the dependencies (if any) on the fence
-    generateADMIN(cg, TR::InstOpCode::fence, node, deps, fenceNode);
+    Inst_ADMIN(OP::fence, node, deps, cg, fenceNode);
 
     return NULL;
 }

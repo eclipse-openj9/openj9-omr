@@ -42,8 +42,7 @@ uint8_t *TR::RVHelperCallSnippet::emitSnippetBody()
         TR_ASSERT_FATAL(VALID_UJTYPE_IMM(distance), "Trampoline too far away.");
     }
 
-    *(int32_t *)cursor
-        = TR_RISCV_UJTYPE(TR::InstOpCode::_jal, cg()->machine()->getRealRegister(OMR::RealRegister::ra), distance);
+    *(int32_t *)cursor = TR_RISCV_UJTYPE(OP::_jal, cg()->machine()->getRealRegister(OMR::RealRegister::ra), distance);
 
     cg()->addExternalRelocation(
         TR::ExternalRelocation::create(cursor, (uint8_t *)getDestination(), TR_HelperAddress, cg()), __FILE__, __LINE__,
@@ -56,8 +55,8 @@ uint8_t *TR::RVHelperCallSnippet::emitSnippetBody()
         distance = (intptr_t)(_restartLabel->getCodeLocation()) - (intptr_t)cursor;
         if (VALID_UJTYPE_IMM(distance)) {
             // b distance
-            *(int32_t *)cursor = TR_RISCV_UJTYPE(TR::InstOpCode::_jal,
-                cg()->machine()->getRealRegister(OMR::RealRegister::zero), distance >> 2);
+            *(int32_t *)cursor
+                = TR_RISCV_UJTYPE(OP::_jal, cg()->machine()->getRealRegister(OMR::RealRegister::zero), distance >> 2);
             cursor += RISCV_INSTRUCTION_LENGTH;
         } else {
             TR_ASSERT_FATAL(false, "Target too far away. Not supported yet");

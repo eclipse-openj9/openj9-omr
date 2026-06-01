@@ -78,5 +78,9 @@ public:
     }
 };
 
+using OP = TR::InstOpCode;
+
 } // namespace TR
+
+using TR::OP;
 #endif

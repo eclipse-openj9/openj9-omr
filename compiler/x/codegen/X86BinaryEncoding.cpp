@@ -1850,7 +1850,7 @@ int32_t TR::X86MemInstruction::estimateBinaryLength(int32_t currentEstimate)
     if (getOpCode().needsLockPrefix() || (barrier & LockPrefix))
         length++;
 
-    length += getMemoryReference()->estimateBinaryLength(cg());
+    length += getMemoryReference()->estimateBinaryLength(this, cg());
 
     if (barrier & NeedsExplicitBarrier)
         length += estimateMemoryBarrierBinaryLength(barrier, cg());
@@ -1870,8 +1870,8 @@ OMR::X86::EnlargementResult TR::X86MemInstruction::enlarge(int32_t requestedEnla
     if ((maxEnlargementSize < requestedEnlargementSize && !allowPartialEnlargement) || requestedEnlargementSize < 1)
         return OMR::X86::EnlargementResult(0, 0);
 
-    OMR::X86::EnlargementResult result
-        = getMemoryReference()->enlarge(cg(), requestedEnlargementSize, maxEnlargementSize, allowPartialEnlargement);
+    OMR::X86::EnlargementResult result = getMemoryReference()->enlarge(cg(), this, requestedEnlargementSize,
+        maxEnlargementSize, allowPartialEnlargement);
     if (result.getEncodingGrowth() > 0)
         setEstimatedBinaryLength(getEstimatedBinaryLength() + result.getEncodingGrowth());
 
@@ -2015,7 +2015,7 @@ uint8_t TR::X86MemImmInstruction::getBinaryLengthLowerBound()
 
 int32_t TR::X86MemImmInstruction::estimateBinaryLength(int32_t currentEstimate)
 {
-    int32_t length = getMemoryReference()->estimateBinaryLength(cg());
+    int32_t length = getMemoryReference()->estimateBinaryLength(this, cg());
 
     int32_t barrier = memoryBarrierRequired(getOpCode(), getMemoryReference(), cg(), false);
 
@@ -2244,7 +2244,7 @@ uint8_t TR::X86MemRegImmInstruction::getBinaryLengthLowerBound()
 
 int32_t TR::X86MemRegImmInstruction::estimateBinaryLength(int32_t currentEstimate)
 {
-    int32_t length = getMemoryReference()->estimateBinaryLength(cg());
+    int32_t length = getMemoryReference()->estimateBinaryLength(this, cg());
 
     int32_t barrier = memoryBarrierRequired(getOpCode(), getMemoryReference(), cg(), false);
 
@@ -2313,7 +2313,7 @@ int32_t TR::X86RegMemInstruction::estimateBinaryLength(int32_t currentEstimate)
 {
     int32_t barrier = memoryBarrierRequired(getOpCode(), getMemoryReference(), cg(), false);
 
-    int32_t length = getMemoryReference()->estimateBinaryLength(cg());
+    int32_t length = getMemoryReference()->estimateBinaryLength(this, cg());
 
     if (barrier & LockPrefix)
         length++;
@@ -2336,8 +2336,8 @@ OMR::X86::EnlargementResult TR::X86RegMemInstruction::enlarge(int32_t requestedE
     if ((maxEnlargementSize < requestedEnlargementSize && !allowPartialEnlargement) || requestedEnlargementSize < 1)
         return OMR::X86::EnlargementResult(0, 0);
 
-    OMR::X86::EnlargementResult result
-        = getMemoryReference()->enlarge(cg(), requestedEnlargementSize, maxEnlargementSize, allowPartialEnlargement);
+    OMR::X86::EnlargementResult result = getMemoryReference()->enlarge(cg(), this, requestedEnlargementSize,
+        maxEnlargementSize, allowPartialEnlargement);
     if (result.getEncodingGrowth() > 0)
         setEstimatedBinaryLength(getEstimatedBinaryLength() + result.getEncodingGrowth());
     return result;
@@ -2455,7 +2455,7 @@ int32_t TR::X86RegMemImmInstruction::estimateBinaryLength(int32_t currentEstimat
 {
     int32_t barrier = memoryBarrierRequired(getOpCode(), getMemoryReference(), cg(), false);
 
-    int32_t length = getMemoryReference()->estimateBinaryLength(cg());
+    int32_t length = getMemoryReference()->estimateBinaryLength(this, cg());
 
     if (barrier & LockPrefix)
         length++;

@@ -577,6 +577,7 @@ void OMR::FullOptimizer::enableAllLocalOpts()
     this->TR::SmallOptimizer::enableAllLocalOpts();
     setRequestOptimization(andSimplification, true);
     setRequestOptimization(catchBlockRemoval, true);
+    setRequestOptimization(compactNullChecks, true);
     setRequestOptimization(lateLocalGroup, true);
     setRequestOptimization(localReordering, true);
     setRequestOptimization(localValuePropagationGroup, true);
@@ -610,6 +611,8 @@ OMR::FullOptimizer::FullOptimizer(TR::Compilation *comp, TR::ResolvedMethodSymbo
         TR::OptimizationManager(self(), TR_ColdBlockOutlining::create, OMR::coldBlockOutlining);
     _opts[OMR::compactLocals]
         = new (comp->allocator()) TR::OptimizationManager(self(), TR_CompactLocals::create, OMR::compactLocals);
+    _opts[OMR::compactNullChecks]
+        = new (comp->allocator()) TR::OptimizationManager(self(), TR_CompactNullChecks::create, OMR::compactNullChecks);
     _opts[OMR::expressionsSimplification] = new (comp->allocator())
         TR::OptimizationManager(self(), TR_ExpressionsSimplification::create, OMR::expressionsSimplification);
     _opts[OMR::innerPreexistence]

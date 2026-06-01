@@ -250,8 +250,6 @@ OMR::SmallOptimizer::SmallOptimizer(TR::Compilation *comp, TR::ResolvedMethodSym
         = new (comp->allocator()) TR::OptimizationManager(self(), TR_HoistBlocks::create, OMR::basicBlockHoisting);
     _opts[OMR::basicBlockOrdering]
         = new (comp->allocator()) TR::OptimizationManager(self(), TR_OrderBlocks::create, OMR::basicBlockOrdering);
-    _opts[OMR::compactNullChecks]
-        = new (comp->allocator()) TR::OptimizationManager(self(), TR_CompactNullChecks::create, OMR::compactNullChecks);
     _opts[OMR::deadTreesElimination] = new (comp->allocator())
         TR::OptimizationManager(self(), TR::DeadTreesElimination::create, OMR::deadTreesElimination);
     _opts[OMR::generalLoopUnroller] = new (comp->allocator())
@@ -1467,7 +1465,6 @@ void OMR::SmallOptimizer::enableAllLocalOpts()
     setRequestOptimization(treeSimplification, true);
     setRequestOptimization(localDeadStoreElimination, true);
     setRequestOptimization(deadTreesElimination, true);
-    setRequestOptimization(compactNullChecks, true);
     setRequestOptimization(redundantGotoElimination, true);
 }
 

@@ -120,6 +120,12 @@ static const OptimizationStrategy globalDeadStoreOpts[] = {
     { OMR::endGroup }
 };
 
+static const OptimizationStrategy isolatedStoreOpts[] = {
+    { OMR::isolatedStoreElimination },
+    { OMR::deadTreesElimination },
+    { OMR::endGroup }
+};
+
 static const OptimizationStrategy smallNoOptStrategyOpts[] = {
     { OMR::endOpts },
 };
@@ -258,6 +264,8 @@ OMR::SmallOptimizer::SmallOptimizer(TR::Compilation *comp, TR::ResolvedMethodSym
         TR::OptimizationManager(self(), TR_CopyPropagation::create, OMR::globalCopyPropagation);
     _opts[OMR::globalDeadStoreElimination] = new (comp->allocator())
         TR::OptimizationManager(self(), TR_DeadStoreElimination::create, OMR::globalDeadStoreElimination);
+    _opts[OMR::isolatedStoreElimination] = new (comp->allocator())
+        TR::OptimizationManager(self(), TR_IsolatedStoreElimination::create, OMR::isolatedStoreElimination);
     _opts[OMR::inlining]
         = new (comp->allocator()) TR::OptimizationManager(self(), TR_TrivialInliner::create, OMR::inlining);
     _opts[OMR::localCSE] = new (comp->allocator()) TR::OptimizationManager(self(), TR::LocalCSE::create, OMR::localCSE);
@@ -290,6 +298,8 @@ OMR::SmallOptimizer::SmallOptimizer(TR::Compilation *comp, TR::ResolvedMethodSym
     // initialize OMR small optimization groups
     _opts[OMR::globalDeadStoreGroup]
         = new (comp->allocator()) TR::OptimizationManager(self(), NULL, OMR::globalDeadStoreGroup, globalDeadStoreOpts);
+    _opts[OMR::isolatedStoreGroup]
+        = new (comp->allocator()) TR::OptimizationManager(self(), NULL, OMR::isolatedStoreGroup, isolatedStoreOpts);
     _opts[OMR::cheapTacticalGlobalRegisterAllocatorGroup] = new (comp->allocator()) TR::OptimizationManager(self(),
         NULL, OMR::cheapTacticalGlobalRegisterAllocatorGroup, cheapTacticalGlobalRegisterAllocatorOpts);
 

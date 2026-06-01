@@ -56,13 +56,4 @@ public:
 };
 } // namespace OMR
 
-/*temp? for openj9 static*/ extern const OptimizationStrategy cheapObjectAllocationOpts[];
-/*temp? for openj9 static*/ extern const OptimizationStrategy expensiveObjectAllocationOpts[];
-/*temp? for openj9 static*/ extern const OptimizationStrategy cheapGlobalValuePropagationOpts[];
-/*temp? for openj9 static*/ extern const OptimizationStrategy expensiveGlobalValuePropagationOpts[];
-/*temp? for openj9 static*/ extern const OptimizationStrategy isolatedStoreOpts[];
-/*temp? for openj9 static*/ extern const OptimizationStrategy loopSpecializerOpts[];
-/*temp? for openj9 static*/ extern const OptimizationStrategy loopAliasRefinerOpts[];
-/*temp? for openj9 static*/ extern const OptimizationStrategy eachEscapeAnalysisPassOpts[];
-
 #endif // defined(OMR_FULLOPTIMIZER_INCL)

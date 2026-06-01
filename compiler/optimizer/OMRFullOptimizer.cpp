@@ -142,75 +142,8 @@ static const OptimizationStrategy reorderArrayIndexOpts[] = {
     { OMR::endGroup }
 };
 
-/*temp for openj9 static*/ const OptimizationStrategy cheapObjectAllocationOpts[] = {
-#ifdef J9_PROJECT_SPECIFIC
-    { OMR::explicitNewInitialization, OMR::IfNews }, // do before local dead store
-#endif
-    { OMR::endGroup }
-};
-
-/*temp for openj9 static*/ const OptimizationStrategy expensiveObjectAllocationOpts[] = {
-    { OMR::eachEscapeAnalysisPassGroup, OMR::IfEAOpportunities },
-#ifdef J9_PROJECT_SPECIFIC
-    { OMR::explicitNewInitialization, OMR::IfNews }, // do before local dead store
-#endif
-    { OMR::endGroup }
-};
-
-/*temp for openj9 static*/ const OptimizationStrategy eachEscapeAnalysisPassOpts[] = {
-#ifdef J9_PROJECT_SPECIFIC
-    { OMR::preEscapeAnalysis, OMR::IfOSR },
-    { OMR::escapeAnalysis },
-    { OMR::postEscapeAnalysis, OMR::IfOSR },
-    { OMR::eachEscapeAnalysisPassGroup, OMR::IfEnabled }, // if another pass requested
-#endif
-    { OMR::endGroup }
-};
-
 static const OptimizationStrategy veryCheapGlobalValuePropagationOpts[] = {
     { OMR::globalValuePropagation, OMR::IfMoreThanOneBlock },
-    { OMR::endGroup }
-};
-
-/*temp for openj9 static*/ const OptimizationStrategy cheapGlobalValuePropagationOpts[] = {
-    { OMR::CFGSimplification, OMR::IfOptServer }, // for WAS trace folding
-    { OMR::treeSimplification, OMR::IfOptServer }, // for WAS trace folding
-    { OMR::localCSE, OMR::IfEnabledAndOptServer }, // for WAS trace folding
-    { OMR::treeSimplification, OMR::IfEnabledAndOptServer }, // for WAS trace folding
-    { OMR::globalValuePropagation, OMR::IfLoopsMarkLastRun },
-    { OMR::treeSimplification, OMR::IfEnabled },
-    { OMR::cheapObjectAllocationGroup },
-    { OMR::treeSimplification, OMR::IfEnabled },
-    { OMR::catchBlockRemoval, OMR::IfEnabled }, // if checks were removed
-    { OMR::osrExceptionEdgeRemoval }, // most inlining is done by now
-    { OMR::globalValuePropagation, OMR::IfEnabledAndMoreThanOneBlockMarkLastRun }, // mark monitors requiring sync
-    { OMR::virtualGuardTailSplitter, OMR::IfEnabled }, // merge virtual guards
-    { OMR::CFGSimplification },
-    { OMR::endGroup }
-};
-
-/*temp for openj9 static*/ const OptimizationStrategy expensiveGlobalValuePropagationOpts[] = {
-    { OMR::CFGSimplification, OMR::IfOptServer }, // for WAS trace folding
-    { OMR::treeSimplification, OMR::IfOptServer }, // for WAS trace folding
-    { OMR::localCSE, OMR::IfEnabledAndOptServer }, // for WAS trace folding
-    { OMR::treeSimplification, OMR::IfEnabled }, // may be enabled by inner prex
-    { OMR::globalValuePropagation, OMR::IfMoreThanOneBlock },
-    { OMR::treeSimplification, OMR::IfEnabled },
-    { OMR::deadTreesElimination }, // clean up left-over accesses before escape analysis
-#ifdef J9_PROJECT_SPECIFIC
-    { OMR::expensiveObjectAllocationGroup },
-#endif
-    { OMR::globalValuePropagation, OMR::IfEnabledAndMoreThanOneBlock }, // if inlined a call or an object
-    { OMR::treeSimplification, OMR::IfEnabled },
-    { OMR::catchBlockRemoval, OMR::IfEnabled }, // if checks were removed
-    { OMR::osrExceptionEdgeRemoval }, // most inlining is done by now
-#ifdef J9_PROJECT_SPECIFIC
-    { OMR::redundantMonitorElimination, OMR::IfEnabled }, // performed if method has monitors
-    { OMR::redundantMonitorElimination, OMR::IfEnabled }, // performed if method has monitors
-#endif
-    { OMR::globalValuePropagation, OMR::IfEnabledAndMoreThanOneBlock }, // mark monitors requiring sync
-    { OMR::virtualGuardTailSplitter, OMR::IfEnabled }, // merge virtual guards
-    { OMR::CFGSimplification },
     { OMR::endGroup }
 };
 
@@ -343,31 +276,6 @@ static const OptimizationStrategy earlyLocalOpts[] = {
     { OMR::endGroup }
 };
 
-/*temp for openj9 static*/ const OptimizationStrategy isolatedStoreOpts[] = {
-#ifdef J9_PROJECT_SPECIFIC
-    { OMR::isolatedStoreElimination },
-#endif
-    { OMR::deadTreesElimination },
-    { OMR::endGroup }
-};
-
-/*temp for openj9 static*/ const OptimizationStrategy loopAliasRefinerOpts[] = {
-    { OMR::inductionVariableAnalysis, OMR::IfLoops },
-    { OMR::loopCanonicalization },
-    { OMR::globalValuePropagation, OMR::IfMoreThanOneBlock }, // create ivs
-#ifdef J9_PROJECT_SPECIFIC
-    { OMR::loopAliasRefiner },
-#endif
-    { OMR::endGroup }
-};
-
-/*temp for openj9 static*/ const OptimizationStrategy loopSpecializerOpts[] = {
-    { OMR::inductionVariableAnalysis, OMR::IfLoops },
-    { OMR::loopCanonicalization },
-    { OMR::loopSpecializer },
-    { OMR::endGroup }
-};
-
 static const OptimizationStrategy loopVersionerOpts[] = {
     { OMR::basicBlockOrdering },
     { OMR::inductionVariableAnalysis, OMR::IfLoops },
@@ -380,6 +288,13 @@ static const OptimizationStrategy lastLoopVersionerOpts[] = {
     { OMR::inductionVariableAnalysis, OMR::IfLoops },
     { OMR::loopCanonicalization },
     { OMR::loopVersioner, OMR::MarkLastRun },
+    { OMR::endGroup }
+};
+
+static const OptimizationStrategy loopSpecializerOpts[] = {
+    { OMR::inductionVariableAnalysis, OMR::IfLoops },
+    { OMR::loopCanonicalization },
+    { OMR::loopSpecializer },
     { OMR::endGroup }
 };
 
@@ -667,10 +582,10 @@ OMR::FullOptimizer::FullOptimizer(TR::Compilation *comp, TR::ResolvedMethodSymbo
         = new (comp->allocator()) TR::OptimizationManager(self(), TR_LoopStrider::create, OMR::loopStrider);
     _opts[OMR::liveRangeSplitter]
         = new (comp->allocator()) TR::OptimizationManager(self(), TR_LiveRangeSplitter::create, OMR::liveRangeSplitter);
-    _opts[OMR::loopSpecializer]
-        = new (comp->allocator()) TR::OptimizationManager(self(), TR_LoopSpecializer::create, OMR::loopSpecializer);
     _opts[OMR::constRefPrivatization] = new (comp->allocator())
         TR::OptimizationManager(self(), TR::ConstRefPrivatization::create, OMR::constRefPrivatization);
+    _opts[OMR::loopSpecializer]
+        = new (comp->allocator()) TR::OptimizationManager(self(), TR_LoopSpecializer::create, OMR::loopSpecializer);
     // NOTE: Please add new OMR optimizations here!
 
     // initialize OMR optimization groups
@@ -684,10 +599,6 @@ OMR::FullOptimizer::FullOptimizer(TR::Compilation *comp, TR::ResolvedMethodSymbo
         TR::OptimizationManager(self(), NULL, OMR::methodHandleInvokeInliningGroup, methodHandleInvokeInliningOpts);
     _opts[OMR::earlyGlobalGroup]
         = new (comp->allocator()) TR::OptimizationManager(self(), NULL, OMR::earlyGlobalGroup, earlyGlobalOpts);
-#ifdef J9_PROJECT_SPECIFIC
-    _opts[OMR::isolatedStoreGroup]
-        = new (comp->allocator()) TR::OptimizationManager(self(), NULL, OMR::earlyLocalGroup, isolatedStoreOpts);
-#endif
     _opts[OMR::earlyLocalGroup]
         = new (comp->allocator()) TR::OptimizationManager(self(), NULL, OMR::earlyLocalGroup, earlyLocalOpts);
     _opts[OMR::stripMiningGroup]

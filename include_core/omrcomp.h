@@ -72,8 +72,6 @@ typedef uint32_t					BOOLEAN;
 #endif /* MVS */
 
 /*
-USE_PROTOTYPES:			Use full ANSI prototypes.
-
 CLOCK_PRIMS:					We want the timer/clock prims to be used
 
 LITTLE_ENDIAN:				This is for the intel machines or other
@@ -398,15 +396,6 @@ typedef struct {
 #else
 #define NULL    ((void *)0)
 #endif
-#endif
-
-#define USE_PROTOTYPES
-#ifdef	USE_PROTOTYPES
-#define	PROTOTYPE(x)	x
-#define	VARARGS		, ...
-#else
-#define	PROTOTYPE(x)	()
-#define	VARARGS
 #endif
 
 /* Assign the default line delimiter if it was not set */

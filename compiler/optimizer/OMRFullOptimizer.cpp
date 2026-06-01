@@ -143,13 +143,17 @@ static const OptimizationStrategy reorderArrayIndexOpts[] = {
 };
 
 /*temp for openj9 static*/ const OptimizationStrategy cheapObjectAllocationOpts[] = {
+#ifdef J9_PROJECT_SPECIFIC
     { OMR::explicitNewInitialization, OMR::IfNews }, // do before local dead store
+#endif
     { OMR::endGroup }
 };
 
 /*temp for openj9 static*/ const OptimizationStrategy expensiveObjectAllocationOpts[] = {
     { OMR::eachEscapeAnalysisPassGroup, OMR::IfEAOpportunities },
+#ifdef J9_PROJECT_SPECIFIC
     { OMR::explicitNewInitialization, OMR::IfNews }, // do before local dead store
+#endif
     { OMR::endGroup }
 };
 
@@ -337,12 +341,10 @@ static const OptimizationStrategy earlyLocalOpts[] = {
     { OMR::endGroup }
 };
 
-/*temp for openj9 static*/ const OptimizationStrategy isolatedStoreOpts[]
-    = { { OMR::isolatedStoreElimination }, { OMR::deadTreesElimination }, { OMR::endGroup } };
-
-static const OptimizationStrategy globalDeadStoreOpts[] = {
-    { OMR::globalDeadStoreElimination, OMR::IfMoreThanOneBlock },
-    { OMR::localDeadStoreElimination, OMR::IfOneBlock },
+/*temp for openj9 static*/ const OptimizationStrategy isolatedStoreOpts[] = {
+#ifdef J9_PROJECT_SPECIFIC
+    { OMR::isolatedStoreElimination },
+#endif
     { OMR::deadTreesElimination },
     { OMR::endGroup }
 };
@@ -351,7 +353,9 @@ static const OptimizationStrategy globalDeadStoreOpts[] = {
     { OMR::inductionVariableAnalysis, OMR::IfLoops },
     { OMR::loopCanonicalization },
     { OMR::globalValuePropagation, OMR::IfMoreThanOneBlock }, // create ivs
+#ifdef J9_PROJECT_SPECIFIC
     { OMR::loopAliasRefiner },
+#endif
     { OMR::endGroup }
 };
 
@@ -678,8 +682,10 @@ OMR::FullOptimizer::FullOptimizer(TR::Compilation *comp, TR::ResolvedMethodSymbo
         TR::OptimizationManager(self(), NULL, OMR::methodHandleInvokeInliningGroup, methodHandleInvokeInliningOpts);
     _opts[OMR::earlyGlobalGroup]
         = new (comp->allocator()) TR::OptimizationManager(self(), NULL, OMR::earlyGlobalGroup, earlyGlobalOpts);
+#ifdef J9_PROJECT_SPECIFIC
     _opts[OMR::isolatedStoreGroup]
         = new (comp->allocator()) TR::OptimizationManager(self(), NULL, OMR::earlyLocalGroup, isolatedStoreOpts);
+#endif
     _opts[OMR::earlyLocalGroup]
         = new (comp->allocator()) TR::OptimizationManager(self(), NULL, OMR::earlyLocalGroup, earlyLocalOpts);
     _opts[OMR::stripMiningGroup]

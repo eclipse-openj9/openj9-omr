@@ -1471,7 +1471,7 @@ TR::OptionTable OMR::Options::_jitOptions[] = {
     { "induceOSR=", "L<induceOSRspec>\tinject induceOSR at specified locations", TR::Options::setString,
      offsetof(OMR::Options, _induceOSR), 0, "P%s" },
     { "inhibitRecompilation", "R\tInhibit (but don't disable) recompilation. For diagnostic only.",
-     SET_OPTION_BIT(TR_InhibitRecompilation), "F", NOT_IN_SUBSET },
+     SET_OPTION_BIT(TR_InhibitRecompilation), "F" },
     { "inhibitRIBufferProcessingDuringDeepSteady", "R\tInhibit RI during DeepSteady state",
      SET_OPTION_BIT(TR_InhibitRIBufferProcessingDuringDeepSteady), "F", NOT_IN_SUBSET },
     { "initialOptLevel=cold", "O\thint to perform first time compilations at cold optlevel", TR::Options::set32BitValue,
@@ -3108,16 +3108,18 @@ bool OMR::Options::jitLatePostProcess(TR::OptionSet *optionSet, void *jitConfig)
         self()->setOption(TR_DisableDynamicLoopTransfer);
     }
 
+    if (self()->getFixedOptLevel() == -1 && self()->getOption(TR_InhibitRecompilation)) {
+        self()->setOption(TR_DisableUpgradingColdCompilations);
+        self()->setOption(TR_DisableGuardedCountingRecompilations);
+        self()->setOption(TR_DisableEDO);
+        self()->setOption(TR_DisableAggressiveRecompilations);
+        self()->setOption(TR_EnableHardwareProfileRecompilation, false);
+    }
+
     if (!optionSet) {
         if (self()->getFixedOptLevel() == -1 && self()->getOption(TR_InhibitRecompilation)) {
-            self()->setOption(TR_DisableUpgradingColdCompilations);
-            self()->setOption(TR_DisableGuardedCountingRecompilations);
             self()->setOption(TR_DisableDynamicLoopTransfer);
-            self()->setOption(TR_DisableEDO);
-            self()->setOption(TR_DisableAggressiveRecompilations);
-            self()->setOption(TR_EnableHardwareProfileRecompilation, false);
             OMR::Options::_sampleThreshold = 0;
-
 #ifdef J9_PROJECT_SPECIFIC
             TR::Options::_scorchingSampleThreshold = 0;
             TR::Options::_resetCountThreshold = 0;

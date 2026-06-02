@@ -461,6 +461,8 @@ TR::OptionTable OMR::Options::_jitOptions[] = {
      SET_OPTION_BIT(TR_DisableDependencyTracking), "F" },
     { "disableDirectMemoryOps", "O\tdisable generation of direct memory instructions",
      SET_OPTION_BIT(TR_DisableDirectMemoryOps), "F" },
+    { "disableDirectMemoryStore", "O\tdisable generation of direct memory store instructions",
+     SET_OPTION_BIT(TR_DisableDirectMemoryStore), "F" },
     { "disableDirectStaticAccessOnZ", "O\tsupport relative load instructions for c and c++",
      SET_OPTION_BIT(TR_DisableDirectStaticAccessOnZ), "F" },
     { "disableDirectToJNI", "O\tdisable all JNI linkage dispatch sequences including thunks",
@@ -1174,6 +1176,8 @@ TR::OptionTable OMR::Options::_jitOptions[] = {
      RESET_OPTION_BIT(TR_DisableDependencyTracking), "F" },
     { "enableDeterministicOrientedCompilation", "O\tenable deterministic oriented compilation",
      SET_OPTION_BIT(TR_EnableDeterministicOrientedCompilation), "F" },
+    { "enableDirectMemoryStore", "O\tenable generating direct memory store instructions",
+     RESET_OPTION_BIT(TR_DisableDirectMemoryStore), "F" },
     { "enableDLTBytecodeIndex=", "O<nnn>\tforce attempted DLT compilation to use specified bytecode index",
      TR::Options::set32BitNumeric, offsetof(OMR::Options, _enableDLTBytecodeIndex), 0, "F%d" },
     { "enableDowngradeOnHugeQSZ",
@@ -3651,6 +3655,13 @@ void OMR::Options::jitPreProcess()
     self()->setOption(TR_EnableCodeCacheConsolidation);
 #endif
 
+#if defined(TR_HOST_S390)
+    // On IBM Z, usage of direct memory store without checking memory reference
+    // for destructive overlap can cause functional issue. Disabling the use of
+    // MVC code store operation on Z. With sufficient checks at compile time to
+    // guarantee no overlap, it can be enabled.
+    self()->setOption(TR_DisableDirectMemoryStore);
+#endif
     // --------------------------------------------------------------------------
     // J9-only
     //

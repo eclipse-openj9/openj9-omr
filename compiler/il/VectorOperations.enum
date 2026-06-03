@@ -599,7 +599,7 @@ VECTOR_OPERATION_MACRO(\
    /* .reverseBranchOperation  = */ TR::vBadOperation, \
    /* .booleanCompareOpCode    = */ TR::BadILOp, \
    /* .ifCompareOpCode         = */ TR::BadILOp, \
-   /* .description             =    vector fused multiply and add */ \
+   /* .description             =    vector fused multiply and add (child1 * child2 + child3)*/ \
 )
 VECTOR_OPERATION_MACRO(\
    /* .operation               = */ vindexVector, \

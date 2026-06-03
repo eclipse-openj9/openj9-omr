@@ -11970,7 +11970,7 @@
         /* .opcode      = */ 0xF0000288,
         /* .format      = */ FORMAT_XT_XA_XB,
         /* .minimumALS  = */ OMR_PROCESSOR_PPC_P7,
-        /* .properties  = */ PPCOpProp_IsVSX | PPCOpProp_SyncSideEffectFree,
+        /* .properties  = */ PPCOpProp_IsVSX | PPCOpProp_SyncSideEffectFree | PPCOpProp_UsesTarget,
     },
 
     {
@@ -11981,7 +11981,7 @@
         /* .opcode      = */ 0xF00002C8,
         /* .format      = */ FORMAT_XT_XA_XB,
         /* .minimumALS  = */ OMR_PROCESSOR_PPC_P7,
-        /* .properties  = */ PPCOpProp_IsVSX | PPCOpProp_SyncSideEffectFree,
+        /* .properties  = */ PPCOpProp_IsVSX | PPCOpProp_SyncSideEffectFree | PPCOpProp_UsesTarget,
     },
 
     {

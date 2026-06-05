@@ -7325,7 +7325,7 @@ bool storeHelperImmediateInstruction(TR::Node *valueChild, TR::CodeGenerator *cg
  */
 bool directMemoryStoreHelper(TR::CodeGenerator *cg, TR::Node *storeNode)
 {
-    if (!cg->getConditionalMovesEvaluationMode()) {
+    if (!cg->getConditionalMovesEvaluationMode() && !cg->comp()->getOption(TR_DisableDirectMemoryStore)) {
         if (storeNode->getType().isIntegral()
             && !(storeNode->getOpCode().isIndirect() && storeNode->hasUnresolvedSymbolReference())) {
             TR::Node *valueNode = storeNode->getOpCode().isIndirect() ? storeNode->getChild(1) : storeNode->getChild(0);
@@ -7587,18 +7587,6 @@ TR::MemoryReference *lstoreHelper64(TR::Node *node, TR::CodeGenerator *cg, bool 
                     (longMR = TR::MemoryReference::create(cg, node)))) {
                 valueReg = cg->evaluate(valueChild);
             }
-        }
-        // lload is the child, then don't evaluate the child, generate MVC to move directly among memory
-        else if (!node->getOpCode().isIndirect() && valueChild->getOpCodeValue() == TR::lload
-            && valueChild->getReferenceCount() == 1 && valueChild->getRegister() == NULL
-            && TR::MemoryReference::create(cg, node)->getIndexRegister() == NULL
-            && !cg->getConditionalMovesEvaluationMode()) {
-            TR::MemoryReference *tempMRSource = TR::MemoryReference::create(cg, valueChild);
-            TR::MemoryReference *tempMRDest = TR::MemoryReference::create(cg, node);
-            generateSS1Instruction(cg, TR::InstOpCode::MVC, node, int16_t(node->getSize() - 1), tempMRDest,
-                tempMRSource);
-            cg->decReferenceCount(valueChild);
-            return tempMRDest;
         } else {
             valueReg = cg->evaluate(valueChild);
             longMR = TR::MemoryReference::create(cg, node);

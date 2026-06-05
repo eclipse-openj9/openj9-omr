@@ -688,6 +688,11 @@ init_spinParameters(omrthread_library_t lib)
 	if (init_threadParam("parkSleepCpuUtilThreshold", &lib->parkSleepCpuUtilThreshold)) {
 		return -1;
 	}
+
+	lib->yieldSleepCpuUtilThreshold = 100;
+	if (init_threadParam("yieldSleepCpuUtilThreshold", &lib->yieldSleepCpuUtilThreshold)) {
+		return -1;
+	}
 #endif /* defined(OMR_THR_YIELD_ALG) */
 
 #if defined(OMR_THR_THREE_TIER_LOCKING)

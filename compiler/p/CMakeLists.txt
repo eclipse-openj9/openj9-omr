@@ -22,6 +22,9 @@
 compiler_library(p
 # Host files
 	${CMAKE_CURRENT_LIST_DIR}/runtime/OMRCodeCacheConfig.cpp
+	${CMAKE_CURRENT_LIST_DIR}/runtime/AsmUtil.spp
+	${CMAKE_CURRENT_LIST_DIR}/runtime/CodeDispatch.spp
+	${CMAKE_CURRENT_LIST_DIR}/runtime/CodeSync.cpp
 # Target files
 	${CMAKE_CURRENT_LIST_DIR}/codegen/BinaryEvaluator.cpp
 	${CMAKE_CURRENT_LIST_DIR}/codegen/ControlFlowEvaluator.cpp
@@ -53,4 +56,5 @@ compiler_library(p
 	${CMAKE_CURRENT_LIST_DIR}/codegen/OMRConstantDataSnippet.cpp
 	${CMAKE_CURRENT_LIST_DIR}/codegen/OMRLoadStoreHandler.cpp
 	${CMAKE_CURRENT_LIST_DIR}/env/OMRCPU.cpp
+	${CMAKE_CURRENT_LIST_DIR}/env/OMRDebugEnv.cpp
 )

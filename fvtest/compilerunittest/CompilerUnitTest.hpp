@@ -25,9 +25,9 @@
 #include <gtest/gtest.h>
 #include <exception>
 
-#include "Jit.hpp"
 #include "codegen/CodeGenerator.hpp"
 #include "compile/Compilation.hpp"
+#include "control/SimpleJit.hpp"
 #include "env/FrontEnd.hpp"
 #include "env/SystemSegmentProvider.hpp"
 #include "ilgen/IlGenRequest.hpp"
@@ -63,9 +63,9 @@ public:
 
 class JitInitializer {
 public:
-    JitInitializer() { initializeJit(); }
+    JitInitializer() { initializeSimpleJit(); }
 
-    ~JitInitializer() { shutdownJit(); }
+    ~JitInitializer() { shutdownSimpleJit(); }
 };
 
 /**
@@ -82,11 +82,12 @@ public:
         , _types()
         , _options(*(TR::Options::create(TR::FrontEnd::instance()->persistentMemory())))
         , _ilGenRequest()
-        , _method("compunittest", "0", "test", 0, NULL, _types.NoType, NULL, NULL)
+        , _method("compunittest", "0", "test", 0, NULL, NULL, TR::NoType, NULL, NULL)
         , _comp(0, NULL, TR::FrontEnd::instance(), &_method, _ilGenRequest, _options, _dispatchRegion, &_trMemory,
               TR_OptimizationPlan::alloc(warm))
     {
-        _symbol = TR::ResolvedMethodSymbol::create(_comp.trStackMemory(), &_method, &_comp);
+        //_symbol = TR::ResolvedMethodSymbol::create(_comp.trStackMemory(), &_method, &_comp);
+	_symbol = _comp.getJittedMethodSymbol();
         TR::CFG *cfg = new (region()) TR::CFG(&_comp, _symbol, region());
         _symbol->setFlowGraph(cfg);
         _optimizer = new (region()) TR::Optimizer(&_comp, _symbol, false);

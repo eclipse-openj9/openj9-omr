@@ -20,7 +20,9 @@
  *******************************************************************************/
 
 #include "default_compiler.hpp"
-#include "Jit.hpp"
+#include "control/SimpleJit.hpp"
+#include "ilgen/IlType.hpp"
+#include "ilgen/TypeDictionary.hpp"
 #include <cstdio>
 #include <string>
 
@@ -46,12 +48,12 @@ int main(int argc, char** argv)
       printTrees(out, trees, 1); 
       if (!isDumper) 
          {
-         initializeJit();
+         initializeSimpleJit();
          Tril::DefaultCompiler compiler(trees); 
          if (compiler.compile() != 0) { 
             fprintf(out, "Error compiling trees!"); 
          }
-         shutdownJit();
+         shutdownSimpleJit();
          }
       }
    else

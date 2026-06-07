@@ -33,32 +33,9 @@ endif()
 
 # JitBuilder Files
 set(JITBUILDER_OBJECTS
-	compile/ResolvedMethod.cpp
 	control/Jit.cpp
-	ilgen/JBIlGeneratorMethodDetails.cpp
-	optimizer/JBOptimizer.hpp
-	optimizer/JBOptimizer.cpp
-	optimizer/Optimizer.hpp
-	runtime/JBCodeCacheManager.cpp
+	${omr_SOURCE_DIR}/compiler/control/SimpleJit.cpp
 )
-
-if(OMR_ARCH_X86)
-	list(APPEND JITBUILDER_OBJECTS
-		x/codegen/Evaluator.cpp
-	)
-elseif(OMR_ARCH_S390)
-	list(APPEND JITBUILDER_OBJECTS
-		z/codegen/Evaluator.cpp
-	)
-elseif(OMR_ARCH_POWER)
-	list(APPEND JITBUILDER_OBJECTS
-		p/codegen/Evaluator.cpp
-		p/runtime/CodeSync.cpp
-		p/runtime/AsmUtil.spp
-		p/runtime/CodeDispatch.spp
-		${omr_SOURCE_DIR}/compiler/p/env/OMRDebugEnv.cpp
-	)
-endif()
 
 # Generated client API files
 set(CPP_API_GENERATOR ${CMAKE_CURRENT_SOURCE_DIR}/apigen/cppgen.py)
@@ -127,7 +104,8 @@ endif()
 create_omr_compiler_library(
 	NAME    jitbuilder
 	OBJECTS ${JITBUILDER_OBJECTS}
-	DEFINES PROD_WITH_ASSUMES JITTEST
+	DEFINES PROD_WITH_ASSUMES JITTEST OMR_OPTIMIZER_SMALL
+	FILTER	${omr_SOURCE_DIR}/compiler/optimizer/OMRFullOptimizer.cpp
 )
 
 # Add interface path so that include paths propagate.

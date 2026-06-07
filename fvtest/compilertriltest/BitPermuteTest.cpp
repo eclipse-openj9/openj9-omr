@@ -92,14 +92,14 @@ class BitPermuteTest : public TRTest::TestWithPortLib, public ::testing::WithPar
    static void SetUpTestCase()
       {
       const char *options = "-Xjit:acceptHugeMethods,enableBasicBlockHoisting,omitFramePointer,useILValidator,paranoidoptcheck,disableAsyncCompilation";
-      auto initSuccess = initializeJitWithOptions(const_cast<char*>(options));
+      auto initSuccess = initializeSimpleJitWithOptions(const_cast<char*>(options));
 
       ASSERT_TRUE(initSuccess) << "Failed to initialize JIT.";
       }
 
    static void TearDownTestCase()
       {
-      shutdownJit();
+      shutdownSimpleJit();
       }
    };
 

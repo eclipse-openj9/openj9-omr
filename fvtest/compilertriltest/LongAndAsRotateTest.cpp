@@ -69,14 +69,14 @@ class LongAndAsRotateTest : public TRTest::TestWithPortLib, public ::testing::Wi
       {
       const char *options = "-Xjit:disableTreeSimplification,disableAsyncCompilation,acceptHugeMethods,enableBasicBlockHoisting,"
                             "omitFramePointer,useIlValidator,paranoidoptcheck";
-      auto initSuccess = initializeJitWithOptions(const_cast<char*>(options));
+      auto initSuccess = initializeSimpleJitWithOptions(const_cast<char*>(options));
 
       ASSERT_TRUE(initSuccess) << "Failed to initialize JIT.";
       }
 
    static void TearDownTestCase()
       {
-      shutdownJit();
+      shutdownSimpleJit();
       }
    };
 

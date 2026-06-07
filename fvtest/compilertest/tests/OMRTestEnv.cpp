@@ -28,10 +28,8 @@
 #endif /* defined(OMR_OS_WINDOWS) */
 #include <errno.h>
 #include "OMRTestEnv.hpp"
+#include "control/SimpleJit.hpp"
 #include "runtime/Runtime.hpp"
-
-extern "C" bool initializeTestJit(TR_RuntimeHelper *helperIDs, void **helperAddresses, int32_t numHelpers, char *options);
-extern "C" void shutdownJit();
 
 void
 TestCompiler::OMRTestEnv::SetUp()
@@ -48,11 +46,11 @@ TestCompiler::OMRTestEnv::TearDown()
 void
 TestCompiler::OMRTestEnv::initialize(char *options)
    {
-   initializeTestJit(0, 0, 0, options);
+   initializeSimpleJitWithOptions(options);
    }
 
 void
 TestCompiler::OMRTestEnv::shutdown()
    {
-   shutdownJit();
+   shutdownSimpleJit();
    }

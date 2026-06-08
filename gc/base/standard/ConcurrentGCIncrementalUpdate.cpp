@@ -853,6 +853,8 @@ MM_ConcurrentGCIncrementalUpdate::setupForConcurrent(MM_EnvironmentBase *env)
 uintptr_t
 MM_ConcurrentGCIncrementalUpdate::doConcurrentTrace(MM_EnvironmentBase *env, MM_AllocateDescription *allocDescription, uintptr_t sizeToTrace, MM_MemorySubSpace *subspace, bool threadAtSafePoint)
 {
+	OMRPORT_ACCESS_FROM_ENVIRONMENT(env);
+
 	uintptr_t sizeTraced = 0;
 	uintptr_t sizeTracedPreviously = (uintptr_t)-1;
 	uintptr_t remainingFree = 0;
@@ -861,7 +863,7 @@ MM_ConcurrentGCIncrementalUpdate::doConcurrentTrace(MM_EnvironmentBase *env, MM_
 	/* Determine how much "taxable" free space remains to be allocated. */
 #if defined(OMR_GC_MODRON_SCAVENGER)
 	if (_extensions->scavengerEnabled) {
-		remainingFree = MM_ConcurrentGC::potentialFreeSpace(env, allocDescription, currentTenureFree(), currentNurseryFree());
+		remainingFree = potentialFreeSpace(env, allocDescription, currentTenureFree(), currentNurseryFree());
 	} else
 #endif /* OMR_GC_MODRON_SCAVENGER */
 	{
@@ -881,22 +883,36 @@ MM_ConcurrentGCIncrementalUpdate::doConcurrentTrace(MM_EnvironmentBase *env, MM_
 		_markingScheme->getWorkPackets()->reuseDeferredPackets(env);
 	}
 
-	/* Switch state if card cleaning stage 1 threshold reached
-	 * Typically kickoff would be triggered by remainingFree < kickoffThreshold (low heap/tenure occupancy).
+	/* Switch state if card cleaning stage 1 threshold reached.
+	 * Typically, kickoff would be triggered by remainingFree < kickoffThreshold (low heap/tenure occupancy).
 	 * However, with some other kickoff criteria (for example, language specific, like class unloading) that could be
 	 * much sooner, so that remainingFree is significantly higher than pre-calculated kickoffThreshold.
-	 * Since CardCleaningThreshold was also pre-calculated, irrespective of actual remainingFree at the moment of kickoff
+	 * Since cardCleaningThreshold was also pre-calculated, irrespective of actual remainingFree at the moment of kickoff
 	 * (during tuneToHeap that occurred at the end of last global GC), it needs to be adjusted by
 	 * the difference between actual remainingFree at the time of global kickoff and global kickoff threshold.
 	 */
-	uintptr_t relativeCardCleaningThreshold = _stats.getCardCleaningThreshold();
-	uintptr_t absoluteCardCleaningThreshold = relativeCardCleaningThreshold;
+	uintptr_t cardCleaningThreshold = _stats.getCardCleaningThreshold();
+	uintptr_t remainingFreeAtKickoff = _stats.getRemainingFree();
 
-	if (_stats.getRemainingFree() >= _stats.getKickoffThreshold()) {
-		absoluteCardCleaningThreshold += (_stats.getRemainingFree() - _stats.getKickoffThreshold());
+#if defined(OMR_GC_MODRON_SCAVENGER)
+	if (_extensions->scavengerEnabled) {
+		 /* Free memory at the time of kickoff needs to be recalculated with the current promotion rate
+		  * (which current free memory is also based on), but still with Tenure and Nursery at the time of kickoff.
+		 */
+		remainingFreeAtKickoff = potentialFreeSpace(env, allocDescription, _stats.getRemainingTenureFree(), _stats.getRemainingNurseryFree());
+	}
+#endif /* OMR_GC_MODRON_SCAVENGER */
+
+	if (remainingFreeAtKickoff >= _stats.getKickoffThreshold()) {
+		cardCleaningThreshold += (remainingFreeAtKickoff - _stats.getKickoffThreshold());
 	}
 
-	if ((CONCURRENT_TRACE_ONLY == _stats.getExecutionMode()) && (remainingFree < absoluteCardCleaningThreshold)) {
+	if (_extensions->debugConcurrentMark) {
+		omrtty_printf("doConcurrentTrace mode %zu current/original@kickoff/adjusted@kickoff remainingFree %zu/%zu/%zu original/adjusted cardCleaningThreshold %zu/%zu getKickoffThreshold %zu\n",
+			_stats.getExecutionMode(), remainingFree, _stats.getRemainingFree(), remainingFreeAtKickoff, _stats.getCardCleaningThreshold(), cardCleaningThreshold, _stats.getKickoffThreshold());
+	}
+
+	if ((CONCURRENT_TRACE_ONLY == _stats.getExecutionMode()) && (remainingFree < cardCleaningThreshold)) {
 		kickoffCardCleaning(env, CARD_CLEANING_THRESHOLD_REACHED);
 	}
 

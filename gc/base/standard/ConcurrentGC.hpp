@@ -317,7 +317,28 @@ protected:
 	void periodicalTuning(MM_EnvironmentBase *env, uintptr_t freeSize);
 
 #if defined(OMR_GC_MODRON_SCAVENGER)
-	uintptr_t potentialFreeSpace(MM_EnvironmentBase *env, MM_AllocateDescription *allocDescription);
+	uintptr_t currentTenureFree();
+	MMINLINE uintptr_t currentNurseryFree() {
+		MM_MemorySpace *memorySpace = _extensions->heap->getDefaultMemorySpace();
+		MM_MemorySubSpace *newSubspace = memorySpace->getDefaultMemorySubSpace();
+
+		return newSubspace->getApproximateFreeMemorySize();
+	}
+
+	/**
+	 * Calculate potential free space.
+	 *
+	 * Calculate an estimate of the number of bytes that can be allocated in the
+	 * new area before the old area is exhausted. Beyond provided current Tenure and Nursery size,
+	 * account for historic average tenuring rate and and nursery size.
+	 *
+	 * @param env - Environment of the calling thread (typically an mutator thread, in taxation path)
+	 * @param tenureFree - amount of free memory in tenure, typically current value, but could be a historic one
+	 * @param nurseryFree - amount of free memory in nursery, typically current value, but could be a historic one
+
+	 * @return  Number of bytes available for allocation before old area is exhausted
+	 */
+	uintptr_t potentialFreeSpace(MM_EnvironmentBase *env, MM_AllocateDescription *allocDescription, uintptr_t tenureFree, uintptr_t nurseryFree);
 #endif /*OMR_GC_MODRON_SCAVENGER */
 
 	void reportConcurrentCompleteTracingStart(MM_EnvironmentBase *env);

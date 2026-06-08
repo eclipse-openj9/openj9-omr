@@ -634,7 +634,7 @@ MM_ConcurrentGCIncrementalUpdate::tuneToHeap(MM_EnvironmentBase *env)
 	 * e.g. if kickoffThreshold = 10M, cardCleaningThreshold = 2M and concurrentSlack = 100M
 	 *  1) the boost will be 1M (10% of 10M)
 	 *  2) the kickoff slack will be 100M
-	 *  3) the cardcleaning slack will be 20M (100M * (10M / 2M))
+	 *  3) the cardcleaning slack will be 20M (100M * (2M / 10M))
 	 *  resulting in a final kickoffThreshold = 111M and a cardCleaningThreshold = 23M
 	 */
 	float boost = ((float)kickoffThreshold * CONCURRENT_KICKOFF_THRESHOLD_BOOST) - (float)kickoffThreshold;
@@ -827,7 +827,7 @@ void
 MM_ConcurrentGCIncrementalUpdate::kickoffCardCleaning(MM_EnvironmentBase *env, ConcurrentCardCleaningReason reason)
 {
 	/* Switch to CONCURRENT_CLEAN_TRACE...if we fail someone beat us to it */
-	if (_stats.switchExecutionMode(CONCURRENT_TRACE_ONLY, CONCURRENT_CLEAN_TRACE)) {
+	if (_stats.switchExecutionMode(env, CONCURRENT_TRACE_ONLY, CONCURRENT_CLEAN_TRACE)) {
 		_stats.setCardCleaningReason(reason);
 		_concurrentDelegate.cardCleaningStarted(env);
 	}
@@ -837,7 +837,7 @@ void
 MM_ConcurrentGCIncrementalUpdate::setupForConcurrent(MM_EnvironmentBase *env)
 {
 	_concurrentDelegate.signalThreadsToActivateWriteBarrier(env);
-	_stats.switchExecutionMode(CONCURRENT_INIT_COMPLETE, CONCURRENT_ROOT_TRACING);
+	_stats.switchExecutionMode(env, CONCURRENT_INIT_COMPLETE, CONCURRENT_ROOT_TRACING);
 }
 
 /**
@@ -860,8 +860,8 @@ MM_ConcurrentGCIncrementalUpdate::doConcurrentTrace(MM_EnvironmentBase *env, MM_
 
 	/* Determine how much "taxable" free space remains to be allocated. */
 #if defined(OMR_GC_MODRON_SCAVENGER)
-	if(_extensions->scavengerEnabled) {
-		remainingFree = MM_ConcurrentGC::potentialFreeSpace(env, allocDescription);
+	if (_extensions->scavengerEnabled) {
+		remainingFree = MM_ConcurrentGC::potentialFreeSpace(env, allocDescription, currentTenureFree(), currentNurseryFree());
 	} else
 #endif /* OMR_GC_MODRON_SCAVENGER */
 	{
@@ -1046,7 +1046,7 @@ MM_ConcurrentGCIncrementalUpdate::doConcurrentTrace(MM_EnvironmentBase *env, MM_
 			_markingScheme->getWorkPackets()->tracingExhausted() &&
 			_concurrentDelegate.isConcurrentScanningComplete(env)) {
 
-			if(_stats.switchExecutionMode(CONCURRENT_CLEAN_TRACE, CONCURRENT_EXHAUSTED)) {
+			if (_stats.switchExecutionMode(env, CONCURRENT_CLEAN_TRACE, CONCURRENT_EXHAUSTED)) {
 				/* Tell all MSS to use slow path allocate and so get to a safe
 				* point before paying allocation tax.
 				*/

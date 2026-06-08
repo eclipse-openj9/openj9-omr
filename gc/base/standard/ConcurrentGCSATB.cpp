@@ -342,7 +342,7 @@ MM_ConcurrentGCSATB::setupForConcurrent(MM_EnvironmentBase *env)
 	env->_workStack.prepareForWork(env, _markingScheme->getWorkPackets());
 
 	setThreadsScanned(env);
-	_stats.switchExecutionMode(CONCURRENT_INIT_COMPLETE, CONCURRENT_TRACE_ONLY);
+	_stats.switchExecutionMode(env, CONCURRENT_INIT_COMPLETE, CONCURRENT_TRACE_ONLY);
 }
 
 void
@@ -384,8 +384,8 @@ MM_ConcurrentGCSATB::doConcurrentTrace(MM_EnvironmentBase *env, MM_AllocateDescr
 
 	/* Determine how much "taxable" free space remains to be allocated. */
 #if defined(OMR_GC_MODRON_SCAVENGER)
-	if(_extensions->scavengerEnabled) {
-		remainingFree = MM_ConcurrentGC::potentialFreeSpace(env, allocDescription);
+	if (_extensions->scavengerEnabled) {
+		remainingFree = MM_ConcurrentGC::potentialFreeSpace(env, allocDescription, currentTenureFree(), currentNurseryFree());
 	} else
 #endif /* OMR_GC_MODRON_SCAVENGER */
 	{
@@ -452,7 +452,7 @@ MM_ConcurrentGCSATB::doConcurrentTrace(MM_EnvironmentBase *env, MM_AllocateDescr
 
 	/* If no more work left (and concurrent scanning is complete or disabled) then switch to exhausted now */
 	if ((((MM_WorkPacketsSATB *)_markingScheme->getWorkPackets())->effectiveTraceExhausted()) && _concurrentDelegate.isConcurrentScanningComplete(env)) {
-		if(_stats.switchExecutionMode(CONCURRENT_TRACE_ONLY, CONCURRENT_EXHAUSTED)) {
+		if (_stats.switchExecutionMode(env, CONCURRENT_TRACE_ONLY, CONCURRENT_EXHAUSTED)) {
 			/* Tell all MSS to use slow path allocate and so get to a safe  point before paying allocation tax. */
 			subspace->setAllocateAtSafePointOnly(env, true);
 		}

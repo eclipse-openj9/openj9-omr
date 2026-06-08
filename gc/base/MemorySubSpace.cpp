@@ -1043,13 +1043,12 @@ MM_MemorySubSpace::garbageCollect(MM_EnvironmentBase* env, MM_AllocateDescriptio
 }
 
 void
-MM_MemorySubSpace::reset()
+MM_MemorySubSpace::reset(MM_EnvironmentBase *env)
 {
 	/* Call on children */
-	MM_MemorySubSpace* child;
-	child = _children;
+	MM_MemorySubSpace *child = _children;
 	while (child) {
-		child->reset();
+		child->reset(env);
 		child = child->getNext();
 	}
 }
@@ -1061,18 +1060,17 @@ void
 MM_MemorySubSpace::rebuildFreeList(MM_EnvironmentBase* env)
 {
 	/* Call on children */
-	MM_MemorySubSpace* child;
-	child = _children;
+	MM_MemorySubSpace *child = _children;
 	while (child) {
 		child->rebuildFreeList(env);
 		child = child->getNext();
 	}
 }
 
-void*
+void *
 MM_MemorySubSpace::allocateGeneric(MM_EnvironmentBase* env, MM_AllocateDescription* allocateDescription, AllocationType allocationType, MM_ObjectAllocationInterface* objectAllocationInterface, MM_MemorySubSpace* attemptSubspace)
 {
-	void* result = NULL;
+	void *result = NULL;
 
 	switch (allocationType) {
 	case ALLOCATION_TYPE_OBJECT:

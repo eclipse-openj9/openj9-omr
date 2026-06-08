@@ -537,7 +537,7 @@ MM_MemorySpace::canContract(MM_EnvironmentBase *env, uintptr_t contractSize)
 uintptr_t
 MM_MemorySpace::maxContraction(MM_EnvironmentBase *env)
 {
-	return  (uintptr_t)(_currentSize - _minimumSize);
+	return (uintptr_t)(_currentSize - _minimumSize);
 }
 
 /**
@@ -546,10 +546,9 @@ MM_MemorySpace::maxContraction(MM_EnvironmentBase *env)
 void
 MM_MemorySpace::reset(MM_EnvironmentBase *env)
 {
-	MM_MemorySubSpace *memorySubSpace;
-	memorySubSpace = _memorySubSpaceList;
-	while(NULL != memorySubSpace) {
-		memorySubSpace->reset();
+	MM_MemorySubSpace *memorySubSpace = _memorySubSpaceList;
+	while (NULL != memorySubSpace) {
+		memorySubSpace->reset(env);
 		memorySubSpace = memorySubSpace->getNext();
 	}
 }
@@ -561,9 +560,8 @@ MM_MemorySpace::reset(MM_EnvironmentBase *env)
 void
 MM_MemorySpace::rebuildFreeList(MM_EnvironmentBase *env)
 {
-	MM_MemorySubSpace *memorySubSpace;
-	memorySubSpace = _memorySubSpaceList;
-	while(NULL != memorySubSpace) {
+	MM_MemorySubSpace *memorySubSpace = _memorySubSpaceList;
+	while (NULL != memorySubSpace) {
 		memorySubSpace->rebuildFreeList(env);
 		memorySubSpace = memorySubSpace->getNext();
 	}
@@ -584,11 +582,11 @@ MM_MemorySpace::getAllTypeFlags()
 uintptr_t
 MM_MemorySpace::releaseFreeMemoryPages(MM_EnvironmentBase* env, uintptr_t memoryType)
 {
-        uintptr_t releasedMemory = 0;
-        MM_MemorySubSpace* memorySubSpace = _memorySubSpaceList;
-        while(NULL != memorySubSpace) {
-                releasedMemory += memorySubSpace->releaseFreeMemoryPages(env, memoryType);
-                memorySubSpace = memorySubSpace->getNext();
-        }
-        return releasedMemory;
+	uintptr_t releasedMemory = 0;
+	MM_MemorySubSpace* memorySubSpace = _memorySubSpaceList;
+	while (NULL != memorySubSpace) {
+		releasedMemory += memorySubSpace->releaseFreeMemoryPages(env, memoryType);
+		memorySubSpace = memorySubSpace->getNext();
+	}
+	return releasedMemory;
 }

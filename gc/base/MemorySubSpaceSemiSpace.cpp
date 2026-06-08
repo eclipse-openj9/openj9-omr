@@ -532,7 +532,13 @@ MM_MemorySubSpaceSemiSpace::flip(MM_EnvironmentBase *env, Flip_step step)
 		/* disable potentially successful allocation (in case of forced abort) to trigger another (percolate) GC */
 		_memorySubSpaceAllocate->isAllocatable(false);
 		getMemorySpace()->getTenureMemorySubSpace()->isAllocatable(false);
-
+		break;
+	case restore_allocate_after_backout:
+		Assert_MM_true(_extensions->concurrentScavenger);
+		Trc_MM_MSSSS_flip_step(env->getLanguageVMThread(), "restore_allocate_after_backout");
+		/* Restore allocation, which we had disabled in the backout step */
+		_memorySubSpaceAllocate->isAllocatable(true);
+		getMemorySpace()->getTenureMemorySubSpace()->isAllocatable(true);
 		break;
 	case restore_tilt_after_percolate:
 	{
@@ -577,10 +583,6 @@ MM_MemorySubSpaceSemiSpace::flip(MM_EnvironmentBase *env, Flip_step step)
 			env->getLanguageVMThread(), "adjusted ",
 			allocateSize, survivorSize);
 		tilt(env, allocateSize, survivorSize);
-
-		/* Restore allocation, which we had disabled in the backout step */
-		_memorySubSpaceAllocate->isAllocatable(true);
-		getMemorySpace()->getTenureMemorySubSpace()->isAllocatable(true);
 
 		_extensions->setScavengerBackOutState(backOutFlagCleared);
 	}
@@ -674,7 +676,7 @@ MM_MemorySubSpaceSemiSpace::mainTeardownForAbortedGC(MM_EnvironmentBase *env)
 	/* Build free list in survivor. */
 	if (_extensions->isConcurrentScavengerEnabled()) {
 		/* There might be live objects in Survivor (newly allocated one since the start of Concurrent Scavenge cycle)
-		 * Sweep in percolate global will rebuild it, so we can skip it here
+		 * Sweep in percolate global will rebuild the free list, so we can skip it here
 		 */
 		flip(env, backout);
 	} else {
@@ -1016,6 +1018,20 @@ MM_MemorySubSpaceSemiSpace::checkSubSpaceMemoryPostCollectResize(MM_EnvironmentB
 	}
 }
 
+void
+MM_MemorySubSpaceSemiSpace::reset(MM_EnvironmentBase *env)
+{
+	/* To help with transition from aborted Scavenger into a Global GC, allocation was disabled via flip(backout) step, late in Scavenger.
+	 * This is supposed to be called early in Global to restore that allocation.
+	 * It should be done before any findLargestFreeEntry() during Global (like Compact triggers), that are affected by _isAllocatable.
+	 */
+	if (_extensions->isConcurrentScavengerEnabled() && _extensions->isScavengerBackOutFlagRaised()) {
+		flip(env, restore_allocate_after_backout);
+	}
+
+	MM_MemorySubSpace::reset(env);
+}
+
 /**
  * Adjust the sub space memory consumed after a collect.
  * Adjusting semi space memory consumed after a collect includes changing the tilt and/or
@@ -1026,10 +1042,10 @@ void
 MM_MemorySubSpaceSemiSpace::checkResize(MM_EnvironmentBase *env, MM_AllocateDescription *allocDescription, bool systemGC)
 {
 	uintptr_t oldVMState = env->pushVMstate(OMRVMSTATE_GC_CHECK_RESIZE);
-	/* this we are called at the end of precolate global GC, due to aborted Concurrent Scavenge,
+	/* If we are called at the end of percolate global GC, due to aborted Concurrent Scavenge,
 	 * we have to restore tilt (that has been set to 100% to do unified sliding compact of Nursery */
 	if (_extensions->isConcurrentScavengerEnabled() && _extensions->isScavengerBackOutFlagRaised()) {
-		flip(env, MM_MemorySubSpaceSemiSpace::restore_tilt_after_percolate);
+		flip(env, restore_tilt_after_percolate);
 	} else {
 		checkSubSpaceMemoryPostCollectTilt(env);
 		checkSubSpaceMemoryPostCollectResize(env);

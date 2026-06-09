@@ -161,8 +161,8 @@ TR::Register *generateS390CompareBranch(TR::Node *node, TR::CodeGenerator *cg, T
     bool isUnorderedOK = false);
 
 int32_t getVectorElementSize(TR::Node *node);
-int32_t getVectorElementSizeMask(TR::Node *node);
-int32_t getVectorElementSizeMask(int8_t size);
+uint8_t getVectorElementSizeMask(int8_t size);
+uint8_t getVectorElementSizeMask(TR::Node *node);
 
 #ifndef _MSC_VER
 // Because these templates are not defined in headers, but the cpp TreeEvaluator.cpp, suppress implicit instantiation

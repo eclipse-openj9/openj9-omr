@@ -830,11 +830,11 @@ TR::Instruction *OMR::ARM64::CodeGenerator::generateDebugCounterBump(TR::Instruc
     cursor
         = loadAddressConstant(self(), comp()->compileRelocatableCode(), node, addr, addrReg, cursor, TR_DebugCounter);
     cursor = generateTrg1MemInstruction(self(), TR::InstOpCode::ldrimmw, node, counterReg,
-        TR::MemoryReference::createWithDisplacement(self(), addrReg, 0), cursor);
+        MRef_disp(self(), addrReg, 0), cursor);
     cursor
         = generateTrg1Src1ImmInstruction(self(), TR::InstOpCode::addimmw, node, counterReg, counterReg, delta, cursor);
-    cursor = generateMemSrc1Instruction(self(), TR::InstOpCode::strimmw, node,
-        TR::MemoryReference::createWithDisplacement(self(), addrReg, 0), counterReg, cursor);
+    cursor = generateMemSrc1Instruction(self(), TR::InstOpCode::strimmw, node, MRef_disp(self(), addrReg, 0),
+        counterReg, cursor);
 
     if (cond) {
         TR::addDependency(cond, addrReg, TR::RealRegister::NoReg, TR_GPR, self());
@@ -859,10 +859,10 @@ TR::Instruction *OMR::ARM64::CodeGenerator::generateDebugCounterBump(TR::Instruc
     cursor
         = loadAddressConstant(self(), comp()->compileRelocatableCode(), node, addr, addrReg, cursor, TR_DebugCounter);
     cursor = generateTrg1MemInstruction(self(), TR::InstOpCode::ldrimmw, node, counterReg,
-        TR::MemoryReference::createWithDisplacement(self(), addrReg, 0), cursor);
+        MRef_disp(self(), addrReg, 0), cursor);
     cursor = generateTrg1Src2Instruction(self(), TR::InstOpCode::addw, node, counterReg, counterReg, deltaReg, cursor);
-    cursor = generateMemSrc1Instruction(self(), TR::InstOpCode::strimmw, node,
-        TR::MemoryReference::createWithDisplacement(self(), addrReg, 0), counterReg, cursor);
+    cursor = generateMemSrc1Instruction(self(), TR::InstOpCode::strimmw, node, MRef_disp(self(), addrReg, 0),
+        counterReg, cursor);
 
     if (cond) {
         TR::addDependency(cond, addrReg, TR::RealRegister::NoReg, TR_GPR, self());
@@ -896,11 +896,11 @@ TR::Instruction *OMR::ARM64::CodeGenerator::generateDebugCounterBump(TR::Instruc
     cursor
         = loadAddressConstant(self(), comp()->compileRelocatableCode(), node, addr, addrReg, cursor, TR_DebugCounter);
     cursor = generateTrg1MemInstruction(self(), TR::InstOpCode::ldrimmw, node, counterReg,
-        TR::MemoryReference::createWithDisplacement(self(), addrReg, 0), cursor);
+        MRef_disp(self(), addrReg, 0), cursor);
     cursor
         = generateTrg1Src1ImmInstruction(self(), TR::InstOpCode::addimmw, node, counterReg, counterReg, delta, cursor);
-    cursor = generateMemSrc1Instruction(self(), TR::InstOpCode::strimmw, node,
-        TR::MemoryReference::createWithDisplacement(self(), addrReg, 0), counterReg, cursor);
+    cursor = generateMemSrc1Instruction(self(), TR::InstOpCode::strimmw, node, MRef_disp(self(), addrReg, 0),
+        counterReg, cursor);
 
     srm.reclaimScratchRegister(addrReg);
     srm.reclaimScratchRegister(counterReg);
@@ -921,10 +921,10 @@ TR::Instruction *OMR::ARM64::CodeGenerator::generateDebugCounterBump(TR::Instruc
     cursor
         = loadAddressConstant(self(), comp()->compileRelocatableCode(), node, addr, addrReg, cursor, TR_DebugCounter);
     cursor = generateTrg1MemInstruction(self(), TR::InstOpCode::ldrimmw, node, counterReg,
-        TR::MemoryReference::createWithDisplacement(self(), addrReg, 0), cursor);
+        MRef_disp(self(), addrReg, 0), cursor);
     cursor = generateTrg1Src2Instruction(self(), TR::InstOpCode::addw, node, counterReg, counterReg, deltaReg, cursor);
-    cursor = generateMemSrc1Instruction(self(), TR::InstOpCode::strimmw, node,
-        TR::MemoryReference::createWithDisplacement(self(), addrReg, 0), counterReg, cursor);
+    cursor = generateMemSrc1Instruction(self(), TR::InstOpCode::strimmw, node, MRef_disp(self(), addrReg, 0),
+        counterReg, cursor);
     srm.reclaimScratchRegister(addrReg);
     srm.reclaimScratchRegister(counterReg);
     return cursor;

@@ -7390,7 +7390,8 @@ TR::Register *OMR::ARM64::TreeEvaluator::BBEndEvaluator(TR::Node *node, TR::Code
     }
 
     // put the dependencies (if any) on the fence
-    generateAdminInstruction(cg, TR::InstOpCode::fence, node, deps, fenceNode);
+    TR::Instruction *instr = generateAdminInstruction(cg, TR::InstOpCode::fence, node, deps, fenceNode);
+    node->getBlock()->setLastInstruction(instr);
 
     return NULL;
 }

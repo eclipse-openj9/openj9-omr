@@ -1949,7 +1949,14 @@ TR::Register *OMR::X86::TreeEvaluator::integerDivOrRemEvaluator(TR::Node *node, 
         TR::Register *edxRegister = cg->allocateRegister();
         TR::Register *divisorRegister = NULL;
 
-        if (needsExplicitOverflowCheck) {
+        if (needsExplicitOverflowCheck
+#if defined(OMR_GC_SPARSE_HEAP_ALLOCATION)
+            // For OffHeap array accesses, use register form div instruction to prevent live dataAddr during
+            // div-instr exception causing involuntary GC.
+            || (TR::Compiler->om.isOffHeapAllocationEnabled() && secondChild->getOpCode().hasSymbolReference()
+                && secondChild->getSymbolReference()->getSymbol()->isArrayShadowSymbol())
+#endif
+        ) {
             // Get divisor in a register (1) to simplify the snippet, and (2)
             // because we need to use it twice anyway, so arguably it should be in
             // a register.

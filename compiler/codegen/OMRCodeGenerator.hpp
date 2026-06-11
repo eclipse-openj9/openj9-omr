@@ -234,6 +234,11 @@ namespace OMR {
 typedef struct {
     int32_t index;
     int32_t frequency;
+
+    enum {
+        HOTTEST_IDX = 2,
+        SECHOT_IDX = 3
+    };
 } SwitchCaseOrdering;
 
 typedef TR::Register *(*TreeEvaluatorFunctionPointer)(TR::Node *node, TR::CodeGenerator *cg);

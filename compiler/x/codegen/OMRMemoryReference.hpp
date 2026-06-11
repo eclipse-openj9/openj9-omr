@@ -208,95 +208,98 @@ public:
 
     MemoryReference(TR::MemoryReference &mr, intptr_t n, TR::CodeGenerator *cg, TR_ScratchRegisterManager *srm = NULL);
 
-    TR::Register *getBaseRegister() { return _baseRegister; }
+    OMR_FINAL TR::Register *getBaseRegister() { return _baseRegister; }
 
-    TR::Register *setBaseRegister(TR::Register *br) { return (_baseRegister = br); }
+    OMR_FINAL TR::Register *setBaseRegister(TR::Register *br) { return (_baseRegister = br); }
 
-    TR::Node *getBaseNode() { return _baseNode; }
+    OMR_FINAL TR::Node *getBaseNode() { return _baseNode; }
 
-    TR::Node *setBaseNode(TR::Node *bn) { return (_baseNode = bn); }
+    OMR_FINAL TR::Node *setBaseNode(TR::Node *bn) { return (_baseNode = bn); }
 
-    TR::Register *getIndexRegister() { return _indexRegister; }
+    OMR_FINAL TR::Register *getIndexRegister() { return _indexRegister; }
 
-    TR::Register *setIndexRegister(TR::Register *ir) { return (_indexRegister = ir); }
+    OMR_FINAL TR::Register *setIndexRegister(TR::Register *ir) { return (_indexRegister = ir); }
 
-    TR::Node *getIndexNode() { return _indexNode; }
+    OMR_FINAL TR::Node *getIndexNode() { return _indexNode; }
 
-    TR::Node *setIndexNode(TR::Node *in) { return (_indexNode = in); }
+    OMR_FINAL TR::Node *setIndexNode(TR::Node *in) { return (_indexNode = in); }
 
     TR::Register *getAddressRegister() { return NULL; }
 
-    intptr_t getDisplacement();
+    OMR_FINAL intptr_t getDisplacement();
 
     // An unresolved data snippet, unresolved virtual call snippet, and constant data snippet are mutually exclusive for
     // a given memory reference.  Hence, they share the same pointer.
     //
-    TR::UnresolvedDataSnippet *getUnresolvedDataSnippet();
+    OMR_FINAL TR::UnresolvedDataSnippet *getUnresolvedDataSnippet();
 
-    TR::UnresolvedDataSnippet *setUnresolvedDataSnippet(TR::UnresolvedDataSnippet *s);
+    OMR_FINAL TR::UnresolvedDataSnippet *setUnresolvedDataSnippet(TR::UnresolvedDataSnippet *s);
 
-    TR::X86DataSnippet *getDataSnippet();
+    OMR_FINAL TR::X86DataSnippet *getDataSnippet();
 
-    TR::X86DataSnippet *setConstantDataSnippet(TR::X86DataSnippet *s)
+    OMR_FINAL TR::X86DataSnippet *setConstantDataSnippet(TR::X86DataSnippet *s)
     {
         return ((TR::X86DataSnippet *)(_dataSnippet = s));
     }
 
-    TR::LabelSymbol *getLabel() { return _label; }
+    OMR_FINAL TR::LabelSymbol *getLabel() { return _label; }
 
-    TR::LabelSymbol *setLabel(TR::LabelSymbol *l) { return (_label = l); }
+    OMR_FINAL TR::LabelSymbol *setLabel(TR::LabelSymbol *l) { return (_label = l); }
 
-    bool getFlags() { return _flags.getValue() != 0; }
+    OMR_FINAL bool getFlags() { return _flags.getValue() != 0; }
 
-    void setFlags(uint8_t f) { _flags.setValue(0xff, f); }
+    OMR_FINAL void setFlags(uint8_t f) { _flags.setValue(0xff, f); }
 
-    bool isForceWideDisplacement() { return _flags.testAny(MemRef_ForceWideDisplacement); }
+    OMR_FINAL bool isForceWideDisplacement() { return _flags.testAny(MemRef_ForceWideDisplacement); }
 
-    void setForceWideDisplacement() { _flags.set(MemRef_ForceWideDisplacement); }
+    OMR_FINAL void setForceWideDisplacement() { _flags.set(MemRef_ForceWideDisplacement); }
 
-    bool isForceSIBByte() { return _flags.testAny(MemRef_ForceSIBByte); }
+    OMR_FINAL bool isForceSIBByte() { return _flags.testAny(MemRef_ForceSIBByte); }
 
-    void setForceSIBByte() { _flags.set(MemRef_ForceSIBByte); }
+    OMR_FINAL void setForceSIBByte() { _flags.set(MemRef_ForceSIBByte); }
 
-    bool hasUnresolvedDataSnippet() { return _flags.testAny(MemRef_UnresolvedDataSnippet); }
+    OMR_FINAL bool hasUnresolvedDataSnippet() { return _flags.testAny(MemRef_UnresolvedDataSnippet); }
 
-    void setHasUnresolvedDataSnippet() { _flags.set(MemRef_UnresolvedDataSnippet); }
+    OMR_FINAL void setHasUnresolvedDataSnippet() { _flags.set(MemRef_UnresolvedDataSnippet); }
 
-    bool inUpcastingMode() { return _flags.testAny(MemRef_UpcastingMode); }
+    OMR_FINAL bool inUpcastingMode() { return _flags.testAny(MemRef_UpcastingMode); }
 
-    void setInUpcastingMode(bool b = true) { _flags.set(MemRef_UpcastingMode, b); }
-
-    // relevant only for 32 bit
-    //
-    bool processAsLongVolatileLow() { return _flags.testAny(MemRef_ProcessAsLongVolatileLow); }
-
-    void setProcessAsLongVolatileLow() { _flags.set(MemRef_ProcessAsLongVolatileLow); }
+    OMR_FINAL void setInUpcastingMode(bool b = true) { _flags.set(MemRef_UpcastingMode, b); }
 
     // relevant only for 32 bit
     //
-    bool processAsLongVolatileHigh() { return _flags.testAny(MemRef_ProcessAsLongVolatileHigh); }
+    OMR_FINAL bool processAsLongVolatileLow() { return _flags.testAny(MemRef_ProcessAsLongVolatileLow); }
 
-    void setProcessAsLongVolatileHigh() { _flags.set(MemRef_ProcessAsLongVolatileHigh); }
+    OMR_FINAL void setProcessAsLongVolatileLow() { _flags.set(MemRef_ProcessAsLongVolatileLow); }
+
+    // relevant only for 32 bit
+    //
+    OMR_FINAL bool processAsLongVolatileHigh() { return _flags.testAny(MemRef_ProcessAsLongVolatileHigh); }
+
+    OMR_FINAL void setProcessAsLongVolatileHigh() { _flags.set(MemRef_ProcessAsLongVolatileHigh); }
 
     // relevant only for 64 bit
     //
-    bool processAsFPVolatile() { return _flags.testAny(MemRef_ProcessAsFPVolatile); }
+    OMR_FINAL bool processAsFPVolatile() { return _flags.testAny(MemRef_ProcessAsFPVolatile); }
 
-    void setProcessAsFPVolatile() { _flags.set(MemRef_ProcessAsFPVolatile); }
+    OMR_FINAL void setProcessAsFPVolatile() { _flags.set(MemRef_ProcessAsFPVolatile); }
 
-    bool requiresLockPrefix() { return _flags.testAny(MemRef_RequiresLockPrefix); }
+    OMR_FINAL bool requiresLockPrefix() { return _flags.testAny(MemRef_RequiresLockPrefix); }
 
-    void setRequiresLockPrefix() { return _flags.set(MemRef_RequiresLockPrefix); }
+    OMR_FINAL void setRequiresLockPrefix() { return _flags.set(MemRef_RequiresLockPrefix); }
 
-    bool needsCodeAbsoluteExternalRelocation() { return _flags.testAny(MemRef_NeedExternalCodeAbsoluteRelocation); }
+    OMR_FINAL bool needsCodeAbsoluteExternalRelocation()
+    {
+        return _flags.testAny(MemRef_NeedExternalCodeAbsoluteRelocation);
+    }
 
-    void setNeedsCodeAbsoluteExternalRelocation() { _flags.set(MemRef_NeedExternalCodeAbsoluteRelocation); }
+    OMR_FINAL void setNeedsCodeAbsoluteExternalRelocation() { _flags.set(MemRef_NeedExternalCodeAbsoluteRelocation); }
 
-    bool ignoreVolatile() { return _flags.testAny(MemRef_IgnoreVolatile); }
+    OMR_FINAL bool ignoreVolatile() { return _flags.testAny(MemRef_IgnoreVolatile); }
 
-    void setIgnoreVolatile() { _flags.set(MemRef_IgnoreVolatile); }
+    OMR_FINAL void setIgnoreVolatile() { _flags.set(MemRef_IgnoreVolatile); }
 
-    bool refsRegister(TR::Register *reg)
+    OMR_FINAL bool refsRegister(TR::Register *reg)
     {
         if (reg == _baseRegister || reg == _indexRegister) {
             return true;
@@ -308,26 +311,26 @@ public:
     // uses. Use an argument of NULL on the first call, and after that use the
     // result of the previous call.
     //
-    TR::Register *getNextRegister(TR::Register *cur);
+    OMR_FINAL TR::Register *getNextRegister(TR::Register *cur);
 
-    uint8_t getStride() { return _stride; }
+    OMR_FINAL uint8_t getStride() { return _stride; }
 
-    uint8_t setStride(uint8_t s) { return (_stride = s); }
+    OMR_FINAL uint8_t setStride(uint8_t s) { return (_stride = s); }
 
-    uint8_t getStrideMultiplier() { return 1 << _stride; }
+    OMR_FINAL uint8_t getStrideMultiplier() { return 1 << _stride; }
 
-    uint8_t setStrideFromMultiplier(uint8_t s);
+    OMR_FINAL uint8_t setStrideFromMultiplier(uint8_t s);
 
-    TR::SymbolReference &getSymbolReference() { return _symbolReference; }
+    OMR_FINAL TR::SymbolReference &getSymbolReference() { return _symbolReference; }
 
-    int32_t isValidStrideMultiplier(int32_t constFactor)
+    OMR_FINAL int32_t isValidStrideMultiplier(int32_t constFactor)
     {
         return ((uint32_t)(constFactor - 1) < HIGHEST_STRIDE_MULTIPLIER) ? isNonNegativePowerOf2(constFactor) : 0;
     }
 
-    int32_t isValidStrideShift(int32_t shiftAmount) { return (uint32_t)shiftAmount <= HIGHEST_STRIDE_SHIFT; }
+    OMR_FINAL int32_t isValidStrideShift(int32_t shiftAmount) { return (uint32_t)shiftAmount <= HIGHEST_STRIDE_SHIFT; }
 
-    static int32_t getStrideForNode(TR::Node *node, TR::CodeGenerator *cg);
+    OMR_FINAL static int32_t getStrideForNode(TR::Node *node, TR::CodeGenerator *cg);
 
     uint32_t getBinaryLengthLowerBound(TR::CodeGenerator *cg);
     virtual uint32_t estimateBinaryLength(TR::Instruction *containingInstruction, TR::CodeGenerator *cg);
@@ -357,11 +360,11 @@ public:
 
     void addMetaDataForCodeAddress(uint32_t addressTypes, uint8_t *cursor, TR::Node *node, TR::CodeGenerator *cg);
 
-    inline TR::Instruction::ModRM *ModRM(uint8_t *modrm) const { return (TR::Instruction::ModRM *)modrm; }
+    OMR_FINAL inline TR::Instruction::ModRM *ModRM(uint8_t *modrm) const { return (TR::Instruction::ModRM *)modrm; }
 
-    inline TR::Instruction::SIB *SIB(uint8_t *sib) const { return (TR::Instruction::SIB *)sib; }
+    OMR_FINAL inline TR::Instruction::SIB *SIB(uint8_t *sib) const { return (TR::Instruction::SIB *)sib; }
 
-    void setStrideFieldInSIB(uint8_t *SIBByte) { ((TR::Instruction::SIB *)SIBByte)->setScale(_stride); }
+    OMR_FINAL void setStrideFieldInSIB(uint8_t *SIBByte) { ((TR::Instruction::SIB *)SIBByte)->setScale(_stride); }
 
     virtual void blockRegisters()
     {
@@ -387,7 +390,10 @@ public:
     uint32_t getNumMRReferencedGPRegisters();
 #endif
 
-    static int32_t convertMultiplierToStride(int32_t multiplier) { return _multiplierToStrideMap[multiplier]; }
+    OMR_FINAL static int32_t convertMultiplierToStride(int32_t multiplier)
+    {
+        return _multiplierToStrideMap[multiplier];
+    }
 
 #if defined(TR_TARGET_64BIT)
     uint8_t rexBits()
@@ -413,9 +419,9 @@ public:
     uint8_t rexBits() { return 0; }
 #endif
 
-    int32_t getReloKind() { return _reloKind; }
+    OMR_FINAL int32_t getReloKind() { return _reloKind; }
 
-    void setReloKind(int32_t reloKind) { _reloKind = reloKind; }
+    OMR_FINAL void setReloKind(int32_t reloKind) { _reloKind = reloKind; }
 };
 }} // namespace OMR::X86
 

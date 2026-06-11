@@ -68,7 +68,7 @@ static void rematerializeAddressAdds(TR::Node *rootLoadOrStore, TR::CodeGenerato
 
 intptr_t OMR::X86::MemoryReference::getDisplacement()
 {
-    TR::SymbolReference &symRef = self()->getSymbolReference();
+    TR::SymbolReference &symRef = getSymbolReference();
     intptr_t displacement = symRef.getOffset();
     TR::Symbol *symbol = symRef.getSymbol();
 
@@ -96,7 +96,7 @@ OMR::X86::MemoryReference::MemoryReference(TR::X86DataSnippet *cds, TR::CodeGene
     , _flags(0)
     , _reloKind(-1)
 {
-    self()->setForceWideDisplacement();
+    setForceWideDisplacement();
 }
 
 OMR::X86::MemoryReference::MemoryReference(TR::LabelSymbol *label, TR::CodeGenerator *cg)
@@ -111,7 +111,7 @@ OMR::X86::MemoryReference::MemoryReference(TR::LabelSymbol *label, TR::CodeGener
     , _flags(0)
     , _reloKind(-1)
 {
-    self()->setForceWideDisplacement();
+    setForceWideDisplacement();
 }
 
 OMR::X86::MemoryReference::MemoryReference(TR::SymbolReference *symRef, TR::CodeGenerator *cg)
@@ -207,9 +207,9 @@ OMR::X86::MemoryReference::MemoryReference(TR::Node *rootLoadOrStore, TR::CodeGe
                     if (base->getOpCodeValue() == TR::loadaddr && base->getSymbol()->isLocalObject())
                         cg->evaluate(base);
 
-                    self()->setUnresolvedDataSnippet(TR::UnresolvedDataSnippet::create(cg, rootLoadOrStore,
-                        &_symbolReference, isStore, symRef->canCauseGC()));
-                    cg->addSnippet(self()->getUnresolvedDataSnippet());
+                    setUnresolvedDataSnippet(TR::UnresolvedDataSnippet::create(cg, rootLoadOrStore, &_symbolReference,
+                        isStore, symRef->canCauseGC()));
+                    cg->addSnippet(getUnresolvedDataSnippet());
                 }
 
                 if (!debug("noAddressAddRemat") && canRematerializeAddressAdds) {
@@ -228,9 +228,9 @@ OMR::X86::MemoryReference::MemoryReference(TR::Node *rootLoadOrStore, TR::CodeGe
         } else {
             if (symbol->isStatic()) {
                 if (isUnresolved) {
-                    self()->setUnresolvedDataSnippet(TR::UnresolvedDataSnippet::create(cg, rootLoadOrStore,
-                        &_symbolReference, isStore, symRef->canCauseGC()));
-                    cg->addSnippet(self()->getUnresolvedDataSnippet());
+                    setUnresolvedDataSnippet(TR::UnresolvedDataSnippet::create(cg, rootLoadOrStore, &_symbolReference,
+                        isStore, symRef->canCauseGC()));
+                    cg->addSnippet(getUnresolvedDataSnippet());
                 }
                 _baseNode = rootLoadOrStore;
             } else {
@@ -249,7 +249,7 @@ OMR::X86::MemoryReference::MemoryReference(TR::Node *rootLoadOrStore, TR::CodeGe
             // Need a wide field because we don't know how big the displacement
             // may turn out to be once resolved.
             //
-            self()->setForceWideDisplacement();
+            setForceWideDisplacement();
         }
 
     } else {
@@ -261,18 +261,18 @@ OMR::X86::MemoryReference::MemoryReference(TR::Node *rootLoadOrStore, TR::CodeGe
 
 TR::UnresolvedDataSnippet *OMR::X86::MemoryReference::getUnresolvedDataSnippet()
 {
-    return self()->hasUnresolvedDataSnippet() ? (TR::UnresolvedDataSnippet *)_dataSnippet : NULL;
+    return hasUnresolvedDataSnippet() ? (TR::UnresolvedDataSnippet *)_dataSnippet : NULL;
 }
 
 TR::UnresolvedDataSnippet *OMR::X86::MemoryReference::setUnresolvedDataSnippet(TR::UnresolvedDataSnippet *s)
 {
-    self()->setHasUnresolvedDataSnippet();
+    setHasUnresolvedDataSnippet();
     return ((TR::UnresolvedDataSnippet *)(_dataSnippet = s));
 }
 
 TR::X86DataSnippet *OMR::X86::MemoryReference::getDataSnippet()
 {
-    return self()->hasUnresolvedDataSnippet() ? NULL : (TR::X86DataSnippet *)_dataSnippet;
+    return hasUnresolvedDataSnippet() ? NULL : (TR::X86DataSnippet *)_dataSnippet;
 }
 
 void OMR::X86::MemoryReference::initialize(TR::SymbolReference *symRef, TR::CodeGenerator *cg)
@@ -297,10 +297,10 @@ void OMR::X86::MemoryReference::initialize(TR::SymbolReference *symRef, TR::Code
     _symbolReference.copyRefNumIfPossible(symRef, comp->getSymRefTab());
 
     if (symRef->isUnresolved()) {
-        self()->setUnresolvedDataSnippet(
+        setUnresolvedDataSnippet(
             TR::UnresolvedDataSnippet::create(cg, 0, &_symbolReference, false, symRef->canCauseGC()));
-        cg->addSnippet(self()->getUnresolvedDataSnippet());
-        self()->setForceWideDisplacement();
+        cg->addSnippet(getUnresolvedDataSnippet());
+        setForceWideDisplacement();
     }
     // TODO: aliasing sets?
 }
@@ -439,7 +439,7 @@ void OMR::X86::MemoryReference::populateMemoryReference(TR::Node *subTree, TR::C
     if (comp->useCompressedPointers()) {
         if ((subTree->getOpCodeValue() == TR::l2a) && (subTree->getReferenceCount() == 1)
             && (subTree->getRegister() == NULL)
-            && !self()->hasUnresolvedDataSnippet()) // If there is unresolved data snippet, l2a cannot be skipped
+            && !hasUnresolvedDataSnippet()) // If there is unresolved data snippet, l2a cannot be skipped
         {
             cg->decReferenceCount(subTree);
             subTree = subTree->getFirstChild();
@@ -457,7 +457,7 @@ void OMR::X86::MemoryReference::populateMemoryReference(TR::Node *subTree, TR::C
     //  I have no strong evidence that it is incorrect other than the formatting)
     //  so I added parentheses to eliminate a compiler warning and reformatted
     if ((evalSubTree && subTree->getReferenceCount() > 1) || (subTree->getRegister() != NULL)
-        || (self()->inUpcastingMode() && !subTree->cannotOverflow())) {
+        || (inUpcastingMode() && !subTree->cannotOverflow())) {
         if (_baseRegister != NULL) {
             if (_indexRegister != NULL) {
                 self()->consolidateRegisters(subTree, cg);
@@ -513,14 +513,14 @@ void OMR::X86::MemoryReference::populateMemoryReference(TR::Node *subTree, TR::C
             _symbolReference.addToOffset(-TR::TreeEvaluator::integerConstNodeValue(constChild, cg));
             cg->decReferenceCount(constChild);
         } else if (subTreeOp == TR::i2l || subTreeOp == TR::s2l || subTreeOp == TR::s2i) {
-            self()->setInUpcastingMode();
+            setInUpcastingMode();
 
             logprintf(trace, log, "Entering UpcastingNoOverflow mode at node %x\n", subTree);
             rcount_t refCount = subTree->getFirstChild()->getReferenceCount();
             self()->populateMemoryReference(subTree->getFirstChild(), cg, subTree);
             self()->checkAndDecReferenceCount(subTree->getFirstChild(), refCount, cg);
 
-            self()->setInUpcastingMode(false);
+            setInUpcastingMode(false);
         } else if ((stride = TR::MemoryReference::getStrideForNode(subTree, cg)) != 0) {
             if (_indexRegister != NULL) {
                 if (_baseRegister != NULL || _stride != 0) {
@@ -601,10 +601,10 @@ void OMR::X86::MemoryReference::populateMemoryReference(TR::Node *subTree, TR::C
             _symbolReference.copyRefNumIfPossible(symRef, comp->getSymRefTab());
 
             if (symRef->isUnresolved()) {
-                self()->setUnresolvedDataSnippet(
+                setUnresolvedDataSnippet(
                     TR::UnresolvedDataSnippet::create(cg, subTree, &_symbolReference, false, symRef->canCauseGC()));
-                cg->addSnippet(self()->getUnresolvedDataSnippet());
-                self()->setForceWideDisplacement();
+                cg->addSnippet(getUnresolvedDataSnippet());
+                setForceWideDisplacement();
             }
 
             // TODO: aliasing sets?
@@ -647,7 +647,7 @@ TR::Register *OMR::X86::MemoryReference::evaluate(TR::Node *node, TR::CodeGenera
 
     TR::Register *reg = cg->evaluate(node);
 
-    if (self()->inUpcastingMode()) {
+    if (inUpcastingMode()) {
         if (node->skipSignExtension()) {
             // We don't need to sign extend the node
         }
@@ -717,7 +717,7 @@ void OMR::X86::MemoryReference::assignRegisters(TR::Instruction *currentInstruct
 {
     TR::RealRegister *assignedBaseRegister = NULL;
     TR::RealRegister *assignedIndexRegister;
-    TR::UnresolvedDataSnippet *snippet = self()->getUnresolvedDataSnippet();
+    TR::UnresolvedDataSnippet *snippet = getUnresolvedDataSnippet();
 
     if (_baseRegister != NULL) {
         if (_baseRegister == cg->machine()->getRealRegister(TR::RealRegister::vfp)) {
@@ -775,19 +775,18 @@ void OMR::X86::MemoryReference::assignRegisters(TR::Instruction *currentInstruct
 
 uint32_t OMR::X86::MemoryReference::estimateBinaryLength(TR::Instruction *containingInstruction, TR::CodeGenerator *cg)
 {
-    if (self()->getBaseRegister()
-        && toRealRegister(self()->getBaseRegister())->getRegisterNumber() == TR::RealRegister::vfp) {
+    if (getBaseRegister() && toRealRegister(getBaseRegister())->getRegisterNumber() == TR::RealRegister::vfp) {
         // Rewrite VFP-relative memref in terms of an actual register
         //
         _baseRegister = cg->machine()->getRealRegister(cg->vfpState()._register);
-        self()->getSymbolReference().setOffset(self()->getSymbolReference().getOffset() + cg->vfpState()._displacement);
+        getSymbolReference().setOffset(getSymbolReference().getOffset() + cg->vfpState()._displacement);
     }
 
-    TR::RealRegister *base = toRealRegister(self()->getBaseRegister());
+    TR::RealRegister *base = toRealRegister(getBaseRegister());
 
-    uint32_t addressTypes = (self()->getBaseRegister() != NULL ? 1 : 0) | (self()->getIndexRegister() != NULL ? 2 : 0)
-        | ((self()->getSymbolReference().getSymbol() != NULL || self()->getSymbolReference().getOffset() != 0
-               || self()->isForceWideDisplacement())
+    uint32_t addressTypes = (getBaseRegister() != NULL ? 1 : 0) | (getIndexRegister() != NULL ? 2 : 0)
+        | ((getSymbolReference().getSymbol() != NULL || getSymbolReference().getOffset() != 0
+               || isForceWideDisplacement())
                 ? 4
                 : 0);
     uint32_t length = 0;
@@ -837,20 +836,20 @@ uint32_t OMR::X86::MemoryReference::estimateBinaryLength(TR::Instruction *contai
             break;
 
         case 5:
-            displacement = self()->getDisplacement();
+            displacement = getDisplacement();
             if (!isForceWideDisplacement() && canShortenEVEXDisplacement && (displacement % displacementDivisor) == 0
                 && IS_8BIT_SIGNED(displacement / displacementDivisor)) {
                 displacement /= displacementDivisor;
             } else if (isEvex) {
                 length = 4;
-                if (base->needsSIB() || self()->isForceSIBByte()) {
+                if (base->needsSIB() || isForceSIBByte()) {
                     length++;
                 }
                 break;
             }
-            if (displacement == 0 && !base->needsDisp() && !base->needsSIB() && !self()->isForceWideDisplacement()) {
+            if (displacement == 0 && !base->needsDisp() && !base->needsSIB() && !isForceWideDisplacement()) {
                 length = 0;
-            } else if (displacement >= -128 && displacement <= 127 && !self()->isForceWideDisplacement()) {
+            } else if (displacement >= -128 && displacement <= 127 && !isForceWideDisplacement()) {
                 length = 1;
             } else {
                 // If there is a symbol or if the displacement will not fit in a byte,
@@ -859,13 +858,13 @@ uint32_t OMR::X86::MemoryReference::estimateBinaryLength(TR::Instruction *contai
                 length = 4;
             }
 
-            if (base->needsSIB() || self()->isForceSIBByte()) {
+            if (base->needsSIB() || isForceSIBByte()) {
                 length += 1;
             }
             break;
 
         case 7:
-            displacement = self()->getDisplacement();
+            displacement = getDisplacement();
             if (!isForceWideDisplacement() && canShortenEVEXDisplacement && (displacement % displacementDivisor) == 0
                 && IS_8BIT_SIGNED(displacement / displacementDivisor)) {
                 displacement /= displacementDivisor;
@@ -873,7 +872,7 @@ uint32_t OMR::X86::MemoryReference::estimateBinaryLength(TR::Instruction *contai
                 length = 5;
                 break;
             }
-            if (displacement >= -128 && displacement <= 127 && !self()->isForceWideDisplacement()) {
+            if (displacement >= -128 && displacement <= 127 && !isForceWideDisplacement()) {
                 length = 2;
             } else {
                 // If there is a symbol or if the displacement will not fit in a byte,
@@ -890,17 +889,17 @@ uint32_t OMR::X86::MemoryReference::estimateBinaryLength(TR::Instruction *contai
 uint32_t OMR::X86::MemoryReference::getBinaryLengthLowerBound(TR::CodeGenerator *cg)
 {
     intptr_t displacement;
-    uint32_t addressTypes = (self()->getBaseRegister() != NULL ? 1 : 0) | (self()->getIndexRegister() != NULL ? 2 : 0)
-        | ((self()->getSymbolReference().getSymbol() != NULL || self()->getSymbolReference().getOffset() != 0
-               || self()->isForceWideDisplacement())
+    uint32_t addressTypes = (getBaseRegister() != NULL ? 1 : 0) | (getIndexRegister() != NULL ? 2 : 0)
+        | ((getSymbolReference().getSymbol() != NULL || getSymbolReference().getOffset() != 0
+               || isForceWideDisplacement())
                 ? 4
                 : 0);
 
     uint32_t length = 0;
     TR::RealRegister::RegNum registerNumber = TR::RealRegister::NoReg;
 
-    if (self()->getBaseRegister()) {
-        registerNumber = toRealRegister(self()->getBaseRegister())->getRegisterNumber();
+    if (getBaseRegister()) {
+        registerNumber = toRealRegister(getBaseRegister())->getRegisterNumber();
 
         if (registerNumber == TR::RealRegister::vfp) {
             TR_ASSERT(cg->machine()->getRealRegister(registerNumber)->getAssignedRealRegister(),
@@ -936,11 +935,11 @@ uint32_t OMR::X86::MemoryReference::getBinaryLengthLowerBound(TR::CodeGenerator 
             break;
 
         case 5:
-            displacement = self()->getDisplacement();
+            displacement = getDisplacement();
 
-            if (displacement == 0 && !base->needsDisp() && !base->needsSIB() && !self()->isForceWideDisplacement()) {
+            if (displacement == 0 && !base->needsDisp() && !base->needsSIB() && !isForceWideDisplacement()) {
                 length = 0;
-            } else if (displacement >= -128 && displacement <= 127 && !self()->isForceWideDisplacement()) {
+            } else if (displacement >= -128 && displacement <= 127 && !isForceWideDisplacement()) {
                 if (displacement != 0)
                     length = 1;
             } else
@@ -950,14 +949,14 @@ uint32_t OMR::X86::MemoryReference::getBinaryLengthLowerBound(TR::CodeGenerator 
                 // value)
                 length = 4;
 
-            if (base->needsSIB() || self()->isForceSIBByte()) {
+            if (base->needsSIB() || isForceSIBByte()) {
                 length += 1;
             }
             break;
 
         case 7:
-            displacement = self()->getDisplacement();
-            if (!self()->isForceWideDisplacement())
+            displacement = getDisplacement();
+            if (!isForceWideDisplacement())
                 length = 2;
             else
                 length = 5;
@@ -976,7 +975,7 @@ OMR::X86::EnlargementResult OMR::X86::MemoryReference::enlarge(TR::CodeGenerator
         return OMR::X86::EnlargementResult(0, 0);
 
     int32_t growth = 0;
-    if (!self()->isForceWideDisplacement()) {
+    if (!isForceWideDisplacement()) {
         int32_t currentEncodingAllocation = self()->estimateBinaryLength(containingInstruction, cg);
         int32_t currentPatchSize = self()->getBinaryLengthLowerBound(cg);
         _flags.set(MemRef_ForceWideDisplacement);
@@ -1004,10 +1003,10 @@ void OMR::X86::MemoryReference::addMetaDataForCodeAddress(uint32_t addressTypes,
     switch (addressTypes) {
         case 6:
         case 2: {
-            if (self()->needsCodeAbsoluteExternalRelocation()) {
+            if (needsCodeAbsoluteExternalRelocation()) {
                 cg->addExternalRelocation(TR::ExternalRelocation::create(cursor, 0, TR_AbsoluteMethodAddress, cg),
                     __FILE__, __LINE__, node);
-            } else if (self()->getReloKind() == TR_ACTIVE_CARD_TABLE_BASE) {
+            } else if (getReloKind() == TR_ACTIVE_CARD_TABLE_BASE) {
                 cg->addExternalRelocation(
                     TR::ExternalRelocation::create(cursor, (uint8_t *)TR_ActiveCardTableBase, TR_GlobalValue, cg),
                     __FILE__, __LINE__, node);
@@ -1017,16 +1016,16 @@ void OMR::X86::MemoryReference::addMetaDataForCodeAddress(uint32_t addressTypes,
         }
 
         case 4: {
-            TR::Symbol *symbol = self()->getSymbolReference().getSymbol();
+            TR::Symbol *symbol = getSymbolReference().getSymbol();
             if (symbol) {
                 TR::StaticSymbol *staticSym = symbol->getStaticSymbol();
 
                 if (staticSym) {
-                    if (self()->getUnresolvedDataSnippet() == NULL) {
+                    if (getUnresolvedDataSnippet() == NULL) {
                         if (symbol->isConst()) {
                             cg->addExternalRelocation(
                                 TR::ExternalRelocation::create(cursor,
-                                    (uint8_t *)self()->getSymbolReference().getOwningMethod(cg->comp())->constantPool(),
+                                    (uint8_t *)getSymbolReference().getOwningMethod(cg->comp())->constantPool(),
                                     node ? (uint8_t *)(intptr_t)node->getInlinedSiteIndex() : (uint8_t *)-1,
                                     TR_ConstantPool, cg),
                                 __FILE__, __LINE__, node);
@@ -1034,18 +1033,18 @@ void OMR::X86::MemoryReference::addMetaDataForCodeAddress(uint32_t addressTypes,
                             if (cg->needClassAndMethodPointerRelocations()) {
                                 *(int32_t *)cursor
                                     = (int32_t)(TR::Compiler->cls.persistentClassPointerFromClassPointer(cg->comp(),
-                                        (TR_OpaqueClassBlock *)(self()->getSymbolReference().getOffset()
+                                        (TR_OpaqueClassBlock *)(getSymbolReference().getOffset()
                                             + (intptr_t)staticSym->getStaticAddress())));
                                 if (cg->comp()->getOption(TR_UseSymbolValidationManager)) {
                                     cg->addExternalRelocation(TR::ExternalRelocation::create(cursor,
-                                                                  (uint8_t *)(self()->getSymbolReference().getOffset()
+                                                                  (uint8_t *)(getSymbolReference().getOffset()
                                                                       + (intptr_t)staticSym->getStaticAddress()),
                                                                   (uint8_t *)TR::SymbolType::typeClass,
                                                                   TR_SymbolFromManager, cg),
                                         __FILE__, __LINE__, node);
                                 } else {
                                     cg->addExternalRelocation(
-                                        TR::ExternalRelocation::create(cursor, (uint8_t *)&self()->getSymbolReference(),
+                                        TR::ExternalRelocation::create(cursor, (uint8_t *)&getSymbolReference(),
                                             node ? (uint8_t *)(intptr_t)node->getInlinedSiteIndex() : (uint8_t *)-1,
                                             TR_ClassAddress, cg),
                                         __FILE__, __LINE__, node);
@@ -1070,7 +1069,7 @@ void OMR::X86::MemoryReference::addMetaDataForCodeAddress(uint32_t addressTypes,
                                     __LINE__, node);
                             } else if (symbol->isDebugCounter()) {
                                 TR::DebugCounterBase *counter
-                                    = cg->comp()->getCounterFromStaticAddress(&(self()->getSymbolReference()));
+                                    = cg->comp()->getCounterFromStaticAddress(&(getSymbolReference()));
                                 if (counter == NULL) {
                                     cg->comp()->failCompilation<TR::CompilationException>(
                                         "Could not generate relocation for debug counter in "
@@ -1079,26 +1078,26 @@ void OMR::X86::MemoryReference::addMetaDataForCodeAddress(uint32_t addressTypes,
                                 TR::DebugCounter::generateRelocation(cg->comp(), cursor, node, counter);
                             } else if (symbol->isEnterEventHookAddress() || symbol->isExitEventHookAddress()) {
                                 cg->addExternalRelocation(TR::ExternalRelocation::create(cursor,
-                                                              (uint8_t *)&self()->getSymbolReference(), NULL,
+                                                              (uint8_t *)&getSymbolReference(), NULL,
                                                               TR_MethodEnterExitHookAddress, cg),
                                     __FILE__, __LINE__, node);
                             } else if (symbol->isCallSiteTableEntry()) {
                                 if (cg->comp()->compileRelocatableCode()) {
                                     cg->addExternalRelocation(TR::ExternalRelocation::create(cursor,
-                                                                  (uint8_t *)&self()->getSymbolReference(), NULL,
+                                                                  (uint8_t *)&getSymbolReference(), NULL,
                                                                   TR_CallsiteTableEntryAddress, cg),
                                         __FILE__, __LINE__, node);
                                 }
                             } else if (symbol->isMethodTypeTableEntry()) {
                                 if (cg->comp()->compileRelocatableCode()) {
                                     cg->addExternalRelocation(TR::ExternalRelocation::create(cursor,
-                                                                  (uint8_t *)&self()->getSymbolReference(), NULL,
+                                                                  (uint8_t *)&getSymbolReference(), NULL,
                                                                   TR_MethodTypeTableEntryAddress, cg),
                                         __FILE__, __LINE__, node);
                                 }
                             } else {
                                 cg->addExternalRelocation(
-                                    TR::ExternalRelocation::create(cursor, (uint8_t *)&self()->getSymbolReference(),
+                                    TR::ExternalRelocation::create(cursor, (uint8_t *)&getSymbolReference(),
                                         node ? (uint8_t *)(uintptr_t)node->getInlinedSiteIndex() : (uint8_t *)-1,
                                         TR_DataAddress, cg),
                                     __FILE__, __LINE__, node);
@@ -1107,13 +1106,13 @@ void OMR::X86::MemoryReference::addMetaDataForCodeAddress(uint32_t addressTypes,
                     }
                 }
             } else {
-                TR::X86DataSnippet *cds = self()->getDataSnippet();
+                TR::X86DataSnippet *cds = getDataSnippet();
                 TR::LabelSymbol *label = NULL;
 
                 if (cds)
                     label = cds->getSnippetLabel();
                 else
-                    label = self()->getLabel();
+                    label = getLabel();
 
                 if (label != NULL) {
                     if (cg->comp()->target().is64Bit()) {
@@ -1140,9 +1139,9 @@ uint8_t *OMR::X86::MemoryReference::generateBinaryEncoding(uint8_t *modRM, TR::I
 {
     TR::Compilation *comp = cg->comp();
 
-    uint32_t addressTypes = (self()->getBaseRegister() != NULL ? 1 : 0) | (self()->getIndexRegister() != NULL ? 2 : 0)
-        | ((self()->getSymbolReference().getSymbol() != NULL || self()->getSymbolReference().getOffset() != 0
-               || self()->isForceWideDisplacement())
+    uint32_t addressTypes = (getBaseRegister() != NULL ? 1 : 0) | (getIndexRegister() != NULL ? 2 : 0)
+        | ((getSymbolReference().getSymbol() != NULL || getSymbolReference().getOffset() != 0
+               || isForceWideDisplacement())
                 ? 4
                 : 0);
 
@@ -1167,7 +1166,7 @@ uint8_t *OMR::X86::MemoryReference::generateBinaryEncoding(uint8_t *modRM, TR::I
 
     switch (addressTypes) {
         case 1: {
-            base = toRealRegister(self()->getBaseRegister());
+            base = toRealRegister(getBaseRegister());
             baseRegisterNumber = base->getRegisterNumber();
 
             if (baseRegisterNumber == TR::RealRegister::vfp) {
@@ -1176,20 +1175,20 @@ uint8_t *OMR::X86::MemoryReference::generateBinaryEncoding(uint8_t *modRM, TR::I
 
                 base = toRealRegister(cg->machine()->getRealRegister(baseRegisterNumber)->getAssignedRealRegister());
                 baseRegisterNumber = base->getRegisterNumber();
-                self()->setBaseRegister(base);
+                setBaseRegister(base);
             }
 
             if (base->needsDisp()) {
-                self()->ModRM(modRM)->setBaseDisp8();
+                ModRM(modRM)->setBaseDisp8();
                 base->setRMRegisterFieldInModRM(modRM);
                 *++cursor = 0x00;
             } else if (base->needsSIB()) {
-                self()->ModRM(modRM)->setBase()->setHasSIB();
+                ModRM(modRM)->setBase()->setHasSIB();
                 *++cursor = 0x00;
-                self()->SIB(cursor)->setNoIndex();
+                SIB(cursor)->setNoIndex();
                 base->setBaseRegisterFieldInSIB(cursor);
             } else {
-                self()->ModRM(modRM)->setBase();
+                ModRM(modRM)->setBase();
                 base->setRMRegisterFieldInModRM(modRM);
             }
 
@@ -1199,20 +1198,20 @@ uint8_t *OMR::X86::MemoryReference::generateBinaryEncoding(uint8_t *modRM, TR::I
 
         case 6:
         case 2: {
-            index = toRealRegister(self()->getIndexRegister());
-            self()->ModRM(modRM)->setBase()->setHasSIB();
+            index = toRealRegister(getIndexRegister());
+            ModRM(modRM)->setBase()->setHasSIB();
             *++cursor = 0x00;
-            self()->SIB(cursor)->setIndexDisp32();
+            SIB(cursor)->setIndexDisp32();
             index->setIndexRegisterFieldInSIB(cursor);
-            self()->setStrideFieldInSIB(cursor);
+            setStrideFieldInSIB(cursor);
             cursor++;
 
             immediateCursor = cursor;
 
-            *(int32_t *)cursor = (int32_t)self()->getSymbolReference().getOffset();
+            *(int32_t *)cursor = (int32_t)getSymbolReference().getOffset();
 
-            if (self()->getUnresolvedDataSnippet() != NULL) {
-                self()->getUnresolvedDataSnippet()->setAddressOfDataReference(cursor);
+            if (getUnresolvedDataSnippet() != NULL) {
+                getUnresolvedDataSnippet()->setAddressOfDataReference(cursor);
             }
 
             cursor += 4;
@@ -1220,7 +1219,7 @@ uint8_t *OMR::X86::MemoryReference::generateBinaryEncoding(uint8_t *modRM, TR::I
         }
 
         case 3: {
-            base = toRealRegister(self()->getBaseRegister());
+            base = toRealRegister(getBaseRegister());
             baseRegisterNumber = base->getRegisterNumber();
 
             if (baseRegisterNumber == TR::RealRegister::vfp) {
@@ -1229,30 +1228,30 @@ uint8_t *OMR::X86::MemoryReference::generateBinaryEncoding(uint8_t *modRM, TR::I
 
                 base = toRealRegister(cg->machine()->getRealRegister(baseRegisterNumber)->getAssignedRealRegister());
                 baseRegisterNumber = base->getRegisterNumber();
-                self()->setBaseRegister(base);
+                setBaseRegister(base);
             }
 
-            index = toRealRegister(self()->getIndexRegister());
+            index = toRealRegister(getIndexRegister());
             *++cursor = 0x00;
             base->setBaseRegisterFieldInSIB(cursor);
             index->setIndexRegisterFieldInSIB(cursor);
-            self()->setStrideFieldInSIB(cursor);
+            setStrideFieldInSIB(cursor);
             if (base->needsDisp()) {
                 // Need a sib byte with 8bit displacement field of zero to get ebp as a base register
                 //
-                self()->ModRM(modRM)->setBaseDisp8()->setHasSIB();
+                ModRM(modRM)->setBaseDisp8()->setHasSIB();
                 *++cursor = 0x00;
             } else {
-                self()->ModRM(modRM)->setBase()->setHasSIB();
+                ModRM(modRM)->setBase()->setHasSIB();
             }
             ++cursor;
             break;
         }
 
         case 4: {
-            self()->ModRM(modRM)->setIndexOnlyDisp32();
+            ModRM(modRM)->setIndexOnlyDisp32();
             cursor++;
-            symbol = self()->getSymbolReference().getSymbol();
+            symbol = getSymbolReference().getSymbol();
             immediateCursor = cursor;
 
             if (symbol) {
@@ -1260,11 +1259,11 @@ uint8_t *OMR::X86::MemoryReference::generateBinaryEncoding(uint8_t *modRM, TR::I
                 TR::MethodSymbol *methodSym = symbol->getMethodSymbol();
 
                 if (staticSym) {
-                    if (self()->getUnresolvedDataSnippet() == NULL) {
-                        *(int32_t *)cursor = (int32_t)(self()->getSymbolReference().getOffset()
-                            + (intptr_t)staticSym->getStaticAddress());
+                    if (getUnresolvedDataSnippet() == NULL) {
+                        *(int32_t *)cursor
+                            = (int32_t)(getSymbolReference().getOffset() + (intptr_t)staticSym->getStaticAddress());
                     } else {
-                        *(int32_t *)cursor = (int32_t)self()->getSymbolReference().getOffset();
+                        *(int32_t *)cursor = (int32_t)getSymbolReference().getOffset();
                     }
                 } else if (methodSym) {
                     /* ----------------------------------------------------- */
@@ -1273,25 +1272,24 @@ uint8_t *OMR::X86::MemoryReference::generateBinaryEncoding(uint8_t *modRM, TR::I
                     /* ----------------------------------------------------- */
                     *(int32_t *)cursor = 0;
                 } else if (symbol->isRegisterMappedSymbol()) {
-                    displacement
-                        = self()->getSymbolReference().getOffset() + symbol->getRegisterMappedSymbol()->getOffset();
+                    displacement = getSymbolReference().getOffset() + symbol->getRegisterMappedSymbol()->getOffset();
                     TR_ASSERT(IS_32BIT_SIGNED(displacement),
                         "64-bit displacement should have been replaced in "
                         "TR_AMD64MemoryReference::generateBinaryEncoding");
                     *(int32_t *)cursor = (int32_t)displacement;
                 } else if (symbol->isShadow()) {
-                    *(int32_t *)cursor = (int32_t)self()->getSymbolReference().getOffset();
+                    *(int32_t *)cursor = (int32_t)getSymbolReference().getOffset();
                 } else
                     TR_ASSERT(0, "generateBinaryEncoding, new symbol hierarchy problem");
             } else {
-                TR::X86DataSnippet *cds = self()->getDataSnippet();
-                TR_ASSERT(cds == NULL || self()->getLabel() == NULL,
+                TR::X86DataSnippet *cds = getDataSnippet();
+                TR_ASSERT(cds == NULL || getLabel() == NULL,
                     "a memRef cannot have both a constant data snippet and a label");
                 TR::LabelSymbol *label = NULL;
                 if (cds)
                     label = cds->getSnippetLabel();
                 else
-                    label = self()->getLabel();
+                    label = getLabel();
 
                 if (label != NULL) {
                     if (cg->comp()->target().is64Bit()) {
@@ -1304,12 +1302,12 @@ uint8_t *OMR::X86::MemoryReference::generateBinaryEncoding(uint8_t *modRM, TR::I
                         *(int32_t *)cursor = (int32_t)0;
                     }
                 } else {
-                    *(int32_t *)cursor = (int32_t)self()->getSymbolReference().getOffset();
+                    *(int32_t *)cursor = (int32_t)getSymbolReference().getOffset();
                 }
             }
 
-            if (self()->getUnresolvedDataSnippet() != NULL) {
-                self()->getUnresolvedDataSnippet()->setAddressOfDataReference(cursor);
+            if (getUnresolvedDataSnippet() != NULL) {
+                getUnresolvedDataSnippet()->setAddressOfDataReference(cursor);
             }
 
             cursor += 4;
@@ -1317,7 +1315,7 @@ uint8_t *OMR::X86::MemoryReference::generateBinaryEncoding(uint8_t *modRM, TR::I
         }
 
         case 5: {
-            base = toRealRegister(self()->getBaseRegister());
+            base = toRealRegister(getBaseRegister());
             baseRegisterNumber = base->getRegisterNumber();
 
             if (baseRegisterNumber == TR::RealRegister::vfp) {
@@ -1326,16 +1324,16 @@ uint8_t *OMR::X86::MemoryReference::generateBinaryEncoding(uint8_t *modRM, TR::I
 
                 base = toRealRegister(cg->machine()->getRealRegister(baseRegisterNumber)->getAssignedRealRegister());
                 baseRegisterNumber = base->getRegisterNumber();
-                self()->setBaseRegister(base);
+                setBaseRegister(base);
             }
 
-            if (base->needsSIB() || self()->isForceSIBByte()) {
+            if (base->needsSIB() || isForceSIBByte()) {
                 *++cursor = 0x00;
-                self()->ModRM(modRM)->setBase()->setHasSIB();
-                self()->SIB(cursor)->setNoIndex();
+                ModRM(modRM)->setBase()->setHasSIB();
+                SIB(cursor)->setNoIndex();
             }
 
-            displacement = self()->getDisplacement();
+            displacement = getDisplacement();
             TR_ASSERT_FATAL(IS_32BIT_SIGNED(displacement),
                 "64-bit displacement should have been replaced in TR_AMD64MemoryReference::generateBinaryEncoding");
 
@@ -1349,20 +1347,20 @@ uint8_t *OMR::X86::MemoryReference::generateBinaryEncoding(uint8_t *modRM, TR::I
             base->setRMRegisterFieldInModRM(cursor++);
             immediateCursor = cursor;
 
-            if (displacement == 0 && !base->needsDisp() && !base->needsDisp() && !self()->isForceWideDisplacement()) {
-                self()->ModRM(modRM)->setBase();
-            } else if (displacement >= -128 && displacement <= 127 && !self()->isForceWideDisplacement()) {
-                self()->ModRM(modRM)->setBaseDisp8();
+            if (displacement == 0 && !base->needsDisp() && !base->needsDisp() && !isForceWideDisplacement()) {
+                ModRM(modRM)->setBase();
+            } else if (displacement >= -128 && displacement <= 127 && !isForceWideDisplacement()) {
+                ModRM(modRM)->setBaseDisp8();
                 *cursor = (uint8_t)displacement;
                 ++cursor;
             } else {
                 // If there is a symbol or if the displacement will not fit in a byte,
                 // then displacement will be 4 bytes.
                 //
-                self()->ModRM(modRM)->setBaseDisp32();
+                ModRM(modRM)->setBaseDisp32();
                 *(int32_t *)cursor = (int32_t)displacement;
-                if (self()->getUnresolvedDataSnippet() != NULL) {
-                    self()->getUnresolvedDataSnippet()->setAddressOfDataReference(cursor);
+                if (getUnresolvedDataSnippet() != NULL) {
+                    getUnresolvedDataSnippet()->setAddressOfDataReference(cursor);
                 }
 
                 cursor += 4;
@@ -1371,7 +1369,7 @@ uint8_t *OMR::X86::MemoryReference::generateBinaryEncoding(uint8_t *modRM, TR::I
         }
 
         case 7: {
-            base = toRealRegister(self()->getBaseRegister());
+            base = toRealRegister(getBaseRegister());
             baseRegisterNumber = base->getRegisterNumber();
 
             if (baseRegisterNumber == TR::RealRegister::vfp) {
@@ -1380,16 +1378,16 @@ uint8_t *OMR::X86::MemoryReference::generateBinaryEncoding(uint8_t *modRM, TR::I
 
                 base = toRealRegister(cg->machine()->getRealRegister(baseRegisterNumber)->getAssignedRealRegister());
                 baseRegisterNumber = base->getRegisterNumber();
-                self()->setBaseRegister(base);
+                setBaseRegister(base);
             }
 
-            index = toRealRegister(self()->getIndexRegister());
+            index = toRealRegister(getIndexRegister());
             *++cursor = 0x00;
             base->setBaseRegisterFieldInSIB(cursor);
             index->setIndexRegisterFieldInSIB(cursor);
-            self()->setStrideFieldInSIB(cursor);
+            setStrideFieldInSIB(cursor);
             ++cursor;
-            displacement = self()->getDisplacement();
+            displacement = getDisplacement();
             immediateCursor = cursor;
 
             TR_ASSERT(IS_32BIT_SIGNED(displacement),
@@ -1402,17 +1400,17 @@ uint8_t *OMR::X86::MemoryReference::generateBinaryEncoding(uint8_t *modRM, TR::I
                 setForceWideDisplacement();
             }
 
-            if (displacement >= -128 && displacement <= 127 && !self()->isForceWideDisplacement()) {
-                self()->ModRM(modRM)->setBaseDisp8()->setHasSIB();
+            if (displacement >= -128 && displacement <= 127 && !isForceWideDisplacement()) {
+                ModRM(modRM)->setBaseDisp8()->setHasSIB();
                 *cursor++ = (uint8_t)displacement;
             } else {
                 // If there is a symbol or if the displacement will not fit in a byte,
                 // then displacement will be 4 bytes.
                 //
-                self()->ModRM(modRM)->setBaseDisp32()->setHasSIB();
+                ModRM(modRM)->setBaseDisp32()->setHasSIB();
                 *(int32_t *)cursor = (int32_t)displacement;
-                if (self()->getUnresolvedDataSnippet() != NULL) {
-                    self()->getUnresolvedDataSnippet()->setAddressOfDataReference(cursor);
+                if (getUnresolvedDataSnippet() != NULL) {
+                    getUnresolvedDataSnippet()->setAddressOfDataReference(cursor);
                 }
 
                 cursor += 4;
@@ -1486,7 +1484,7 @@ const uint8_t OMR::X86::MemoryReference::_multiplierToStrideMap[HIGHEST_STRIDE_M
 #ifdef DEBUG
 uint32_t OMR::X86::MemoryReference::getNumMRReferencedGPRegisters()
 {
-    return (self()->getBaseRegister() ? 1 : 0) + (self()->getIndexRegister() ? 1 : 0);
+    return (getBaseRegister() ? 1 : 0) + (getIndexRegister() ? 1 : 0);
 }
 #endif
 

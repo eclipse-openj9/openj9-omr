@@ -78,7 +78,6 @@ static bool virtualGuardHelper(TR::Node *node, TR::CodeGenerator *cg);
 static void switchDispatch(TR::Node *node, bool fromTableEval, TR::CodeGenerator *cg);
 static bool isGlDepsUnBalanced(TR::Node *node, TR::CodeGenerator *cg);
 static void lookupScheme1(TR::Node *node, bool unbalanced, bool fromTableEval, TR::CodeGenerator *cg);
-static void lookupScheme2(TR::Node *node, bool unbalanced, bool fromTableEval, TR::CodeGenerator *cg);
 static void lookupScheme3(TR::Node *node, bool unbalanced, TR::CodeGenerator *cg);
 static void lookupScheme4(TR::Node *node, TR::CodeGenerator *cg);
 
@@ -3309,13 +3308,10 @@ static void switchDispatch(TR::Node *node, bool fromTableEval, TR::CodeGenerator
 {
     int32_t total = node->getNumChildren();
     int32_t ii;
-    bool unbalanced;
+    bool unbalanced, isScheme1Suitable;
 
     if (fromTableEval) {
-        if (total <= UPPER_IMMED)
-            lookupScheme1(node, true, true, cg);
-        else
-            lookupScheme2(node, true, true, cg);
+        lookupScheme1(node, true, true, cg);
         return;
     }
 
@@ -3331,34 +3327,34 @@ static void switchDispatch(TR::Node *node, bool fromTableEval, TR::CodeGenerator
         }
     }
 
-    if (total <= 12) {
-        for (ii = 2; ii < total && node->getChild(ii)->getCaseConstant() >= LOWER_IMMED
-             && node->getChild(ii)->getCaseConstant() <= UPPER_IMMED;
-             ii++)
-            ;
-        if (ii == total) {
-            lookupScheme1(node, unbalanced, false, cg);
-            return;
-        }
+    for (ii = 2; ii < total && node->getChild(ii)->getCaseConstant() >= LOWER_IMMED
+         && node->getChild(ii)->getCaseConstant() <= UPPER_IMMED;
+         ii++)
+        ;
+    isScheme1Suitable = (ii == total);
+
+    // unbalanced can only use Scheme1 or Scheme3 to have individual case's own GlRegDep
+    // Scheme1 is always better than Scheme3
+    if (unbalanced) {
+        if (isScheme1Suitable)
+            lookupScheme1(node, true, false, cg);
+        else
+            lookupScheme3(node, true, cg);
+        return;
     }
 
-    // The children are in ascending order already.
-    if (total <= 9) {
-        CASECONST_TYPE preInt = node->getChild(2)->getCaseConstant();
-        for (ii = 3; ii < total; ii++) {
-            CASECONST_TYPE diff = node->getChild(ii)->getCaseConstant() - preInt;
-            preInt += diff;
-            if (diff < 0 || diff > UPPER_IMMED)
-                break;
-        }
-        if (ii >= total) {
-            lookupScheme2(node, unbalanced, false, cg);
-            return;
-        }
+    // Performance estimation:
+    // Scheme1: two instructions per case, expecting 64 instructions for 32 non-default cases
+    // Scheme3: three instructions per case, expecting 72 instructions for 24 non-default cases
+    // Scheme4: binary-search, approximately 15 instructions per loop iteration
+
+    if (total <= 47 && isScheme1Suitable) {
+        lookupScheme1(node, false, false, cg);
+        return;
     }
 
-    if (total <= 8 || unbalanced) {
-        lookupScheme3(node, unbalanced, cg);
+    if (total <= 27) {
+        lookupScheme3(node, false, cg);
         return;
     }
 
@@ -3392,8 +3388,10 @@ static void lookupScheme1(TR::Node *node, bool unbalanced, bool fromTableEval, T
         acond = acond->clone(cg, generateRegisterDependencyConditions(cg, secondChild->getFirstChild(), 0));
     }
 
+    OMR::SwitchCaseOrdering *ordering = cg->sortSwitchCases(node);
+
     for (int i = 2; i < total; i++) {
-        TR::Node *child = node->getChild(i);
+        TR::Node *child = node->getChild(ordering[i].index);
         if (isInt64) {
             int64_t value = child->getCaseConstant();
             if (cg->comp()->target().is64Bit()) {
@@ -3402,13 +3400,13 @@ static void lookupScheme1(TR::Node *node, bool unbalanced, bool fromTableEval, T
                 generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::cmpi4, node, cndRegister, selector->getHighOrder(),
                     0);
                 generateConditionalBranchInstruction(cg, TR::InstOpCode::bne, node, toDefaultLabel, cndRegister);
-                generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::cmpi4, node, cndRegister, selector->getHighOrder(),
+                generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::cmpi4, node, cndRegister, selector->getLowOrder(),
                     value);
             } // 64bit target?
         } // 64bit int selector
         else {
             generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::cmpi4, node, cndRegister, selector,
-                fromTableEval ? (i - 2) : (int32_t)(child->getCaseConstant()));
+                fromTableEval ? (ordering[i].index - 2) : (int32_t)(child->getCaseConstant()));
         }
         if (unbalanced) {
             bcond = conditions;
@@ -3436,99 +3434,35 @@ static void lookupScheme1(TR::Node *node, bool unbalanced, bool fromTableEval, T
     cg->stopUsingRegister(cndRegister);
 }
 
-static void lookupScheme2(TR::Node *node, bool unbalanced, bool fromTableEval, TR::CodeGenerator *cg)
-{
-    int32_t total = node->getNumChildren();
-    TR::Register *selector = cg->evaluate(node->getFirstChild());
-    TR::Register *cndRegister = cg->allocateRegister(TR_CCR);
-    TR::Register *valRegister = NULL;
-
-    TR::LabelSymbol *toDefaultLabel = NULL;
-    valRegister = cg->allocateRegister();
-
-    TR::RegisterDependencyConditions *acond, *bcond,
-        *conditions = new (cg->trHeapMemory()) TR::RegisterDependencyConditions(5, 5, cg->trMemory());
-    TR::Node *secondChild = node->getSecondChild();
-
-    TR::addDependency(conditions, valRegister, TR::RealRegister::NoReg, TR_GPR, cg);
-    TR::addDependency(conditions, selector, TR::RealRegister::NoReg, TR_GPR, cg);
-
-    TR::addDependency(conditions, cndRegister, TR::RealRegister::NoReg, TR_CCR, cg);
-    conditions->getPreConditions()->getRegisterDependency(0)->setExcludeGPR0();
-    conditions->getPostConditions()->getRegisterDependency(0)->setExcludeGPR0();
-
-    acond = conditions;
-    if (secondChild->getNumChildren() > 0 && !unbalanced) {
-        cg->evaluate(secondChild->getFirstChild());
-        acond = acond->clone(cg, generateRegisterDependencyConditions(cg, secondChild->getFirstChild(), 0));
-    }
-
-    int32_t preInt = fromTableEval ? 0 : node->getChild(2)->getCaseConstant();
-
-    loadConstant(cg, node, preInt, valRegister);
-
-    for (int i = 2; i < total; i++) {
-        TR::Node *child = node->getChild(i);
-
-        generateTrg1Src2Instruction(cg, TR::InstOpCode::cmp4, node, cndRegister, selector, valRegister);
-
-        if (unbalanced) {
-            bcond = conditions;
-            if (child->getNumChildren() > 0) {
-                cg->evaluate(child->getFirstChild());
-                bcond = bcond->clone(cg, generateRegisterDependencyConditions(cg, child->getFirstChild(), 0));
-            }
-            generateDepConditionalBranchInstruction(cg, TR::InstOpCode::beq, node,
-                child->getBranchDestination()->getNode()->getLabel(), cndRegister, bcond);
-        } else {
-            generateConditionalBranchInstruction(cg, TR::InstOpCode::beq, node,
-                child->getBranchDestination()->getNode()->getLabel(), cndRegister);
-        }
-        if (i < total - 1) {
-            int32_t diff = fromTableEval ? 1 : (node->getChild(i + 1)->getCaseConstant() - preInt);
-            preInt += diff;
-            generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::addi2, node, valRegister, valRegister, (int32_t)diff);
-        }
-    }
-
-    if (secondChild->getNumChildren() > 0 && unbalanced) {
-        cg->evaluate(secondChild->getFirstChild());
-        acond = acond->clone(cg, generateRegisterDependencyConditions(cg, secondChild->getFirstChild(), 0));
-    }
-    generateDepLabelInstruction(cg, TR::InstOpCode::b, node, secondChild->getBranchDestination()->getNode()->getLabel(),
-        acond);
-
-    cg->stopUsingRegister(cndRegister);
-    cg->stopUsingRegister(valRegister);
-}
-
 static void lookupScheme3(TR::Node *node, bool unbalanced, TR::CodeGenerator *cg)
 {
     TR::Instruction *rel1, *rel2;
     int32_t total = node->getNumChildren();
     int32_t numberOfEntries = total - 2;
-    int32_t nextAddress = 4;
     size_t dataTableSize = numberOfEntries * sizeof(int);
     int32_t *dataTable = NULL;
     int64_t *dataTable64 = NULL;
     bool isInt64 = false;
     TR::Compilation *comp = cg->comp();
     bool two_reg = isInt64 && cg->comp()->target().is32Bit();
+
     if (isInt64) {
         dataTableSize *= 2;
         dataTable64 = (int64_t *)cg->allocateCodeMemory(dataTableSize, cg->getCurrentEvaluationBlock()->isCold());
     } else
         dataTable = (int32_t *)cg->allocateCodeMemory(dataTableSize, cg->getCurrentEvaluationBlock()->isCold());
 
+    TR_ASSERT_FATAL_WITH_NODE(node, dataTableSize <= UPPER_IMMED,
+        "TableSize: %d, needing an additional register to re-work this evaluator", dataTableSize);
+
     intptr_t address = isInt64 ? ((intptr_t)dataTable64) : ((intptr_t)dataTable);
     TR::Register *selector = cg->evaluate(node->getFirstChild());
     TR::Register *cndRegister = cg->allocateRegister(TR_CCR);
     TR::Register *addrRegister = cg->allocateRegister();
     TR::Register *dataRegister = NULL;
-    TR::LabelSymbol *toDefaultLabel = NULL;
+    TR::LabelSymbol *highNotEqualLabel = NULL;
     if (two_reg) {
         dataRegister = cg->allocateRegisterPair(cg->allocateRegister(), cg->allocateRegister());
-        toDefaultLabel = generateLabelSymbol(cg);
     } else
         dataRegister = cg->allocateRegister();
 
@@ -3537,7 +3471,7 @@ static void lookupScheme3(TR::Node *node, bool unbalanced, TR::CodeGenerator *cg
     TR::Node *secondChild = node->getSecondChild();
 
     TR::addDependency(conditions, addrRegister, TR::RealRegister::NoReg, TR_GPR, cg);
-    if (isInt64 && cg->comp()->target().is64Bit()) {
+    if (two_reg) {
         TR::addDependency(conditions, dataRegister->getHighOrder(), TR::RealRegister::NoReg, TR_GPR, cg);
         TR::addDependency(conditions, dataRegister->getLowOrder(), TR::RealRegister::NoReg, TR_GPR, cg);
         TR::addDependency(conditions, selector->getHighOrder(), TR::RealRegister::NoReg, TR_GPR, cg);
@@ -3550,6 +3484,8 @@ static void lookupScheme3(TR::Node *node, bool unbalanced, TR::CodeGenerator *cg
     TR::addDependency(conditions, cndRegister, TR::RealRegister::NoReg, TR_CCR, cg);
     conditions->getPreConditions()->getRegisterDependency(0)->setExcludeGPR0();
     conditions->getPostConditions()->getRegisterDependency(0)->setExcludeGPR0();
+
+    OMR::SwitchCaseOrdering *ordering = cg->sortSwitchCases(node);
 
     acond = conditions;
     if (secondChild->getNumChildren() > 0 && !unbalanced) {
@@ -3575,83 +3511,14 @@ static void lookupScheme3(TR::Node *node, bool unbalanced, TR::CodeGenerator *cg
                 generateTrg1MemInstruction(cg, TR::InstOpCode::Op_load, node, addrRegister,
                     TR::MemoryReference::createWithDisplacement(cg, cg->getTOCBaseRegister(), offset, 8));
             }
-
-            if (isInt64)
-                generateTrg1MemInstruction(cg, TR::InstOpCode::ld, node, dataRegister,
-                    TR::MemoryReference::createWithDisplacement(cg, addrRegister, 0, 8));
-            else
-                generateTrg1MemInstruction(cg, TR::InstOpCode::lwz, node, dataRegister,
-                    TR::MemoryReference::createWithDisplacement(cg, addrRegister, 0, 4));
         } else {
-            if (cg->needRelocationsForLookupEvaluationData()) {
-                loadAddressConstant(cg, true, node, address, addrRegister);
-                generateTrg1MemInstruction(cg, TR::InstOpCode::lwz, node, dataRegister,
-                    TR::MemoryReference::createWithDisplacement(cg, addrRegister, 0, 4));
-            } else {
-                loadAddressConstant(cg, false, node, cg->hiValue(address) << 16, addrRegister);
-                nextAddress = LO_VALUE((int32_t)address);
-                if (isInt64) {
-                    if (nextAddress >= 32760) {
-                        generateTrg1MemInstruction(cg, TR::InstOpCode::ldu, node, dataRegister,
-                            TR::MemoryReference::createWithDisplacement(cg, addrRegister, nextAddress, 8));
-                        nextAddress = 8;
-                    } else {
-                        generateTrg1MemInstruction(cg, TR::InstOpCode::ld, node, dataRegister,
-                            TR::MemoryReference::createWithDisplacement(cg, addrRegister, nextAddress, 8));
-                        nextAddress += 8;
-                    }
-                } else {
-                    if (nextAddress >= 32764) {
-                        generateTrg1MemInstruction(cg, TR::InstOpCode::lwzu, node, dataRegister,
-                            TR::MemoryReference::createWithDisplacement(cg, addrRegister, nextAddress, 4));
-                        nextAddress = 4;
-                    } else {
-                        generateTrg1MemInstruction(cg, TR::InstOpCode::lwz, node, dataRegister,
-                            TR::MemoryReference::createWithDisplacement(cg, addrRegister, nextAddress, 4));
-                        nextAddress += 4;
-                    }
-                } // is64BitInt ?
-            } // isAOT?
+            // Unnecessarily complicated evaluation scheme: simplified
+            loadAddressConstant(cg, cg->needRelocationsForLookupEvaluationData(), node, address, addrRegister);
         }
-    } // ...if 64BitTarget
-    else // if 32bit mode
-    {
+    } else {
         rel1 = generateTrg1ImmInstruction(cg, TR::InstOpCode::lis, node, addrRegister, (int16_t)cg->hiValue(address));
-
-        if (isInt64) {
-            nextAddress = LO_VALUE(address);
-            if (nextAddress == 32760) {
-                rel2 = generateTrg1MemInstruction(cg, TR::InstOpCode::lwz, node, dataRegister->getHighOrder(),
-                    TR::MemoryReference::createWithDisplacement(cg, addrRegister, nextAddress, 4));
-                nextAddress += 4;
-                rel2 = generateTrg1MemInstruction(cg, TR::InstOpCode::lwzu, node, dataRegister->getLowOrder(),
-                    TR::MemoryReference::createWithDisplacement(cg, addrRegister, nextAddress, 4));
-                nextAddress = 4;
-            } else {
-                rel2 = generateTrg1MemInstruction(cg, TR::InstOpCode::lwz, node, dataRegister->getHighOrder(),
-                    TR::MemoryReference::createWithDisplacement(cg, addrRegister, nextAddress, 4));
-                nextAddress += 4;
-                rel2 = generateTrg1MemInstruction(cg, TR::InstOpCode::lwz, node, dataRegister->getLowOrder(),
-                    TR::MemoryReference::createWithDisplacement(cg, addrRegister, nextAddress, 4));
-                nextAddress += 4;
-            }
-        } else {
-            if (cg->comp()->compileRelocatableCode()) {
-                rel2 = generateTrg1MemInstruction(cg, TR::InstOpCode::lwzu, node, dataRegister,
-                    TR::MemoryReference::createWithDisplacement(cg, addrRegister, LO_VALUE(address), 4));
-            } else {
-                nextAddress = LO_VALUE(address);
-                if (nextAddress >= 32764) {
-                    rel2 = generateTrg1MemInstruction(cg, TR::InstOpCode::lwzu, node, dataRegister,
-                        TR::MemoryReference::createWithDisplacement(cg, addrRegister, nextAddress, 4));
-                    nextAddress = 4;
-                } else {
-                    rel2 = generateTrg1MemInstruction(cg, TR::InstOpCode::lwz, node, dataRegister,
-                        TR::MemoryReference::createWithDisplacement(cg, addrRegister, nextAddress, 4));
-                    nextAddress += 4;
-                }
-            }
-        }
+        rel2 = generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::addi, node, addrRegister, addrRegister,
+            LO_VALUE(address));
 
         TR_RelocationRecordInformation *recordInfo = (TR_RelocationRecordInformation *)comp->trMemory()->allocateMemory(
             sizeof(TR_RelocationRecordInformation), heapAlloc);
@@ -3661,23 +3528,46 @@ static void lookupScheme3(TR::Node *node, bool unbalanced, TR::CodeGenerator *cg
     } // if 64BitTarget or 32BitTarget
 
     for (int32_t ii = 2; ii < total; ii++) {
-        TR::Node *child = node->getChild(ii);
+        if (isInt64) {
+            dataTable64[ii - 2] = node->getChild(ii)->getCaseConstant();
+        } else {
+            dataTable[ii - 2] = node->getChild(ii)->getCaseConstant();
+        }
+    }
+
+    for (int32_t ii = 2; ii < total; ii++) {
+        int32_t curIdx = ordering[ii].index;
+        int32_t curOffset = (curIdx - 2) * (isInt64 ? 8 : 4);
+        TR::Node *child = node->getChild(curIdx);
+        if (isInt64) {
+            if (cg->comp()->target().is64Bit()) {
+                generateTrg1MemInstruction(cg, TR::InstOpCode::ld, node, dataRegister,
+                    TR::MemoryReference::createWithDisplacement(cg, addrRegister, curOffset, 8));
+            } else {
+                generateTrg1MemInstruction(cg, TR::InstOpCode::lwz, node, dataRegister->getHighOrder(),
+                    TR::MemoryReference::createWithDisplacement(cg, addrRegister, curOffset, 4));
+                generateTrg1MemInstruction(cg, TR::InstOpCode::lwz, node, dataRegister->getLowOrder(),
+                    TR::MemoryReference::createWithDisplacement(cg, addrRegister, curOffset + 4, 4));
+            }
+        } else {
+            generateTrg1MemInstruction(cg, TR::InstOpCode::lwz, node, dataRegister,
+                TR::MemoryReference::createWithDisplacement(cg, addrRegister, curOffset, 4));
+        }
+
         if (isInt64) {
             if (cg->comp()->target().is64Bit()) {
                 generateTrg1Src2Instruction(cg, TR::InstOpCode::cmp8, node, cndRegister, selector, dataRegister);
             } else {
+                highNotEqualLabel = generateLabelSymbol(cg);
                 generateTrg1Src2Instruction(cg, TR::InstOpCode::cmp4, node, cndRegister, selector->getHighOrder(),
                     dataRegister->getHighOrder());
-                generateConditionalBranchInstruction(cg, TR::InstOpCode::bne, node, toDefaultLabel, cndRegister);
+                generateConditionalBranchInstruction(cg, TR::InstOpCode::bne, node, highNotEqualLabel, cndRegister);
                 generateTrg1Src2Instruction(cg, TR::InstOpCode::cmp4, node, cndRegister, selector->getLowOrder(),
                     dataRegister->getLowOrder());
             }
         } else {
             generateTrg1Src2Instruction(cg, TR::InstOpCode::cmp4, node, cndRegister, selector, dataRegister);
         }
-
-        if (two_reg)
-            generateLabelInstruction(cg, TR::InstOpCode::label, node, toDefaultLabel);
 
         if (unbalanced) {
             bcond = conditions;
@@ -3691,54 +3581,9 @@ static void lookupScheme3(TR::Node *node, bool unbalanced, TR::CodeGenerator *cg
             generateConditionalBranchInstruction(cg, TR::InstOpCode::beq, node,
                 child->getBranchDestination()->getNode()->getLabel(), cndRegister);
         }
-        if (ii < total - 1) {
-            if (isInt64) {
-                if (cg->comp()->target().is64Bit()) {
-                    if (nextAddress >= 32760) {
-                        generateTrg1MemInstruction(cg, TR::InstOpCode::ldu, node, dataRegister,
-                            TR::MemoryReference::createWithDisplacement(cg, addrRegister, nextAddress, 8));
-                        nextAddress = 8;
-                    } else {
-                        generateTrg1MemInstruction(cg, TR::InstOpCode::ld, node, dataRegister,
-                            TR::MemoryReference::createWithDisplacement(cg, addrRegister, nextAddress, 8));
-                        nextAddress += 8;
-                    }
-                } else {
-                    if (nextAddress == 32760) {
-                        generateTrg1MemInstruction(cg, TR::InstOpCode::lwz, node, dataRegister->getHighOrder(),
-                            TR::MemoryReference::createWithDisplacement(cg, addrRegister, nextAddress, 4));
-                        nextAddress += 4;
-                        generateTrg1MemInstruction(cg, TR::InstOpCode::lwzu, node, dataRegister->getLowOrder(),
-                            TR::MemoryReference::createWithDisplacement(cg, addrRegister, nextAddress, 4));
-                        nextAddress = 4;
-                    } else {
-                        generateTrg1MemInstruction(cg, TR::InstOpCode::lwz, node, dataRegister->getHighOrder(),
-                            TR::MemoryReference::createWithDisplacement(cg, addrRegister, nextAddress, 4));
-                        nextAddress += 4;
-                        generateTrg1MemInstruction(cg, TR::InstOpCode::lwz, node, dataRegister->getLowOrder(),
-                            TR::MemoryReference::createWithDisplacement(cg, addrRegister, nextAddress, 4));
-                        nextAddress += 4;
-                    }
-                } // 64BitTarget ?
-            } // isInt64
-            else {
-                if (nextAddress >= 32764) {
-                    generateTrg1MemInstruction(cg, TR::InstOpCode::lwzu, node, dataRegister,
-                        TR::MemoryReference::createWithDisplacement(cg, addrRegister, nextAddress, 4));
-                    nextAddress = 4;
-                } else {
-                    generateTrg1MemInstruction(cg, TR::InstOpCode::lwz, node, dataRegister,
-                        TR::MemoryReference::createWithDisplacement(cg, addrRegister, nextAddress, 4));
-                    nextAddress += 4;
-                }
-            }
-        }
 
-        if (isInt64) {
-            dataTable64[ii - 2] = node->getChild(ii)->getCaseConstant();
-        } else {
-            dataTable[ii - 2] = node->getChild(ii)->getCaseConstant();
-        }
+        if (two_reg)
+            generateLabelInstruction(cg, TR::InstOpCode::label, node, highNotEqualLabel);
     }
 
     if (secondChild->getNumChildren() > 0 && unbalanced) {
@@ -3819,6 +3664,40 @@ static void lookupScheme4(TR::Node *node, TR::CodeGenerator *cg)
     if (secondChild->getNumChildren() > 0) {
         cg->evaluate(secondChild->getFirstChild());
         conditions = conditions->clone(cg, generateRegisterDependencyConditions(cg, secondChild->getFirstChild(), 0));
+    }
+
+    OMR::SwitchCaseOrdering *ordering = cg->sortSwitchCases(node);
+
+    // Deciding if we can perform better by peeling off the hottest two cases
+    // For the time being, hot criteria: more than 50% of the containing block frequency
+    if ((2 * ordering[2].frequency) > node->getBlock()->getFrequency()) {
+        int32_t hotIdx = ordering[2].index;
+        TR::Node *hotChild = node->getChild(hotIdx);
+        int32_t caseConst = hotChild->getCaseConstant();
+
+        if (caseConst < LOWER_IMMED || caseConst > UPPER_IMMED) {
+            loadConstant(cg, node, caseConst, highRegister);
+            generateTrg1Src2Instruction(cg, cmp_opcode, node, cndRegister, selector, highRegister);
+        } else {
+            generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::cmpli4, node, cndRegister, selector, caseConst);
+        }
+        generateConditionalBranchInstruction(cg, TR::InstOpCode::beq, node,
+            hotChild->getBranchDestination()->getNode()->getLabel(), cndRegister);
+
+        if ((2 * ordering[3].frequency) > node->getBlock()->getFrequency()) {
+            hotIdx = ordering[3].index;
+            hotChild = node->getChild(hotIdx);
+            caseConst = hotChild->getCaseConstant();
+
+            if (caseConst < LOWER_IMMED || caseConst > UPPER_IMMED) {
+                loadConstant(cg, node, caseConst, highRegister);
+                generateTrg1Src2Instruction(cg, cmp_opcode, node, cndRegister, selector, highRegister);
+            } else {
+                generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::cmpli4, node, cndRegister, selector, caseConst);
+            }
+            generateConditionalBranchInstruction(cg, TR::InstOpCode::beq, node,
+                hotChild->getBranchDestination()->getNode()->getLabel(), cndRegister);
+        }
     }
 
     loadConstant(cg, node, (numberOfEntries - 1) << 2, highRegister);

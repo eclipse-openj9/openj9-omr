@@ -231,6 +231,11 @@ enum ExternalRelocationPositionRequest {
 
 namespace OMR {
 
+typedef struct {
+    int32_t index;
+    int32_t frequency;
+} SwitchCaseOrdering;
+
 typedef TR::Register *(*TreeEvaluatorFunctionPointer)(TR::Node *node, TR::CodeGenerator *cg);
 
 class TreeEvaluatorFunctionPointerTable {
@@ -503,6 +508,11 @@ public:
     int32_t whichNodeToEvaluate(TR::Node *first,
         TR::Node *second); // Decide which of two nodes should be evaluated first.
     int32_t whichChildToEvaluate(TR::Node *node); // Decide which child of the given node should be evaluated first.
+
+    // Return a SwitchCaseOrdering array in descending target frequency order
+    // Child 0 & 1(i.e. default) don't participate in the sorting, but child1
+    // does carry back its normalized frequency
+    SwitchCaseOrdering *sortSwitchCases(TR::Node *node);
 
     // Convert a multiply tree node to a shift if possible.
     // Note that for a negative constant the negation of the shifted value is

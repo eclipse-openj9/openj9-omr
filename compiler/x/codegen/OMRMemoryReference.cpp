@@ -1176,15 +1176,6 @@ uint8_t *OMR::X86::MemoryReference::generateBinaryEncoding(uint8_t *modRM, TR::I
             base = toRealRegister(getBaseRegister());
             baseRegisterNumber = base->getRegisterNumber();
 
-            if (baseRegisterNumber == TR::RealRegister::vfp) {
-                TR_ASSERT(cg->machine()->getRealRegister(baseRegisterNumber)->getAssignedRealRegister(),
-                    "virtual frame pointer must be assigned before binary encoding!\n");
-
-                base = toRealRegister(cg->machine()->getRealRegister(baseRegisterNumber)->getAssignedRealRegister());
-                baseRegisterNumber = base->getRegisterNumber();
-                setBaseRegister(base);
-            }
-
             if (base->needsDisp()) {
                 ModRM(modRM)->setBaseDisp8();
                 base->setRMRegisterFieldInModRM(modRM);
@@ -1228,16 +1219,6 @@ uint8_t *OMR::X86::MemoryReference::generateBinaryEncoding(uint8_t *modRM, TR::I
         case MR_base + MR_index: {
             base = toRealRegister(getBaseRegister());
             baseRegisterNumber = base->getRegisterNumber();
-
-            if (baseRegisterNumber == TR::RealRegister::vfp) {
-                TR_ASSERT(cg->machine()->getRealRegister(baseRegisterNumber)->getAssignedRealRegister(),
-                    "virtual frame pointer must be assigned before binary encoding!\n");
-
-                base = toRealRegister(cg->machine()->getRealRegister(baseRegisterNumber)->getAssignedRealRegister());
-                baseRegisterNumber = base->getRegisterNumber();
-                setBaseRegister(base);
-            }
-
             index = toRealRegister(getIndexRegister());
             *++cursor = 0x00;
             base->setBaseRegisterFieldInSIB(cursor);
@@ -1325,15 +1306,6 @@ uint8_t *OMR::X86::MemoryReference::generateBinaryEncoding(uint8_t *modRM, TR::I
             base = toRealRegister(getBaseRegister());
             baseRegisterNumber = base->getRegisterNumber();
 
-            if (baseRegisterNumber == TR::RealRegister::vfp) {
-                TR_ASSERT_FATAL(cg->machine()->getRealRegister(baseRegisterNumber)->getAssignedRealRegister(),
-                    "virtual frame pointer must be assigned before binary encoding!\n");
-
-                base = toRealRegister(cg->machine()->getRealRegister(baseRegisterNumber)->getAssignedRealRegister());
-                baseRegisterNumber = base->getRegisterNumber();
-                setBaseRegister(base);
-            }
-
             if (base->needsSIB() || isForceSIBByte()) {
                 *++cursor = 0x00;
                 ModRM(modRM)->setBase()->setHasSIB();
@@ -1378,16 +1350,6 @@ uint8_t *OMR::X86::MemoryReference::generateBinaryEncoding(uint8_t *modRM, TR::I
         case MR_base + MR_index + MR_disp: {
             base = toRealRegister(getBaseRegister());
             baseRegisterNumber = base->getRegisterNumber();
-
-            if (baseRegisterNumber == TR::RealRegister::vfp) {
-                TR_ASSERT(cg->machine()->getRealRegister(baseRegisterNumber)->getAssignedRealRegister(),
-                    "virtual frame pointer must be assigned before binary encoding!\n");
-
-                base = toRealRegister(cg->machine()->getRealRegister(baseRegisterNumber)->getAssignedRealRegister());
-                baseRegisterNumber = base->getRegisterNumber();
-                setBaseRegister(base);
-            }
-
             index = toRealRegister(getIndexRegister());
             *++cursor = 0x00;
             base->setBaseRegisterFieldInSIB(cursor);

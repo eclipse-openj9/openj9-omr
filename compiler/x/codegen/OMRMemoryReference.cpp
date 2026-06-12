@@ -773,6 +773,16 @@ void OMR::X86::MemoryReference::assignRegisters(TR::Instruction *currentInstruct
     }
 }
 
+namespace OMR { namespace X86 {
+
+enum {
+    MR_base = 1,
+    MR_index = 2,
+    MR_disp = 4,
+};
+
+}} // namespace OMR::X86
+
 uint32_t OMR::X86::MemoryReference::estimateBinaryLength(TR::Instruction *containingInstruction, TR::CodeGenerator *cg)
 {
     if (getBaseRegister() && toRealRegister(getBaseRegister())->getRegisterNumber() == TR::RealRegister::vfp) {
@@ -784,10 +794,9 @@ uint32_t OMR::X86::MemoryReference::estimateBinaryLength(TR::Instruction *contai
 
     TR::RealRegister *base = toRealRegister(getBaseRegister());
 
-    uint32_t addressTypes = (getBaseRegister() != NULL ? 1 : 0) | (getIndexRegister() != NULL ? 2 : 0)
-        | ((getSymbolReference().getSymbol() != NULL || getSymbolReference().getOffset() != 0
-               || isForceWideDisplacement())
-                ? 4
+    uint32_t addressTypes = (getBaseRegister() ? MR_base : 0) | (getIndexRegister() ? MR_index : 0)
+        | ((getSymbolReference().getSymbol() || getSymbolReference().getOffset() != 0 || isForceWideDisplacement())
+                ? MR_disp
                 : 0);
     uint32_t length = 0;
 
@@ -809,7 +818,7 @@ uint32_t OMR::X86::MemoryReference::estimateBinaryLength(TR::Instruction *contai
     }
 
     switch (addressTypes) {
-        case 1:
+        case MR_base:
             if (base->needsDisp()) {
                 length = 1;
             } else if (base->needsSIB()) {
@@ -817,12 +826,12 @@ uint32_t OMR::X86::MemoryReference::estimateBinaryLength(TR::Instruction *contai
             }
             break;
 
-        case 6:
-        case 2:
+        case MR_index + MR_disp:
+        case MR_index:
             length = 5;
             break;
 
-        case 3:
+        case MR_base + MR_index:
             length = 1;
             if (base->needsDisp()) {
                 // Need a sib byte with 8bit displacement field of zero to get ebp as a base register
@@ -831,11 +840,11 @@ uint32_t OMR::X86::MemoryReference::estimateBinaryLength(TR::Instruction *contai
             }
             break;
 
-        case 4:
+        case MR_disp:
             length = 4;
             break;
 
-        case 5:
+        case MR_base + MR_disp:
             displacement = getDisplacement();
             if (!isForceWideDisplacement() && canShortenEVEXDisplacement && (displacement % displacementDivisor) == 0
                 && IS_8BIT_SIGNED(displacement / displacementDivisor)) {
@@ -863,7 +872,7 @@ uint32_t OMR::X86::MemoryReference::estimateBinaryLength(TR::Instruction *contai
             }
             break;
 
-        case 7:
+        case MR_base + MR_index + MR_disp:
             displacement = getDisplacement();
             if (!isForceWideDisplacement() && canShortenEVEXDisplacement && (displacement % displacementDivisor) == 0
                 && IS_8BIT_SIGNED(displacement / displacementDivisor)) {
@@ -889,10 +898,9 @@ uint32_t OMR::X86::MemoryReference::estimateBinaryLength(TR::Instruction *contai
 uint32_t OMR::X86::MemoryReference::getBinaryLengthLowerBound(TR::CodeGenerator *cg)
 {
     intptr_t displacement;
-    uint32_t addressTypes = (getBaseRegister() != NULL ? 1 : 0) | (getIndexRegister() != NULL ? 2 : 0)
-        | ((getSymbolReference().getSymbol() != NULL || getSymbolReference().getOffset() != 0
-               || isForceWideDisplacement())
-                ? 4
+    uint32_t addressTypes = (getBaseRegister() ? MR_base : 0) | (getIndexRegister() ? MR_index : 0)
+        | ((getSymbolReference().getSymbol() || getSymbolReference().getOffset() != 0 || isForceWideDisplacement())
+                ? MR_disp
                 : 0);
 
     uint32_t length = 0;
@@ -911,30 +919,30 @@ uint32_t OMR::X86::MemoryReference::getBinaryLengthLowerBound(TR::CodeGenerator 
 
     TR::RealRegister *base = cg->machine()->getRealRegister(registerNumber);
     switch (addressTypes) {
-        case 1:
+        case MR_base:
             if (base->needsDisp() || base->needsSIB())
                 length = 1;
             else
                 length = 0;
             break;
 
-        case 6:
-        case 2:
+        case MR_index + MR_disp:
+        case MR_index:
             length = 5;
             break;
 
-        case 3:
+        case MR_base + MR_index:
             length = 1;
             if (base->needsDisp()) {
                 length = 2;
             }
             break;
 
-        case 4:
+        case MR_disp:
             length = 4;
             break;
 
-        case 5:
+        case MR_base + MR_disp:
             displacement = getDisplacement();
 
             if (displacement == 0 && !base->needsDisp() && !base->needsSIB() && !isForceWideDisplacement()) {
@@ -954,7 +962,7 @@ uint32_t OMR::X86::MemoryReference::getBinaryLengthLowerBound(TR::CodeGenerator 
             }
             break;
 
-        case 7:
+        case MR_base + MR_index + MR_disp:
             displacement = getDisplacement();
             if (!isForceWideDisplacement())
                 length = 2;
@@ -1001,8 +1009,8 @@ void OMR::X86::MemoryReference::addMetaDataForCodeAddress(uint32_t addressTypes,
     TR::CodeGenerator *cg)
 {
     switch (addressTypes) {
-        case 6:
-        case 2: {
+        case MR_index + MR_disp:
+        case MR_index: {
             if (needsCodeAbsoluteExternalRelocation()) {
                 cg->addExternalRelocation(TR::ExternalRelocation::create(cursor, 0, TR_AbsoluteMethodAddress, cg),
                     __FILE__, __LINE__, node);
@@ -1015,7 +1023,7 @@ void OMR::X86::MemoryReference::addMetaDataForCodeAddress(uint32_t addressTypes,
             break;
         }
 
-        case 4: {
+        case MR_disp: {
             TR::Symbol *symbol = getSymbolReference().getSymbol();
             if (symbol) {
                 TR::StaticSymbol *staticSym = symbol->getStaticSymbol();
@@ -1139,10 +1147,9 @@ uint8_t *OMR::X86::MemoryReference::generateBinaryEncoding(uint8_t *modRM, TR::I
 {
     TR::Compilation *comp = cg->comp();
 
-    uint32_t addressTypes = (getBaseRegister() != NULL ? 1 : 0) | (getIndexRegister() != NULL ? 2 : 0)
-        | ((getSymbolReference().getSymbol() != NULL || getSymbolReference().getOffset() != 0
-               || isForceWideDisplacement())
-                ? 4
+    uint32_t addressTypes = (getBaseRegister() ? MR_base : 0) | (getIndexRegister() ? MR_index : 0)
+        | ((getSymbolReference().getSymbol() || getSymbolReference().getOffset() != 0 || isForceWideDisplacement())
+                ? MR_disp
                 : 0);
 
     intptr_t displacement;
@@ -1165,7 +1172,7 @@ uint8_t *OMR::X86::MemoryReference::generateBinaryEncoding(uint8_t *modRM, TR::I
     }
 
     switch (addressTypes) {
-        case 1: {
+        case MR_base: {
             base = toRealRegister(getBaseRegister());
             baseRegisterNumber = base->getRegisterNumber();
 
@@ -1196,8 +1203,8 @@ uint8_t *OMR::X86::MemoryReference::generateBinaryEncoding(uint8_t *modRM, TR::I
             break;
         }
 
-        case 6:
-        case 2: {
+        case MR_index + MR_disp:
+        case MR_index: {
             index = toRealRegister(getIndexRegister());
             ModRM(modRM)->setBase()->setHasSIB();
             *++cursor = 0x00;
@@ -1218,7 +1225,7 @@ uint8_t *OMR::X86::MemoryReference::generateBinaryEncoding(uint8_t *modRM, TR::I
             break;
         }
 
-        case 3: {
+        case MR_base + MR_index: {
             base = toRealRegister(getBaseRegister());
             baseRegisterNumber = base->getRegisterNumber();
 
@@ -1248,7 +1255,7 @@ uint8_t *OMR::X86::MemoryReference::generateBinaryEncoding(uint8_t *modRM, TR::I
             break;
         }
 
-        case 4: {
+        case MR_disp: {
             ModRM(modRM)->setIndexOnlyDisp32();
             cursor++;
             symbol = getSymbolReference().getSymbol();
@@ -1314,7 +1321,7 @@ uint8_t *OMR::X86::MemoryReference::generateBinaryEncoding(uint8_t *modRM, TR::I
             break;
         }
 
-        case 5: {
+        case MR_base + MR_disp: {
             base = toRealRegister(getBaseRegister());
             baseRegisterNumber = base->getRegisterNumber();
 
@@ -1368,7 +1375,7 @@ uint8_t *OMR::X86::MemoryReference::generateBinaryEncoding(uint8_t *modRM, TR::I
             break;
         }
 
-        case 7: {
+        case MR_base + MR_index + MR_disp: {
             base = toRealRegister(getBaseRegister());
             baseRegisterNumber = base->getRegisterNumber();
 

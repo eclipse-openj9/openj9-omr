@@ -1177,7 +1177,7 @@ TR::Register *OMR::Z::TreeEvaluator::mTrueCountEvaluator(TR::Node *node, TR::Cod
 
     TR::Register *sourceReg = cg->evaluate(sourceNode);
     TR::Register *scratchReg = cg->allocateRegister(TR_VRF);
-    int32_t sizeMask = getVectorElementSizeMask(sourceNode);
+    uint8_t sizeMask = getVectorElementSizeMask(sourceNode);
     // Convert true lanes from -1 to +1 using VLC (Vector Load Complement).
     // VSUM does not sign-extend results, so we cannot directly sum -1 values.
     generateVRRaInstruction(cg, TR::InstOpCode::VLC, node, scratchReg, sourceReg, 0, 0, sizeMask);
@@ -1715,8 +1715,7 @@ TR::Register *OMR::Z::TreeEvaluator::vfmaEvaluator(TR::Node *node, TR::CodeGener
     TR::Register *va = cg->evaluate(node->getFirstChild());
     TR::Register *vb = cg->evaluate(node->getSecondChild());
     TR::Register *vc = cg->evaluate(node->getThirdChild());
-    generateVRReInstruction(cg, TR::InstOpCode::VFMA, node, resultReg, va, vb, vc,
-        static_cast<uint8_t>(getVectorElementSizeMask(node)), 0);
+    generateVRReInstruction(cg, TR::InstOpCode::VFMA, node, resultReg, va, vb, vc, getVectorElementSizeMask(node), 0);
     if (isMasked) {
         TR::Node *maskChild = node->getChild(3);
         // The result should reflect the outcome of the operation only if the mask for that lane is true;
@@ -2008,7 +2007,7 @@ TR::Register *OMR::Z::TreeEvaluator::vcompressEvaluator(TR::Node *node, TR::Code
      */
     TR_ASSERT_FATAL_WITH_NODE(node, node->getDataType().getVectorLength() == TR::VectorLength128,
         "Only 128-bit vectors are supported %s", node->getDataType().toString());
-    const uint8_t elementSizeMask = static_cast<uint8_t>(getVectorElementSizeMask(node));
+    const uint8_t elementSizeMask = getVectorElementSizeMask(node);
     const int32_t elementSize = getVectorElementSize(node);
     TR::Register *resultReg = cg->allocateRegister(TR_VRF);
     TR::Register *loopCountReg = cg->allocateRegister();
@@ -2074,7 +2073,7 @@ TR::Register *OMR::Z::TreeEvaluator::vexpandEvaluator(TR::Node *node, TR::CodeGe
      */
     TR_ASSERT_FATAL_WITH_NODE(node, node->getDataType().getVectorLength() == TR::VectorLength128,
         "Only 128-bit vectors are supported %s", node->getDataType().toString());
-    const uint8_t elementSizeMask = static_cast<uint8_t>(getVectorElementSizeMask(node));
+    const uint8_t elementSizeMask = getVectorElementSizeMask(node);
     const int32_t elementSize = getVectorElementSize(node);
     TR::Register *resultReg = cg->allocateRegister(TR_VRF);
     TR::Register *loopCountReg = cg->allocateRegister();
@@ -15683,7 +15682,7 @@ int32_t getVectorElementSize(TR::Node *node)
     }
 }
 
-int32_t getVectorElementSizeMask(TR::Node *node)
+uint8_t getVectorElementSizeMask(TR::Node *node)
 {
     TR_ASSERT_FATAL_WITH_NODE(node, node->getDataType().getVectorLength() == TR::VectorLength128,
         "Only 128-bit vectors are supported %s", node->getDataType().toString());
@@ -15706,7 +15705,7 @@ int32_t getVectorElementSizeMask(TR::Node *node)
     }
 }
 
-int32_t getVectorElementSizeMask(int8_t size)
+uint8_t getVectorElementSizeMask(int8_t size)
 {
     switch (size) {
         case 8:
@@ -16232,7 +16231,7 @@ TR::Register *OMR::Z::TreeEvaluator::vcmpgeEvaluator(TR::Node *node, TR::CodeGen
         TR::Register *targetReg = cg->allocateRegister(TR_VRF);
         TR::Register *equalReg = cg->allocateRegister(TR_VRF);
 
-        int32_t mask4 = getVectorElementSizeMask(node);
+        uint8_t mask4 = getVectorElementSizeMask(node);
         // vector int types need compare equal part
         generateVRRbInstruction(cg, TR::InstOpCode::VCEQ, node, equalReg, firstReg, secondReg, 0, mask4);
         TR::InstOpCode::Mnemonic op
@@ -16915,7 +16914,7 @@ TR::Register *OMR::Z::TreeEvaluator::vsetelemEvaluator(TR::Node *node, TR::CodeG
 
         // On 31-bit an 8-byte sized child may come in a register pair so we have to handle this case specially
         if (usePairReg) {
-            if (getVectorElementSizeMask(size) == 3) {
+            if (size == 8) {
                 generateVRSbInstruction(cg, TR::InstOpCode::VLVG, node, vectorReg, valueReg->getHighOrder(), memRef, 2);
                 generateVRSbInstruction(cg, TR::InstOpCode::VLVG, node, vectorReg, valueReg->getLowOrder(),
                     generateS390MemoryReference(*memRef, 1, cg), 2);

@@ -3670,7 +3670,7 @@ static void lookupScheme4(TR::Node *node, TR::CodeGenerator *cg)
 
     // Deciding if we can perform better by peeling off the hottest two cases
     // For the time being, hot criteria: more than 50% of the containing block frequency
-    if ((2 * ordering[2].frequency) > node->getBlock()->getFrequency()) {
+    if ((2 * ordering[2].frequency) > cg->getCurrentEvaluationBlock()->getFrequency()) {
         int32_t hotIdx = ordering[2].index;
         TR::Node *hotChild = node->getChild(hotIdx);
         int32_t caseConst = hotChild->getCaseConstant();
@@ -3684,7 +3684,7 @@ static void lookupScheme4(TR::Node *node, TR::CodeGenerator *cg)
         generateConditionalBranchInstruction(cg, TR::InstOpCode::beq, node,
             hotChild->getBranchDestination()->getNode()->getLabel(), cndRegister);
 
-        if ((2 * ordering[3].frequency) > node->getBlock()->getFrequency()) {
+        if ((2 * ordering[3].frequency) > cg->getCurrentEvaluationBlock()->getFrequency()) {
             hotIdx = ordering[3].index;
             hotChild = node->getChild(hotIdx);
             caseConst = hotChild->getCaseConstant();

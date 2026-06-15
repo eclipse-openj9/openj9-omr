@@ -58,6 +58,7 @@ public:
 		restore_allocation,
 		restore_allocation_and_set_survivor,
 		backout,
+		restore_allocate_after_backout,
 		restore_tilt_after_percolate
 	};	 
 private:
@@ -153,6 +154,8 @@ public:
 	virtual	void mergeHeapStats(MM_HeapStats *heapStats);
 	virtual	void mergeHeapStats(MM_HeapStats *heapStats, uintptr_t includeMemoryType);
 	virtual void systemGarbageCollect(MM_EnvironmentBase *env, uint32_t gcCode);
+
+	virtual void reset(MM_EnvironmentBase *env);
 
 	/* Type specific methods */
 	void flip(MM_EnvironmentBase *env, Flip_step action);

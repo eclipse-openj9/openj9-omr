@@ -512,7 +512,7 @@ MM_MemorySubSpaceGeneric::completeFreelistRebuildRequired(MM_EnvironmentBase* en
  */
 
 void
-MM_MemorySubSpaceGeneric::reset()
+MM_MemorySubSpaceGeneric::reset(MM_EnvironmentBase* env)
 {
 	/* TODO: Call the superclass reset() here as well (for children)? */
 	_memoryPool->reset();

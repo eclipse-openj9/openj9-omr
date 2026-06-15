@@ -376,6 +376,42 @@ TR::Register *OMR::X86::TreeEvaluator::lookupEvaluator(TR::Node *node, TR::CodeG
         }
     }
 
+    // Deciding if we should peel off a couple hotly biased cases before launching into the binarySearch
+    // We don't need to remove the peel-off cases from later binary search. On the grand scheme of things,
+    // don't expect removing them has functional or performance benefit for log2 search algorithm.
+    // For the time being, we use the criteria below:
+    //     If a case has more than 50% of the lookup containing block's frequency, it is deemed hot.
+
+    OMR::SwitchCaseOrdering *ordering = cg->sortSwitchCases(node);
+    if ((2 * ordering[OMR::SwitchCaseOrdering::HOTTEST_IDX].frequency)
+        > cg->getCurrentEvaluationBlock()->getFrequency()) {
+        int32_t hotIdx = ordering[OMR::SwitchCaseOrdering::HOTTEST_IDX].index;
+        TR::Node *hotChild = node->getChild(hotIdx);
+        int32_t caseConst = hotChild->getCaseConstant();
+
+        if (caseConst >= -128 && caseConst <= 127) {
+            Inst_RegImm(OP::CMP4RegImms, node, selectorReg, caseConst, cg);
+        } else {
+            Inst_RegImm(OP::CMP4RegImm4, node, selectorReg, caseConst, cg);
+        }
+        Inst_Jump(OP::JE4, hotChild, cg, true);
+
+        if (node->getNumChildren() >= 4
+            && (2 * ordering[OMR::SwitchCaseOrdering::SECHOT_IDX].frequency)
+                > cg->getCurrentEvaluationBlock()->getFrequency()) {
+            hotIdx = ordering[OMR::SwitchCaseOrdering::SECHOT_IDX].index;
+            hotChild = node->getChild(hotIdx);
+            caseConst = hotChild->getCaseConstant();
+
+            if (caseConst >= -128 && caseConst <= 127) {
+                Inst_RegImm(OP::CMP4RegImms, node, selectorReg, caseConst, cg);
+            } else {
+                Inst_RegImm(OP::CMP4RegImm4, node, selectorReg, caseConst, cg);
+            }
+            Inst_Jump(OP::JE4, hotChild, cg, true);
+        }
+    }
+
     binarySearchCaseSpace(selectorReg, node, 2, node->getNumChildren() - 1, evaluateDefaultGlRegDeps, cg);
     cg->decReferenceCount(node->getFirstChild());
 

@@ -89,8 +89,9 @@ void TR_PersistentMemory::printMemStats()
 {
     fprintf(stderr, "TR_PersistentMemory Stats:\n");
     for (uint32_t i = 0; i < TR_MemoryBase::NumObjectTypes; i++) {
-        fprintf(stderr, "\t_totalPersistentAllocations[%s]=%lu\n", objectName[i],
-            (unsigned long)_totalPersistentAllocations[i]);
+        if (_totalPersistentAllocations[i] != 0)
+            fprintf(stderr, "\t_totalPersistentAllocations[%s]=%lu\n", objectName[i],
+                (unsigned long)_totalPersistentAllocations[i]);
     }
     fprintf(stderr, "\n");
 }
@@ -100,7 +101,8 @@ void TR_PersistentMemory::printMemStatsToVlog()
     TR_VerboseLog::CriticalSection vlogLock;
     TR_VerboseLog::writeLine(TR_Vlog_MEMORY, "TR_PersistentMemory Stats:");
     for (uint32_t i = 0; i < TR_MemoryBase::NumObjectTypes; i++) {
-        TR_VerboseLog::writeLine(TR_Vlog_MEMORY, "\t_totalPersistentAllocations[%s]=%lu", objectName[i],
-            (unsigned long)_totalPersistentAllocations[i]);
+        if (_totalPersistentAllocations[i] != 0)
+            TR_VerboseLog::writeLine(TR_Vlog_MEMORY, "\t_totalPersistentAllocations[%s]=%lu", objectName[i],
+                (unsigned long)_totalPersistentAllocations[i]);
     }
 }

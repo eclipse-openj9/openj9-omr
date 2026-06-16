@@ -605,11 +605,19 @@ MM_ParallelGlobalGC::shouldCompactThisCycle(MM_EnvironmentBase *env, MM_Allocate
 	MM_AllocationStats *allocStats = &_extensions->allocationStats;
 	CompactReason compactReason = COMPACT_NONE;
 	CompactPreventedReason compactPreventedReason = COMPACT_PREVENTED_NONE;
-	uintptr_t tlhPercent, totalBytesAllocated;
+	uintptr_t tlhPercent = 0;
+	uintptr_t totalBytesAllocated = 0;
+
+	uintptr_t bytesRequested = 0;
+	if (NULL != allocDescription) {
+		bytesRequested = allocDescription->getBytesRequested();
+	}
+
+	Trc_ParallelGlobalGC_shouldCompactThisCycle_entry(env->getLanguageVMThread(), bytesRequested);
 
 	/* Assume no compaction is required until we prove otherwise*/
 	/* If user has specified -XnoCompact then were done */
-	if(_extensions->noCompactOnGlobalGC) {
+	if (_extensions->noCompactOnGlobalGC) {
 		compactReason = COMPACT_NONE;
 		goto nocompact;
 	}	
@@ -617,7 +625,7 @@ MM_ParallelGlobalGC::shouldCompactThisCycle(MM_EnvironmentBase *env, MM_Allocate
 	if ((J9MMCONSTANT_EXPLICIT_GC_PREPARE_FOR_CHECKPOINT == gcCode.getCode())
 #if defined(OMR_GC_IDLE_HEAP_MANAGER)
 	|| ((_extensions->compactOnIdle) && (J9MMCONSTANT_EXPLICIT_GC_IDLE_GC == gcCode.getCode()))
-#endif
+#endif /* OMR_GC_IDLE_HEAP_MANAGER */
 	) {
 		compactReason = COMPACT_FORCED_GC;
 		goto compactionReqd;
@@ -632,7 +640,7 @@ MM_ParallelGlobalGC::shouldCompactThisCycle(MM_EnvironmentBase *env, MM_Allocate
 	}	
 	
 	/* If user has specified -XCompact then we compact every time */
-	if(_extensions->compactOnGlobalGC) {
+	if (_extensions->compactOnGlobalGC) {
 		compactReason = COMPACT_ALWAYS;
 		goto compactionReqd;
 	}
@@ -644,12 +652,12 @@ MM_ParallelGlobalGC::shouldCompactThisCycle(MM_EnvironmentBase *env, MM_Allocate
 	}	
 
 	/* Is this a system GC ? */ 
-	if(gcCode.isExplicitGC()) { 
+	if (gcCode.isExplicitGC()) {
 		/* If the user as specified -XcompactexplicitGC then compact*/
-		if(_extensions->compactOnSystemGC){
+		if (_extensions->compactOnSystemGC) {
 			compactReason = COMPACT_FORCED_GC;
 			goto compactionReqd;
-		} else if(_extensions->nocompactOnSystemGC){
+		} else if (_extensions->nocompactOnSystemGC) {
 			compactReason = COMPACT_NONE;
 			/* The user as specified -XnocompactexplicitGC then we don't compact*/
 			goto nocompact;
@@ -657,13 +665,12 @@ MM_ParallelGlobalGC::shouldCompactThisCycle(MM_EnvironmentBase *env, MM_Allocate
 	}
 
 	/* Has GC found enough storage to satisfy the allocation request ? */
-	if(allocDescription){
+	if (NULL != allocDescription) {
 		MM_MemorySpace *memorySpace = env->getMemorySpace();
 		 
 		uintptr_t largestFreeEntry = memorySpace->findLargestFreeEntry(env, allocDescription);
-		uintptr_t bytesRequested = allocDescription->getBytesRequested();
 		
-		if(bytesRequested > largestFreeEntry){
+		if (bytesRequested > largestFreeEntry) {
 			compactReason = COMPACT_LARGE;
 			goto compactionReqd;
 		}
@@ -679,12 +686,12 @@ MM_ParallelGlobalGC::shouldCompactThisCycle(MM_EnvironmentBase *env, MM_Allocate
 	if (_extensions->scavengerEnabled) {
 		/* Get size of largest object we failed to tenure on last scavenege */
 		uintptr_t failedTenureLargest = _extensions->scavengerStats._failedTenureLargest;
-		if (failedTenureLargest > 0) { 
+		if (0 < failedTenureLargest) {
 			MM_MemorySpace *memorySpace = env->getMemorySpace();
 			MM_AllocateDescription tenureAllocDescription(failedTenureLargest, OMR_GC_ALLOCATE_OBJECT_TENURED, false, true);
 			uintptr_t largestTenureFreeEntry = memorySpace->findLargestFreeEntry(env, &tenureAllocDescription);
 			
-			if(failedTenureLargest > largestTenureFreeEntry){
+			if (failedTenureLargest > largestTenureFreeEntry) {
 				compactReason = COMPACT_LARGE;
 				goto compactionReqd;
 			}
@@ -695,8 +702,8 @@ MM_ParallelGlobalGC::shouldCompactThisCycle(MM_EnvironmentBase *env, MM_Allocate
 	/* If this is an aggressive collect and the last collect did not compact then 
 	 * make sure we do this time.
 	 */
-	if (gcCode.isAggressiveGC() && 
-		(_extensions->globalGCStats.compactStats._lastHeapCompaction + 1 <  _extensions->globalGCStats.gcCount)) {
+	if (gcCode.isAggressiveGC()
+		&& ((_extensions->globalGCStats.compactStats._lastHeapCompaction + 1) <  _extensions->globalGCStats.gcCount)) {
 		compactReason = COMPACT_AGGRESSIVE;
 		goto compactionReqd;
 	}
@@ -707,29 +714,29 @@ MM_ParallelGlobalGC::shouldCompactThisCycle(MM_EnvironmentBase *env, MM_Allocate
 	 * allocated since the last global collection
 	 */
 
-	if (allocStats->_tlhRefreshCountFresh > 0) {
-		Assert_MM_true(allocStats->_tlhAllocatedFresh > 0);
+	if (0 < allocStats->_tlhRefreshCountFresh) {
+		Assert_MM_true(0 < allocStats->_tlhAllocatedFresh);
 	}
 
 	/* Calculate total bytes allocated in tenure area since last global collection */
 	totalBytesAllocated = allocStats->_allocationBytes + allocStats->_tlhAllocatedFresh;
 
 	/* ..and what percentage of allocations were tlh's */
-	tlhPercent = allocStats->_tlhRefreshCountFresh > 0 ? (uintptr_t) (((uint64_t) allocStats->_tlhAllocatedFresh * 100) / (uint64_t) totalBytesAllocated) : 0;
+	tlhPercent = 0 < allocStats->_tlhRefreshCountFresh ? (uintptr_t) (((uint64_t) allocStats->_tlhAllocatedFresh * 100) / (uint64_t) totalBytesAllocated) : 0;
 	
 	/* Check at least 50% of free space at end of last GC has been consumed by tlh allocations */
-	if( tlhPercent > 50 ) {
+	if (50 < tlhPercent) {
 		/* Calculate average size of tlh allocated since tenure area last collected */
-		uintptr_t avgTlh= allocStats->_tlhAllocatedFresh / allocStats->_tlhRefreshCountFresh;
+		uintptr_t avgTlh = allocStats->_tlhAllocatedFresh / allocStats->_tlhRefreshCountFresh;
 		
 		/* Compaction trigger is a multiple of the minimum tlh size */
-		uintptr_t compaction_trigger_avgtlh= _extensions->tlhMinimumSize * MINIMUM_TLHSIZE_MULTIPLIER;
-		if(avgTlh < compaction_trigger_avgtlh) {
+		uintptr_t compaction_trigger_avgtlh = _extensions->tlhMinimumSize * MINIMUM_TLHSIZE_MULTIPLIER;
+		if (avgTlh < compaction_trigger_avgtlh) {
 			compactReason = COMPACT_FRAGMENTED;
 			goto compactionReqd;
 		}
 	}
-#endif
+#endif /* OMR_GC_THREAD_LOCAL_HEAP */
 
 	/* We know if we get here we know:
 	 * 	o we can meet the allocation request out of available free memory, and 
@@ -740,18 +747,18 @@ MM_ParallelGlobalGC::shouldCompactThisCycle(MM_EnvironmentBase *env, MM_Allocate
 	 * on free memory there is little more we can do to avoid OOM at this point other than 
 	 * compact to get as much free memory as possible.
 	 */
-	if ( activeSubspaceMaxExpansionInSpace == 0) { 
+	if (activeSubspaceMaxExpansionInSpace == 0) {
 		uintptr_t oldFree = heap->getApproximateActiveFreeMemorySize(MEMORY_TYPE_OLD);
 		uintptr_t oldSize = heap->getActiveMemorySize(MEMORY_TYPE_OLD);
-		uintptr_t desperateFree = (oldSize  / OLDFREE_DESPERATE_RATIO_DIVISOR) * OLDFREE_DESPERATE_RATIO_MULTIPLIER;
+		uintptr_t desperateFree = (oldSize / OLDFREE_DESPERATE_RATIO_DIVISOR) * OLDFREE_DESPERATE_RATIO_MULTIPLIER;
 			
 		/* Is heap space getting tight? */
-		if(oldFree < desperateFree) { 
+		if (oldFree < desperateFree) {
 			compactReason = COMPACT_AVOID_DESPERATE;
 			goto compactionReqd;
 		}
 		
-		if(oldFree < OLDFREE_INSUFFICIENT ) { 
+		if (OLDFREE_INSUFFICIENT > oldFree) {
 			compactReason = COMPACT_MEMORY_INSUFFICIENT;
 			goto compactionReqd;
 		}
@@ -761,7 +768,7 @@ MM_ParallelGlobalGC::shouldCompactThisCycle(MM_EnvironmentBase *env, MM_Allocate
 		/* Tenure space dark matter trigger */
 		MM_MemorySubSpace *memorySubSpace = heap->getDefaultMemorySpace()->getTenureMemorySubSpace();
 		uintptr_t totalSize = memorySubSpace->getActiveMemorySize();
-		MM_MemoryPool *memoryPool= memorySubSpace->getMemoryPool();
+		MM_MemoryPool *memoryPool = memorySubSpace->getMemoryPool();
 		uintptr_t darkMatterBytes = 0;
 		if (!_extensions->concurrentSweep) {
 			darkMatterBytes = memoryPool->getDarkMatterBytes();
@@ -805,6 +812,9 @@ nocompact:
 	/* Compaction not required or prevented from running */
 	_extensions->globalGCStats.compactStats._compactReason = compactReason;
 	_extensions->globalGCStats.compactStats._compactPreventedReason = compactPreventedReason;
+
+	Trc_ParallelGlobalGC_shouldCompactThisCycle_exit(env->getLanguageVMThread(), "nocompact", compactReason, compactPreventedReason);
+
 	return false;
 	
 compactionReqd:
@@ -815,6 +825,8 @@ compactionReqd:
 
 	_extensions->globalGCStats.compactStats._compactReason = compactReason;
 	_extensions->globalGCStats.compactStats._compactPreventedReason = compactPreventedReason;
+
+	Trc_ParallelGlobalGC_shouldCompactThisCycle_exit(env->getLanguageVMThread(), "compactionReqd", compactReason, compactPreventedReason);
 
 	return true;
 }

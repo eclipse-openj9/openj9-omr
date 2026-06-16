@@ -261,36 +261,49 @@ bool OMR::X86::AMD64::MemoryReference::needsAddressLoadInstruction(intptr_t next
     TR::CodeGenerator *cg)
 {
     TR::SymbolReference &sr = getSymbolReference();
+    TR::Symbol *sym = sr.getSymbol();
     intptr_t displacement = getDisplacement();
 
     if (_forceRIPRelative) {
         return false;
-    } else if (sr.getSymbol() != NULL && sr.isUnresolved()) {
-        return sr.getSymbol()->isShadow() ? false : true;
-    } else if (_baseRegister || _indexRegister)
+    } else if (sym && sr.isUnresolved()) {
+        return sym->isShadow() ? false : true;
+    } else if (_baseRegister || _indexRegister) {
         return !IS_32BIT_SIGNED(displacement);
-    else if (cg->needClassAndMethodPointerRelocations())
+    }
+
+    // At this point, the memory reference is known not to have a base or index register.
+    // The remaining logic determines how to interpret the displacement.
+    //
+    if (cg->needClassAndMethodPointerRelocations()) {
         return true;
-    else if (sr.getSymbol() && sr.getSymbol()->isRecompilationCounter() && cg->needRelocationsForBodyInfoData())
-        return true;
-    else if (sr.getSymbol() && sr.getSymbol()->isCountForRecompile() && cg->needRelocationsForPersistentInfoData())
-        return true;
-    else if (sr.getSymbol() && (sr.getSymbol()->isBlockFrequency() || sr.getSymbol()->isRecompQueuedFlag())
-        && cg->needRelocationsForPersistentProfileInfoData())
-        return true;
-    else if (sr.getSymbol() && sr.getSymbol()->isCatchBlockCounter() && cg->needRelocationsForBodyInfoData())
-        return true;
-    else if (cg->comp()->getOption(TR_EnableHCR) && sr.getSymbol() && sr.getSymbol()->isClassObject())
-        return true; // If a class gets replaced, it may no longer fit in an immediate
-    else if (IS_32BIT_SIGNED(displacement))
+    }
+
+    if (sym) {
+        if (sym->isRecompilationCounter() && cg->needRelocationsForBodyInfoData()) {
+            return true;
+        } else if (sym->isCountForRecompile() && cg->needRelocationsForPersistentInfoData()) {
+            return true;
+        } else if ((sym->isBlockFrequency() || sym->isRecompQueuedFlag())
+            && cg->needRelocationsForPersistentProfileInfoData()) {
+            return true;
+        } else if (sym->isCatchBlockCounter() && cg->needRelocationsForBodyInfoData()) {
+            return true;
+        } else if (cg->comp()->getOption(TR_EnableHCR) && sym->isClassObject()) {
+            return true; // If a class gets replaced, it may no longer fit in an immediate
+        }
+    }
+
+    if (IS_32BIT_SIGNED(displacement)) {
         return false;
-    else if (cg->comp()->isOutOfProcessCompilation() && sr.getSymbol() && sr.getSymbol()->isStatic()
-        && !sr.getSymbol()->isStaticAddressWithinMethodBounds())
+    } else if (cg->comp()->isOutOfProcessCompilation() && sym && sym->isStatic()
+        && !sym->isStaticAddressWithinMethodBounds()) {
         return true;
-    else if (IS_32BIT_RIP(displacement, nextInstructionAddress))
+    } else if (IS_32BIT_RIP(displacement, nextInstructionAddress)) {
         return false;
-    else
+    } else {
         return true;
+    }
 }
 
 void OMR::X86::AMD64::MemoryReference::assignRegisters(TR::Instruction *currentInstruction, TR::CodeGenerator *cg)
@@ -503,6 +516,12 @@ uint8_t *OMR::X86::AMD64::MemoryReference::generateBinaryEncoding(uint8_t *modRM
             "malformed memory reference for RIP-relative addressing");
     }
 
+    if (getDataSnippet() || getLabel()) {
+        // The inherited logic has a special case for RIP-based ConstantDataSnippet and label references.
+        //
+        return OMR::X86::MemoryReference::generateBinaryEncoding(modRM, containingInstruction, cg);
+    }
+
     // If a RIP relative addressing mode might be used, compute the address of the next
     // instruction based on where the modRM byte is
     //
@@ -513,11 +532,7 @@ uint8_t *OMR::X86::AMD64::MemoryReference::generateBinaryEncoding(uint8_t *modRM
     //
     intptr_t nextInstructionAddress = (intptr_t)(modRM + 5) + containingInstruction->getOpCode().info().ImmediateSize();
 
-    if (getDataSnippet() || getLabel()) {
-        // The inherited logic has a special case for RIP-based ConstantDataSnippet and label references.
-        //
-        return OMR::X86::MemoryReference::generateBinaryEncoding(modRM, containingInstruction, cg);
-    } else if (needsAddressLoadInstruction(nextInstructionAddress, cg)) {
+    if (needsAddressLoadInstruction(nextInstructionAddress, cg)) {
         TR_ASSERT(_addressRegister != NULL,
             "OMR::X86::AMD64::MemoryReference should have allocated an address register");
 
@@ -558,7 +573,7 @@ uint8_t *OMR::X86::AMD64::MemoryReference::generateBinaryEncoding(uint8_t *modRM
         // addressLoadInstruction's node should be that of containingInstruction
         //
         addressLoadInstruction->setNode(_baseNode ? _baseNode : containingInstruction->getNode());
-        if (cg->comp()->target().isSMP() && getUnresolvedDataSnippet()) {
+        if (comp->target().isSMP() && getUnresolvedDataSnippet()) {
             // Also adjust the node of the TR::X86PatchableCodeAlignmentInstruction
             //
             TR_ASSERT((addressLoadInstruction->getPrev()->getKind() == TR::Instruction::IsPatchableCodeAlignment)
@@ -609,7 +624,13 @@ uint8_t *OMR::X86::AMD64::MemoryReference::generateBinaryEncoding(uint8_t *modRM
         // Indicate to caller that it must try again to emit its binary
         //
         return NULL;
-    } else if (_baseRegister == NULL && _indexRegister == NULL) {
+    }
+
+    // If the memory reference is displacement-only without a secondary address
+    // register then it must be either an absolute 32-bit address reference or a
+    // RIP-relative reference.
+    //
+    if (_baseRegister == NULL && _indexRegister == NULL) {
         uint8_t *cursor = modRM + 1;
         if (IS_32BIT_SIGNED(displacement) && !_forceRIPRelative) {
             // Addresses in the low 2GB (or high 2GB) can be accessed absolutely using a SIB byte
@@ -642,11 +663,9 @@ uint8_t *OMR::X86::AMD64::MemoryReference::generateBinaryEncoding(uint8_t *modRM
         }
 
         return cursor + 4;
-    } else {
-        // The inherited binary encoding logic will work as-is
-        //
-        return OMR::X86::MemoryReference::generateBinaryEncoding(modRM, containingInstruction, cg);
     }
 
-    TR_ASSERT(0, "Should never get here");
+    // The inherited binary encoding logic will work as-is
+    //
+    return OMR::X86::MemoryReference::generateBinaryEncoding(modRM, containingInstruction, cg);
 }

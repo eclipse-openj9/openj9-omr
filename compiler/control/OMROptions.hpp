@@ -1827,6 +1827,8 @@ public:
 
     TR::SimpleRegex *getDontInline() { return _dontInline; }
 
+    void setDontInline(TR::SimpleRegex *regex) { _dontInline = regex; }
+
     TR::SimpleRegex *getOnlyInline() { return _onlyInline; }
 
     TR::SimpleRegex *getTryToInline() { return _tryToInline; }

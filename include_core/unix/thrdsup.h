@@ -222,7 +222,8 @@ extern pthread_condattr_t *defaultCondAttr;
 #if defined(_POSIX_PRIORITY_SCHEDULING)
 #define THREAD_YIELD_NEW(sequentialYields) {\
 	omrthread_t thread = MACRO_SELF();\
-	if (thread->library->yieldAlgorithm ==  J9THREAD_LIB_YIELD_ALGORITHM_INCREASING_USLEEP) {\
+	omrthread_library_t threadLibrary = thread->library; \
+	if (threadLibrary->yieldAlgorithm ==  J9THREAD_LIB_YIELD_ALGORITHM_INCREASING_USLEEP) {\
 		if ((sequentialYields >> 5 ) != 0){\
 			usleep(thread->library->yieldUsleepMultiplier*16);\
 		} else if ((sequentialYields >> 4 ) != 0){\
@@ -238,6 +239,12 @@ extern pthread_condattr_t *defaultCondAttr;
 		}\
 	} else if (thread->library->yieldAlgorithm ==  J9THREAD_LIB_YIELD_ALGORITHM_CONSTANT_USLEEP){ \
 		usleep(thread->library->yieldUsleepMultiplier);\
+	} else if (thread->library->yieldAlgorithm ==  J9THREAD_LIB_YIELD_ALGORITHM_CONSTANT_USLEEP_WITH_CUTOFF){ \
+		if (threadLibrary->cpuUtilCache >= threadLibrary->yieldSleepCpuUtilThreshold) { \
+			usleep(thread->library->yieldUsleepMultiplier); \
+		} else { \
+			sched_yield(); \
+		} \
 	} else { \
 		sched_yield();\
 	}\

@@ -1736,6 +1736,9 @@ TR::Instruction *MemInitVarLenTypedMacroOp::generateInstruction()
     TR::MemoryReference *newMR = generateS390MemoryReference(_endReg, (int32_t)0, _cg);
 
     switch (_destType) {
+        case TR::Int8:
+            cursor = generateRXInstruction(_cg, TR::InstOpCode::STC, _dstNode, _initReg, newMR);
+            break;
         case TR::Int16:
             cursor = generateRXInstruction(_cg, TR::InstOpCode::STH, _dstNode, _initReg, newMR);
             break;

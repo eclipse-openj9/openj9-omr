@@ -19,6 +19,8 @@
  * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0 OR GPL-2.0-only WITH Classpath-exception-2.0 OR GPL-2.0-only WITH OpenJDK-assembly-exception-1.0
  *******************************************************************************/
 
+// Assisted-by: IBM Bob
+
 #ifndef OMR_SIMPLIFIERHANDLERS_INCL
 #define OMR_SIMPLIFIERHANDLERS_INCL
 
@@ -12792,6 +12794,55 @@ TR::Node *ificmpgeSimplifier(TR::Node *node, TR::Block *block, TR::Simplifier *s
 
     removeArithmeticsUnderIntegralCompare(node, s);
     partialRedundantCompareElimination(node, block, s);
+
+    if (node->getNumChildren() > 1) {
+        firstChild = node->getFirstChild();
+        secondChild = node->getSecondChild();
+    }
+
+    static const char *disableCmpGeCombined = feGetEnv("TR_DisableCmpGeCombined");
+
+    // Check if this is ificmpge comparing value with a non-negative limit
+    if (!disableCmpGeCombined && (node->getOpCodeValue() == TR::ificmpge)
+        && (secondChild->getOpCode().isArrayLength() || secondChild->isNonNegative())
+        && (block->getFirstRealTreeTop()->getNode() == node) && block->isExtensionOfPreviousBlock()) {
+        TR::Block *prevBlock = block->getPrevBlock();
+
+        // Check if previous block ends with ificmplt
+        if (prevBlock && prevBlock->getLastRealTreeTop()) {
+            TR::Node *prevNode = prevBlock->getLastRealTreeTop()->getNode();
+
+            // Check pattern: ificmplt value, 0 with same target
+            if (prevNode->getOpCodeValue() == TR::ificmplt && prevNode->getFirstChild() == firstChild // Same value
+                && prevNode->getSecondChild()->getOpCode().isLoadConst() && prevNode->getSecondChild()->getInt() == 0
+                && prevNode->getBranchDestination() == node->getBranchDestination()) // Same target
+            {
+                if (performTransformation(s->comp(),
+                        "%sSimplifying bounds check pattern in block_%d: converting ificmplt+ificmpge to single "
+                        "ifiucmpge\n",
+                        s->optDetailString(), block->getNumber())) {
+                    // Transform current node to unsigned comparison
+                    TR::Node::recreate(node, TR::ifiucmpge);
+
+                    // Remove the previous ificmplt by unlinking its treetop
+                    TR::TreeTop *prevTreeTop = prevBlock->getLastRealTreeTop();
+                    prevTreeTop->unlink(true);
+
+                    // Fix CFG: Remove the edge from prevBlock to the branch target
+                    // UNLESS the target is the current block (in which case prevBlock
+                    // still reaches it via fall-through, so the edge should remain)
+                    TR::CFG *cfg = s->comp()->getFlowGraph();
+                    TR::Block *targetBlock = node->getBranchDestination()->getNode()->getBlock();
+                    if (targetBlock != block) {
+                        cfg->removeEdge(prevBlock, targetBlock);
+                    }
+
+                    return node;
+                }
+            }
+        }
+    }
+
     return node;
 }
 
@@ -13077,6 +13128,56 @@ TR::Node *iflcmpgeSimplifier(TR::Node *node, TR::Block *block, TR::Simplifier *s
 
     removeArithmeticsUnderIntegralCompare(node, s);
     partialRedundantCompareElimination(node, block, s);
+
+    if (node->getNumChildren() > 1) {
+        firstChild = node->getFirstChild();
+        secondChild = node->getSecondChild();
+    }
+
+    static const char *disableCmpGeCombined = feGetEnv("TR_DisableCmpGeCombined");
+
+    // Check if this is iflcmpge comparing value with a non-negative limit
+    if (!disableCmpGeCombined && (node->getOpCodeValue() == TR::iflcmpge)
+        && (secondChild->getOpCode().isArrayLength() || secondChild->isNonNegative())
+        && (block->getFirstRealTreeTop()->getNode() == node) && block->isExtensionOfPreviousBlock()) {
+        TR::Block *prevBlock = block->getPrevBlock();
+
+        // Check if previous block ends with iflcmplt
+        if (prevBlock && prevBlock->getLastRealTreeTop()) {
+            TR::Node *prevNode = prevBlock->getLastRealTreeTop()->getNode();
+
+            // Check pattern: iflcmplt value, 0 with same target
+            if (prevNode->getOpCodeValue() == TR::iflcmplt && prevNode->getFirstChild() == firstChild // Same value
+                && prevNode->getSecondChild()->getOpCode().isLoadConst()
+                && prevNode->getSecondChild()->getLongInt() == 0
+                && prevNode->getBranchDestination() == node->getBranchDestination()) // Same target
+            {
+                if (performTransformation(s->comp(),
+                        "%sSimplifying bounds check pattern in block_%d: converting iflcmplt+iflcmpge to single "
+                        "iflucmpge\n",
+                        s->optDetailString(), block->getNumber())) {
+                    // Transform current node to unsigned comparison
+                    TR::Node::recreate(node, TR::iflucmpge);
+
+                    // Remove the previous iflcmplt by unlinking its treetop
+                    TR::TreeTop *prevTreeTop = prevBlock->getLastRealTreeTop();
+                    prevTreeTop->unlink(true);
+
+                    // Fix CFG: Remove the edge from prevBlock to the branch target
+                    // UNLESS the target is the current block (in which case prevBlock
+                    // still reaches it via fall-through, so the edge should remain)
+                    TR::CFG *cfg = s->comp()->getFlowGraph();
+                    TR::Block *targetBlock = node->getBranchDestination()->getNode()->getBlock();
+                    if (targetBlock != block) {
+                        cfg->removeEdge(prevBlock, targetBlock);
+                    }
+
+                    return node;
+                }
+            }
+        }
+    }
+
     return node;
 }
 

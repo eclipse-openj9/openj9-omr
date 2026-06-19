@@ -795,9 +795,9 @@ void OMR::Power::CodeGenerator::buildRegisterMapForInstruction(TR_GCStackMap *ma
     map->setInternalPointerMap(internalPtrMap);
 }
 
-bool OMR::Power::CodeGenerator::considerTypeForGRA(TR::Node *node) { return !node->getDataType().isMask(); }
+bool OMR::Power::CodeGenerator::considerTypeForGRA(TR::Node *node) { return true; }
 
-bool OMR::Power::CodeGenerator::considerTypeForGRA(TR::DataType dt) { return !dt.isMask(); }
+bool OMR::Power::CodeGenerator::considerTypeForGRA(TR::DataType dt) { return true; }
 
 bool OMR::Power::CodeGenerator::considerTypeForGRA(TR::SymbolReference *symRef)
 {
@@ -989,15 +989,19 @@ TR_GlobalRegisterNumber OMR::Power::CodeGenerator::pickRegister(TR::RegisterCand
             break;
 
         default:
-            if (sym->getDataType().isVector()) {
-                if (sym->getDataType().getVectorElementType() == TR::Int32
-                    || sym->getDataType().getVectorElementType() == TR::Double) {
-                    isVector = true;
+            if (sym->getDataType().isVector() || sym->getDataType().isMask()) {
+                isVector = true;
+
+                if (!sym->getDataType().isMask()
+                    && (sym->getDataType().getVectorElementType() == TR::Float
+                        || sym->getDataType().getVectorElementType() == TR::Double))
+                    firstIndex = _firstFPR;
+                else
                     firstIndex = self()->getFirstGlobalVRF();
-                    lastIndex = self()->getLastGlobalVRF();
-                    lastVolIndex = lastIndex; // TODO: preserved VRF's !!
-                    break;
-                }
+
+                lastIndex = self()->getLastGlobalVRF();
+                lastVolIndex = lastIndex;
+                break;
             }
 
             firstIndex = _firstGPR;
@@ -1007,8 +1011,27 @@ TR_GlobalRegisterNumber OMR::Power::CodeGenerator::pickRegister(TR::RegisterCand
     }
 
     bool gprCandidate = true;
-    if ((sym->getDataType() == TR::Float) || (sym->getDataType() == TR::Double) || sym->getDataType().isVector())
+    if ((sym->getDataType() == TR::Float) || (sym->getDataType() == TR::Double) || sym->getDataType().isVector()
+        || sym->getDataType().isMask())
         gprCandidate = false;
+
+    static char *pMaxVSRsForGRA = feGetEnv("TR_MaxVSRsForGRA");
+    if (pMaxVSRsForGRA && (sym->getDataType().isVector() || sym->getDataType().isMask())) {
+        static uint32_t maxVSRsForGRA = atoi(pMaxVSRsForGRA);
+
+        // count how many registers have been allocated (i.e.: how many are not available)
+        int numAllocated;
+
+        if (sym->getDataType().getVectorElementType() == TR::Float
+            || sym->getDataType().getVectorElementType() == TR::Double)
+            numAllocated = 64 - availRegs.elementCount();
+        else
+            numAllocated = 32 - availRegs.elementCount();
+
+        // if max has already been met, exit
+        if (numAllocated >= maxVSRsForGRA)
+            return -1;
+    }
 
     if (gprCandidate) {
         int32_t numExtraRegs = 0;
@@ -1058,7 +1081,7 @@ TR_GlobalRegisterNumber OMR::Power::CodeGenerator::pickRegister(TR::RegisterCand
             for (prev = candidates->getFirst(); prev; prev = prev->getNext()) {
                 bool gprCandidate = true;
                 if ((prev->getSymbol()->getDataType() == TR::Float) || (prev->getSymbol()->getDataType() == TR::Double)
-                    || sym->getDataType().isVector())
+                    || sym->getDataType().isVector() || sym->getDataType().isMask())
                     gprCandidate = false;
                 if (gprCandidate && prev->getBlocksLiveOnEntry().get(liveBlockNum)) {
                     numAssignedGlobalRegs++;
@@ -1103,7 +1126,7 @@ TR_GlobalRegisterNumber OMR::Power::CodeGenerator::pickRegister(TR::RegisterCand
             i1 = sym->getParmSymbol()->getLinkageRegisterIndex();
             if (i1 >= 0) {
                 if (isVector)
-                    TR_ASSERT(false, "assertion failure"); // TODO
+                    TR_ASSERT(false, "vector symbols cannot yet be passed in as parameters");
                 i1 = (isFloatType ? _firstParmFPR : _firstParmGPR) - i1 - longLow;
                 if (availRegs.isSet(i1))
                     return (i1);
@@ -1121,7 +1144,7 @@ TR_GlobalRegisterNumber OMR::Power::CodeGenerator::pickRegister(TR::RegisterCand
             i1 = sym->getParmSymbol()->getLinkageRegisterIndex();
             if (i1 >= 0) {
                 if (isVector)
-                    TR_ASSERT(false, "assertion failure"); // TODO
+                    TR_ASSERT(false, "vector symbols cannot yet be passed in as parameters");
                 i1 = (isFloatType ? _firstParmFPR : _firstParmGPR) - i1 - longLow;
                 if (availRegs.isSet(i1))
                     return (i1);

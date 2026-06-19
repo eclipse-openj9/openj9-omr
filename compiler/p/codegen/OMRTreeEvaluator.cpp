@@ -1220,12 +1220,12 @@ TR::Register *OMR::Power::TreeEvaluator::mLongBitsToMaskHelper(TR::Node *node, T
 
 TR::Register *OMR::Power::TreeEvaluator::mRegLoadEvaluator(TR::Node *node, TR::CodeGenerator *cg)
 {
-    return TR::TreeEvaluator::unImpOpEvaluator(node, cg);
+    return TR::TreeEvaluator::vRegLoadEvaluator(node, cg);
 }
 
 TR::Register *OMR::Power::TreeEvaluator::mRegStoreEvaluator(TR::Node *node, TR::CodeGenerator *cg)
 {
-    return TR::TreeEvaluator::unImpOpEvaluator(node, cg);
+    return TR::TreeEvaluator::vRegStoreEvaluator(node, cg);
 }
 
 TR::Register *OMR::Power::TreeEvaluator::mandEvaluator(TR::Node *node, TR::CodeGenerator *cg)

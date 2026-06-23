@@ -4835,21 +4835,25 @@ TR::Node *constrainCall(OMR::ValuePropagation *vp, TR::Node *node)
             if (jitHelpersClass && TR::Compiler->cls.isClassInitialized(vp->comp(), jitHelpersClass)) {
                 TR::SymbolReference *hashCodeMethodSymRef = NULL;
                 TR::SymbolReference *getHelpersSymRef = NULL;
-                TR_ScratchList<TR_ResolvedMethod> helperMethods(vp->trMemory());
-                vp->comp()->fej9()->getResolvedMethods(vp->trMemory(), jitHelpersClass, &helperMethods);
-                ListIterator<TR_ResolvedMethod> it(&helperMethods);
-                for (TR_ResolvedMethod *m = it.getCurrent(); m; m = it.getNext()) {
-                    char *sig = m->nameChars();
-                    if (!strncmp(sig, "hashCodeImpl", 11)) {
-                        hashCodeMethodSymRef = vp->comp()->getSymRefTab()->findOrCreateMethodSymbol(JITTED_METHOD_INDEX,
-                            -1, m, TR::MethodSymbol::Virtual);
-                        hashCodeMethodSymRef->setOffset(
-                            TR::Compiler->cls.vTableSlot(vp->comp(), m->getPersistentIdentifier(), jitHelpersClass));
-                    } else if (!strncmp(sig, "getHelpers", 10)) {
-                        getHelpersSymRef = vp->comp()->getSymRefTab()->findOrCreateMethodSymbol(JITTED_METHOD_INDEX, -1,
-                            m, TR::MethodSymbol::Static);
-                    }
+
+                TR_ScratchList<TR_ResolvedMethod> hashCodeMethods(vp->trMemory());
+                vp->comp()->fej9()->getResolvedMethods(vp->trMemory(), jitHelpersClass, &hashCodeMethods,
+                    "hashCodeImpl");
+                TR_ResolvedMethod *hashCodeMethod = ListIterator<TR_ResolvedMethod>(&hashCodeMethods).getCurrent();
+                if (hashCodeMethod) {
+                    hashCodeMethodSymRef = vp->comp()->getSymRefTab()->findOrCreateMethodSymbol(JITTED_METHOD_INDEX, -1,
+                        hashCodeMethod, TR::MethodSymbol::Virtual);
+                    hashCodeMethodSymRef->setOffset(TR::Compiler->cls.vTableSlot(vp->comp(),
+                        hashCodeMethod->getPersistentIdentifier(), jitHelpersClass));
                 }
+
+                TR_ScratchList<TR_ResolvedMethod> getHelpersMethods(vp->trMemory());
+                vp->comp()->fej9()->getResolvedMethods(vp->trMemory(), jitHelpersClass, &getHelpersMethods,
+                    "getHelpers");
+                TR_ResolvedMethod *getHelpersMethod = ListIterator<TR_ResolvedMethod>(&getHelpersMethods).getCurrent();
+                if (getHelpersMethod)
+                    getHelpersSymRef = vp->comp()->getSymRefTab()->findOrCreateMethodSymbol(JITTED_METHOD_INDEX, -1,
+                        getHelpersMethod, TR::MethodSymbol::Static);
 
                 if (vp->comp()->getOption(TR_EnableJITHelpershashCodeImpl) && hashCodeMethodSymRef && getHelpersSymRef
                     && performTransformation(vp->comp(), "%sChanging call to new hashCodeImpl at node [%p]\n",

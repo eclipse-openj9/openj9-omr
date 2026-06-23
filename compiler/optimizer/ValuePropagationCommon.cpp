@@ -689,20 +689,8 @@ static TR_ResolvedMethod *findResolvedClassMethod(TR::Compilation *comp, char *c
     TR_OpaqueClassBlock *classHandle
         = comp->fe()->getClassFromSignature(className, strlen(className), comp->getCurrentMethod());
 
-    if (classHandle) {
-        TR_ScratchList<TR_ResolvedMethod> classMethods(comp->trMemory());
-        comp->fej9()->getResolvedMethods(comp->trMemory(), classHandle, &classMethods);
-
-        ListIterator<TR_ResolvedMethod> it(&classMethods);
-        TR_ResolvedMethod *method;
-        int methodNameLen = strlen(methodName);
-        int methodSigLen = strlen(methodSig);
-        for (method = it.getCurrent(); method; method = it.getNext()) {
-            if (!strncmp(method->nameChars(), methodName, methodNameLen)
-                && !strncmp(method->signatureChars(), methodSig, methodSigLen))
-                return method;
-        }
-    }
+    if (classHandle)
+        return comp->fej9()->getResolvedMethodForNameAndSignature(comp->trMemory(), classHandle, methodName, methodSig);
     return NULL;
 }
 #endif
@@ -3340,17 +3328,11 @@ void OMR::ValuePropagation::transformRTMultiLeafArrayCopy(TR_RealTimeArrayCopy *
         return;
 
     TR_ScratchList<TR_ResolvedMethod> helperMethods(trMemory());
-    comp()->fej9()->getResolvedMethods(trMemory(), helperClass, &helperMethods);
-    ListIterator<TR_ResolvedMethod> it(&helperMethods);
+    comp()->fej9()->getResolvedMethods(trMemory(), helperClass, &helperMethods, "multiLeafArrayCopy");
     TR::SymbolReference *helperSymRef = NULL;
-    for (TR_ResolvedMethod *m = it.getCurrent(); m && !helperSymRef; m = it.getNext()) {
-        char *sig = m->nameChars();
-        logprintf(trace(), log, " sig = %s\n", sig);
-
-        if (!strncmp(sig, "multiLeafArrayCopy", 18))
-            helperSymRef
-                = getSymRefTab()->findOrCreateMethodSymbol(JITTED_METHOD_INDEX, -1, m, TR::MethodSymbol::Static);
-    }
+    TR_ResolvedMethod *m = ListIterator<TR_ResolvedMethod>(&helperMethods).getCurrent();
+    if (m)
+        helperSymRef = getSymRefTab()->findOrCreateMethodSymbol(JITTED_METHOD_INDEX, -1, m, TR::MethodSymbol::Static);
 
     logprintf(trace(), log, " helper sym = %p\n", helperSymRef);
     if (!helperSymRef)

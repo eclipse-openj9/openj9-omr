@@ -361,6 +361,7 @@ calculateZosProcessCpuUtilization(struct OMRPortLibrary *portLibrary, struct Cpu
 int32_t
 retrieveZosCpuUsageStats(struct OMRPortLibrary *portLibrary, struct CpuUsageStats *usageStats)
 {
+	int32_t result = -1;
 	/* Read ccvutils. */
 	J9CVT * __ptr32 cvtp = ((J9PSA *)0)->flccvt;
 	J9RMCT * __ptr32 rcmtp = cvtp->cvtopctp;
@@ -395,5 +396,10 @@ retrieveZosCpuUsageStats(struct OMRPortLibrary *portLibrary, struct CpuUsageStat
 	/* Get CPU usage for current process. Also writes oldest and latest CPU time
 	 * to usageStats struct for manual calculation if needed.
 	 */
-	return calculateZosProcessCpuUtilization(portLibrary, usageStats);
+	result = calculateZosProcessCpuUtilization(portLibrary, usageStats);
+	if (0 != result) {
+		usageStats->perProcessUtilization = result;
+	}
+
+	return 0;
 }

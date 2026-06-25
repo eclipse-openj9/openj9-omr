@@ -639,8 +639,8 @@ MM_PhysicalSubArenaVirtualMemorySemiSpace::contract(MM_EnvironmentBase *env, uin
 		}
 
 		/* Reset any free list information */
-		subSpaceAllocate->reset();
-		subSpaceSurvivor->reset();
+		subSpaceAllocate->reset(env);
+		subSpaceSurvivor->reset(env);
 
 		/* Was there any remaining leading free entry not consumed by the contraction? */
 		if(allocateSegmentBase < allocateLeadingFreeTop) {
@@ -823,8 +823,8 @@ MM_PhysicalSubArenaVirtualMemorySemiSpace::contract(MM_EnvironmentBase *env, uin
 		Assert_MM_true(_highSemiSpaceRegion->getLowAddress() == _lowSemiSpaceRegion->getHighAddress());
 
 		/* Reset any free list information */
-		subSpaceAllocate->reset();
-		subSpaceSurvivor->reset();
+		subSpaceAllocate->reset(env);
+		subSpaceSurvivor->reset(env);
 
 		/* Was there any remaining leading free entry not consumed by the contraction? */
 		if(allocateSegmentBase < allocateLeadingFreeTop) {
@@ -1284,7 +1284,7 @@ MM_PhysicalSubArenaVirtualMemorySemiSpace::expandNoCheck(MM_EnvironmentBase *env
 		}
 		subSpaceAllocate->addExistingMemory(env, this, splitExpandSize, newLowAddress, _lowAddress, true);
 		
-		subSpaceSurvivor->reset();
+		subSpaceSurvivor->reset(env);
 		subSpaceSurvivor->addExistingMemory(
 			env,
 			this,
@@ -1350,7 +1350,7 @@ MM_PhysicalSubArenaVirtualMemorySemiSpace::expandNoCheck(MM_EnvironmentBase *env
 		}
 		subSpaceAllocate->addExistingMemory(env, this, allocateSpaceExpandSize, _highSemiSpaceRegion->getLowAddress(), previousHighSemiSpaceSegmentBase, true);
 
-		subSpaceSurvivor->reset();
+		subSpaceSurvivor->reset(env);
 		subSpaceSurvivor->addExistingMemory(
 			env,
 			this,

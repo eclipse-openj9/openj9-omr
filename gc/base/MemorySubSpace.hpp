@@ -343,7 +343,7 @@ public:
 	virtual bool percolateGarbageCollect(MM_EnvironmentBase *env, MM_AllocateDescription *allocDescription, uint32_t gcCode);
 	virtual bool garbageCollect(MM_EnvironmentBase *env, MM_AllocateDescription *allocDescription, uint32_t gcCode);
 
-	virtual void reset(MM_EnvironmentBase *env = NULL);
+	virtual void reset(MM_EnvironmentBase *env);
 	virtual void rebuildFreeList(MM_EnvironmentBase *env);
 
 	virtual void payAllocationTax(MM_EnvironmentBase *env, MM_MemorySubSpace *baseSubSpace, MM_AllocateDescription *allocDescription);

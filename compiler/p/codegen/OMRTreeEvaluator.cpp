@@ -8031,9 +8031,6 @@ TR::Register *OMR::Power::TreeEvaluator::passThroughEvaluator(TR::Node *node, TR
                 move_opcode = TR::InstOpCode::mcrf;
                 break;
             case TR_VRF:
-                move_opcode = TR::InstOpCode::vor;
-                move_with_or = true;
-                break;
             case TR_VSX_SCALAR:
             case TR_VSX_VECTOR:
                 move_opcode = TR::InstOpCode::xxlor;

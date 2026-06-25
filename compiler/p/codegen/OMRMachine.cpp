@@ -1504,11 +1504,8 @@ static void registerCopy(TR::Instruction *precedingInstruction, TR_RegisterKinds
             break;
         case TR_VSX_SCALAR:
         case TR_VSX_VECTOR:
-            instr = generateTrg1Src2Instruction(cg, TR::InstOpCode::xxlor, currentNode, targetReg, sourceReg, sourceReg,
-                precedingInstruction);
-            break;
         case TR_VRF:
-            instr = generateTrg1Src2Instruction(cg, TR::InstOpCode::vor, currentNode, targetReg, sourceReg, sourceReg,
+            instr = generateTrg1Src2Instruction(cg, TR::InstOpCode::xxlor, currentNode, targetReg, sourceReg, sourceReg,
                 precedingInstruction);
             break;
         default:

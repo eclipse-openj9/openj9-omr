@@ -244,8 +244,6 @@ OMR::Power::RegisterDependencyConditions::RegisterDependencyConditions(TR::CodeG
                     opCode = TR::InstOpCode::fmr;
                     break;
                 case TR_VRF:
-                    opCode = TR::InstOpCode::vor;
-                    break;
                 case TR_VSX_VECTOR:
                     opCode = TR::InstOpCode::xxlor;
                     break;
@@ -269,7 +267,7 @@ OMR::Power::RegisterDependencyConditions::RegisterDependencyConditions(TR::CodeG
                     copyReg->setContainsInternalPointer();
                     copyReg->setPinningArrayPointer(reg->getPinningArrayPointer());
                 }
-                if (opCode == TR::InstOpCode::vor || opCode == TR::InstOpCode::xxlor)
+                if (opCode == TR::InstOpCode::xxlor)
                     iCursor = generateTrg1Src2Instruction(cg, opCode, node, copyReg, reg, reg, iCursor);
                 else
                     iCursor = generateTrg1Src1Instruction(cg, opCode, node, copyReg, reg, iCursor);
@@ -290,7 +288,7 @@ OMR::Power::RegisterDependencyConditions::RegisterDependencyConditions(TR::CodeG
                     highCopyReg->setContainsInternalPointer();
                     highCopyReg->setPinningArrayPointer(highReg->getPinningArrayPointer());
                 }
-                if (opCode == TR::InstOpCode::vor || opCode == TR::InstOpCode::xxlor)
+                if (opCode == TR::InstOpCode::xxlor)
                     iCursor = generateTrg1Src2Instruction(cg, opCode, node, highCopyReg, highReg, highReg, iCursor);
                 else
                     iCursor = generateTrg1Src1Instruction(cg, opCode, node, highCopyReg, highReg, iCursor);

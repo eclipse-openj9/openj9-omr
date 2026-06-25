@@ -3534,9 +3534,12 @@ TR::Register *OMR::Power::TreeEvaluator::vloadEvaluator(TR::Node *node, TR::Code
             kind = TR_VRF;
             break;
         case TR::Int32:
-        case TR::Float:
             opcode = TR::InstOpCode::lxvw4x;
             kind = TR_VRF;
+            break;
+        case TR::Float:
+            opcode = TR::InstOpCode::lxvw4x;
+            kind = TR_VSX_VECTOR;
             break;
         case TR::Int64:
             opcode = TR::InstOpCode::lxvd2x;
@@ -3744,7 +3747,12 @@ TR::Register *OMR::Power::TreeEvaluator::inlineVectorUnaryOp(TR::Node *node, TR:
         maskReg = cg->evaluate(secondChild);
     }
 
-    TR::Register *resReg = cg->allocateRegister(TR_VRF);
+    TR::Register *resReg;
+    if (!TR::InstOpCode(op).isVMX())
+        resReg = cg->allocateRegister(TR_VSX_VECTOR);
+    else
+        resReg = cg->allocateRegister(TR_VRF);
+
     node->setRegister(resReg);
     generateTrg1Src1Instruction(cg, op, node, resReg, srcReg);
 

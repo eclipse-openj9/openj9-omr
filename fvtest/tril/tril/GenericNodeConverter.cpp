@@ -168,6 +168,10 @@ TR::Node *GenericNodeConverter::impl(const ASTNode *tree, IlGenState *state)
         TraceIL("  is branch to target block %d (%s, entry = %p", targetId, targetName, targetEntry);
         node = TR::Node::create(opcode.getOpCodeValue(), childCount);
         node->setBranchDestination(targetEntry);
+    } else if (opcode.getOpCodeValue() == TR::lookup) {
+        TraceIL("  is lookup switch with %d children\n", childCount);
+        node = TR::Node::create(opcode.getOpCodeValue(), childCount);
+        // Branch destinations for case children will be set when child nodes are created
     } else {
         TraceIL("  unrecognized opcode; using default creation mechanism\n", "");
         node = TR::Node::create(opcode.getOpCodeValue(), childCount);

@@ -1904,9 +1904,11 @@ TR::Register *OMR::Z::TreeEvaluator::lookupEvaluator(TR::Node *node, TR::CodeGen
     TR::Register *tempReg = NULL;
     TR::Instruction *cursor = NULL;
 
+    OMR::SwitchCaseOrdering *ordering = cg->sortSwitchCases(node);
+
     // Handle non default cases
     for (int32_t ii = 2; ii < numChildren; ii++) {
-        TR::Node *child = node->getChild(ii);
+        TR::Node *child = node->getChild(ordering[ii].index);
 
         // for 31bit mode with 64 bit values
         TR::LabelSymbol *skipLoCompareLabel = NULL;

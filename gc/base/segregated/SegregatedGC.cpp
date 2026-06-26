@@ -175,7 +175,7 @@ MM_SegregatedGC::abortCollection(MM_EnvironmentBase* env, CollectionAbortReason 
 bool
 MM_SegregatedGC::internalGarbageCollect(MM_EnvironmentBase *env, MM_MemorySubSpace *subSpace, MM_AllocateDescription *allocDescription)
 {
-	env->_cycleState->_activeSubSpace->reset();
+	env->_cycleState->_activeSubSpace->reset(env);
 
 	/*
 	 * Marking

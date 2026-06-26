@@ -763,6 +763,7 @@ TR::Register *OMR::ARM64::TreeEvaluator::vdivEvaluator(TR::Node *node, TR::CodeG
     return inlineVectorBinaryOp(node, cg, divOp, evaluatorHelper);
 }
 
+// also handles mand
 TR::Register *OMR::ARM64::TreeEvaluator::vandEvaluator(TR::Node *node, TR::CodeGenerator *cg)
 {
     TR_ASSERT_FATAL_WITH_NODE(node, node->getDataType().getVectorLength() == TR::VectorLength128,
@@ -783,6 +784,7 @@ TR::Register *OMR::ARM64::TreeEvaluator::vandEvaluator(TR::Node *node, TR::CodeG
     return inlineVectorBinaryOp(node, cg, andOp);
 }
 
+// also handles mor
 TR::Register *OMR::ARM64::TreeEvaluator::vorEvaluator(TR::Node *node, TR::CodeGenerator *cg)
 {
     TR_ASSERT_FATAL_WITH_NODE(node, node->getDataType().getVectorLength() == TR::VectorLength128,
@@ -803,6 +805,7 @@ TR::Register *OMR::ARM64::TreeEvaluator::vorEvaluator(TR::Node *node, TR::CodeGe
     return inlineVectorBinaryOp(node, cg, orrOp);
 }
 
+// also handles mxor
 TR::Register *OMR::ARM64::TreeEvaluator::vxorEvaluator(TR::Node *node, TR::CodeGenerator *cg)
 {
     TR_ASSERT_FATAL_WITH_NODE(node, node->getDataType().getVectorLength() == TR::VectorLength128,

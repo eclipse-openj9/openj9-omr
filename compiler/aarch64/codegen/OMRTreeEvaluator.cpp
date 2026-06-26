@@ -1125,7 +1125,7 @@ TR::Register *OMR::ARM64::TreeEvaluator::mstoreiEvaluator(TR::Node *node, TR::Co
 
 TR::Register *OMR::ARM64::TreeEvaluator::msplatsEvaluator(TR::Node *node, TR::CodeGenerator *cg)
 {
-    return TR::TreeEvaluator::unImpOpEvaluator(node, cg);
+    return TR::TreeEvaluator::vsplatsEvaluator(node, cg);
 }
 
 TR::Register *OMR::ARM64::TreeEvaluator::mTrueCountEvaluator(TR::Node *node, TR::CodeGenerator *cg)
@@ -1552,17 +1552,17 @@ TR::Register *OMR::ARM64::TreeEvaluator::mRegStoreEvaluator(TR::Node *node, TR::
 
 TR::Register *OMR::ARM64::TreeEvaluator::mandEvaluator(TR::Node *node, TR::CodeGenerator *cg)
 {
-    return TR::TreeEvaluator::unImpOpEvaluator(node, cg);
+    return TR::TreeEvaluator::vandEvaluator(node, cg);
 }
 
 TR::Register *OMR::ARM64::TreeEvaluator::morEvaluator(TR::Node *node, TR::CodeGenerator *cg)
 {
-    return TR::TreeEvaluator::unImpOpEvaluator(node, cg);
+    return TR::TreeEvaluator::vorEvaluator(node, cg);
 }
 
 TR::Register *OMR::ARM64::TreeEvaluator::mxorEvaluator(TR::Node *node, TR::CodeGenerator *cg)
 {
-    return TR::TreeEvaluator::unImpOpEvaluator(node, cg);
+    return TR::TreeEvaluator::vxorEvaluator(node, cg);
 }
 
 static TR::Register *mloadiFromArrayHelper(TR::Node *node, TR::CodeGenerator *cg, OP::Mnemonic loadOp,
@@ -2018,6 +2018,7 @@ TR::Instruction *OMR::ARM64::TreeEvaluator::vsplatsImmediateHelper(TR::Node *nod
     return NULL;
 }
 
+// also handles msplats
 TR::Register *OMR::ARM64::TreeEvaluator::vsplatsEvaluator(TR::Node *node, TR::CodeGenerator *cg)
 {
     TR::Node *firstChild = node->getFirstChild();

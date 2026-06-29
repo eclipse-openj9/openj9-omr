@@ -829,11 +829,12 @@ TR::Instruction *generateMulInstruction(TR::CodeGenerator *cg, TR::Node *node, T
  * @param[in] node : node
  * @param[in] treg : target register
  * @param[in] cc : branch condition code
+ * @param[in] is64bit : true when it is 64-bit operation
  * @param[in] preced : preceding instruction
  * @return generated instruction
  */
 TR::Instruction *generateCSetInstruction(TR::CodeGenerator *cg, TR::Node *node, TR::Register *treg,
-    TR::ARM64ConditionCode cc, TR::Instruction *preced = NULL);
+    TR::ARM64ConditionCode cc, bool is64bit = true, TR::Instruction *preced = NULL);
 
 /*
  * @brief Generates CINC instruction

@@ -623,10 +623,10 @@ TR::Instruction *generateMulInstruction(TR::CodeGenerator *cg, TR::Node *node, T
 }
 
 TR::Instruction *generateCSetInstruction(TR::CodeGenerator *cg, TR::Node *node, TR::Register *treg,
-    TR::ARM64ConditionCode cc, TR::Instruction *preced)
+    TR::ARM64ConditionCode cc, bool is64bit, TR::Instruction *preced)
 {
     /* Alias of CSINC instruction with inverted condition code */
-    TR::InstOpCode::Mnemonic op = TR::InstOpCode::csincx;
+    TR::InstOpCode::Mnemonic op = is64bit ? TR::InstOpCode::csincx : TR::InstOpCode::csincw;
 
     if (preced)
         return new (cg->trHeapMemory()) TR::ARM64Trg1CondInstruction(op, node, treg, cc_invert(cc), preced, cg);

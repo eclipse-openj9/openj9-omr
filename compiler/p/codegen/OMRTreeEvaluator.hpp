@@ -361,6 +361,8 @@ public:
         TR::InstOpCode::Mnemonic splatOp, int numElements);
     static TR::Register *mLongBitsToMaskHelper(TR::Node *node, TR::CodeGenerator *cg, TR::InstOpCode::Mnemonic splatOp,
         TR::InstOpCode::Mnemonic unpackOp, TR::InstOpCode::Mnemonic subOp, int numElements);
+    static TR::Register *vFusedMulHelper(TR::Node *node, TR::CodeGenerator *cg, TR::InstOpCode::Mnemonic opTypeA,
+        TR::InstOpCode::Mnemonic opTypeM);
 
     static TR::Register *f2iuEvaluator(TR::Node *node, TR::CodeGenerator *cg);
     static TR::Register *f2luEvaluator(TR::Node *node, TR::CodeGenerator *cg);

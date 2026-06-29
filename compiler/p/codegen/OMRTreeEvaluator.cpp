@@ -4360,6 +4360,41 @@ TR::Register *OMR::Power::TreeEvaluator::vaddEvaluator(TR::Node *node, TR::CodeG
     TR_ASSERT_FATAL_WITH_NODE(node, node->getDataType().getVectorLength() == TR::VectorLength128,
         "Only 128-bit vectors are supported but type %s was requested", node->getDataType().toString());
 
+    TR::DataType et = node->getDataType().getVectorElementType();
+
+    // check if we can convert to fused mul/add operation
+    TR::Node *firstChild = node->getFirstChild();
+    TR::Node *secondChild = node->getSecondChild();
+
+    static char *pEnableVectorAddOrSubToFMA = feGetEnv("TR_EnableVectorAddOrSubToFMA");
+
+    if (pEnableVectorAddOrSubToFMA && !node->getOpCode().isVectorMasked() && (et == TR::Float || et == TR::Double)
+        && ((firstChild->getOpCode().isMul() && !firstChild->getOpCode().isVectorMasked()
+                && firstChild->getReferenceCount() == 1 && firstChild->getRegister() == NULL)
+            || (secondChild->getOpCode().isMul() && !secondChild->getOpCode().isVectorMasked()
+                && secondChild->getReferenceCount() == 1 && secondChild->getRegister() == NULL))) {
+        TR::Node *mulNode = firstChild->getOpCode().isMul() ? firstChild : secondChild;
+        TR::Node *addOperandNode = (mulNode == firstChild) ? secondChild : firstChild;
+
+        // create fused mul/add node and set children accordingly
+        TR::Node *vFusedMulNode = TR::Node::create(TR::ILOpCode::createVectorOpCode(TR::vfma, node->getDataType()), 3,
+            mulNode->getFirstChild(), mulNode->getSecondChild(), addOperandNode);
+
+        // evaluate fused mul/add node
+        TR::InstOpCode::Mnemonic opTypeA = (et == TR::Float) ? TR::InstOpCode::xvmaddasp : TR::InstOpCode::xvmaddadp;
+        TR::InstOpCode::Mnemonic opTypeM = (et == TR::Float) ? TR::InstOpCode::xvmaddmsp : TR::InstOpCode::xvmaddmdp;
+        TR::Register *resReg = vFusedMulHelper(vFusedMulNode, cg, opTypeA, opTypeM);
+
+        // decrement refcounts and set register
+        node->setRegister(resReg);
+        cg->decReferenceCount(mulNode);
+        cg->decReferenceCount(mulNode->getFirstChild());
+        cg->decReferenceCount(mulNode->getSecondChild());
+        cg->decReferenceCount(addOperandNode);
+
+        return resReg;
+    }
+
     switch (node->getDataType().getVectorElementType()) {
         case TR::Int8:
             return TR::TreeEvaluator::inlineVectorBinaryOp(node, cg, TR::InstOpCode::vaddubm);
@@ -4385,6 +4420,39 @@ TR::Register *OMR::Power::TreeEvaluator::vsubEvaluator(TR::Node *node, TR::CodeG
 {
     TR_ASSERT_FATAL_WITH_NODE(node, node->getDataType().getVectorLength() == TR::VectorLength128,
         "Only 128-bit vectors are supported but type %s was requested", node->getDataType().toString());
+
+    TR::DataType et = node->getDataType().getVectorElementType();
+
+    // check if we can convert to fused mul/sub operation
+    TR::Node *firstChild = node->getFirstChild();
+    TR::Node *secondChild = node->getSecondChild();
+
+    static char *pEnableVectorAddOrSubToFMA = feGetEnv("TR_EnableVectorAddOrSubToFMA");
+
+    if (pEnableVectorAddOrSubToFMA && !node->getOpCode().isVectorMasked() && (et == TR::Float || et == TR::Double)
+        && ((firstChild->getOpCode().isMul() && !firstChild->getOpCode().isVectorMasked()
+            && firstChild->getReferenceCount() == 1 && firstChild->getRegister() == NULL))) {
+        TR::Node *mulNode = firstChild;
+        TR::Node *subOperandNode = secondChild;
+
+        // create fused mul/sub node and set children accordingly
+        TR::Node *vFusedMulNode = TR::Node::create(TR::ILOpCode::createVectorOpCode(TR::vfma, node->getDataType()), 3,
+            mulNode->getFirstChild(), mulNode->getSecondChild(), subOperandNode);
+
+        // evaluate fused mul/sub node
+        TR::InstOpCode::Mnemonic opTypeA = (et == TR::Float) ? TR::InstOpCode::xvmsubasp : TR::InstOpCode::xvmsubadp;
+        TR::InstOpCode::Mnemonic opTypeM = (et == TR::Float) ? TR::InstOpCode::xvmsubmsp : TR::InstOpCode::xvmsubmdp;
+        TR::Register *resReg = vFusedMulHelper(vFusedMulNode, cg, opTypeA, opTypeM);
+
+        // decrement refcounts and set register
+        node->setRegister(resReg);
+        cg->decReferenceCount(mulNode);
+        cg->decReferenceCount(mulNode->getFirstChild());
+        cg->decReferenceCount(mulNode->getSecondChild());
+        cg->decReferenceCount(subOperandNode);
+
+        return resReg;
+    }
 
     switch (node->getDataType().getVectorElementType()) {
         case TR::Int8:
@@ -5078,15 +5146,14 @@ TR::Register *OMR::Power::TreeEvaluator::vdivInt64Helper(TR::Node *node, TR::Cod
     return TR::TreeEvaluator::inlineVectorBinaryOp(node, cg, TR::InstOpCode::vdivsd);
 }
 
-TR::Register *OMR::Power::TreeEvaluator::vfmaEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+TR::Register *OMR::Power::TreeEvaluator::vFusedMulHelper(TR::Node *node, TR::CodeGenerator *cg,
+    TR::InstOpCode::Mnemonic opTypeA, TR::InstOpCode::Mnemonic opTypeM)
 {
     TR::DataType type = node->getDataType().getVectorElementType();
     if (type != TR::Float && type != TR::Double) {
         TR_ASSERT(false, "unsupported vector type %s\n", type.toString());
         return NULL;
     }
-
-    TR::InstOpCode::Mnemonic op;
 
     TR::Node *firstChild = node->getFirstChild();
     TR::Node *secondChild = node->getSecondChild();
@@ -5103,27 +5170,24 @@ TR::Register *OMR::Power::TreeEvaluator::vfmaEvaluator(TR::Node *node, TR::CodeG
 
     TR::Register *resReg;
 
-    /* Since the VSX FMA instruction reuses one of its source registers as the target register,
+    /* Since the VSX fused multiplication instruction reuse one of their source registers as the target register,
        we need to make sure the selected target register is clobberable */
     if (cg->canClobberNodesRegister(thirdChild)) {
         resReg = thirdReg;
-        op = (type == TR::Float) ? TR::InstOpCode::xvmaddasp : TR::InstOpCode::xvmaddadp;
-        generateTrg1Src2Instruction(cg, op, node, thirdReg, firstReg, secondReg);
-    } else if (cg->canClobberNodesRegister(firstChild) && !maskReg) { // need to preserve firstReg if doing masked FMA
+        generateTrg1Src2Instruction(cg, opTypeA, node, thirdReg, firstReg, secondReg);
+    } else if (cg->canClobberNodesRegister(firstChild)
+        && !maskReg) { // need to preserve firstReg if operation is masked
         resReg = firstReg;
-        op = (type == TR::Float) ? TR::InstOpCode::xvmaddmsp : TR::InstOpCode::xvmaddmdp;
-        generateTrg1Src2Instruction(cg, op, node, firstReg, secondReg, thirdReg);
+        generateTrg1Src2Instruction(cg, opTypeM, node, firstReg, secondReg, thirdReg);
     } else if (cg->canClobberNodesRegister(secondChild)) {
         resReg = secondReg;
-        op = (type == TR::Float) ? TR::InstOpCode::xvmaddmsp : TR::InstOpCode::xvmaddmdp;
-        generateTrg1Src2Instruction(cg, op, node, secondReg, firstReg, thirdReg);
+        generateTrg1Src2Instruction(cg, opTypeM, node, secondReg, firstReg, thirdReg);
     } else // if no source registers can be clobbered, copy the contents of one of the sources into a new register and
            // use it as the target
     {
         resReg = cg->allocateRegister(TR_VSX_VECTOR);
-        op = (type == TR::Float) ? TR::InstOpCode::xvmaddasp : TR::InstOpCode::xvmaddadp;
         generateTrg1Src2Instruction(cg, TR::InstOpCode::xxlor, node, resReg, thirdReg, thirdReg);
-        generateTrg1Src2Instruction(cg, op, node, resReg, firstReg, secondReg);
+        generateTrg1Src2Instruction(cg, opTypeA, node, resReg, firstReg, secondReg);
     }
 
     // apply mask if provided
@@ -5138,6 +5202,22 @@ TR::Register *OMR::Power::TreeEvaluator::vfmaEvaluator(TR::Node *node, TR::CodeG
         cg->decReferenceCount(maskNode);
 
     return resReg;
+}
+
+TR::Register *OMR::Power::TreeEvaluator::vfmaEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+{
+    TR_ASSERT_FATAL_WITH_NODE(node, node->getDataType().getVectorLength() == TR::VectorLength128,
+        "Only 128-bit vectors are supported but type %s was requested", node->getDataType().toString());
+
+    switch (node->getDataType().getVectorElementType()) {
+        case TR::Float:
+            return TR::TreeEvaluator::vFusedMulHelper(node, cg, TR::InstOpCode::xvmaddasp, TR::InstOpCode::xvmaddmsp);
+        case TR::Double:
+            return TR::TreeEvaluator::vFusedMulHelper(node, cg, TR::InstOpCode::xvmaddadp, TR::InstOpCode::xvmaddmdp);
+        default:
+            TR_ASSERT(false, "unsupported vector type %s\n", node->getDataType().toString());
+            return NULL;
+    }
 }
 
 TR::Register *OMR::Power::TreeEvaluator::vconvEvaluator(TR::Node *node, TR::CodeGenerator *cg)

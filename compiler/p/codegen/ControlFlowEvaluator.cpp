@@ -3680,7 +3680,7 @@ static void lookupScheme4(TR::Node *node, TR::CodeGenerator *cg)
             loadConstant(cg, node, caseConst, highRegister);
             generateTrg1Src2Instruction(cg, cmp_opcode, node, cndRegister, selector, highRegister);
         } else {
-            generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::cmpli4, node, cndRegister, selector, caseConst);
+            generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::cmpi4, node, cndRegister, selector, caseConst);
         }
         generateConditionalBranchInstruction(cg, TR::InstOpCode::beq, node,
             hotChild->getBranchDestination()->getNode()->getLabel(), cndRegister);
@@ -3695,7 +3695,7 @@ static void lookupScheme4(TR::Node *node, TR::CodeGenerator *cg)
                 loadConstant(cg, node, caseConst, highRegister);
                 generateTrg1Src2Instruction(cg, cmp_opcode, node, cndRegister, selector, highRegister);
             } else {
-                generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::cmpli4, node, cndRegister, selector, caseConst);
+                generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::cmpi4, node, cndRegister, selector, caseConst);
             }
             generateConditionalBranchInstruction(cg, TR::InstOpCode::beq, node,
                 hotChild->getBranchDestination()->getNode()->getLabel(), cndRegister);

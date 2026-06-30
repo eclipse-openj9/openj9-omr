@@ -576,8 +576,10 @@ TR::Register *OMR::ARM64::TreeEvaluator::lookupEvaluator(TR::Node *node, TR::Cod
     }
     TR::addDependency(conditions, selectorReg, TR::RealRegister::NoReg, TR_GPR, cg);
 
+    OMR::SwitchCaseOrdering *ordering = cg->sortSwitchCases(node);
+
     for (int32_t i = 2; i < numChildren; i++) {
-        TR::Node *child = node->getChild(i);
+        TR::Node *child = node->getChild(ordering[i].index);
         int32_t caseValue = child->getCaseConstant();
 
         if (!constantIsUnsignedImm12(caseValue)) {

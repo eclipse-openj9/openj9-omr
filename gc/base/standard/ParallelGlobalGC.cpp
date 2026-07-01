@@ -676,14 +676,8 @@ MM_ParallelGlobalGC::shouldCompactThisCycle(MM_EnvironmentBase *env, MM_Allocate
 		}
 	}
 	
-	/* If -Xgc:compactToSatisfyAllocate has been specified, then we skip the rest of the triggers */
-	if (_extensions->compactToSatisfyAllocate) {
-		compactReason = COMPACT_NONE;
-		goto nocompact;
-	}
-	
 #if defined(OMR_GC_MODRON_SCAVENGER)
-	if (_extensions->scavengerEnabled) {
+	if (!_extensions->compactToSatisfyAllocate && _extensions->scavengerEnabled) {
 		/* Get size of largest object we failed to tenure on last scavenege */
 		uintptr_t failedTenureLargest = _extensions->scavengerStats._failedTenureLargest;
 		if (0 < failedTenureLargest) {
@@ -702,7 +696,7 @@ MM_ParallelGlobalGC::shouldCompactThisCycle(MM_EnvironmentBase *env, MM_Allocate
 	/* If this is an aggressive collect and the last collect did not compact then 
 	 * make sure we do this time.
 	 */
-	if (gcCode.isAggressiveGC()
+	if (!_extensions->compactToSatisfyAllocate && gcCode.isAggressiveGC()
 		&& ((_extensions->globalGCStats.compactStats._lastHeapCompaction + 1) <  _extensions->globalGCStats.gcCount)) {
 		compactReason = COMPACT_AGGRESSIVE;
 		goto compactionReqd;
@@ -725,7 +719,7 @@ MM_ParallelGlobalGC::shouldCompactThisCycle(MM_EnvironmentBase *env, MM_Allocate
 	tlhPercent = 0 < allocStats->_tlhRefreshCountFresh ? (uintptr_t) (((uint64_t) allocStats->_tlhAllocatedFresh * 100) / (uint64_t) totalBytesAllocated) : 0;
 	
 	/* Check at least 50% of free space at end of last GC has been consumed by tlh allocations */
-	if (50 < tlhPercent) {
+	if (!_extensions->compactToSatisfyAllocate && (50 < tlhPercent)) {
 		/* Calculate average size of tlh allocated since tenure area last collected */
 		uintptr_t avgTlh = allocStats->_tlhAllocatedFresh / allocStats->_tlhRefreshCountFresh;
 		
@@ -747,7 +741,7 @@ MM_ParallelGlobalGC::shouldCompactThisCycle(MM_EnvironmentBase *env, MM_Allocate
 	 * on free memory there is little more we can do to avoid OOM at this point other than 
 	 * compact to get as much free memory as possible.
 	 */
-	if (activeSubspaceMaxExpansionInSpace == 0) {
+	if (!_extensions->compactToSatisfyAllocate && (0 == activeSubspaceMaxExpansionInSpace)) {
 		uintptr_t oldFree = heap->getApproximateActiveFreeMemorySize(MEMORY_TYPE_OLD);
 		uintptr_t oldSize = heap->getActiveMemorySize(MEMORY_TYPE_OLD);
 		uintptr_t desperateFree = (oldSize / OLDFREE_DESPERATE_RATIO_DIVISOR) * OLDFREE_DESPERATE_RATIO_MULTIPLIER;
@@ -764,7 +758,7 @@ MM_ParallelGlobalGC::shouldCompactThisCycle(MM_EnvironmentBase *env, MM_Allocate
 		}
 	}	
 
-	{
+	if (!_extensions->compactToSatisfyAllocate) {
 		/* Tenure space dark matter trigger */
 		MM_MemorySubSpace *memorySubSpace = heap->getDefaultMemorySpace()->getTenureMemorySubSpace();
 		uintptr_t totalSize = memorySubSpace->getActiveMemorySize();

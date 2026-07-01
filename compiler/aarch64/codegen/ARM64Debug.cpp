@@ -1438,14 +1438,19 @@ void TR_Debug::print(OMR::Logger *log, TR::ARM64Trg1Instruction *instr)
 void TR_Debug::print(OMR::Logger *log, TR::ARM64Trg1CondInstruction *instr)
 {
     printPrefix(log, instr);
-    if (instr->getOpCodeValue() == TR::InstOpCode::csincx) {
+    TR::InstOpCode::Mnemonic op = instr->getOpCodeValue();
+    uint32_t enc = TR::InstOpCode::getOpCodeBinaryEncoding(op);
+    uint32_t sf = getSFbit(enc);
+    TR_RegisterSizes regSize = (sf == 1) ? TR_DoubleWordReg : TR_WordReg;
+
+    if (op == TR::InstOpCode::csincx || (op == TR::InstOpCode::csincw)) {
         // cset alias
-        log->prints("cset \t");
-        print(log, instr->getTargetRegister(), TR_WordReg);
+        log->printf("cset%c \t", (sf == 1) ? 'x' : 'w');
+        print(log, instr->getTargetRegister(), regSize);
         log->printf(", %s", ARM64ConditionNames[cc_invert(instr->getConditionCode())]);
     } else {
         log->printf("%s \t", getOpCodeName(&instr->getOpCode()));
-        print(log, instr->getTargetRegister(), TR_WordReg);
+        print(log, instr->getTargetRegister(), regSize);
         log->printf(", xzr, xzr, %s", ARM64ConditionNames[instr->getConditionCode()]);
     }
     log->flush();

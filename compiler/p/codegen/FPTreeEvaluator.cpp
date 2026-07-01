@@ -434,7 +434,7 @@ TR::Register *OMR::Power::TreeEvaluator::vsplatsEvaluator(TR::Node *node, TR::Co
         return trgReg;
     } else if (node->getDataType().getVectorElementType() == TR::Float) {
         TR::Register *srcReg = cg->evaluate(child);
-        TR::Register *trgReg = cg->allocateRegister(TR_VRF);
+        TR::Register *trgReg = cg->allocateRegister(TR_VSX_VECTOR);
 
         generateTrg1Src1Instruction(cg, TR::InstOpCode::xscvdpsp, node, trgReg, srcReg);
         generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::xxspltw, node, trgReg, trgReg, 0);

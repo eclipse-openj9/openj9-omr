@@ -1544,13 +1544,7 @@ TR::Register *OMR::ARM64::TreeEvaluator::mLongBitsToMaskEvaluator(TR::Node *node
 
 TR::Register *OMR::ARM64::TreeEvaluator::mRegLoadEvaluator(TR::Node *node, TR::CodeGenerator *cg)
 {
-    TR::Register *globalReg = node->getRegister();
-
-    if (globalReg == NULL) {
-        globalReg = cg->allocateRegister(TR_VRF);
-        node->setRegister(globalReg);
-    }
-    return globalReg;
+    return TR::TreeEvaluator::vRegLoadEvaluator(node, cg);
 }
 
 TR::Register *OMR::ARM64::TreeEvaluator::mRegStoreEvaluator(TR::Node *node, TR::CodeGenerator *cg)
@@ -2889,14 +2883,21 @@ TR::Register *OMR::ARM64::TreeEvaluator::vsetelemEvaluator(TR::Node *node, TR::C
     return TR::TreeEvaluator::unImpOpEvaluator(node, cg);
 }
 
+// Also handles mRegLoad
 TR::Register *OMR::ARM64::TreeEvaluator::vRegLoadEvaluator(TR::Node *node, TR::CodeGenerator *cg)
 {
-    return TR::TreeEvaluator::unImpOpEvaluator(node, cg);
+    TR::Register *globalReg = node->getRegister();
+
+    if (globalReg == NULL) {
+        globalReg = cg->allocateRegister(TR_VRF);
+        node->setRegister(globalReg);
+    }
+    return globalReg;
 }
 
 TR::Register *OMR::ARM64::TreeEvaluator::vRegStoreEvaluator(TR::Node *node, TR::CodeGenerator *cg)
 {
-    return TR::TreeEvaluator::unImpOpEvaluator(node, cg);
+    return TR::TreeEvaluator::iRegStoreEvaluator(node, cg);
 }
 
 TR::Register *OMR::ARM64::TreeEvaluator::inlineVectorMaskedBinaryOp(TR::Node *node, TR::CodeGenerator *cg,
@@ -7307,7 +7308,7 @@ TR::Register *OMR::ARM64::TreeEvaluator::iRegLoadEvaluator(TR::Node *node, TR::C
     return (globalReg);
 }
 
-// Also handles sRegStore, bRegStore, lRegStore, and aRegStore
+// Also handles sRegStore, bRegStore, lRegStore, aRegStore, fRegStore, dRegStore, vRegStore, and mRegStore
 TR::Register *OMR::ARM64::TreeEvaluator::iRegStoreEvaluator(TR::Node *node, TR::CodeGenerator *cg)
 {
     TR::Node *child = node->getFirstChild();

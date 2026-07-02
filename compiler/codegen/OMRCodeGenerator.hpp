@@ -1328,9 +1328,6 @@ public:
 
     TR::RegisterIterator *setVMRegisterIterator(TR::RegisterIterator *iter) { return (_vmRegisterIterator = iter); }
 
-    // X86 only
-    uint32_t estimateBinaryLength(TR::MemoryReference *) { return 0; }
-
     void dumpDataSnippets(OMR::Logger *log) {}
 
     // --------------------------------------------------------------------------

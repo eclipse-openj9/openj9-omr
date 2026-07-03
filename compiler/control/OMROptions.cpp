@@ -855,6 +855,8 @@ TR::OptionTable OMR::Options::_jitOptions[] = {
      "M\tDisable retrying code cache allocation when kind cannot be respected", SET_OPTION_BIT(TR_DisableRetryCodeCacheAllocAndIgnoreKind), "F", NOT_IN_SUBSET },
     { "disableRMODE64", "O\tDisable residence mode of compiled bodies on z/OS to reside above the 2-gigabyte bar",
      RESET_OPTION_BIT(TR_EnableRMODE64), "F" },
+    { "disableRuntimeAssumptionDataDisclaiming",
+     "M\tdisable memory disclaiming for Runtime Assumption memory segments (linux specific).", SET_OPTION_BIT(TR_DisableRuntimeAssumptionDataDisclaiming), "F", NOT_IN_SUBSET },
     { "disableRXusage", "O\tdisable increased usage of RX instructions", SET_OPTION_BIT(TR_DisableRXusage), "F" },
     { "disableSamplingJProfiling", "O\tDisable profiling in the jitted code",
      SET_OPTION_BIT(TR_DisableSamplingJProfiling), "F" },

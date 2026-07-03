@@ -712,6 +712,15 @@ bool OMR::ARM64::CodeGenerator::getSupportsOpCodeForAutoSIMD(TR::CPU *cpu, TR::I
         case TR::vsqrt:
         case TR::vmsqrt:
             return (et == TR::Float || et == TR::Double);
+        case TR::vconv: {
+            // Expanding/contracting conversions are not supported
+            TR::DataType st = opcode.getVectorSourceDataType().getVectorElementType();
+            if ((st == TR::Int32 && et == TR::Float) || (st == TR::Int64 && et == TR::Double)
+                || (st == TR::Float && et == TR::Int32) || (st == TR::Double && et == TR::Int64))
+                return true;
+            else
+                return false;
+        }
         case TR::mand:
         case TR::mor:
         case TR::mxor:

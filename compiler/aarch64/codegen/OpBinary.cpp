@@ -675,6 +675,10 @@ const OMR::ARM64::InstOpCode::OpCodeBinaryEntry OMR::ARM64::InstOpCode::binaryEn
     0x1E620000, /* SCVTF     	scvtf_wtod	 */
     0x9E220000, /* SCVTF     	scvtf_xtos	 */
     0x9E620000, /* SCVTF     	scvtf_xtod	 */
+    0x4EA1B800, /* FCVTZS    	vfcvtzs_stow4s	 */
+    0x4EE1B800, /* FCVTZS    	vfcvtzs_dtox2d	 */
+    0x4E21D800, /* SCVTF     	vscvtf_wtos4s	 */
+    0x4E61D800, /* SCVTF     	vscvtf_xtod2d	 */
     /* Floating-Point Immediate */
     0x1E201000, /* FMOV      	fmovimms	 */
     0x1E601000, /* FMOV      	fmovimmd	 */

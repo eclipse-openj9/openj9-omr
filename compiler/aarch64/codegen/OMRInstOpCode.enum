@@ -670,6 +670,10 @@
 		scvtf_wtod,                                             	/* 0x1E620000	SCVTF     	 */
 		scvtf_xtos,                                             	/* 0x9E220000	SCVTF     	 */
 		scvtf_xtod,                                             	/* 0x9E620000	SCVTF     	 */
+		vfcvtzs_stow4s,                                         	/* 0x4EA1B800	FCVTZS    	 */
+		vfcvtzs_dtox2d,                                         	/* 0x4EE1B800	FCVTZS    	 */
+		vscvtf_wtos4s,                                          	/* 0x4E21D800	SCVTF     	 */
+		vscvtf_xtod2d,                                          	/* 0x4E61D800	SCVTF     	 */
 	/* Floating-Point Immediate */
 		fmovimms,                                               	/* 0x1E201000	FMOV      	 */
 		fmovimmd,                                               	/* 0x1E601000	FMOV      	 */

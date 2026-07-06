@@ -5872,7 +5872,7 @@ TR::Register *OMR::ARM64::TreeEvaluator::arraytranslateEvaluator(TR::Node *node,
 
     int numDeps = 9 + (useX3 ? 1 : 0) + (useX6 ? 1 : 0) + (useV2 ? 1 : 0) + (useV3 ? 1 : 0);
 
-    static bool verboseArrayTranslate = (feGetEnv("TR_verboseArrayTranslate") != NULL);
+    static const bool verboseArrayTranslate = (feGetEnv("TR_verboseArrayTranslate") != NULL);
     if (verboseArrayTranslate) {
         fprintf(stderr, "arrayTranslate: %s @ %s [isSourceByteArray: %d] [child(3): %x] x3=%d x6=%d v2=%d v3=%d\n",
             comp->signature(), comp->getHotnessName(comp->getMethodHotness()), isSourceByteArray,
@@ -5950,7 +5950,7 @@ TR::Register *OMR::ARM64::TreeEvaluator::arraysetEvaluator(TR::Node *node, TR::C
     TR::Node *dstNode = node->getFirstChild();
     TR::Node *valueNode = node->getSecondChild();
     TR::Node *lengthNode = node->getThirdChild();
-    static char *optimizedArrayLengthStr = feGetEnv("TR_ConstArraySetOptLength");
+    static const char *optimizedArrayLengthStr = feGetEnv("TR_ConstArraySetOptLength");
     static const int32_t constLoopLen
         = std::min(std::max(((optimizedArrayLengthStr != NULL) ? atoi(optimizedArrayLengthStr) : 256), 128), 512);
     static const int32_t alignmentThresholdLength = constLoopLen;

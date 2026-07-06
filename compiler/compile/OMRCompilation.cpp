@@ -310,8 +310,13 @@ OMR::Compilation::Compilation(int32_t id, OMR_VMThread *omrVMThread, TR_FrontEnd
     // while the PersistentMethodInfo is allocated during codegen creation
     // Access to this list must be performed with assumptionTableMutex in hand
     //
-    if (!options.getOption(TR_DisableFastAssumptionReclamation))
-        _metadataAssumptionList = new (m->trPersistentMemory()) TR::SentinelRuntimeAssumption();
+    if (!options.getOption(TR_DisableFastAssumptionReclamation)) {
+        void *mem = TR_RuntimeAssumptionTable::allocateRAPersistentMemory(sizeof(TR::SentinelRuntimeAssumption));
+        if (mem == NULL)
+            self()->failCompilation<TR::CompilationException>(
+                "Cannot allocate persistent memory for Runtime Assumption");
+        _metadataAssumptionList = ::new (mem) TR::SentinelRuntimeAssumption();
+    }
 #endif
 
     // Random fields must be set before allocating codegen

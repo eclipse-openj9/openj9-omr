@@ -107,7 +107,7 @@ public:
 
 	virtual uintptr_t releaseFreeMemoryPages(MM_EnvironmentBase* env, uintptr_t memoryType);
 
-	virtual MMINLINE uintptr_t getContractionSize() const { return _memorySubSpaceOld->getContractionSize(); }
+	virtual uintptr_t getContractionSize() const { return _memorySubSpaceOld->getContractionSize(); }
 
 	/**
 	 * Create a MemorySubSpaceGenerational object.

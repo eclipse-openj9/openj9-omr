@@ -144,7 +144,7 @@ JavaBlobGenerator::BuildBlobInfo::initializeBitfieldFormat(uint8_t *bitfieldForm
 	} else if ((slot0 == 0xFC180F09) && (slot1 == 0x572AC676)) {
 		*bitfieldFormat = 2;
 	} else {
-		ERRMSG("Unable to determine bitfield format from %08X %08X\n", slot0, slot1);
+		ERRMSG("Unable to determine bitfield format from %08X %08X", slot0, slot1);
 		rc = DDR_RC_ERROR;
 	}
 
@@ -288,7 +288,7 @@ JavaBlobGenerator::genBinaryBlob(OMRPortLibrary *portLibrary, Symbol_IR *ir, con
 		fd = omrfile_open(blobFile, EsOpenCreate | EsOpenWrite | EsOpenAppend | EsOpenTruncate, 0644);
 		_buildInfo.fd = fd;
 		if (-1 == fd) {
-			ERRMSG("Failed to open file blob.dat for writing.\n");
+			ERRMSG("Failed to open file blob.dat for writing.");
 			rc = DDR_RC_ERROR;
 		}
 	}
@@ -318,10 +318,10 @@ JavaBlobGenerator::genBinaryBlob(OMRPortLibrary *portLibrary, Symbol_IR *ir, con
 		}
 
 		if (amountWritten != (intptr_t)_buildInfo.header.structDataSize) {
-			ERRMSG("Wrote %u fields, %u constants, %u structs.\nCounted %u fields, %u constants, %u structures.\n",
+			ERRMSG("Wrote %u fields, %u constants, %u structs.\nCounted %u fields, %u constants, %u structures.",
 				   f_ix, c_ix, (uint32_t)(_buildInfo.curBlobStruct - _buildInfo.blobStructs),
 				   _buildInfo.fieldCount, _buildInfo.constCount, _buildInfo.header.structureCount);
-			ERRMSG("Expected %u to be written, but %u was written.\n",
+			ERRMSG("Expected %u to be written, but %u was written.",
 					(uint32_t)_buildInfo.header.structDataSize, (uint32_t)amountWritten);
 		}
 

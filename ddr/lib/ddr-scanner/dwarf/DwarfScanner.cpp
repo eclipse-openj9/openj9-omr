@@ -260,7 +260,7 @@ DwarfScanner::getSourcelist(Dwarf_Die die)
 	Dwarf_Attribute attr = NULL;
 
 	if (DW_DLV_ERROR == dwarf_hasattr(die, DW_AT_comp_dir, &hasAttr, &error)) {
-		ERRMSG("Checking for compilation directory attribute: %s\n", dwarf_errmsg(error));
+		ERRMSG("Checking for compilation directory attribute: %s", dwarf_errmsg(error));
 		goto Failed;
 	}
 
@@ -274,21 +274,21 @@ DwarfScanner::getSourcelist(Dwarf_Die die)
 
 	/* Get the CU directory. */
 	if (DW_DLV_ERROR == dwarf_attr(die, DW_AT_comp_dir, &attr, &error)) {
-		ERRMSG("Getting compilation directory attribute: %s\n", dwarf_errmsg(error));
+		ERRMSG("Getting compilation directory attribute: %s", dwarf_errmsg(error));
 		goto Failed;
 	}
 
 	if (DW_DLV_ERROR == dwarf_formstring(attr, &compDir, &error)) {
-		ERRMSG("Getting compilation directory string: %s\n", dwarf_errmsg(error));
+		ERRMSG("Getting compilation directory string: %s", dwarf_errmsg(error));
 		goto Failed;
 	}
 
 	/* Get the dwarf source file names. */
 	if (DW_DLV_ERROR == dwarf_srcfiles(die, &_fileNamesTable, &_fileNameCount, &error)) {
-		ERRMSG("Failed to get list of source files: %s\n", dwarf_errmsg(error));
+		ERRMSG("Failed to get list of source files: %s", dwarf_errmsg(error));
 		goto Done;
 	} else if (_fileNameCount < 0) {
-		ERRMSG("List of source files has negative length: %lld\n", _fileNameCount);
+		ERRMSG("List of source files has negative length: %lld", _fileNameCount);
 		goto Done;
 	}
 
@@ -296,7 +296,7 @@ DwarfScanner::getSourcelist(Dwarf_Die die)
 		/* Allocate a new file name table to hold the concatenated absolute paths. */
 		fileNamesTableConcat = (char **)malloc(sizeof(char *) * _fileNameCount);
 		if (NULL == fileNamesTableConcat) {
-			ERRMSG("Failed to allocate file name table.\n");
+			ERRMSG("Failed to allocate file name table.");
 			goto Failed;
 		}
 		memset(fileNamesTableConcat, 0, sizeof(char *) * _fileNameCount);
@@ -385,7 +385,7 @@ DwarfScanner::excludedDie(Dwarf_Die die, bool *dieExcluded)
 	} else {
 		Dwarf_Bool hasDeclFile = false;
 		if (DW_DLV_ERROR == dwarf_hasattr(die, DW_AT_decl_file, &hasDeclFile, &err)) {
-			ERRMSG("Checking if die has attribute decl_file: %s\n", dwarf_errmsg(err));
+			ERRMSG("Checking if die has attribute decl_file: %s", dwarf_errmsg(err));
 			rc = DDR_RC_ERROR;
 			goto Done;
 		}
@@ -395,7 +395,7 @@ DwarfScanner::excludedDie(Dwarf_Die die, bool *dieExcluded)
 			/* If the Die has the attribute, then get the attribute and its value. */
 			Dwarf_Attribute attr = NULL;
 			if (DW_DLV_ERROR == dwarf_attr(die, DW_AT_decl_file, &attr, &err)) {
-				ERRMSG("Getting attr decl_file: %s\n", dwarf_errmsg(err));
+				ERRMSG("Getting attr decl_file: %s", dwarf_errmsg(err));
 				rc = DDR_RC_ERROR;
 				goto Done;
 			}
@@ -478,7 +478,7 @@ DwarfScanner::getName(Dwarf_Die die, string *name, Dwarf_Off *dieOffset)
 
 	if (NULL != dieOffset) {
 		if (DW_DLV_ERROR == dwarf_dieoffset(die, dieOffset, &err)) {
-			ERRMSG("Failed to get dwarf die offset: %s\n", dwarf_errmsg(err));
+			ERRMSG("Failed to get dwarf die offset: %s", dwarf_errmsg(err));
 			rc = DDR_RC_ERROR;
 		}
 	}
@@ -488,13 +488,13 @@ DwarfScanner::getName(Dwarf_Die die, string *name, Dwarf_Off *dieOffset)
 		int dwarfRC = dwarf_diename(die, &dieName, &err);
 
 		if (DW_DLV_ERROR == dwarfRC) {
-			ERRMSG("Error in dwarf_diename: %s\n", dwarf_errmsg(err));
+			ERRMSG("Error in dwarf_diename: %s", dwarf_errmsg(err));
 			rc = DDR_RC_ERROR;
 		} else if (DW_DLV_NO_ENTRY == dwarfRC) {
 			/* If the Die has no name attribute, check for specification reference instead. */
 			Dwarf_Bool hasAttr = false;
 			if (DW_DLV_ERROR == dwarf_hasattr(die, DW_AT_specification, &hasAttr, &err)) {
-				ERRMSG("Checking if die has specification attribute: %s\n", dwarf_errmsg(err));
+				ERRMSG("Checking if die has specification attribute: %s", dwarf_errmsg(err));
 				rc = DDR_RC_ERROR;
 				goto NameDone;
 			}
@@ -502,7 +502,7 @@ DwarfScanner::getName(Dwarf_Die die, string *name, Dwarf_Off *dieOffset)
 				/* If it has a specification attribute, check the specification for a name recursively. */
 				Dwarf_Attribute attr = NULL;
 				if (DW_DLV_ERROR == dwarf_attr(die, DW_AT_specification, &attr, &err)) {
-					ERRMSG("Getting specification attribute: %s\n", dwarf_errmsg(err));
+					ERRMSG("Getting specification attribute: %s", dwarf_errmsg(err));
 					rc = DDR_RC_ERROR;
 					goto NameDone;
 				}
@@ -510,7 +510,7 @@ DwarfScanner::getName(Dwarf_Die die, string *name, Dwarf_Off *dieOffset)
 				int ret = dwarf_global_formref(attr, &offset, &err);
 				dwarf_dealloc(_debug, attr, DW_DLA_ATTR);
 				if (DW_DLV_ERROR == ret) {
-					ERRMSG("Getting formref of specification: %s\n", dwarf_errmsg(err));
+					ERRMSG("Getting formref of specification: %s", dwarf_errmsg(err));
 					rc = DDR_RC_ERROR;
 					goto NameDone;
 				}
@@ -522,7 +522,7 @@ DwarfScanner::getName(Dwarf_Die die, string *name, Dwarf_Off *dieOffset)
 					DW_DLV_ERROR == dwarf_offdie_b(_debug, offset, 1, &spec, &err)
 #endif /* defined(J9ZOS390) */
 				) {
-					ERRMSG("Getting die from specification offset: %s\n", dwarf_errmsg(err));
+					ERRMSG("Getting die from specification offset: %s", dwarf_errmsg(err));
 					rc = DDR_RC_ERROR;
 					goto NameDone;
 				}
@@ -561,14 +561,14 @@ DwarfScanner::getBitField(Dwarf_Die die, size_t *bitField)
 
 		/* Get the bit field attribute from a member Die if it exists. */
 		if (DW_DLV_ERROR == dwarf_hasattr(die, DW_AT_bit_size, &hasAttr, &err)) {
-			ERRMSG("Checking if die has bit size attribute: %s\n", dwarf_errmsg(err));
+			ERRMSG("Checking if die has bit size attribute: %s", dwarf_errmsg(err));
 			rc = DDR_RC_ERROR;
 			goto Done;
 		}
 		if (hasAttr) {
 			Dwarf_Attribute attr = NULL;
 			if (DW_DLV_ERROR == dwarf_attr(die, DW_AT_bit_size, &attr, &err)) {
-				ERRMSG("Getting bit_size attribute: %s\n", dwarf_errmsg(err));
+				ERRMSG("Getting bit_size attribute: %s", dwarf_errmsg(err));
 				rc = DDR_RC_ERROR;
 				goto Done;
 			}
@@ -625,7 +625,7 @@ DwarfScanner::getTypeInfo(Dwarf_Die die, Dwarf_Die *dieOut, string *typeName, Mo
 
 				/* Get the array size if it is an array. */
 				if (DW_DLV_ERROR == ret) {
-					ERRMSG("Error getting child Die of array type: %s\n", dwarf_errmsg(err));
+					ERRMSG("Error getting child Die of array type: %s", dwarf_errmsg(err));
 					rc = DDR_RC_ERROR;
 					break;
 				} else if (DW_DLV_NO_ENTRY == ret) {
@@ -635,14 +635,14 @@ DwarfScanner::getTypeInfo(Dwarf_Die die, Dwarf_Die *dieOut, string *typeName, Mo
 					do {
 						Dwarf_Bool hasAttr = false;
 						if (DW_DLV_ERROR == dwarf_hasattr(child, DW_AT_upper_bound, &hasAttr, &err)) {
-							ERRMSG("Checking array for upper bound attribute: %s\n", dwarf_errmsg(err));
+							ERRMSG("Checking array for upper bound attribute: %s", dwarf_errmsg(err));
 							rc = DDR_RC_ERROR;
 							break;
 						}
 						if (hasAttr) {
 							Dwarf_Attribute attr = NULL;
 							if (DW_DLV_ERROR == dwarf_attr(child, DW_AT_upper_bound, &attr, &err)) {
-								ERRMSG("Array upper bound attribute: %s\n", dwarf_errmsg(err));
+								ERRMSG("Array upper bound attribute: %s", dwarf_errmsg(err));
 								rc = DDR_RC_ERROR;
 								break;
 							}
@@ -728,21 +728,21 @@ DwarfScanner::getTypeTag(Dwarf_Die die, Dwarf_Die *typeDie, Dwarf_Half *tag)
 	/* First, check if the die has a type attribute. */
 	Dwarf_Bool hasAttr = false;
 	if (DW_DLV_ERROR == dwarf_hasattr(die, DW_AT_type, &hasAttr, &err)) {
-		ERRMSG("Checking if die has type attr: %s\n", dwarf_errmsg(err));
+		ERRMSG("Checking if die has type attr: %s", dwarf_errmsg(err));
 		goto getTypeDone;
 	}
 	if (hasAttr) {
 		/* Get the type attribute. */
 		Dwarf_Attribute attr = NULL;
 		if (DW_DLV_ERROR == dwarf_attr(die, DW_AT_type, &attr, &err)) {
-			ERRMSG("Getting attr of type: %s\n", dwarf_errmsg(err));
+			ERRMSG("Getting attr of type: %s", dwarf_errmsg(err));
 			goto getTypeDone;
 		}
 
 		/* Check the form of the attribute. We only want reference forms. */
 		Dwarf_Half form = 0;
 		if (DW_DLV_ERROR == dwarf_whatform(attr, &form, &err)) {
-			ERRMSG("Getting attr form: %s\n", dwarf_errmsg(err));
+			ERRMSG("Getting attr form: %s", dwarf_errmsg(err));
 			dwarf_dealloc(_debug, attr, DW_DLA_ATTR);
 			goto getTypeDone;
 		} else if ((DW_FORM_ref1 != form)
@@ -750,7 +750,7 @@ DwarfScanner::getTypeTag(Dwarf_Die die, Dwarf_Die *typeDie, Dwarf_Half *tag)
 				&& (DW_FORM_ref4 != form)
 				&& (DW_FORM_ref8 != form)
 		) {
-			ERRMSG("Unexpected dwarf form %d\n", form);
+			ERRMSG("Unexpected dwarf form %d", form);
 			dwarf_dealloc(_debug, attr, DW_DLA_ATTR);
 			goto getTypeDone;
 		}
@@ -760,7 +760,7 @@ DwarfScanner::getTypeTag(Dwarf_Die die, Dwarf_Die *typeDie, Dwarf_Half *tag)
 		int ret = dwarf_global_formref(attr, &offset, &err);
 		dwarf_dealloc(_debug, attr, DW_DLA_ATTR);
 		if (DW_DLV_ERROR == ret) {
-			ERRMSG("Getting formref of type: %s\n", dwarf_errmsg(err));
+			ERRMSG("Getting formref of type: %s", dwarf_errmsg(err));
 			goto getTypeDone;
 		}
 
@@ -774,7 +774,7 @@ DwarfScanner::getTypeTag(Dwarf_Die die, Dwarf_Die *typeDie, Dwarf_Half *tag)
 			DW_DLV_ERROR == dwarf_offdie_b(_debug, offset, 1, &newDie, &err)
 #endif /* defined(J9ZOS390) */
 		) {
-			ERRMSG("Getting typedie from type offset: %s\n", dwarf_errmsg(err));
+			ERRMSG("Getting typedie from type offset: %s", dwarf_errmsg(err));
 			goto getTypeDone;
 		} else {
 			*typeDie = newDie;
@@ -782,7 +782,7 @@ DwarfScanner::getTypeTag(Dwarf_Die die, Dwarf_Die *typeDie, Dwarf_Half *tag)
 
 		/* Get the tag for this type. */
 		if (DW_DLV_ERROR == dwarf_tag(*typeDie, tag, &err)) {
-			ERRMSG("Getting tag from type die: %s\n", dwarf_errmsg(err));
+			ERRMSG("Getting tag from type die: %s", dwarf_errmsg(err));
 			goto getTypeDone;
 		}
 		rc = DDR_RC_OK;
@@ -809,12 +809,12 @@ DwarfScanner::getTypeSize(Dwarf_Die die, size_t *typeSize)
 
 		/* Get and return the byte_size attribute from the Die if available. */
 		if (DW_DLV_ERROR == dwarf_hasattr(die, DW_AT_byte_size, &hasAttr, &err)) {
-			ERRMSG("Checking if die has byte size attribute: %s\n", dwarf_errmsg(err));
+			ERRMSG("Checking if die has byte size attribute: %s", dwarf_errmsg(err));
 			rc = DDR_RC_ERROR;
 		} else if (hasAttr) {
 			Dwarf_Attribute attr = NULL;
 			if (DW_DLV_ERROR == dwarf_attr(die, DW_AT_byte_size, &attr, &err)) {
-				ERRMSG("Getting size attr of type: %s\n", dwarf_errmsg(err));
+				ERRMSG("Getting size attr of type: %s", dwarf_errmsg(err));
 				rc = DDR_RC_ERROR;
 			} else {
 				uint64_t byteSize = 0;
@@ -1018,7 +1018,7 @@ DwarfScanner::createNewType(Dwarf_Die die, Dwarf_Half tag, const char *dieName, 
 #if !defined(J9ZOS390)
 			dwarf_get_TAG_name(tag, &tagName);
 #endif /* !defined(J9ZOS390) */
-			ERRMSG("Symbol with name '%s' has unknown symbol tag: %s (%d)\n", dieName, tagName, tag);
+			ERRMSG("Symbol with name '%s' has unknown symbol tag: %s (%d)", dieName, tagName, tag);
 			rc = DDR_RC_ERROR;
 		}
 		break;
@@ -1046,7 +1046,7 @@ DwarfVisitor::visitTypedef(TypedefUDT *newTypedef) const
 			/* Get the tag for this type. */
 			Dwarf_Error err = NULL;
 			if (DW_DLV_ERROR == dwarf_tag(typeDie, &tag, &err)) {
-				ERRMSG("Getting tag from type die: %s\n", dwarf_errmsg(err));
+				ERRMSG("Getting tag from type die: %s", dwarf_errmsg(err));
 				rc = DDR_RC_ERROR;
 			}
 		}
@@ -1088,7 +1088,7 @@ DwarfVisitor::visitEnum(EnumUDT *newUDT) const
 		int dwRc = dwarf_child(_die, &childDie, &error);
 
 		if (DW_DLV_ERROR == dwRc) {
-			ERRMSG("Getting child of CU DIE: %s\n", dwarf_errmsg(error));
+			ERRMSG("Getting child of CU DIE: %s", dwarf_errmsg(error));
 			rc = DDR_RC_ERROR;
 		} else if (DW_DLV_NO_ENTRY == dwRc) {
 			/* No Children. Do nothing. */
@@ -1099,7 +1099,7 @@ DwarfVisitor::visitEnum(EnumUDT *newUDT) const
 			do {
 				Dwarf_Half childTag = 0;
 				if (DW_DLV_ERROR == dwarf_tag(childDie, &childTag, &error)) {
-					ERRMSG("Getting tag from UDT child: %s\n", dwarf_errmsg(error));
+					ERRMSG("Getting tag from UDT child: %s", dwarf_errmsg(error));
 					rc = DDR_RC_ERROR;
 					break;
 				}
@@ -1158,7 +1158,7 @@ DwarfScanner::scanClassChildren(NamespaceUDT *newClass, Dwarf_Die die)
 	int dwRc = dwarf_child(die, &childDie, &error);
 
 	if (DW_DLV_ERROR == dwRc) {
-		ERRMSG("Getting child of CU DIE: %s\n", dwarf_errmsg(error));
+		ERRMSG("Getting child of CU DIE: %s", dwarf_errmsg(error));
 		rc = DDR_RC_ERROR;
 	} else if (DW_DLV_NO_ENTRY == dwRc) {
 		/* No Children. Do nothing. */
@@ -1169,7 +1169,7 @@ DwarfScanner::scanClassChildren(NamespaceUDT *newClass, Dwarf_Die die)
 		do {
 			Dwarf_Half childTag = 0;
 			if (DW_DLV_ERROR == dwarf_tag(childDie, &childTag, &error)) {
-				ERRMSG("Getting tag from UDT child: %s\n", dwarf_errmsg(error));
+				ERRMSG("Getting tag from UDT child: %s", dwarf_errmsg(error));
 				rc = DDR_RC_ERROR;
 				break;
 			}
@@ -1274,12 +1274,12 @@ getConstValue(Dwarf_Debug debug, Dwarf_Attribute attr, const char *attrName, boo
 	/* Get the literal value form. */
 	/* Get the literal value. */
 	if (DW_DLV_ERROR == dwarf_whatform(attr, &form, &error)) {
-		ERRMSG("Getting form of %s attribute: %s\n", attrName, dwarf_errmsg(error));
+		ERRMSG("Getting form of %s attribute: %s", attrName, dwarf_errmsg(error));
 	} else if ((DW_FORM_block  == form) || (DW_FORM_block1 == form)
 			|| (DW_FORM_block2 == form) || (DW_FORM_block4 == form)) {
 		Dwarf_Block *block = NULL;
 		if (DW_DLV_ERROR == dwarf_formblock(attr, &block, &error)) {
-			ERRMSG("Getting block of %s attribute: %s\n", attrName, dwarf_errmsg(error));
+			ERRMSG("Getting block of %s attribute: %s", attrName, dwarf_errmsg(error));
 		} else {
 			/* Note: This assumes the host byte-order. */
 			switch (block->bl_len) {
@@ -1300,7 +1300,7 @@ getConstValue(Dwarf_Debug debug, Dwarf_Attribute attr, const char *attrName, boo
 				rc = DDR_RC_OK;
 				break;
 			default:
-				ERRMSG("Unsupported block size of %s attribute: %d\n", attrName, (int)block->bl_len);
+				ERRMSG("Unsupported block size of %s attribute: %d", attrName, (int)block->bl_len);
 				break;
 			}
 			dwarf_dealloc(debug, block, DW_DLA_BLOCK);
@@ -1312,7 +1312,7 @@ getConstValue(Dwarf_Debug debug, Dwarf_Attribute attr, const char *attrName, boo
 			*value = (uint64_t)(int64_t)svalue;
 			rc = DDR_RC_OK;
 		} else {
-			ERRMSG("Getting formudata of %s attribute: %s\n", attrName, dwarf_errmsg(error));
+			ERRMSG("Getting formudata of %s attribute: %s", attrName, dwarf_errmsg(error));
 		}
 	} else if (DW_FORM_udata == form) {
 		Dwarf_Unsigned uvalue = 0;
@@ -1321,7 +1321,7 @@ getConstValue(Dwarf_Debug debug, Dwarf_Attribute attr, const char *attrName, boo
 			*value = uvalue;
 			rc = DDR_RC_OK;
 		} else {
-			ERRMSG("Getting formudata of %s attribute: %s\n", attrName, dwarf_errmsg(error));
+			ERRMSG("Getting formudata of %s attribute: %s", attrName, dwarf_errmsg(error));
 		}
 	} else {
 		Dwarf_Signed svalue = 0;
@@ -1339,7 +1339,7 @@ getConstValue(Dwarf_Debug debug, Dwarf_Attribute attr, const char *attrName, boo
 				*value = uvalue;
 				rc = DDR_RC_OK;
 			} else {
-				ERRMSG("Getting formsdata of %s attribute: %s\n", attrName, dwarf_errmsg(error));
+				ERRMSG("Getting formsdata of %s attribute: %s", attrName, dwarf_errmsg(error));
 			}
 		} else {
 			if (DW_DLV_OK == dwarf_formudata(attr, &uvalue, &error)) {
@@ -1349,7 +1349,7 @@ getConstValue(Dwarf_Debug debug, Dwarf_Attribute attr, const char *attrName, boo
 				*value = (uint64_t)(int64_t)svalue;
 				rc = DDR_RC_OK;
 			} else {
-				ERRMSG("Getting formsdata of %s attribute: %s\n", attrName, dwarf_errmsg(error));
+				ERRMSG("Getting formsdata of %s attribute: %s", attrName, dwarf_errmsg(error));
 			}
 		}
 	}
@@ -1394,7 +1394,7 @@ DwarfScanner::addEnumMember(Dwarf_Die die, NamespaceUDT *outerUDT, EnumUDT *newE
 
 	/* Get the value attribute of the enum. */
 	if (DW_DLV_ERROR == dwarf_attr(die, DW_AT_const_value, &attr, &error)) {
-		ERRMSG("Getting value attribute of enum: %s\n", dwarf_errmsg(error));
+		ERRMSG("Getting value attribute of enum: %s", dwarf_errmsg(error));
 		goto AddEnumMemberError;
 	}
 
@@ -1469,13 +1469,13 @@ evaluateOffset(Dwarf_Ptr expr, Dwarf_Unsigned len, Dwarf_Unsigned *offset)
 				if (getUdata(&pc, &len, &value)) {
 					values.top() += value;
 				} else {
-					printf("Missing or malformed operand for opcode(%d)\n", opcode);
+					ERRMSG("Missing or malformed operand for opcode(%d)", opcode);
 					return false;
 				}
 			} else if ((DW_OP_lit0 <= opcode) && (opcode <= DW_OP_lit31)) {
 				values.push((Dwarf_Unsigned)(opcode - DW_OP_lit0));
 			} else {
-				printf("Unsupported opcode(%d) in exprloc\n", opcode);
+				ERRMSG("Unsupported opcode(%d) in exprloc", opcode);
 				return false;
 			}
 		} while (0 != len);
@@ -1508,12 +1508,12 @@ DwarfScanner::addClassField(Dwarf_Die die, ClassType *newClass, const string &fi
 		/* Get the field UDT. */
 		Dwarf_Half tag = 0;
 		if (NULL == baseDie) {
-			ERRMSG("Missing field type for field: %s. Possible missing or corrupt dwarf info.\n", fieldName.c_str());
+			ERRMSG("Missing field type for field: %s. Possible missing or corrupt dwarf info.", fieldName.c_str());
 			typeName = "void";
 			tag = DW_TAG_base_type;
 		} else {
 			if (DW_DLV_ERROR == dwarf_tag(baseDie, &tag, &error)) {
-				ERRMSG("Getting field's tag: %s\n", dwarf_errmsg(error));
+				ERRMSG("Getting field's tag: %s", dwarf_errmsg(error));
 				goto AddUDTFieldDone;
 			}
 		}
@@ -1530,20 +1530,20 @@ DwarfScanner::addClassField(Dwarf_Die die, ClassType *newClass, const string &fi
 
 			/* Get the external attribute from a member Die if it exists. */
 			if (DW_DLV_ERROR == dwarf_hasattr(die, DW_AT_external, &hasAttr, &error)) {
-				ERRMSG("Checking if die has external attribute: %s\n", dwarf_errmsg(error));
+				ERRMSG("Checking if die has external attribute: %s", dwarf_errmsg(error));
 				goto AddUDTFieldDone;
 			}
 			if (hasAttr) {
 				Dwarf_Attribute attr = NULL;
 				if (DW_DLV_ERROR == dwarf_attr(die, DW_AT_external, &attr, &error)) {
-					ERRMSG("Getting external attribute: %s\n", dwarf_errmsg(error));
+					ERRMSG("Getting external attribute: %s", dwarf_errmsg(error));
 					goto AddUDTFieldDone;
 				}
 				Dwarf_Bool isExternal = false;
 				int ret = dwarf_formflag(attr, &isExternal, &error);
 				dwarf_dealloc(_debug, attr, DW_DLA_ATTR);
 				if (DW_DLV_ERROR == ret) {
-					ERRMSG("Getting formflag of external attribute: %s\n", dwarf_errmsg(error));
+					ERRMSG("Getting formflag of external attribute: %s", dwarf_errmsg(error));
 					goto AddUDTFieldDone;
 				}
 				if (isExternal) {
@@ -1556,20 +1556,20 @@ DwarfScanner::addClassField(Dwarf_Die die, ClassType *newClass, const string &fi
 
 				/* Get the declaration attribute from a member Die if it exists. */
 				if (DW_DLV_ERROR == dwarf_hasattr(die, DW_AT_declaration, &hasAttr, &error)) {
-					ERRMSG("Checking if die has declaration attribute: %s\n", dwarf_errmsg(error));
+					ERRMSG("Checking if die has declaration attribute: %s", dwarf_errmsg(error));
 					goto AddUDTFieldDone;
 				}
 				if (hasAttr) {
 					Dwarf_Attribute attr = NULL;
 					if (DW_DLV_ERROR == dwarf_attr(die, DW_AT_declaration, &attr, &error)) {
-						ERRMSG("Getting declaration attribute: %s\n", dwarf_errmsg(error));
+						ERRMSG("Getting declaration attribute: %s", dwarf_errmsg(error));
 						goto AddUDTFieldDone;
 					}
 					Dwarf_Bool isDeclaration = false;
 					int ret = dwarf_formflag(attr, &isDeclaration, &error);
 					dwarf_dealloc(_debug, attr, DW_DLA_ATTR);
 					if (DW_DLV_ERROR == ret) {
-						ERRMSG("Getting formflag of declaration attribute: %s\n", dwarf_errmsg(error));
+						ERRMSG("Getting formflag of declaration attribute: %s", dwarf_errmsg(error));
 						goto AddUDTFieldDone;
 					}
 					if (isDeclaration) {
@@ -1583,12 +1583,12 @@ DwarfScanner::addClassField(Dwarf_Die die, ClassType *newClass, const string &fi
 			/* Get the offset (member_location) attribute. */
 			Dwarf_Bool hasAttrBytes = false;
 			if (DW_DLV_ERROR == dwarf_hasattr(die, DW_AT_data_member_location, &hasAttrBytes, &error)) {
-				ERRMSG("Checking if die has offset attribute: %s\n", dwarf_errmsg(error));
+				ERRMSG("Checking if die has offset attribute: %s", dwarf_errmsg(error));
 				goto AddUDTFieldDone;
 			}
 			Dwarf_Bool hasAttrBits = false;
 			if (DW_DLV_ERROR == dwarf_hasattr(die, DW_AT_data_bit_offset, &hasAttrBits, &error)) {
-				ERRMSG("Checking if die has bit offset attribute: %s\n", dwarf_errmsg(error));
+				ERRMSG("Checking if die has bit offset attribute: %s", dwarf_errmsg(error));
 				goto AddUDTFieldDone;
 			}
 			if (hasAttrBytes || hasAttrBits) {
@@ -1597,12 +1597,12 @@ DwarfScanner::addClassField(Dwarf_Die die, ClassType *newClass, const string &fi
 				uint64_t offset64 = 0;
 				Dwarf_Half attrType = hasAttrBytes ? DW_AT_data_member_location : DW_AT_data_bit_offset;
 				if (DW_DLV_ERROR == dwarf_attr(die, attrType, &attr, &error)) {
-					ERRMSG("Getting offset attribute: %s\n", dwarf_errmsg(error));
+					ERRMSG("Getting offset attribute: %s", dwarf_errmsg(error));
 					goto AddUDTFieldDone;
 				}
 				Dwarf_Half form = 0;
 				if (DW_DLV_ERROR == dwarf_whatform(attr, &form, &error)) {
-					ERRMSG("Getting form of offset attribute: %s\n", dwarf_errmsg(error));
+					ERRMSG("Getting form of offset attribute: %s", dwarf_errmsg(error));
 					goto FreeAttrThenDone;
 				}
 				if ((DW_FORM_block   == form)
@@ -1613,13 +1613,13 @@ DwarfScanner::addClassField(Dwarf_Die die, ClassType *newClass, const string &fi
 				) {
 					Dwarf_Block *block = NULL;
 					if (DW_DLV_ERROR == dwarf_formblock(attr, &block, &error)) {
-						ERRMSG("Getting block/exprloc of offset attribute: %s\n", dwarf_errmsg(error));
+						ERRMSG("Getting block/exprloc of offset attribute: %s", dwarf_errmsg(error));
 						goto FreeAttrThenDone;
 					}
 					bool ok = evaluateOffset(block->bl_data, block->bl_len, &offset);
 					dwarf_dealloc(_debug, block, DW_DLA_BLOCK);
 					if (!ok) {
-						ERRMSG("Cannot evaluate offset expression for %s.%s\n",
+						ERRMSG("Cannot evaluate offset expression for %s.%s",
 								newClass->_name.c_str(), fieldName.c_str());
 						goto FreeAttrThenDone;
 					}
@@ -1633,7 +1633,7 @@ FreeAttrThenDone:
 				dwarf_dealloc(_debug, attr, DW_DLA_ATTR);
 				newField->_offset = hasAttrBytes ? offset : (offset / 8);
 			} else if ("union" != newClass->getSymbolKindName()) {
-				ERRMSG("Missing offset attribute for %s.%s\n", newClass->_name.c_str(), fieldName.c_str());
+				ERRMSG("Missing offset attribute for %s.%s", newClass->_name.c_str(), fieldName.c_str());
 				goto AddUDTFieldDone;
 			}
 		}
@@ -1718,7 +1718,7 @@ DwarfScanner::traverse_cu_in_debug_section(Symbol_IR *ir)
 				&header_cu_type,
 				&error);
 		if (DW_DLV_ERROR == ret) {
-			ERRMSG("Failed to get next dwarf CU header.");
+			ERRMSG("Failed to get next dwarf CU header: %s", dwarf_errmsg(error));
 			rc = DDR_RC_ERROR;
 			break;
 		} else if (DW_DLV_OK != ret) {
@@ -1730,14 +1730,14 @@ DwarfScanner::traverse_cu_in_debug_section(Symbol_IR *ir)
 
 		/* Expect the CU to have a single sibling - a DIE */
 		if (DW_DLV_ERROR == ddr_dw_siblingof(_debug, cuDie, &cuDie, &error)) {
-			ERRMSG("Getting sibling of CU: %s\n", dwarf_errmsg(error));
+			ERRMSG("Getting sibling of CU: %s", dwarf_errmsg(error));
 			rc = DDR_RC_ERROR;
 			break;
 		}
 
 		if (!_excludedFiles.empty()) {
 			if (DDR_RC_OK != getSourcelist(cuDie)) {
-				ERRMSG("Failed to get source file list.\n");
+				ERRMSG("Failed to get source file list.");
 				rc = DDR_RC_ERROR;
 				break;
 			}
@@ -1747,7 +1747,7 @@ DwarfScanner::traverse_cu_in_debug_section(Symbol_IR *ir)
 		ret = dwarf_child(cuDie, &childDie, &error);
 		dwarf_dealloc(_debug, cuDie, DW_DLA_DIE);
 		if (DW_DLV_ERROR == ret) {
-			ERRMSG("Getting child of CU Die: %s\n", dwarf_errmsg(error));
+			ERRMSG("Getting child of CU Die: %s", dwarf_errmsg(error));
 			rc = DDR_RC_ERROR;
 			break;
 		}
@@ -1760,7 +1760,7 @@ DwarfScanner::traverse_cu_in_debug_section(Symbol_IR *ir)
 			DEBUGPRINTF("Going over child die");
 			Dwarf_Half tag;
 			if (DW_DLV_ERROR == dwarf_tag(childDie, &tag, &error)) {
-				ERRMSG("In dwarf_tag: %s\n", dwarf_errmsg(error));
+				ERRMSG("In dwarf_tag: %s", dwarf_errmsg(error));
 				rc = DDR_RC_ERROR;
 				break;
 			}
@@ -1773,7 +1773,7 @@ DwarfScanner::traverse_cu_in_debug_section(Symbol_IR *ir)
 				|| (tag == DW_TAG_typedef)
 			) {
 				if (DDR_RC_OK != addDieToIR(childDie, tag, NULL, NULL)) {
-					ERRMSG("Failed to add type.\n");
+					ERRMSG("Failed to add type.");
 					rc = DDR_RC_ERROR;
 					break;
 				}
@@ -1804,7 +1804,7 @@ DwarfScanner::startScan(OMRPortLibrary *portLibrary, Symbol_IR *ir, vector<strin
 			Symbol_IR newIR(ir);
 			rc = scanFile(portLibrary, &newIR, it->c_str());
 			if (DDR_RC_OK != rc) {
-				ERRMSG("Failure scanning %s\n", it->c_str());
+				ERRMSG("Failure scanning %s", it->c_str());
 				break;
 			}
 			ir->mergeIR(&newIR);
@@ -1823,7 +1823,7 @@ DwarfScanner::scanFile(OMRPortLibrary *portLibrary, Symbol_IR *ir, const char *f
 	Dwarf_Error error = NULL;
 	intptr_t fd = omrfile_open(filepath, EsOpenRead, 0);
 	if (fd < 0) {
-		ERRMSG("Failure attempting to open %s\nExiting...\n", filepath);
+		ERRMSG("Failure attempting to open %s\nExiting...", filepath);
 		rc = DDR_RC_ERROR;
 	}
 
@@ -1844,7 +1844,7 @@ DwarfScanner::scanFile(OMRPortLibrary *portLibrary, Symbol_IR *ir, const char *f
 #endif /* defined(J9ZOS390) && defined(__open_xl__) && !defined(OMR_EBCDIC) */
 
 		if (DW_DLV_OK != res) {
-			ERRMSG("Failed to initialize libDwarf scanning %s: %s\nExiting...\n", filepath, dwarf_errmsg(error));
+			ERRMSG("Failed to initialize libDwarf scanning %s: %s\nExiting...", filepath, dwarf_errmsg(error));
 			if (NULL != error) {
 				dwarf_dealloc(_debug, error, DW_DLA_ERROR);
 			}
@@ -1862,7 +1862,7 @@ DwarfScanner::scanFile(OMRPortLibrary *portLibrary, Symbol_IR *ir, const char *f
 
 		res = ddr_dw_finish(_debug, &error);
 		if (DW_DLV_OK != res) {
-			ERRMSG("Failed to Unload libDwarf: %s\nExiting...\n", dwarf_errmsg(error));
+			ERRMSG("Failed to Unload libDwarf: %s\nExiting...", dwarf_errmsg(error));
 			if (NULL != error) {
 				dwarf_dealloc(_debug, error, DW_DLA_ERROR);
 			}
@@ -1906,7 +1906,7 @@ DwarfScanner::getNextSibling(Dwarf_Die *die)
 	/* Get the next sibling and free the previous one if successful. */
 	int ret = ddr_dw_siblingof(_debug, *die, &nextSibling, &err);
 	if (DW_DLV_ERROR == ret) {
-		ERRMSG("Getting sibling of die:%s\n", dwarf_errmsg(err));
+		ERRMSG("Getting sibling of die:%s", dwarf_errmsg(err));
 	} else if (DW_DLV_OK == ret) {
 		rc = DDR_RC_OK;
 		*die = nextSibling;

@@ -83,7 +83,7 @@ Symbol_IR::applyOverridesList(const char *overridesListFile)
 
 	/* Read list of type override files from specified file. */
 	if (!listFile.openRead(overridesListFile)) {
-		ERRMSG("Failure attempting to open %s\nExiting...\n", overridesListFile);
+		ERRMSG("Failure attempting to open %s\nExiting...", overridesListFile);
 		rc = DDR_RC_ERROR;
 	} else {
 		string line;
@@ -173,7 +173,7 @@ Symbol_IR::readOverridesFile(const char *overridesFile, OverrideInfo *overrideIn
 
 	/* Read list of type overrides from specified file. */
 	if (!file.openRead(overridesFile)) {
-		ERRMSG("Failure attempting to open %s\nExiting...\n", overridesFile);
+		ERRMSG("Failure attempting to open %s\nExiting...", overridesFile);
 		rc = DDR_RC_ERROR;
 	} else {
 		const string blobprefix = "ddrblob.";

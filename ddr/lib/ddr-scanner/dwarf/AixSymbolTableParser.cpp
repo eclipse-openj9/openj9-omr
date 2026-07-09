@@ -335,7 +335,7 @@ static void
 addRefToPopulate(int typeId, Dwarf_Attribute attribute)
 {
 	if (0 == typeId) {
-		ERRMSG("Bad type reference:\n%s\n", stabsString.c_str());
+		ERRMSG("Bad type reference:\n%s", stabsString.c_str());
 		exit(1);
 	}
 	refsToPopulate.push_back(make_pair<int, Dwarf_Attribute>((int)typeId, (Dwarf_Attribute)attribute));
@@ -1569,7 +1569,7 @@ populateAttributeReferences()
 		die_map::const_iterator existingDieEntry = dieMap->find(id);
 
 		if (dieMap->end() == existingDieEntry) {
-			ERRMSG("Cannot resolve reference to type %d\n", id);
+			ERRMSG("Cannot resolve reference to type %d", id);
 			ret = DW_DLV_ERROR;
 		} else {
 			Dwarf_Attribute attr = fixup->second;

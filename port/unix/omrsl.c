@@ -147,7 +147,7 @@ omrsl_open_shared_library(struct OMRPortLibrary *portLibrary, char *name, uintpt
 
 	/* No need to name mangle if a handle to the executable is requested for. */
 	if (!openExec && decorate) {
-		char *p = strrchr(name, '/');
+		const char *p = strrchr(name, '/');
 		if (NULL != p) {
 			/* the names specifies a path */
 			pathLength = portLibrary->str_printf(portLibrary, mangledName, (MAX_STRING_LENGTH + 1), "%.*slib%s" PLATFORM_DLL_EXTENSION, (uintptr_t)p + 1 - (uintptr_t)name, name, p + 1);
@@ -182,7 +182,7 @@ omrsl_open_shared_library(struct OMRPortLibrary *portLibrary, char *name, uintpt
 
 		if (0 != rc) {
 			/* find the directory of the port library shared object */
-			char *dirSep = strrchr(libraryInfo.dli_fname, '/');
+			const char *dirSep = strrchr(libraryInfo.dli_fname, '/');
 			/* retry only if the path will be different than the attempt above */
 			if (NULL != dirSep) {
 				/* +1 so length includes the '/' */

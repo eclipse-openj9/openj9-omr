@@ -62,10 +62,27 @@ TR::CodeCacheSymbolContainer *OMR::CodeCacheManager::_symbolContainer = NULL;
 
 OMR::CodeCacheManager::CodeCacheManager(TR::RawAllocator rawAllocator)
     : _rawAllocator(rawAllocator)
+    , _config()
+    , _lastCache(NULL)
+    , _codeCacheList()
+    , _curNumberOfCodeCaches(0)
+    , _repositoryCodeCache(NULL)
+    , _codeCacheRepositorySegment(NULL)
+    , _codeCacheRepositoryMonitor(NULL)
     , _initialized(false)
+    , _lowCodeCacheSpaceThresholdReached(false)
     , _codeCacheFull(false)
+    , _usageMonitor(NULL)
     , _currTotalUsedInBytes(0)
     , _maxUsedInBytes(0)
+#if HOST_OS == OMR_LINUX
+    , _elfExecutableGenerator(NULL)
+    , _elfRelocatableGenerator(NULL)
+    , _relocatableSymbolContainer(NULL)
+    , _relocations(NULL)
+    , _resolver()
+    , _objectFileName(NULL)
+#endif // HOST_OS == OMR_LINUX
 {
     _codeCacheManager = self();
 }

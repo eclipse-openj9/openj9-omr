@@ -1241,9 +1241,10 @@ TR::Register *OMR::ARM64::TreeEvaluator::mFirstTrueEvaluator(TR::Node *node, TR:
         case TR::Double:
             /*
              * ext     v1.16b, v0.16b, v0.16b, #2
-             * umov    w0, v1.4s[3]                ; Byte 2-3 has the mask value of the lane 0. Byte 0-1 has the value
-             * of the lane 1. clz     w0, w0                      ; Counts leading zeros. lsr     w0, w0, #4 ; Divides
-             * by 16.
+             * umov    w0, v1.4s[3]                ; Byte 2-3 has the mask value of the lane 0.
+             *                                     ; Byte 0-1 has the mask value of the lane 1.
+             * clz     w0, w0                      ; Counts leading zeros.
+             * lsr     w0, w0, #4                  ; Divides by 16.
              */
             generateTrg1Src2ImmInstruction(cg, TR::InstOpCode::vext16b, node, tempReg, maskReg, maskReg, 2);
             generateMovVectorElementToGPRInstruction(cg, TR::InstOpCode::umovws, node, resReg, tempReg, 3);
@@ -1373,12 +1374,14 @@ TR::Register *OMR::ARM64::TreeEvaluator::mToLongBitsEvaluator(TR::Node *node, TR
         case TR::Int8:
             /*
              * shrn    v1.8b, v0.8h, #7            ; Moves mask values to bit 0 and 1 of the lane 0 - 7.
-             * sli     v1.16b, v1.16b, #6          ; Shifts left v1 by 6 bits and inserts into v1. bit 6 - 9 of the lane
-             * 0, 1, 2 and 3 have mask values. ushr    v1.8h, v1.8h, #6            ; Moves mask values to bit 0 - 3 of
-             * each lane. sli     v1.8h, v1.8h, #12           ; Shifts left v1 by 12 bits and inserts into v1. bit 12 -
-             * 19 of the lane 0 and 1 have mask values. umov    x0, v1.2d[0]                ; Mask values at bit 12 - 19
-             * and bit 44 - 51. bfi     x0, x0, #24, #20            ; Inserts bit 0 - 19 into bit 24 - 43. ubfx    x0,
-             * x0, #36, #16            ; Moves bit 36 - 51 to bit 0 - 15. Other bits are cleared.
+             * sli     v1.16b, v1.16b, #6          ; Shifts left v1 by 6 bits and inserts into v1.
+             *                                     ; Bits 6 - 9 of the lane 0, 1, 2 and 3 have mask values.
+             * ushr    v1.8h, v1.8h, #6            ; Moves mask values to bit 0 - 3 of each lane.
+             * sli     v1.8h, v1.8h, #12           ; Shifts left v1 by 12 bits and inserts into v1.
+             *                                     ; Bits 12 - 19 of the lane 0 and 1 have mask values.
+             * umov    x0, v1.2d[0]                ; Mask values at bit 12 - 19 and bit 44 - 51.
+             * bfi     x0, x0, #24, #20            ; Inserts bit 0 - 19 into bit 24 - 43.
+             * ubfx    x0, x0, #36, #16            ; Moves bit 36 - 51 to bit 0 - 15. Other bits are cleared.
              */
             generateVectorShiftImmediateInstruction(cg, TR::InstOpCode::vshrn_8b, node, tempReg, maskReg, 7);
             generateVectorShiftImmediateInstruction(cg, TR::InstOpCode::vsli16b, node, tempReg, tempReg, 6);
@@ -1391,9 +1394,11 @@ TR::Register *OMR::ARM64::TreeEvaluator::mToLongBitsEvaluator(TR::Node *node, TR
         case TR::Int16:
             /*
              * shrn    v1.4h, v0.4s, #15           ; Moves mask values to bit 0 and 1 of the lane 0 - 3.
-             * sli     v1.8h, v1.8h, #14           ; Shifts left v1 by 14 bits and inserts into v1. bit 14 - 17 of the
-             * lane 0 and 1 have mask values. umov    w0, v1.2d[0] bfi     x0, x0, #28, #18            ; Inserts bit 0 -
-             * 17 into bit 28 - 45. ubfx    x0, x0, #42, #8             ; Moves bit 42 - 49 to bit 0 - 7.
+             * sli     v1.8h, v1.8h, #14           ; Shifts left v1 by 14 bits and inserts into v1.
+             *                                     ; Bits 14 - 17 of the lane 0 and 1 have mask values.
+             * umov    w0, v1.2d[0]
+             * bfi     x0, x0, #28, #18            ; Inserts bit 0 - 17 into bit 28 - 45.
+             * ubfx    x0, x0, #42, #8             ; Moves bit 42 - 49 to bit 0 - 7.
              */
             generateVectorShiftImmediateInstruction(cg, TR::InstOpCode::vshrn_4h, node, tempReg, maskReg, 15);
             generateVectorShiftImmediateInstruction(cg, TR::InstOpCode::vsli8h, node, tempReg, tempReg, 14);
@@ -1455,14 +1460,16 @@ TR::Register *OMR::ARM64::TreeEvaluator::mLongBitsToMaskEvaluator(TR::Node *node
         case TR::Int8:
             /*
              * fmov    d0, x0
-             * sli     v0.2d, v0.2d, #24           ; Shifts left v0 by 24 bits and inserts into v0. bit 0 - 7 of the
-             * lane 0 and 1 in int32x4 vector have mask values. sli     v0.4s, v0.4s, #12           ; Shifts left v0 by
-             * 12 bits and inserts into v0. bit 0 - 3 of the lane 0 - 3 in int16x8 vector have mask values. sli v0.8h,
-             * v0.8h, #6            ; Shifts left v0 by 6 bits and inserts into v0. bit 0 - 1 of the lane 0 - 7 in
-             * int8x16 vector have mask values. uxtl    v0.8h, v0.8b                ; bit 0 - 1 of the lane 0 - 7 in
-             * int16x8 vector have mask values. movi    v1.16b, #1 sli     v0.8h, v0.8h, #7            ; bit 0 of each
-             * lane in int8x16 vector have mask values. cmtst   v0.16b, v0.16b, v1.16b      ; test if bit 0 of each lane
-             * is set
+             * sli     v0.2d, v0.2d, #24           ; Shifts left v0 by 24 bits and inserts into v0.
+             *                                     ; Bits 0 - 7 of the lane 0 and 1 in int32x4 vector have mask values.
+             * sli     v0.4s, v0.4s, #12           ; Shifts left v0 by 12 bits and inserts into v0.
+             *                                     ; Bits 0 - 3 of the lane 0 - 3 in int16x8 vector have mask values.
+             * sli     v0.8h, v0.8h, #6            ; Shifts left v0 by 6 bits and inserts into v0.
+             *                                     ; Bits 0 - 1 of the lane 0 - 7 in int8x16 vector have mask values.
+             * uxtl    v0.8h, v0.8b                ; Bits 0 - 1 of the lane 0 - 7 in int16x8 vector have mask values.
+             * movi    v1.16b, #1
+             * sli     v0.8h, v0.8h, #7            ; Bit 0 of each lane in int8x16 vector have mask values.
+             * cmtst   v0.16b, v0.16b, v1.16b      ; Tests if bit 0 of each lane is set
              */
             generateTrg1Src1Instruction(cg, TR::InstOpCode::fmov_xtod, node, maskReg, srcReg);
             generateVectorShiftImmediateInstruction(cg, TR::InstOpCode::vsli2d, node, maskReg, maskReg, 24);
@@ -1476,12 +1483,15 @@ TR::Register *OMR::ARM64::TreeEvaluator::mLongBitsToMaskEvaluator(TR::Node *node
         case TR::Int16:
             /*
              * fmov    d0, x0
-             * sli     v0.2d, v0.2d, #28           ; Shifts left v0 by 28 bits and inserts into v0. bit 0 - 3 of the
-             * lane 0 and 1 in int32x4 vector have mask values. sli     v0.4s, v0.4s, #14           ; Shifts left v0 by
-             * 14 bits and inserts into v0. bit 0 - 1 of the lane 0 - 3 in int16x8 vector have mask values. sli v0.8h,
-             * v0.8h, #7            ; Shifts left v0 by 7 bits and inserts into v0. The lsb of the lane 0 - 7 in int8x16
-             * vector has mask values. movi    v1.8h, #1 uxtl    v0.8h, v0.8b                ; The lsb of each lane in
-             * int16x8 vector has mask values. cmtst   v0.8h, v0.8h, v1.8h         ; test if bit 0 of each lane is set
+             * sli     v0.2d, v0.2d, #28           ; Shifts left v0 by 28 bits and inserts into v0.
+             *                                     ; Bits 0 - 3 of the lane 0 and 1 in int32x4 vector have mask values.
+             * sli     v0.4s, v0.4s, #14           ; Shifts left v0 by 14 bits and inserts into v0.
+             *                                     ; Bits 0 - 1 of the lane 0 - 3 in int16x8 vector have mask values.
+             * sli     v0.8h, v0.8h, #7            ; Shifts left v0 by 7 bits and inserts into v0.
+             *                                     ; The lsb of the lane 0 - 7 in int8x16 vector has mask values.
+             * movi    v1.8h, #1
+             * uxtl    v0.8h, v0.8b                ; The lsb of each lane in int16x8 vector has mask values.
+             * cmtst   v0.8h, v0.8h, v1.8h         ; Tests if bit 0 of each lane is set
              */
             generateTrg1Src1Instruction(cg, TR::InstOpCode::fmov_xtod, node, maskReg, srcReg);
             generateVectorShiftImmediateInstruction(cg, TR::InstOpCode::vsli2d, node, maskReg, maskReg, 28);
@@ -1495,11 +1505,13 @@ TR::Register *OMR::ARM64::TreeEvaluator::mLongBitsToMaskEvaluator(TR::Node *node
         case TR::Float:
             /*
              * fmov    d0, x0
-             * sli     v0.2d, v0.2d, #30           ; Shifts left v0 by 30 bits and inserts into v0. bit 0 - 1 of the
-             * lane 0 and 1 in int32x4 vector have mask values. sli     v0.4s, v0.4s, #15           ; Shifts left v0 by
-             * 15 bits and inserts into v0. The lsb of the lane 0 - 3 in int16x8 vector have mask values. movi    v1.4s,
-             * #1 uxtl    v0.4s, v0.4h                ; The lsb of each lane in int32x4 vector has mask values. cmtst
-             * v0.4s, v0.4s, v1.4s         ; test if bit 0 of each lane is set
+             * sli     v0.2d, v0.2d, #30           ; Shifts left v0 by 30 bits and inserts into v0.
+             *                                     ; Bits 0 - 1 of the lane 0 and 1 in int32x4 vector have mask values.
+             * sli     v0.4s, v0.4s, #15           ; Shifts left v0 by 15 bits and inserts into v0.
+             *                                     ; The lsb of the lane 0 - 3 in int16x8 vector have mask values.
+             * movi    v1.4s, #1
+             * uxtl    v0.4s, v0.4h                ; The lsb of each lane in int32x4 vector has mask values.
+             * cmtst   v0.4s, v0.4s, v1.4s         ; Tests if bit 0 of each lane is set
              */
             generateTrg1Src1Instruction(cg, TR::InstOpCode::fmov_xtod, node, maskReg, srcReg);
             generateVectorShiftImmediateInstruction(cg, TR::InstOpCode::vsli2d, node, maskReg, maskReg, 30);
@@ -1511,9 +1523,12 @@ TR::Register *OMR::ARM64::TreeEvaluator::mLongBitsToMaskEvaluator(TR::Node *node
         case TR::Int64:
         case TR::Double:
             /*
-             * ubfiz   x1, x0, #55, #2             ; Copies 2 bits from the lsb of x0 into the bit 55 of x1. Other bits
-             * of x1 are cleared. fmov    d0, x1 ext     v0.16b, v0.16b, v0.16b, #15 ; Moves 8bits elements to the left.
-             * bit 63 and 64 have mask values. cmeq    v0.2d, v0.2d, #0 not     v0.16b, v0.16b
+             * ubfiz   x1, x0, #55, #2             ; Copies 2 bits from the lsb of x0 into the bit 55 of x1.
+             *                                     ; Other bits of x1 are cleared.
+             * fmov    d0, x1
+             * ext     v0.16b, v0.16b, v0.16b, #15 ; Moves 8bits elements to the left. bit 63 and 64 have mask values.
+             * cmeq    v0.2d, v0.2d, #0
+             * not     v0.16b, v0.16b
              */
             generateUBFIZInstruction(cg, node, tempReg, srcReg, 55, 2, true);
             generateTrg1Src1Instruction(cg, TR::InstOpCode::fmov_xtod, node, maskReg, tempReg);
@@ -6116,9 +6131,16 @@ TR::Register *OMR::ARM64::TreeEvaluator::arraysetEvaluator(TR::Node *node, TR::C
          * ; align by 16
          * and     remainderReg, dstReg, #15
          * add     lengthReg, lengthReg, remainderReg
-         * and     dstReg, dstReg, #~15    ; dstReg points the nearest 16-byte boundary before the location that is read
-         * in the next load. mainLoop: subs    lengthReg, lengthReg, #64 stp     q0, q0, [dstReg, #32] stp     q0, q0,
-         * [dstReg, #64]! b.hi    mainLoop stp     q0, q0, [dstEndReg, #-64] stp     q0, q0, [dstEndReg, #-32] b LDONE
+         * and     dstReg, dstReg, #~15    ; dstReg points the nearest 16-byte boundary before the location
+         *                                 ; that is read in the next load.
+         * mainLoop:
+         * subs    lengthReg, lengthReg, #64
+         * stp     q0, q0, [dstReg, #32]
+         * stp     q0, q0, [dstReg, #64]!
+         * b.hi    mainLoop
+         * stp     q0, q0, [dstEndReg, #-64]
+         * stp     q0, q0, [dstEndReg, #-32]
+         * b       LDONE
          *
          * LessThanOrEqual96:
          * tbz     lengthReg, #6, LessThan64
@@ -6343,9 +6365,15 @@ static TR::Register *arraycmpEvaluatorHelper(TR::Node *node, TR::CodeGenerator *
      *    b.cc    LessThan16
      * }
      * sub     lengthReg, lengthReg, #16
-     * ; Main loop reads 16 bytes from each array using ldp instruction and if any mismatch found, branches to
-     * LnotEqual16 loop16: ldp     data1Reg, data3Reg, [src1Reg], #16 ldp     data2Reg, data4Reg, [src2Reg], #16 ;
-     * arrayLen case subs    data1Reg, data1Reg, data2Reg ;   non-arrayLen case cmp     data1Reg, data2Reg
+     * ; Main loop reads 16 bytes from each array using ldp instruction and if any mismatch found,
+     * ; branches to LnotEqual16
+     * loop16:
+     * ldp     data1Reg, data3Reg, [src1Reg], #16
+     * ldp     data2Reg, data4Reg, [src2Reg], #16
+     * ;   arrayLen case
+     * subs    data1Reg, data1Reg, data2Reg
+     * ;   non-arrayLen case
+     * cmp     data1Reg, data2Reg
      *
      * ccmp    data3Reg, data4Reg, 0, eq
      * b.ne    Lnotequal16

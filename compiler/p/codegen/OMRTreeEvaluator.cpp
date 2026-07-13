@@ -1088,7 +1088,7 @@ TR::Register *OMR::Power::TreeEvaluator::mToLongBitsHelper(TR::Node *node, TR::C
         if (numElements <= 4)
             generateTrg1Src2Instruction(cg, TR::InstOpCode::vpkuwum, node, tmp1Reg, tmp1Reg, tmp1Reg);
 
-        // pack halfworld-length elements into byte-length elements (for Short, Int/Float, and Long/DoubleVector mask)
+        // pack halfword-length elements into byte-length elements (for Short, Int/Float, and Long/DoubleVector mask)
         if (numElements <= 8)
             generateTrg1Src2Instruction(cg, TR::InstOpCode::vpkuhum, node, tmp1Reg, tmp1Reg, tmp1Reg);
 
@@ -1353,7 +1353,7 @@ static TR::Register *mstoreiToArrayHelper(TR::Node *node, TR::CodeGenerator *cg,
     if (numElements <= 4)
         generateTrg1Src2Instruction(cg, TR::InstOpCode::vpkuwum, node, tmpVRF, tmpVRF, tmpVRF);
 
-    // pack halfworld-length elements into byte-length elements (for Short, Int/Float, and Long/DoubleVector mask store)
+    // pack halfword-length elements into byte-length elements (for Short, Int/Float, and Long/DoubleVector mask store)
     if (numElements <= 8)
         generateTrg1Src2Instruction(cg, TR::InstOpCode::vpkuhum, node, tmpVRF, tmpVRF, tmpVRF);
 

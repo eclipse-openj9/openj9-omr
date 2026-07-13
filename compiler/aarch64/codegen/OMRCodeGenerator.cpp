@@ -699,11 +699,6 @@ bool OMR::ARM64::CodeGenerator::getSupportsOpCodeForAutoSIMD(TR::CPU *cpu, TR::I
         case TR::mstorei:
         case TR::mRegLoad:
         case TR::mRegStore:
-        case TR::mTrueCount:
-        case TR::mFirstTrue:
-        case TR::mLastTrue:
-        case TR::mToLongBits:
-        case TR::mLongBitsToMask:
         case TR::vsplats:
             return true;
         case TR::vfma:
@@ -711,6 +706,13 @@ bool OMR::ARM64::CodeGenerator::getSupportsOpCodeForAutoSIMD(TR::CPU *cpu, TR::I
         case TR::vsqrt:
         case TR::vmsqrt:
             return (et == TR::Float || et == TR::Double);
+        case TR::mTrueCount:
+        case TR::mFirstTrue:
+        case TR::mLastTrue:
+        case TR::mToLongBits:
+        case TR::mLongBitsToMask:
+            TR_ASSERT_FATAL(et != TR::Float && et != TR::Double, "Unexpected element type for mask");
+            return true;
         case TR::s2m:
         case TR::m2s:
             /*

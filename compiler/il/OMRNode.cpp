@@ -2030,6 +2030,13 @@ bool OMR::Node::dontEliminateStores(bool isForLocalDeadStore)
         || (self()->getSymbol()->isAutoOrParm() && self()->storedValueIsIrrelevant()))
         return true;
 
+    // While OSR transitions remain possible, stores to parameters must be preserved even
+    // if no load of the parameter remains in the trees. On a transition, the interpreter
+    // frame for the outermost method reuses the incoming argument slots in place instead
+    // of restoring them from the OSR buffer
+    if (self()->getSymbol()->isParm() && comp->getOption(TR_EnableOSR) && !comp->osrInfrastructureRemoved())
+        return true;
+
     return false;
 }
 

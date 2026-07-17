@@ -46,6 +46,7 @@
 
 #ifdef J9_PROJECT_SPECIFIC
 #include "env/CHTable.hpp"
+#include "env/J9ConstProvenanceGraph.hpp"
 #endif
 
 TR_VirtualGuard::TR_VirtualGuard(TR_VirtualGuardTestType test, TR_VirtualGuardKind kind, TR::Compilation *comp,
@@ -198,6 +199,18 @@ TR::Node *TR_VirtualGuard::createVftGuardWithReceiver(TR_VirtualGuardKind kind, 
     aconstNode->setIsClassPointerConstant(true);
     aconstNode->setInlinedSiteIndex(calleeIndex);
     aconstNode->setByteCodeIndex(0);
+
+#ifdef J9_PROJECT_SPECIFIC
+    // The guard embeds a reference to thisClass, which otherwise might have no
+    // connection to the compiled body at all, e.g. a profiled class defined by
+    // a non-permanent loader. Record where it is referenced from so that known
+    // objects folded under the guard (such as its java/lang/Class instance)
+    // can be attributed to an owning class instead of being orphaned.
+    int16_t callerIndex = callNode->getByteCodeInfo().getCallerIndex();
+    TR_ResolvedMethod *callSiteMethod
+        = callerIndex == -1 ? comp->getMethodBeingCompiled() : comp->getInlinedResolvedMethod(callerIndex);
+    comp->constProvenanceGraph()->addEdge(callSiteMethod, thisClass);
+#endif
 
     TR::Node *guard = TR::Node::createif(TR::ifacmpne, vft, aconstNode, destination);
 

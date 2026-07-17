@@ -1153,12 +1153,10 @@ TR::Register *OMR::ARM64::TreeEvaluator::mTrueCountEvaluator(TR::Node *node, TR:
             addvOp = TR::InstOpCode::vaddv8h;
             break;
         case TR::Int32:
-        case TR::Float:
             negOp = TR::InstOpCode::vneg4s;
             addvOp = TR::InstOpCode::vaddv4s;
             break;
         case TR::Int64:
-        case TR::Double:
             negOp = TR::InstOpCode::vneg2d;
             addvOp = TR::InstOpCode::vaddv4s; /* we do not have addv for long, but vaddv4s works for this case */
             break;
@@ -1223,7 +1221,6 @@ TR::Register *OMR::ARM64::TreeEvaluator::mFirstTrueEvaluator(TR::Node *node, TR:
             generateLogicalShiftRightImmInstruction(cg, node, resReg, resReg, 3, true);
             break;
         case TR::Int32:
-        case TR::Float:
             /*
              * shrn    v1.2s, v0.2d, #16           ; Moves mask values to lane 0 - 3 (viewed as short vector)
              * umov    w0, v1.2d[0]
@@ -1238,7 +1235,6 @@ TR::Register *OMR::ARM64::TreeEvaluator::mFirstTrueEvaluator(TR::Node *node, TR:
             generateLogicalShiftRightImmInstruction(cg, node, resReg, resReg, 4, true);
             break;
         case TR::Int64:
-        case TR::Double:
             /*
              * ext     v1.16b, v0.16b, v0.16b, #2
              * umov    w0, v1.4s[3]                ; Byte 2-3 has the mask value of the lane 0.
@@ -1313,7 +1309,6 @@ TR::Register *OMR::ARM64::TreeEvaluator::mLastTrueEvaluator(TR::Node *node, TR::
             generateTrg1Src2Instruction(cg, TR::InstOpCode::subx, node, resReg, maxLaneReg, resReg);
             break;
         case TR::Int32:
-        case TR::Float:
             /*
              * shrn    v1.2s, v0.2d, #16           ; Moves mask values to lane 0 - 3 (viewed as short vector)
              * umov    x0, v1.2d[0]
@@ -1330,7 +1325,6 @@ TR::Register *OMR::ARM64::TreeEvaluator::mLastTrueEvaluator(TR::Node *node, TR::
             generateTrg1Src2Instruction(cg, TR::InstOpCode::subx, node, resReg, maxLaneReg, resReg);
             break;
         case TR::Int64:
-        case TR::Double:
             /*
              * shrn    v1.2s, v0.2d, #32
              * umov    x0, v1.2d[0]
@@ -1407,7 +1401,6 @@ TR::Register *OMR::ARM64::TreeEvaluator::mToLongBitsEvaluator(TR::Node *node, TR
             generateUBFXInstruction(cg, node, resReg, resReg, 42, 8, true);
             break;
         case TR::Int32:
-        case TR::Float:
             /*
              * shrn    v1.2s, v0.2d, #31
              * umov    w0, v1.2d[0]
@@ -1420,7 +1413,6 @@ TR::Register *OMR::ARM64::TreeEvaluator::mToLongBitsEvaluator(TR::Node *node, TR
             generateUBFXInstruction(cg, node, resReg, resReg, 30, 4, true);
             break;
         case TR::Int64:
-        case TR::Double:
             /*
              * ext     v1.16b, v0.16b, v0.16b, #7
              * umov    w0, v1.4s[0]
@@ -1502,7 +1494,6 @@ TR::Register *OMR::ARM64::TreeEvaluator::mLongBitsToMaskEvaluator(TR::Node *node
             generateTrg1Src2Instruction(cg, TR::InstOpCode::vcmtst8h, node, maskReg, maskReg, tempReg);
             break;
         case TR::Int32:
-        case TR::Float:
             /*
              * fmov    d0, x0
              * sli     v0.2d, v0.2d, #30           ; Shifts left v0 by 30 bits and inserts into v0.
@@ -1521,7 +1512,6 @@ TR::Register *OMR::ARM64::TreeEvaluator::mLongBitsToMaskEvaluator(TR::Node *node
             generateTrg1Src2Instruction(cg, TR::InstOpCode::vcmtst4s, node, maskReg, maskReg, tempReg);
             break;
         case TR::Int64:
-        case TR::Double:
             /*
              * ubfiz   x1, x0, #55, #2             ; Copies 2 bits from the lsb of x0 into the bit 55 of x1.
              *                                     ; Other bits of x1 are cleared.

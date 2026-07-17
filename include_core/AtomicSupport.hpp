@@ -71,14 +71,14 @@
 #if !defined(ATOMIC_SUPPORT_STUB)
 #if defined(AIXPPC)
 /* The default hardware priorities on AIX is MEDIUM(4).
- * For AIX, dropSMT should drop to LOW(2) and 
+ * For AIX, dropSMT should drop to LOW(2) and
  * restoreSMT should raise back to MEDIUM(4)
  */
 		inline void __dropSMT() { __asm__ __volatile__ ("or 1,1,1"); }
 		inline void __restoreSMT() { __asm__ __volatile__ ("or 2,2,2"); }
 #elif defined(LINUXPPC) /* defined(AIXPPC) */
 /* The default hardware priorities on LINUXPPC is MEDIUM-LOW(3).
- * For LINUXPPC, dropSMT should drop to VERY-LOW(1) and 
+ * For LINUXPPC, dropSMT should drop to VERY-LOW(1) and
  * restoreSMT should raise back to MEDIUM-LOW(3)
  */
 		inline void __dropSMT() {  __asm__ __volatile__ ("or 31,31,31"); }
@@ -849,7 +849,7 @@ public:
 	 *
 	 * @return The value at memory location <b>address</b>
 	 */
-	VMINLINE static uintptr_t
+	VMINLINE static uint32_t
 	addU32(volatile uint32_t *address, uint32_t addend)
 	{
 		/* Stop compiler optimizing away load of oldValue */
@@ -983,7 +983,7 @@ public:
 	 *
 	 * @return The value at memory location <b>address</b>
 	 */
-	VMINLINE static uintptr_t
+	VMINLINE static uint32_t
 	subtractU32(volatile uint32_t *address, uint32_t value)
 	{
 		/* Stop compiler optimizing away load of oldValue */

@@ -55,10 +55,10 @@ OMR::OptimizationManager::OptimizationManager(TR::Optimizer *o, OptimizationFact
     , _numPassesCompleted(0)
     , _optData(NULL)
     , _optPolicy(NULL)
-    , _enabled(!o->comp()->isDisabled(optNum))
+    , _enabled(optNum >= OMR::numOpts || !o->comp()->isDisabled(optNum))
     , _requested(false)
     , _requestedBlocks(o->trMemory())
-    , _trace(o->comp()->getOptions()->trace(optNum))
+    , _trace(optNum < OMR::numOpts && o->comp()->getOptions()->trace(optNum))
 {
     if (_id < OMR::Optimizations::numGroups)
         TR_ASSERT_SAFE_FATAL(_id < OMR::Optimizations::numGroups, "The optimization id requested (%d) is too high",

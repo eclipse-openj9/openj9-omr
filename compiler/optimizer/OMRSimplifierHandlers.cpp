@@ -73,6 +73,18 @@
 #define TR_MAX_OCONST_FOLDING_SIZE 256
 #define TR_MAX_ARRAYSET_EXPANSION_LEN 256
 
+/**
+ * Helper function to determine whether multiplying two int32_t values
+ * would overflow a signed 32-bit integer.
+ *
+ * @return true if the multiplication overflows; false otherwise.
+ */
+static bool multiply_overflows_int32(int32_t a, int32_t b)
+{
+    int64_t result = (int64_t)a * (int64_t)b;
+    return result < INT32_MIN || result > INT32_MAX;
+}
+
 #define FMA_CONST_LOWBOUND 5.915260931E-272
 #define FMA_CONST_HIGHBOUNDI2D 8.371160993643E298
 #define FMA_CONST_HIGHBOUNDF2D 5.282945626245E269
@@ -16022,7 +16034,21 @@ TR::Node *bndchkSimplifier(TR::Node *node, TR::Block *block, TR::Simplifier *s)
         int32_t k1 = boundChild->getSecondChild()->getInt();
         int32_t k2 = indexChild->getSecondChild()->getInt();
         if (k1 == k2 && k1 > 0) {
-            if (performTransformation(s->comp(), "%ssimplified algebra in BNDCHK [%s]\n", s->optDetailString(),
+            // Check if the transformation is safe by verifying that the index multiplication
+            // won't overflow. If the index's first child is a constant, we can check directly.
+            // Otherwise, we need to be conservative and only allow the transformation if we
+            // can prove it's safe.
+            bool safeToTransform = false;
+
+            if (indexChild->getFirstChild()->getOpCode().isLoadConst()) {
+                // If index is a constant, check if multiplying by k2 would overflow
+                int32_t indexValue = indexChild->getFirstChild()->getInt();
+                safeToTransform = !multiply_overflows_int32(indexValue, k2);
+            }
+            // For non-constant index values, we cannot prove safety, so don't transform
+
+            if (safeToTransform
+                && performTransformation(s->comp(), "%ssimplified algebra in BNDCHK [%s]\n", s->optDetailString(),
                     node->getName(s->getDebug()))) {
                 node->setAndIncChild(0, boundChild->getFirstChild());
                 node->setAndIncChild(1, indexChild->getFirstChild());
@@ -16036,17 +16062,29 @@ TR::Node *bndchkSimplifier(TR::Node *node, TR::Block *block, TR::Simplifier *s)
             && indexChild->getSecondChild()->getOpCode().isLoadConst())) {
         int32_t k1 = boundChild->getInt();
         int32_t k2 = indexChild->getSecondChild()->getInt();
-        if (k2 > 0 && ((k1 >= k2) && ((k1 % k2) == 0))
-            && performTransformation(s->comp(), "%ssimplified algebra in BNDCHK [%s]\n", s->optDetailString(),
-                node->getName(s->getDebug()))) {
-            if (boundChild->getReferenceCount() > 1) {
-                node->setAndIncChild(0, TR::Node::create(node, TR::iconst, 0, k1 / k2));
-                boundChild->decReferenceCount();
-            } else
-                boundChild->setInt(k1 / k2);
-            node->setAndIncChild(1, indexChild->getFirstChild());
-            indexChild->recursivelyDecReferenceCount();
-            return node;
+        if (k2 > 0 && ((k1 >= k2) && ((k1 % k2) == 0))) {
+            // Check if the transformation is safe by verifying that the index multiplication
+            // won't overflow. Only transform when we can prove it's safe.
+            bool safeToTransform = false;
+
+            if (indexChild->getFirstChild()->getOpCode().isLoadConst()) {
+                int32_t indexValue = indexChild->getFirstChild()->getInt();
+                safeToTransform = !multiply_overflows_int32(indexValue, k2);
+            }
+            // For non-constant index values, we cannot prove safety, so don't transform
+
+            if (safeToTransform
+                && performTransformation(s->comp(), "%ssimplified algebra in BNDCHK [%s]\n", s->optDetailString(),
+                    node->getName(s->getDebug()))) {
+                if (boundChild->getReferenceCount() > 1) {
+                    node->setAndIncChild(0, TR::Node::create(node, TR::iconst, 0, k1 / k2));
+                    boundChild->decReferenceCount();
+                } else
+                    boundChild->setInt(k1 / k2);
+                node->setAndIncChild(1, indexChild->getFirstChild());
+                indexChild->recursivelyDecReferenceCount();
+                return node;
+            }
         }
     }
 
@@ -16153,14 +16191,25 @@ TR::Node *arraycopybndchkSimplifier(TR::Node *node, TR::Block *block, TR::Simpli
         && (rhsChild->getOpCode().isMul() && rhsChild->getSecondChild()->getOpCode().isLoadConst())) {
         int32_t k1 = lhsChild->getSecondChild()->getInt();
         int32_t k2 = rhsChild->getSecondChild()->getInt();
-        if (k1 == k2 && k1 > 0
-            && performTransformation(s->comp(), "%ssimplified algebra in BNDCHK [%s]\n", s->optDetailString(),
-                node->getName(s->getDebug()))) {
-            node->setAndIncChild(0, lhsChild->getFirstChild());
-            node->setAndIncChild(1, rhsChild->getFirstChild());
-            lhsChild->recursivelyDecReferenceCount();
-            rhsChild->recursivelyDecReferenceCount();
-            return node;
+        if (k1 == k2 && k1 > 0) {
+            // Check if the transformation is safe by verifying that the multiplication
+            // won't overflow. Only transform when we can prove it's safe.
+            bool safeToTransform = false;
+
+            if (rhsChild->getFirstChild()->getOpCode().isLoadConst()) {
+                int32_t indexValue = rhsChild->getFirstChild()->getInt();
+                safeToTransform = !multiply_overflows_int32(indexValue, k2);
+            }
+
+            if (safeToTransform
+                && performTransformation(s->comp(), "%ssimplified algebra in BNDCHK [%s]\n", s->optDetailString(),
+                    node->getName(s->getDebug()))) {
+                node->setAndIncChild(0, lhsChild->getFirstChild());
+                node->setAndIncChild(1, rhsChild->getFirstChild());
+                lhsChild->recursivelyDecReferenceCount();
+                rhsChild->recursivelyDecReferenceCount();
+                return node;
+            }
         }
     }
 
@@ -16317,7 +16366,17 @@ TR::Node *bndchkwithspinechkSimplifier(TR::Node *node, TR::Block *block, TR::Sim
         int32_t k1 = boundChild->getSecondChild()->getInt();
         int32_t k2 = indexChild->getSecondChild()->getInt();
         if (k1 == k2 && k1 > 0) {
-            if (performTransformation(s->comp(), "%ssimplified algebra in BNDCHK [%s]\n", s->optDetailString(),
+            // Check if the transformation is safe by verifying that the multiplication
+            // won't overflow. Only transform when we can prove it's safe.
+            bool safeToTransform = false;
+
+            if (indexChild->getFirstChild()->getOpCode().isLoadConst()) {
+                int32_t indexValue = indexChild->getFirstChild()->getInt();
+                safeToTransform = !multiply_overflows_int32(indexValue, k2);
+            }
+
+            if (safeToTransform
+                && performTransformation(s->comp(), "%ssimplified algebra in BNDCHK [%s]\n", s->optDetailString(),
                     node->getName(s->getDebug()))) {
                 node->setAndIncChild(boundChildNum, boundChild->getFirstChild());
                 node->setAndIncChild(indexChildNum, indexChild->getFirstChild());
@@ -16331,17 +16390,29 @@ TR::Node *bndchkwithspinechkSimplifier(TR::Node *node, TR::Block *block, TR::Sim
             && indexChild->getSecondChild()->getOpCode().isLoadConst())) {
         int32_t k1 = boundChild->getInt();
         int32_t k2 = indexChild->getSecondChild()->getInt();
-        if (k2 > 0 && ((k1 >= k2) && ((k1 % k2) == 0))
-            && performTransformation(s->comp(), "%ssimplified algebra in BNDCHK [%s]\n", s->optDetailString(),
-                node->getName(s->getDebug()))) {
-            if (boundChild->getReferenceCount() > 1) {
-                node->setAndIncChild(boundChildNum, TR::Node::create(node, TR::iconst, 0, k1 / k2));
-                boundChild->decReferenceCount();
-            } else
-                boundChild->setInt(k1 / k2);
-            node->setAndIncChild(indexChildNum, indexChild->getFirstChild());
-            indexChild->recursivelyDecReferenceCount();
-            return node;
+        if (k2 > 0 && ((k1 >= k2) && ((k1 % k2) == 0))) {
+            // Check if the transformation is safe by verifying that the index multiplication
+            // won't overflow. Only transform when we can prove it's safe.
+            bool safeToTransform = false;
+
+            if (indexChild->getFirstChild()->getOpCode().isLoadConst()) {
+                int32_t indexValue = indexChild->getFirstChild()->getInt();
+                safeToTransform = !multiply_overflows_int32(indexValue, k2);
+            }
+            // For non-constant index values, we cannot prove safety, so don't transform
+
+            if (safeToTransform
+                && performTransformation(s->comp(), "%ssimplified algebra in BNDCHK [%s]\n", s->optDetailString(),
+                    node->getName(s->getDebug()))) {
+                if (boundChild->getReferenceCount() > 1) {
+                    node->setAndIncChild(boundChildNum, TR::Node::create(node, TR::iconst, 0, k1 / k2));
+                    boundChild->decReferenceCount();
+                } else
+                    boundChild->setInt(k1 / k2);
+                node->setAndIncChild(indexChildNum, indexChild->getFirstChild());
+                indexChild->recursivelyDecReferenceCount();
+                return node;
+            }
         }
     }
 

@@ -4381,26 +4381,10 @@ TR::Register *OMR::Power::TreeEvaluator::vaddEvaluator(TR::Node *node, TR::CodeG
                 && firstChild->getReferenceCount() == 1 && firstChild->getRegister() == NULL)
             || (secondChild->getOpCode().isMul() && !secondChild->getOpCode().isVectorMasked()
                 && secondChild->getReferenceCount() == 1 && secondChild->getRegister() == NULL))) {
-        TR::Node *mulNode = firstChild->getOpCode().isMul() ? firstChild : secondChild;
-        TR::Node *addOperandNode = (mulNode == firstChild) ? secondChild : firstChild;
-
-        // create fused mul/add node and set children accordingly
-        TR::Node *vFusedMulNode = TR::Node::create(TR::ILOpCode::createVectorOpCode(TR::vfma, node->getDataType()), 3,
-            mulNode->getFirstChild(), mulNode->getSecondChild(), addOperandNode);
-
-        // evaluate fused mul/add node
         TR::InstOpCode::Mnemonic opTypeA = (et == TR::Float) ? TR::InstOpCode::xvmaddasp : TR::InstOpCode::xvmaddadp;
         TR::InstOpCode::Mnemonic opTypeM = (et == TR::Float) ? TR::InstOpCode::xvmaddmsp : TR::InstOpCode::xvmaddmdp;
-        TR::Register *resReg = vFusedMulHelper(vFusedMulNode, cg, opTypeA, opTypeM);
 
-        // decrement refcounts and set register
-        node->setRegister(resReg);
-        cg->decReferenceCount(mulNode);
-        cg->decReferenceCount(mulNode->getFirstChild());
-        cg->decReferenceCount(mulNode->getSecondChild());
-        cg->decReferenceCount(addOperandNode);
-
-        return resReg;
+        return vFusedMulHelper(node, cg, opTypeA, opTypeM);
     }
 
     switch (node->getDataType().getVectorElementType()) {
@@ -4440,26 +4424,10 @@ TR::Register *OMR::Power::TreeEvaluator::vsubEvaluator(TR::Node *node, TR::CodeG
     if (pEnableVectorAddOrSubToFMA && !node->getOpCode().isVectorMasked() && (et == TR::Float || et == TR::Double)
         && ((firstChild->getOpCode().isMul() && !firstChild->getOpCode().isVectorMasked()
             && firstChild->getReferenceCount() == 1 && firstChild->getRegister() == NULL))) {
-        TR::Node *mulNode = firstChild;
-        TR::Node *subOperandNode = secondChild;
-
-        // create fused mul/sub node and set children accordingly
-        TR::Node *vFusedMulNode = TR::Node::create(TR::ILOpCode::createVectorOpCode(TR::vfma, node->getDataType()), 3,
-            mulNode->getFirstChild(), mulNode->getSecondChild(), subOperandNode);
-
-        // evaluate fused mul/sub node
         TR::InstOpCode::Mnemonic opTypeA = (et == TR::Float) ? TR::InstOpCode::xvmsubasp : TR::InstOpCode::xvmsubadp;
         TR::InstOpCode::Mnemonic opTypeM = (et == TR::Float) ? TR::InstOpCode::xvmsubmsp : TR::InstOpCode::xvmsubmdp;
-        TR::Register *resReg = vFusedMulHelper(vFusedMulNode, cg, opTypeA, opTypeM);
 
-        // decrement refcounts and set register
-        node->setRegister(resReg);
-        cg->decReferenceCount(mulNode);
-        cg->decReferenceCount(mulNode->getFirstChild());
-        cg->decReferenceCount(mulNode->getSecondChild());
-        cg->decReferenceCount(subOperandNode);
-
-        return resReg;
+        return vFusedMulHelper(node, cg, opTypeA, opTypeM);
     }
 
     switch (node->getDataType().getVectorElementType()) {
@@ -5163,16 +5131,38 @@ TR::Register *OMR::Power::TreeEvaluator::vFusedMulHelper(TR::Node *node, TR::Cod
         return NULL;
     }
 
-    TR::Node *firstChild = node->getFirstChild();
-    TR::Node *secondChild = node->getSecondChild();
-    TR::Node *thirdChild = node->getThirdChild();
+    TR::Node *mulOp1Node, *mulOp2Node, *addOrSubOpNode, *maskNode;
 
-    TR::Node *maskNode = node->getOpCode().isVectorMasked() ? node->getChild(3) : NULL;
+    if (node->getOpCode().getVectorOperation() == TR::vfma || node->getOpCode().getVectorOperation() == TR::vmfma) {
+        mulOp1Node = node->getFirstChild();
+        mulOp2Node = node->getSecondChild();
+        addOrSubOpNode = node->getThirdChild();
+        maskNode = node->getOpCode().isVectorMasked() ? node->getChild(3) : NULL;
+    } else if (node->getOpCode().getVectorOperation() == TR::vadd
+        || node->getOpCode().getVectorOperation() == TR::vsub) {
+        TR::Node *mulNode;
 
-    // resReg = firstReg * secondReg + thirdReg
-    TR::Register *firstReg = cg->evaluate(firstChild);
-    TR::Register *secondReg = cg->evaluate(secondChild);
-    TR::Register *thirdReg = cg->evaluate(thirdChild);
+        // (a * b) + c = fma(a, b, c), a + (b * c) = fma(b, c, a)
+        if (node->getFirstChild()->getOpCode().isMul()) {
+            mulNode = node->getFirstChild();
+            addOrSubOpNode = node->getSecondChild();
+        } else {
+            mulNode = node->getSecondChild();
+            addOrSubOpNode = node->getFirstChild();
+        }
+
+        mulOp1Node = mulNode->getFirstChild();
+        mulOp2Node = mulNode->getSecondChild();
+        maskNode = NULL;
+
+        mulNode->decReferenceCount();
+    } else
+        TR_ASSERT_FATAL(false, "vFusedMulHelper() can only be called on vfma, vadd, or vsub node\n");
+
+    // resReg = mulOp1Reg * mulOp2Reg + addOrSubOpReg
+    TR::Register *mulOp1Reg = cg->evaluate(mulOp1Node);
+    TR::Register *mulOp2Reg = cg->evaluate(mulOp2Node);
+    TR::Register *addOrSubOpReg = cg->evaluate(addOrSubOpNode);
 
     TR::Register *maskReg = maskNode ? cg->evaluate(maskNode) : NULL;
 
@@ -5180,32 +5170,32 @@ TR::Register *OMR::Power::TreeEvaluator::vFusedMulHelper(TR::Node *node, TR::Cod
 
     /* Since the VSX fused multiplication instruction reuse one of their source registers as the target register,
        we need to make sure the selected target register is clobberable */
-    if (cg->canClobberNodesRegister(thirdChild)) {
-        resReg = thirdReg;
-        generateTrg1Src2Instruction(cg, opTypeA, node, thirdReg, firstReg, secondReg);
-    } else if (cg->canClobberNodesRegister(firstChild)
-        && !maskReg) { // need to preserve firstReg if operation is masked
-        resReg = firstReg;
-        generateTrg1Src2Instruction(cg, opTypeM, node, firstReg, secondReg, thirdReg);
-    } else if (cg->canClobberNodesRegister(secondChild)) {
-        resReg = secondReg;
-        generateTrg1Src2Instruction(cg, opTypeM, node, secondReg, firstReg, thirdReg);
+    if (cg->canClobberNodesRegister(addOrSubOpNode)) {
+        resReg = addOrSubOpReg;
+        generateTrg1Src2Instruction(cg, opTypeA, node, addOrSubOpReg, mulOp1Reg, mulOp2Reg);
+    } else if (cg->canClobberNodesRegister(mulOp1Node)
+        && !maskReg) { // need to preserve mulOp1Reg if operation is masked
+        resReg = mulOp1Reg;
+        generateTrg1Src2Instruction(cg, opTypeM, node, mulOp1Reg, mulOp2Reg, addOrSubOpReg);
+    } else if (cg->canClobberNodesRegister(mulOp2Node)) {
+        resReg = mulOp2Reg;
+        generateTrg1Src2Instruction(cg, opTypeM, node, mulOp2Reg, mulOp1Reg, addOrSubOpReg);
     } else // if no source registers can be clobbered, copy the contents of one of the sources into a new register and
            // use it as the target
     {
         resReg = cg->allocateRegister(TR_VSX_VECTOR);
-        generateTrg1Src2Instruction(cg, TR::InstOpCode::xxlor, node, resReg, thirdReg, thirdReg);
-        generateTrg1Src2Instruction(cg, opTypeA, node, resReg, firstReg, secondReg);
+        generateTrg1Src2Instruction(cg, TR::InstOpCode::xxlor, node, resReg, addOrSubOpReg, addOrSubOpReg);
+        generateTrg1Src2Instruction(cg, opTypeA, node, resReg, mulOp1Reg, mulOp2Reg);
     }
 
     // apply mask if provided
     if (maskReg)
-        generateTrg1Src3Instruction(cg, TR::InstOpCode::xxsel, node, resReg, firstReg, resReg, maskReg);
+        generateTrg1Src3Instruction(cg, TR::InstOpCode::xxsel, node, resReg, mulOp1Reg, resReg, maskReg);
 
     node->setRegister(resReg);
-    cg->decReferenceCount(firstChild);
-    cg->decReferenceCount(secondChild);
-    cg->decReferenceCount(thirdChild);
+    cg->decReferenceCount(mulOp1Node);
+    cg->decReferenceCount(mulOp2Node);
+    cg->decReferenceCount(addOrSubOpNode);
     if (maskNode)
         cg->decReferenceCount(maskNode);
 

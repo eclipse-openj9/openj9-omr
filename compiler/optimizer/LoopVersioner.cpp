@@ -3814,7 +3814,8 @@ void TR_LoopVersioner::versionNaturalLoop(TR_RegionStructure *whileLoop, List<TR
             if (ttNode->getOpCodeValue() == TR::treetop || ttNode->getOpCode().isNullCheck()
                 || ttNode->getOpCode().isResolveCheck()) {
                 TR::Node *child = ttNode->getChild(0);
-                if (child->getOpCode().isFunctionCall()) {
+                if (child->getOpCode().isFunctionCall()
+                    && !child->getSymbol()->castToMethodSymbol()->isPureFunction()) {
                     newPrivatizationOK = false;
                     if (_curLoop->_privatizationOK)
                         traceCannot("privatize", child, comp());

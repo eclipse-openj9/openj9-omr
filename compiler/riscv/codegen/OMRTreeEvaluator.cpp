@@ -2653,27 +2653,13 @@ TR::Register *OMR::RV::TreeEvaluator::checkcastAndNULLCHKEvaluator(TR::Node *nod
 // handles call, icall, lcall, fcall, dcall, acall
 TR::Register *OMR::RV::TreeEvaluator::directCallEvaluator(TR::Node *node, TR::CodeGenerator *cg)
 {
-    TR::SymbolReference *symRef = node->getSymbolReference();
-    TR::MethodSymbol *callee = symRef->getSymbol()->castToMethodSymbol();
-
-    // FIXME: How comes here we get private linkage?
-    // TR::Linkage *linkage = cg->getLinkage(callee->getLinkageConvention());
-    TR::Linkage *linkage = cg->getLinkage(TR_System);
-
-    return linkage->buildDirectDispatch(node);
+    return cg->deriveCallingLinkage(node, false)->buildDirectDispatch(node);
 }
 
 // handles calli, icalli, lcalli, fcalli, dcalli, acalli
 TR::Register *OMR::RV::TreeEvaluator::indirectCallEvaluator(TR::Node *node, TR::CodeGenerator *cg)
 {
-    TR::SymbolReference *symRef = node->getSymbolReference();
-    TR::MethodSymbol *callee = symRef->getSymbol()->castToMethodSymbol();
-
-    // FIXME: How comes here we get private linkage?
-    // TR::Linkage *linkage = cg->getLinkage(callee->getLinkageConvention());
-    TR::Linkage *linkage = cg->getLinkage(TR_System);
-
-    return linkage->buildIndirectDispatch(node);
+    return cg->deriveCallingLinkage(node, true)->buildIndirectDispatch(node);
 }
 
 TR::Register *OMR::RV::TreeEvaluator::treetopEvaluator(TR::Node *node, TR::CodeGenerator *cg)

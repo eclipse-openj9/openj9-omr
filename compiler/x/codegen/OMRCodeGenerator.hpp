@@ -727,7 +727,6 @@ public:
 
     // codegen methods referenced from ras/
     //
-    uint32_t estimateBinaryLength(TR::MemoryReference *);
 
     void apply32BitLabelRelativeRelocation(int32_t *cursor, TR::LabelSymbol *);
 

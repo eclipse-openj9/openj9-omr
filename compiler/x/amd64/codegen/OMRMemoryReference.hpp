@@ -170,15 +170,15 @@ public: // Constructors
         OMR::X86::MemoryReference::unblockRegisters();
     }
 
-    void addMetaDataForCodeAddressWithLoad(uint8_t *displacementLocation, TR::Instruction *containingInstruction,
-        TR::CodeGenerator *cg, TR::SymbolReference *srCopy);
+    OMR_FINAL void addMetaDataForCodeAddressWithLoad(uint8_t *displacementLocation,
+        TR::Instruction *containingInstruction, TR::CodeGenerator *cg, TR::SymbolReference *srCopy);
 
 protected:
 #if defined(TR_TARGET_64BIT)
-    bool needsAddressLoadInstruction(intptr_t nextInstructionAddress, TR::CodeGenerator *cg);
+    OMR_FINAL bool needsAddressLoadInstruction(intptr_t nextInstructionAddress, TR::CodeGenerator *cg);
     void finishInitialization(TR::CodeGenerator *cg, TR_ScratchRegisterManager *srm);
 #else
-    bool needsAddressLoadInstruction(intptr_t rip) { return false; }
+    OMR_FINAL bool needsAddressLoadInstruction(intptr_t rip) { return false; }
 
     void finishInitialization(TR::CodeGenerator *cg, TR_ScratchRegisterManager *srm) {}
 #endif

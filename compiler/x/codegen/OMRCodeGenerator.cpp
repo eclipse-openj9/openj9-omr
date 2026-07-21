@@ -2481,11 +2481,6 @@ bool OMR::X86::CodeGenerator::supportsComplexAddressing()
         return true;
 }
 
-uint32_t OMR::X86::CodeGenerator::estimateBinaryLength(TR::MemoryReference *mr)
-{
-    return mr->estimateBinaryLength(NULL, self());
-}
-
 void OMR::X86::CodeGenerator::apply32BitLabelRelativeRelocation(int32_t *cursor, TR::LabelSymbol *label)
 {
     *cursor += static_cast<int32_t>((reinterpret_cast<uintptr_t>(label->getCodeLocation())));

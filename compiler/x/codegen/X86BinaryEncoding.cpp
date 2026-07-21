@@ -200,9 +200,10 @@ uint8_t *OMR::X86::Instruction::generateBinaryEncoding()
         cursor = getOpCode().binary(cursor, getEncodingMethod(), rexBits());
         cursor = generateOperand(cursor);
 
-        // cursor is normally not NULL, and hence we can finish binary encoding and exit the loop
-        // cursor is NULL when generateOperand() requests to regenerate the binary code, which may happen during
-        // encoding of memref with unresolved symbols on 64-bit
+        // cursor is normally not NULL, and hence we can finish binary encoding and exit the loop.
+        // cursor is NULL when generateOperand() requests to regenerate the binary code, which
+        // will happen if binary encoding memory references on 64-bit require an address load
+        // instruction to be inserted to synthesize a 64-bit address immediate.
         //
         if (cursor) {
             if (!getSource2ndRegister()) {

@@ -42,7 +42,7 @@ timestamps {
                         }
                     }
                     stage('Format Check') {
-                        sh "buildenv/jenkins/clang_format/clangFormatCheck.sh"
+                        sh "buildenv/jenkins/clang_format/clangFormatCheck.sh origin/${ghprbTargetBranch}"
                     }
                 } finally {
                     cleanWs()

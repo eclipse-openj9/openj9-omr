@@ -119,6 +119,12 @@ public:
 
         bool isEquals() { return _equals; }
 
+        /**
+         * \brief Returns the number of iterations the loop will run, if it can be determined
+         *
+         * \return Zero if the number of iterations is unknown, is greater than or equal to 2^31, or is unbounded.
+         *         Otherwise, a non-zero value representing the number of iterations.
+         */
         int32_t getNumIterations()
         {
             if (_increment == 0)
@@ -142,6 +148,16 @@ public:
                 numIters = (ub64 - lb64 + inc64 - 1) / inc64;
             } else {
                 numIters = (ub64 - lb64 + inc64 + 1) / inc64;
+            }
+
+            // Could the loop index overflow?  Test by determining what value the index variable would have
+            // after the calculated last iteration if it had been held in a 64-bit signed integer variable.
+            // If that is outside the range of a 32-bit signed integer, overflow will occur, so indicate
+            // that the number of iterations is unknown.
+            //
+            if (((inc64 > 0) && (lb64 + (numIters + 1) * inc64 > std::numeric_limits<int32_t>::max()))
+                || ((inc64 < 0) && (lb64 + (numIters + 1) * inc64 < std::numeric_limits<int32_t>::min()))) {
+                return 0;
             }
 
             return (numIters <= std::numeric_limits<int32_t>::max()) ? (int32_t)numIters : 0;

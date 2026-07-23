@@ -81,6 +81,10 @@ void OMR::ARM64::CodeGenerator::initialize()
     cg->setLastGlobalGPR(_numGPR - 1);
     cg->setLastGlobalFPR(_numGPR + _numFPR - 1);
 
+    // Use the same registers for FPR and VRF
+    cg->setFirstGlobalVRF(self()->getFirstGlobalFPR());
+    cg->setLastGlobalVRF(self()->getLastGlobalFPR());
+
     cg->getLinkage()->initARM64RealRegisterLinkage();
     cg->setSupportsGlRegDeps();
     cg->setSupportsGlRegDepOnFirstBlock();
@@ -693,6 +697,8 @@ bool OMR::ARM64::CodeGenerator::getSupportsOpCodeForAutoSIMD(TR::CPU *cpu, TR::I
         case TR::vloadi:
         case TR::vstore:
         case TR::vstorei:
+        case TR::vRegLoad:
+        case TR::vRegStore:
         case TR::mload:
         case TR::mloadi:
         case TR::mstore:
@@ -751,9 +757,9 @@ bool OMR::ARM64::CodeGenerator::getSupportsOpCodeForAutoSIMD(TR::ILOpCode opcode
     return TR::CodeGenerator::getSupportsOpCodeForAutoSIMD(&comp()->target().cpu, opcode);
 }
 
-bool OMR::ARM64::CodeGenerator::considerTypeForGRA(TR::Node *node) { return !node->getOpCode().isVectorOpCode(); }
+bool OMR::ARM64::CodeGenerator::considerTypeForGRA(TR::Node *node) { return true; }
 
-bool OMR::ARM64::CodeGenerator::considerTypeForGRA(TR::DataType dt) { return !(dt.isVector() || dt.isMask()); }
+bool OMR::ARM64::CodeGenerator::considerTypeForGRA(TR::DataType dt) { return true; }
 
 bool OMR::ARM64::CodeGenerator::considerTypeForGRA(TR::SymbolReference *symRef)
 {

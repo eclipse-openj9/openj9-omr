@@ -447,7 +447,7 @@ enum TR_CompilationOptions {
     TR_EnableSelectiveEnterExitHooks                         = 0x00000080 + 11,
     TR_EnableUseDefBasedVectorAPIExpansion                   = 0x00000100 + 11,
     TR_DisableDirectMemoryStore                              = 0x00000200 + 11,
-    // Available                                             = 0x00000400 + 11,
+    TR_EnablePatchableJProfiling                             = 0x00000400 + 11,
     TR_DisableConstProvenance                                = 0x00000800 + 11,
     TR_DisableITableIterationsAfterLastITableCacheCheck      = 0x00001000 + 11,
     TR_VerboseOptTransformations                             = 0x00002000 + 11,

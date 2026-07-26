@@ -2015,6 +2015,7 @@ TR::OptionTable OMR::Options::_jitOptions[] = {
     { "traceLoopInversion", "L\ttrace loop inversion", TR::Options::traceOptimization, loopInversion, 0, "P" },
     { "traceLoopReduction", "L\ttrace loop reduction", TR::Options::traceOptimization, loopReduction, 0, "P" },
     { "traceLoopReplicator", "L\ttrace loop replicator", TR::Options::traceOptimization, loopReplicator, 0, "P" },
+    { "traceLoopSpecializer", "L\ttrace loop specializer", TR::Options::traceOptimization, loopSpecializer, 0, "P" },
     { "traceLoopStrider", "L\ttrace loop strider", TR::Options::traceOptimization, loopStrider, 0, "P" },
     { "traceLoopVersioner", "L\ttrace loop versioner", TR::Options::traceOptimization, loopVersioner, 0, "P" },
     { "traceMarkingOfHotFields", "M\ttrace marking of Hot Fields", SET_OPTION_BIT(TR_TraceMarkingOfHotFields), "F" },

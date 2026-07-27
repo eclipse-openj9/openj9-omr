@@ -698,7 +698,7 @@ TR::Register *OMR::ARM64::TreeEvaluator::vdivIntHelper(TR::Node *node, TR::Regis
         Inst_Trg1Src2(cg, OP::vorr16b, node, tmp1VectorReg, lhsReg, lhsReg);
         Inst_Trg1Src2(cg, OP::vorr16b, node, tmp2VectorReg, rhsReg, rhsReg);
         loadConstant32(cg, node, loopCount, counterReg);
-        Inst_Label(cg, OP::label, node, loopLabel);
+        Inst_Label(cg, node, loopLabel);
         Inst_VectorShiftImmediate(cg, OP::vushr4s, node, resultReg, resultReg, (eType == TR::Int8) ? 8 : 16);
         for (int32_t i = 0; i < numElementsPerLoop; i++) {
             Inst_MovVectorElementToGPR(cg, op.vectorToGPROp, node, tmp1Reg, tmp1VectorReg, i * loopCount);

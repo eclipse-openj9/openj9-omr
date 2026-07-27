@@ -1336,7 +1336,6 @@ void TR_Debug::print(OMR::Logger *log, TR::ARM64ConditionalBranchInstruction *in
 
     TR::LabelSymbol *label = instr->getLabelSymbol();
     TR::Snippet *snippet = label ? label->getSnippet() : NULL;
-    TR_ASSERT(instr->getOpCodeValue() == OP::b_cond, "Unsupported instruction for conditional branch");
     log->printf("b.%s \t", ARM64ConditionNames[instr->getConditionCode()]);
     print(log, label);
     if (snippet) {

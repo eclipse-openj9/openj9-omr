@@ -94,7 +94,10 @@ bool Tril::TRLangBuilder::cfgFor(const ASTNode * const tree, IlGenState *state)
     // visit the children first
     const ASTNode *t = tree->getChildren();
     while (t) {
-        isFallthroughNeeded = isFallthroughNeeded && cfgFor(t, state);
+        // Don't recurse into case nodes - lookup handles them directly
+        if (strcmp(t->getName(), "case") != 0) {
+            isFallthroughNeeded = isFallthroughNeeded && cfgFor(t, state);
+        }
         t = t->next;
     }
 
@@ -111,6 +114,23 @@ bool Tril::TRLangBuilder::cfgFor(const ASTNode * const tree, IlGenState *state)
         isFallthroughNeeded = isFallthroughNeeded && opcode.isIf();
         TraceIL("Added CFG edge from block %d to block %d (\"%s\") -> %s\n", _currentBlockNumber, targetId, targetName,
             tree->getName());
+    } else if (opcode.getOpCodeValue() == TR::lookup) {
+        // Add CFG edges for all case destinations.
+        // Child 0 is the selector; children 1+ are case nodes with targets.
+        const ASTNode *childTree = tree->getChildren();
+        if (childTree)
+            childTree = childTree->next;
+        while (childTree) {
+            if (childTree->getArgByName("target")) {
+                const auto caseTargetName = childTree->getArgByName("target")->getValue()->getString();
+                auto caseTargetId = state->findBlockByName(caseTargetName);
+                cfg()->addEdge(_currentBlock, _blocks[caseTargetId]);
+                TraceIL("Added CFG edge from block %d to block %d (\"%s\") -> lookup case\n", _currentBlockNumber,
+                    caseTargetId, caseTargetName);
+            }
+            childTree = childTree->next;
+        }
+        isFallthroughNeeded = false;
     }
 
     if (!isFallthroughNeeded) {

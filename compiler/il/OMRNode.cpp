@@ -5109,6 +5109,11 @@ void OMR::Node::setIsSafeForCGToFastPathUnsafeCall(bool v)
     _flags.set(unsafeFastPathCall);
 }
 
+bool OMR::Node::chkSafeForCGToFastPathUnsafeCall()
+{
+    return self()->getOpCode().isCall() && _flags.testAny(unsafeFastPathCall);
+}
+
 bool OMR::Node::isCallThatWasRefinedFromKnownObject()
 {
     return self()->getOpCode().isCall() && _flags.testAny(wasRefinedFromKnownObject);

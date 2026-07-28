@@ -1244,6 +1244,7 @@ public:
 
     bool isSafeForCGToFastPathUnsafeCall();
     void setIsSafeForCGToFastPathUnsafeCall(bool v);
+    bool chkSafeForCGToFastPathUnsafeCall();
 
     // Flag used by TR::ladd and TR::lsub or by TR::lshl and TR::lshr for compressedPointers
     bool containsCompressionSequence();

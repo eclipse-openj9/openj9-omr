@@ -885,7 +885,7 @@ int32_t TR_Debug::nodePrintAllFlags(OMR::Logger *log, TR::Node *node)
     FLAG(chkNodeCreatedByPRE, "createdByPRE");
     FLAG(chkIsReferenceNonNull, "referenceIsNonNull");
     FLAG(isPreparedForDirectJNI, "preparedForDirectJNI");
-    FLAG(isSafeForCGToFastPathUnsafeCall, "safeForCGToFastPathUnsafeCall");
+    FLAG(chkSafeForCGToFastPathUnsafeCall, "safeForCGToFastPathUnsafeCall");
 
 #undef FLAG
 #undef FLAG_IF

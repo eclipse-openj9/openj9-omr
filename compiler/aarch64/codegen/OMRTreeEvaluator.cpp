@@ -5672,10 +5672,8 @@ TR::Register *commonStoreEvaluator(TR::Node *node, OP::Mnemonic op, int32_t size
         || ((valueChild->getDataType().isIntegral() || valueChild->getDataType().isAddress())
             && valueChild->isConstZeroValue() && (valueChild->getRegister() == NULL))) {
         TR::Register *zeroReg = cg->allocateRegister();
+        zeroReg->setAssignZeroRegister();
         generateMemSrc1Instruction(cg, op, node, tempMR, zeroReg);
-        auto *deps = RegDeps(0, 1, cg);
-        deps->addPostCondition(zeroReg, TR::RealRegister::xzr);
-        generateLabelInstruction(cg, OP::label, node, generateLabelSymbol(cg), deps);
         cg->stopUsingRegister(zeroReg);
     } else {
         generateMemSrc1Instruction(cg, op, node, tempMR, cg->evaluate(valueChild));

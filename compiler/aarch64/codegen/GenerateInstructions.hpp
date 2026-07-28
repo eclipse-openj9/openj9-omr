@@ -473,23 +473,6 @@ TR::Instruction *generateTrg1Src3Instruction(TR::CodeGenerator *cg, OP::Mnemonic
     TR::Register *s1reg, TR::Register *s2reg, TR::Register *s3reg, TR::Instruction *preced = NULL);
 
 /*
- * @brief Generates src3-to-trg instruction with register dependency
- * @param[in] cg : CodeGenerator
- * @param[in] op : instruction opcode
- * @param[in] node : node
- * @param[in] treg : target register
- * @param[in] s1reg : source register 1
- * @param[in] s2reg : source register 2
- * @param[in] s3reg : source register 3
- * @param[in] cond : register dependency condition
- * @param[in] preced : preceding instruction
- * @return generated instruction
- */
-TR::Instruction *generateTrg1Src3Instruction(TR::CodeGenerator *cg, OP::Mnemonic op, TR::Node *node, TR::Register *treg,
-    TR::Register *s1reg, TR::Register *s2reg, TR::Register *s3reg, TR::RegisterDependencyConditions *cond,
-    TR::Instruction *preced = NULL);
-
-/*
  * @brief Generates mem-to-trg instruction
  * @param[in] cg : CodeGenerator
  * @param[in] op : instruction opcode

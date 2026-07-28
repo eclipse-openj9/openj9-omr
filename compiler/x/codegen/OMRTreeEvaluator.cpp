@@ -6135,13 +6135,13 @@ TR::Register *OMR::X86::TreeEvaluator::msplatsEvaluator(TR::Node *node, TR::Code
 
         // if child (boolean) is true, set mask
         Inst_RegReg(OP::TESTRegReg(), node, boolReg, boolReg, cg);
-        Inst_RegReg(OP::CMOVERegReg(), node, maskGPR, tmpGPR, cg);
+        Inst_RegReg(OP::CMOVNERegReg(), node, maskGPR, tmpGPR, cg);
 
         if (resultReg->getKind() == TR_VMR) {
             TR::InstOpCode movOpcode = (numLanes > 16) ? OP::KMOVQRegMask : OP::KMOVWRegMask;
             Inst_RegReg(movOpcode.getMnemonic(), node, resultReg, maskGPR, cg);
         } else {
-            Inst_RegReg(OP::MOVQRegReg8, node, resultReg, tmpGPR, cg);
+            Inst_RegReg(OP::MOVQRegReg8, node, resultReg, maskGPR, cg);
 
             if (dt.getVectorLength() == TR::VectorLength128) {
                 Inst_RegRegImm(OP::PSHUFDRegRegImm1, node, resultReg, resultReg, 0x44, cg);

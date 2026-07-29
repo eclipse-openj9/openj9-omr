@@ -1565,8 +1565,8 @@ TR::Register *OMR::ARM64::TreeEvaluator::mxorEvaluator(TR::Node *node, TR::CodeG
     return TR::TreeEvaluator::unImpOpEvaluator(node, cg);
 }
 
-static TR::Register *mloadiFromArrayHelper(TR::Node *node, TR::CodeGenerator *cg, TR::InstOpCode::Mnemonic loadOp,
-    TR::InstOpCode::Mnemonic negOp, int32_t numElements)
+static TR::Register *mloadiFromArrayHelper(TR::Node *node, TR::CodeGenerator *cg, OP::Mnemonic loadOp,
+    OP::Mnemonic negOp, int32_t numElements)
 {
     TR::Node *child = node->getFirstChild();
 
@@ -1609,21 +1609,21 @@ TR::Register *OMR::ARM64::TreeEvaluator::mloadiFromArrayEvaluator(TR::Node *node
 
     switch (node->getDataType().getVectorElementType()) {
         case TR::Int8:
-            return mloadiFromArrayHelper(node, cg, TR::InstOpCode::vldrimmq, TR::InstOpCode::vneg16b, 16);
+            return mloadiFromArrayHelper(node, cg, OP::vldrimmq, OP::vneg16b, 16);
         case TR::Int16:
-            return mloadiFromArrayHelper(node, cg, TR::InstOpCode::vldrimmd, TR::InstOpCode::vneg8h, 8);
+            return mloadiFromArrayHelper(node, cg, OP::vldrimmd, OP::vneg8h, 8);
         case TR::Int32:
-            return mloadiFromArrayHelper(node, cg, TR::InstOpCode::vldrimms, TR::InstOpCode::vneg4s, 4);
+            return mloadiFromArrayHelper(node, cg, OP::vldrimms, OP::vneg4s, 4);
         case TR::Int64:
-            return mloadiFromArrayHelper(node, cg, TR::InstOpCode::vldrimmh, TR::InstOpCode::vneg2d, 2);
+            return mloadiFromArrayHelper(node, cg, OP::vldrimmh, OP::vneg2d, 2);
         default:
             TR_ASSERT_FATAL(false, "unsupported vector type %s\n", node->getDataType().toString());
             return NULL;
     }
 }
 
-static TR::Register *mstoreiToArrayHelper(TR::Node *node, TR::CodeGenerator *cg, TR::InstOpCode::Mnemonic storeOp,
-    TR::InstOpCode::Mnemonic moviOp, int32_t numElements)
+static TR::Register *mstoreiToArrayHelper(TR::Node *node, TR::CodeGenerator *cg, OP::Mnemonic storeOp,
+    OP::Mnemonic moviOp, int32_t numElements)
 {
     TR::Node *storeValNode = node->getSecondChild();
 
@@ -1631,28 +1631,28 @@ static TR::Register *mstoreiToArrayHelper(TR::Node *node, TR::CodeGenerator *cg,
     TR::Register *tmpVRF = cg->allocateRegister(TR_VRF);
 
     // set all but least significant bit of each array element to 0
-    if (moviOp == TR::InstOpCode::vmovi2d) {
+    if (moviOp == OP::vmovi2d) {
         // Int64: Cannot encode "movi vN.2d, #1"
         TR::Register *tmpGPR = cg->allocateRegister(TR_GPR);
         loadConstant64(cg, node, 1, tmpGPR);
-        generateTrg1Src1Instruction(cg, TR::InstOpCode::vdup2d, node, tmpVRF, tmpGPR);
+        generateTrg1Src1Instruction(cg, OP::vdup2d, node, tmpVRF, tmpGPR);
         cg->stopUsingRegister(tmpGPR);
     } else {
         generateTrg1ImmInstruction(cg, moviOp, node, tmpVRF, 1);
     }
-    generateTrg1Src2Instruction(cg, TR::InstOpCode::vand16b, node, tmpVRF, storeValReg, tmpVRF);
+    generateTrg1Src2Instruction(cg, OP::vand16b, node, tmpVRF, storeValReg, tmpVRF);
 
     // pack doubleword-length elements into word-length elements (for Long/DoubleVector mask store)
     if (numElements == 2)
-        generateTrg1Src1Instruction(cg, TR::InstOpCode::vxtn_2s, node, tmpVRF, tmpVRF);
+        generateTrg1Src1Instruction(cg, OP::vxtn_2s, node, tmpVRF, tmpVRF);
 
     // pack word-length elements into halfword-length elements (for Int/Float and Long/DoubleVector mask store)
     if (numElements <= 4)
-        generateTrg1Src1Instruction(cg, TR::InstOpCode::vxtn_4h, node, tmpVRF, tmpVRF);
+        generateTrg1Src1Instruction(cg, OP::vxtn_4h, node, tmpVRF, tmpVRF);
 
     // pack halfword-length elements into byte-length elements (for Short, Int/Float, and Long/DoubleVector mask store)
     if (numElements <= 8)
-        generateTrg1Src1Instruction(cg, TR::InstOpCode::vxtn_8b, node, tmpVRF, tmpVRF);
+        generateTrg1Src1Instruction(cg, OP::vxtn_8b, node, tmpVRF, tmpVRF);
 
     TR::MemoryReference *tempMR = MRef_node(cg, node);
     tempMR->validateImmediateOffsetAlignment(node, numElements, cg);
@@ -1672,13 +1672,13 @@ TR::Register *OMR::ARM64::TreeEvaluator::mstoreiToArrayEvaluator(TR::Node *node,
 
     switch (node->getDataType().getVectorElementType()) {
         case TR::Int8:
-            return mstoreiToArrayHelper(node, cg, TR::InstOpCode::vstrimmq, TR::InstOpCode::vmovi16b, 16);
+            return mstoreiToArrayHelper(node, cg, OP::vstrimmq, OP::vmovi16b, 16);
         case TR::Int16:
-            return mstoreiToArrayHelper(node, cg, TR::InstOpCode::vstrimmd, TR::InstOpCode::vmovi8h, 8);
+            return mstoreiToArrayHelper(node, cg, OP::vstrimmd, OP::vmovi8h, 8);
         case TR::Int32:
-            return mstoreiToArrayHelper(node, cg, TR::InstOpCode::vstrimms, TR::InstOpCode::vmovi4s, 4);
+            return mstoreiToArrayHelper(node, cg, OP::vstrimms, OP::vmovi4s, 4);
         case TR::Int64:
-            return mstoreiToArrayHelper(node, cg, TR::InstOpCode::vstrimmh, TR::InstOpCode::vmovi2d, 2);
+            return mstoreiToArrayHelper(node, cg, OP::vstrimmh, OP::vmovi2d, 2);
         default:
             TR_ASSERT_FATAL(false, "unsupported vector type %s\n", node->getDataType().toString());
             return NULL;

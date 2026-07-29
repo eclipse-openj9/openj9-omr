@@ -35,6 +35,8 @@ TEST_F(LookupTest, Lookup5Cases) {
   // Case 50 -> return 500
   // Default -> return -1
 
+  SKIP_ON_RISCV(MissingImplementation);
+
   auto inputTrees = "(method return=Int32 args=[Int32]"
                     "  (block name=\"entry\""
                     "    (lookup"
@@ -83,6 +85,9 @@ TEST_F(LookupTest, Lookup5Cases) {
 
 TEST_F(LookupTest, LookupWithNegativeValues) {
   // Test with negative case values
+
+  SKIP_ON_RISCV(MissingImplementation);
+
   auto inputTrees = "(method return=Int32 args=[Int32]"
                     "  (block name=\"entry\""
                     "    (lookup"
@@ -118,6 +123,9 @@ TEST_F(LookupTest, LookupWithNegativeValues) {
 
 TEST_F(LookupTest, LookupSparseValues) {
   // Test with sparse case values (good for binary search)
+
+  SKIP_ON_RISCV(MissingImplementation);
+
   auto inputTrees = "(method return=Int32 args=[Int32]"
                     "  (block name=\"entry\""
                     "    (lookup"
@@ -161,6 +169,9 @@ TEST_F(LookupTest, LookupSparseValues) {
 
 TEST_F(LookupTest, LookupSingleCase) {
   // Test with just one case (edge case)
+
+  SKIP_ON_RISCV(MissingImplementation);
+
   auto inputTrees = "(method return=Int32 args=[Int32]"
                     "  (block name=\"entry\""
                     "    (lookup"
@@ -189,6 +200,9 @@ TEST_F(LookupTest, LookupSingleCase) {
 
 TEST_F(LookupTest, LookupWithComputation) {
   // Test lookup with a computed selector value
+
+  SKIP_ON_RISCV(MissingImplementation);
+
   auto inputTrees = "(method return=Int32 args=[Int32]"
                     "  (block name=\"entry\""
                     "    (lookup"

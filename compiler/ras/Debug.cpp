@@ -567,20 +567,20 @@ uint8_t *TR_Debug::printPrefix(OMR::Logger *log, TR::Instruction *instr, uint8_t
 
         char *p0 = prefix;
         char *p1 = prefix + strlen(prefix);
-        const size_t p1Size = prefixSize - strlen(prefix);
 
         // Print machine code in bytes on X86, in words on PPC,ARM,ARM64
-        // Stop if we try to run over the buffer.
+        // Stop if we try to run over the buffer. The remaining size must be
+        // recomputed on every iteration because p1 advances through prefix.
         if (_comp->target().cpu.isX86()) {
             for (int i = 0; i < size && p1 - p0 + 3 < prefixWidth; i++, p1 += 3)
-                snprintf(p1, p1Size, " %02x", *cursor++);
+                snprintf(p1, prefixSize - (p1 - p0), " %02x", *cursor++);
         } else if (_comp->target().cpu.isPower() || _comp->target().cpu.isARM() || _comp->target().cpu.isARM64()) {
             for (int i = 0; i < size && p1 - p0 + 9 < prefixWidth; i += 4, p1 += 9, cursor += 4)
-                snprintf(p1, p1Size, " %08x", *((uint32_t *)cursor));
+                snprintf(p1, prefixSize - (p1 - p0), " %08x", *((uint32_t *)cursor));
         } else // FIXME: Need a better general form
         {
             for (int i = 0; i < size && p1 - p0 + 3 < prefixWidth; i++, p1 += 3)
-                snprintf(p1, p1Size, " %02x", *cursor++);
+                snprintf(p1, prefixSize - (p1 - p0), " %02x", *cursor++);
         }
 
         int32_t leftOver = static_cast<int32_t>(p0 + prefixWidth - p1);

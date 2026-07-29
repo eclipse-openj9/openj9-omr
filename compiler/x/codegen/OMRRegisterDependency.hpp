@@ -263,16 +263,4 @@ public:
 };
 }} // namespace OMR::X86
 
-///////////////////////////////////////////////////////////////////////////////
-// Generate Routines
-//
-// THE USE OF THE generateRegisterDependencyConditions() FUNCTIONS IS
-// DEPRECATED IN FAVOUR OF THE MORE CONCISE RegDeps() FORMS AND SHOULD NOT BE
-// USED. THESE DEPRECATED FORMS WILL BE REMOVED IN A FUTURE OMR RELEASE.
-///////////////////////////////////////////////////////////////////////////////
-
-TR::RegisterDependencyConditions *generateRegisterDependencyConditions(TR::Node *, TR::CodeGenerator *, uint32_t = 0,
-    List<TR::Register> * = 0);
-TR::RegisterDependencyConditions *generateRegisterDependencyConditions(uint32_t, uint32_t, TR::CodeGenerator *);
-
 #endif /* OMR_X86_REGISTER_DEPENDENCY_INCL */

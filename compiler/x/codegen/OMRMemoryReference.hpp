@@ -425,29 +425,7 @@ public:
 };
 }} // namespace OMR::X86
 
-///////////////////////////////////////////////////////////////////////////////
-// Generate Routines
-//
-// THE USE OF THE generateX86MemoryReference() FUNCTIONS IS DEPRECATED IN FAVOUR
-// OF THE MORE CONCISE MRef_XXX() FORMS AND SHOULD NOT BE USED. THESE DEPRECATED
-// FORMS WILL BE REMOVED IN A FUTURE OMR RELEASE.
-///////////////////////////////////////////////////////////////////////////////
-
-TR::MemoryReference *generateX86MemoryReference(TR::CodeGenerator *cg);
-TR::MemoryReference *generateX86MemoryReference(intptr_t, TR::CodeGenerator *cg);
-TR::MemoryReference *generateX86MemoryReference(TR::Register *br, intptr_t disp, TR::CodeGenerator *cg);
-TR::MemoryReference *generateX86MemoryReference(TR::Register *br, TR::Register *ir, uint8_t s, TR::CodeGenerator *cg);
-TR::MemoryReference *generateX86MemoryReference(TR::Register *br, TR::Register *ir, uint8_t s, intptr_t disp,
-    TR::CodeGenerator *cg);
-TR::MemoryReference *generateX86MemoryReference(TR::Node *, TR::CodeGenerator *cg,
-    bool canRematerializeAddressAdds = true);
-TR::MemoryReference *generateX86MemoryReference(TR::MemoryReference &, intptr_t, TR::CodeGenerator *cg);
-TR::MemoryReference *generateX86MemoryReference(TR::MemoryReference &, intptr_t, TR_ScratchRegisterManager *,
-    TR::CodeGenerator *cg);
-TR::MemoryReference *generateX86MemoryReference(TR::SymbolReference *, TR::CodeGenerator *cg);
-TR::MemoryReference *generateX86MemoryReference(TR::SymbolReference *, intptr_t, TR::CodeGenerator *cg);
-TR::MemoryReference *generateX86MemoryReference(TR::X86DataSnippet *, TR::CodeGenerator *cg);
-TR::MemoryReference *generateX86MemoryReference(TR::LabelSymbol *, TR::CodeGenerator *cg);
+// Factory functions
 
 namespace TR {
 TR::MemoryReference *MRef(TR::CodeGenerator *cg);

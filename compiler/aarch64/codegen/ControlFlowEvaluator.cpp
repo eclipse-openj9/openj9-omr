@@ -569,11 +569,11 @@ static void binarySearchCaseSpace(TR::Register *selectorReg, TR::Node *lookupNod
     if (pivot >= lowChild) {
         int32_t pivotValue = lookupNode->getChild(pivot)->getCaseConstant();
 
-        if (!constantIsUnsignedImm12(pivotValue)) {
+        if (constantIsUnsignedImm12(pivotValue) || constantIsUnsignedImm12Shifted(pivotValue)) {
+            Inst_CompareImm(cg, lookupNode, selectorReg, pivotValue);
+        } else {
             loadConstant32(cg, lookupNode, pivotValue, tmpRegister);
             Inst_Compare(cg, lookupNode, selectorReg, tmpRegister);
-        } else {
-            Inst_CompareImm(cg, lookupNode, selectorReg, pivotValue);
         }
 
         int32_t lowVal = lookupNode->getChild(lowChild)->getCaseConstant();
@@ -601,14 +601,23 @@ static void binarySearchCaseSpace(TR::Register *selectorReg, TR::Node *lookupNod
     // upper half
     if (highChild == pivot + 1) {
         int32_t highValue = lookupNode->getChild(highChild)->getCaseConstant();
-        if (!constantIsUnsignedImm12(highValue)) {
+        bool useCbz = false;
+
+        if (highValue == 0) {
+            useCbz = true;
+        } else if (constantIsUnsignedImm12(highValue) || constantIsUnsignedImm12Shifted(highValue)) {
+            Inst_CompareImm(cg, lookupNode, selectorReg, highValue);
+        } else {
             loadConstant32(cg, lookupNode, highValue, tmpRegister);
             Inst_Compare(cg, lookupNode, selectorReg, tmpRegister);
-        } else {
-            Inst_CompareImm(cg, lookupNode, selectorReg, highValue);
         }
-        Inst_ConditionalBranch(cg, lookupNode,
-            lookupNode->getChild(highChild)->getBranchDestination()->getNode()->getLabel(), TR::CC_EQ, conditions);
+        if (useCbz) {
+            Inst_CompareBranch(cg, OP::cbzw, lookupNode, selectorReg,
+                lookupNode->getChild(highChild)->getBranchDestination()->getNode()->getLabel(), conditions);
+        } else {
+            Inst_ConditionalBranch(cg, lookupNode,
+                lookupNode->getChild(highChild)->getBranchDestination()->getNode()->getLabel(), TR::CC_EQ, conditions);
+        }
 
         // default case
         Inst_Label(cg, OP::b, lookupNode, lookupNode->getChild(1)->getBranchDestination()->getNode()->getLabel(),
@@ -646,12 +655,15 @@ TR::Register *OMR::ARM64::TreeEvaluator::lookupEvaluator(TR::Node *node, TR::Cod
         for (int32_t i = 2; i < numChildren; i++) {
             TR::Node *child = node->getChild(ordering[i].index);
             int32_t caseValue = child->getCaseConstant();
+            bool useCbz = false;
 
-            if (!constantIsUnsignedImm12(caseValue)) {
+            if (caseValue == 0) {
+                useCbz = true;
+            } else if (constantIsUnsignedImm12(caseValue) || constantIsUnsignedImm12Shifted(caseValue)) {
+                Inst_CompareImm(cg, node, selectorReg, caseValue);
+            } else {
                 loadConstant32(cg, node, caseValue, tmpRegister);
                 Inst_Compare(cg, node, selectorReg, tmpRegister);
-            } else {
-                Inst_CompareImm(cg, node, selectorReg, caseValue);
             }
 
             TR::RegisterDependencyConditions *cond = conditions;
@@ -660,7 +672,13 @@ TR::Register *OMR::ARM64::TreeEvaluator::lookupEvaluator(TR::Node *node, TR::Cod
                 cg->evaluate(child->getFirstChild());
                 cond = cond->clone(cg, RegDeps(cg, child->getFirstChild(), 0));
             }
-            Inst_ConditionalBranch(cg, node, child->getBranchDestination()->getNode()->getLabel(), TR::CC_EQ, cond);
+
+            if (useCbz) {
+                Inst_CompareBranch(cg, OP::cbzw, node, selectorReg,
+                    child->getBranchDestination()->getNode()->getLabel(), cond);
+            } else {
+                Inst_ConditionalBranch(cg, node, child->getBranchDestination()->getNode()->getLabel(), TR::CC_EQ, cond);
+            }
         }
 
         // Branch to default
@@ -706,9 +724,14 @@ TR::Register *OMR::ARM64::TreeEvaluator::tableEvaluator(TR::Node *node, TR::Code
 
     if (5 > numBranchTableEntries) {
         for (i = 0; i < numBranchTableEntries; i++) {
-            Inst_CompareImm(cg, node, selectorReg, i);
-            Inst_ConditionalBranch(cg, node, node->getChild(2 + i)->getBranchDestination()->getNode()->getLabel(),
-                TR::CC_EQ);
+            if (i == 0) {
+                Inst_CompareBranch(cg, OP::cbzw, node, selectorReg,
+                    node->getChild(2)->getBranchDestination()->getNode()->getLabel());
+            } else {
+                Inst_CompareImm(cg, node, selectorReg, i);
+                Inst_ConditionalBranch(cg, node, node->getChild(2 + i)->getBranchDestination()->getNode()->getLabel(),
+                    TR::CC_EQ);
+            }
         }
 
         Inst_Label(cg, OP::b, node, defaultChild->getBranchDestination()->getNode()->getLabel(), conditions);

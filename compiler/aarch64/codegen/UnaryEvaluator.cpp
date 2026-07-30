@@ -104,7 +104,7 @@ TR::Register *OMR::ARM64::TreeEvaluator::inegEvaluator(TR::Node *node, TR::CodeG
     TR::Node *child = node->getFirstChild();
     TR::Register *srcReg = cg->evaluate(child);
     TR::Register *trgReg = (child->getReferenceCount() == 1) ? srcReg : cg->allocateRegister();
-    generateNegInstruction(cg, node, trgReg, srcReg);
+    Inst_Neg(cg, node, trgReg, srcReg);
     node->setRegister(trgReg);
     cg->decReferenceCount(child);
     return trgReg;
@@ -115,7 +115,7 @@ TR::Register *OMR::ARM64::TreeEvaluator::lnegEvaluator(TR::Node *node, TR::CodeG
     TR::Node *child = node->getFirstChild();
     TR::Register *srcReg = cg->evaluate(child);
     TR::Register *trgReg = (child->getReferenceCount() == 1) ? srcReg : cg->allocateRegister();
-    generateNegInstruction(cg, node, trgReg, srcReg, true);
+    Inst_Neg(cg, node, trgReg, srcReg, true);
     node->setRegister(trgReg);
     cg->decReferenceCount(child);
     return trgReg;
@@ -134,7 +134,7 @@ TR::Register *OMR::ARM64::TreeEvaluator::inlineVectorUnaryOp(TR::Node *node, TR:
     if (evaluatorHelper != NULL) {
         (*evaluatorHelper)(node, resReg, srcReg, cg);
     } else {
-        generateTrg1Src1Instruction(cg, op, node, resReg, srcReg);
+        Inst_Trg1Src1(cg, op, node, resReg, srcReg);
     }
     cg->decReferenceCount(firstChild);
     return resReg;
@@ -256,9 +256,9 @@ static TR::Register *commonIntegerAbsEvaluator(TR::Node *node, TR::CodeGenerator
     OP::Mnemonic eorOp = is64bit ? OP::eorx : OP::eorw;
     OP::Mnemonic subOp = is64bit ? OP::subx : OP::subw;
 
-    generateArithmeticShiftRightImmInstruction(cg, node, tempReg, reg, is64bit ? 63 : 31, is64bit);
-    generateTrg1Src2Instruction(cg, eorOp, node, reg, reg, tempReg);
-    generateTrg1Src2Instruction(cg, subOp, node, reg, reg, tempReg);
+    Inst_ArithmeticShiftRightImm(cg, node, tempReg, reg, is64bit ? 63 : 31, is64bit);
+    Inst_Trg1Src2(cg, eorOp, node, reg, reg, tempReg);
+    Inst_Trg1Src2(cg, subOp, node, reg, reg, tempReg);
 
     cg->stopUsingRegister(tempReg);
     node->setRegister(reg);
@@ -282,7 +282,7 @@ static TR::Register *commonUnaryHelper(TR::Node *node, OP::Mnemonic op, TR::Code
     TR::Register *srcReg = cg->evaluate(child);
     TR::Register *trgReg = (child->getReferenceCount() == 1) ? srcReg : cg->allocateRegister();
 
-    generateTrg1Src1Instruction(cg, op, node, trgReg, srcReg);
+    Inst_Trg1Src1(cg, op, node, trgReg, srcReg);
     node->setRegister(trgReg);
     cg->decReferenceCount(child);
     return trgReg;
@@ -291,7 +291,7 @@ static TR::Register *commonUnaryHelper(TR::Node *node, OP::Mnemonic op, TR::Code
 TR::Register *OMR::ARM64::TreeEvaluator::sbyteswapEvaluator(TR::Node *node, TR::CodeGenerator *cg)
 {
     TR::Register *trgReg = commonUnaryHelper(node, OP::rev16w, cg);
-    generateTrg1Src1ImmInstruction(cg, OP::sbfmw, node, trgReg, trgReg, 15); // sign extension
+    Inst_Trg1Src1Imm(cg, OP::sbfmw, node, trgReg, trgReg, 15); // sign extension
     return trgReg;
 }
 
@@ -317,19 +317,19 @@ static TR::Register *hbitHelper(TR::Node *node, bool is64bit, TR::CodeGenerator 
     OP::Mnemonic op;
 
     op = is64bit ? OP::clzx : OP::clzw;
-    generateTrg1Src1Instruction(cg, op, node, tmpReg, srcReg);
-    generateCompareImmInstruction(cg, node, srcReg, 0, is64bit);
+    Inst_Trg1Src1(cg, op, node, tmpReg, srcReg);
+    Inst_CompareImm(cg, node, srcReg, 0, is64bit);
     if (is64bit) {
         // mov trgReg, #0x80000000
-        generateTrg1ImmInstruction(cg, OP::movzx, node, trgReg, 0x8000 | TR::MOV_LSL48);
+        Inst_Trg1Imm(cg, OP::movzx, node, trgReg, 0x8000 | TR::MOV_LSL48);
     } else {
         // mov trgReg, #0x8000000000000000
-        generateTrg1ImmInstruction(cg, OP::movzw, node, trgReg, 0x8000 | TR::MOV_LSL16);
+        Inst_Trg1Imm(cg, OP::movzw, node, trgReg, 0x8000 | TR::MOV_LSL16);
     }
     op = is64bit ? OP::cselx : OP::cselw;
-    generateCondTrg1Src2Instruction(cg, op, node, trgReg, trgReg, srcReg, TR::CC_NE);
+    Inst_CondTrg1Src2(cg, op, node, trgReg, trgReg, srcReg, TR::CC_NE);
     op = is64bit ? OP::lsrvx : OP::lsrvw;
-    generateTrg1Src2Instruction(cg, op, node, trgReg, trgReg, tmpReg);
+    Inst_Trg1Src2(cg, op, node, trgReg, trgReg, tmpReg);
 
     cg->stopUsingRegister(tmpReg);
 
@@ -360,8 +360,8 @@ static TR::Register *lbitHelper(TR::Node *node, bool is64bit, TR::CodeGenerator 
     OP::Mnemonic op = is64bit ? OP::andx : OP::andw;
 
     // x & -x
-    generateNegInstruction(cg, node, tmpReg, srcReg, is64bit);
-    generateTrg1Src2Instruction(cg, op, node, trgReg, srcReg, tmpReg);
+    Inst_Neg(cg, node, tmpReg, srcReg, is64bit);
+    Inst_Trg1Src2(cg, op, node, trgReg, srcReg, tmpReg);
 
     cg->stopUsingRegister(tmpReg);
 
@@ -404,9 +404,9 @@ static TR::Register *notzHelper(TR::Node *node, bool is64bit, TR::CodeGenerator 
     OP::Mnemonic op;
 
     op = is64bit ? OP::rbitx : OP::rbitw;
-    generateTrg1Src1Instruction(cg, op, node, trgReg, srcReg);
+    Inst_Trg1Src1(cg, op, node, trgReg, srcReg);
     op = is64bit ? OP::clzx : OP::clzw;
-    generateTrg1Src1Instruction(cg, op, node, trgReg, trgReg);
+    Inst_Trg1Src1(cg, op, node, trgReg, trgReg);
 
     node->setRegister(trgReg);
     cg->decReferenceCount(child);
@@ -434,14 +434,14 @@ static TR::Register *popcntHelper(TR::Node *node, bool is64bit, TR::CodeGenerato
     TR::Register *tmpReg = cg->allocateRegister(TR_VRF);
 
     if (is64bit) {
-        generateTrg1Src1Instruction(cg, OP::fmov_xtod, node, tmpReg, srcReg);
+        Inst_Trg1Src1(cg, OP::fmov_xtod, node, tmpReg, srcReg);
     } else {
-        generateTrg1Src1ImmInstruction(cg, OP::ubfmx, node, trgReg, srcReg, 31); // zero extension
-        generateTrg1Src1Instruction(cg, OP::fmov_xtod, node, tmpReg, trgReg);
+        Inst_Trg1Src1Imm(cg, OP::ubfmx, node, trgReg, srcReg, 31); // zero extension
+        Inst_Trg1Src1(cg, OP::fmov_xtod, node, tmpReg, trgReg);
     }
-    generateTrg1Src1Instruction(cg, OP::vcnt8b, node, tmpReg, tmpReg);
-    generateTrg1Src1Instruction(cg, OP::vaddv8b, node, tmpReg, tmpReg);
-    generateMovVectorElementToGPRInstruction(cg, OP::umovwb, node, trgReg, tmpReg, 0);
+    Inst_Trg1Src1(cg, OP::vcnt8b, node, tmpReg, tmpReg);
+    Inst_Trg1Src1(cg, OP::vaddv8b, node, tmpReg, tmpReg);
+    Inst_MovVectorElementToGPR(cg, OP::umovwb, node, trgReg, tmpReg, 0);
 
     cg->stopUsingRegister(tmpReg);
     node->setRegister(trgReg);
@@ -486,7 +486,7 @@ static TR::Register *x2iHelper(TR::Node *node, TR::CodeGenerator *cg, bool isB2i
         TR::Node *intChild = child->getFirstChild();
         srcReg = cg->evaluate(intChild);
         trgReg = (intChild->getReferenceCount() == 1) ? srcReg : cg->allocateRegister();
-        generateTrg1Src1ImmInstruction(cg, OP::sbfmw, node, trgReg, srcReg, sbfmBit);
+        Inst_Trg1Src1Imm(cg, OP::sbfmw, node, trgReg, srcReg, sbfmBit);
         node->setRegister(trgReg);
         cg->decReferenceCount(intChild);
         cg->decReferenceCount(child);
@@ -496,10 +496,10 @@ static TR::Register *x2iHelper(TR::Node *node, TR::CodeGenerator *cg, bool isB2i
         if (child->getOpCodeValue() == childOp2 || child->getOpCodeValue() == childOp3) {
             // No sign extension needed.
             if (trgReg != srcReg) {
-                generateMovInstruction(cg, node, trgReg, srcReg);
+                Inst_Mov(cg, node, trgReg, srcReg);
             }
         } else {
-            generateTrg1Src1ImmInstruction(cg, OP::sbfmw, node, trgReg, srcReg, sbfmBit);
+            Inst_Trg1Src1Imm(cg, OP::sbfmw, node, trgReg, srcReg, sbfmBit);
         }
         node->setRegister(trgReg);
         cg->decReferenceCount(child);
@@ -526,7 +526,7 @@ static TR::Register *extendToIntOrLongHelper(TR::Node *node, OP::Mnemonic op, ui
     // signed extension: alias of SBFM
     // unsigned extension: alias of UBFM
     TR_ASSERT_FATAL(imms < 32, "Extension size too big");
-    generateTrg1Src1ImmInstruction(cg, op, node, trgReg, srcReg, imms);
+    Inst_Trg1Src1Imm(cg, op, node, trgReg, srcReg, imms);
 
     node->setRegister(trgReg);
     cg->decReferenceCount(child);
@@ -601,10 +601,10 @@ TR::Register *OMR::ARM64::TreeEvaluator::iu2lEvaluator(TR::Node *node, TR::CodeG
     if (child->getOpCodeValue() == TR::iload || child->getOpCodeValue() == TR::iloadi) {
         // No need for zero extension
         if (trgReg != srcReg) {
-            generateMovInstruction(cg, node, trgReg, srcReg);
+            Inst_Mov(cg, node, trgReg, srcReg);
         }
     } else {
-        generateTrg1Src1ImmInstruction(cg, OP::ubfmx, node, trgReg, srcReg, 31);
+        Inst_Trg1Src1Imm(cg, OP::ubfmx, node, trgReg, srcReg, 31);
     }
     node->setRegister(trgReg);
     cg->decReferenceCount(child);

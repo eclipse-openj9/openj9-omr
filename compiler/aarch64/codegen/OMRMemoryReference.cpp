@@ -77,12 +77,12 @@ static void loadRelocatableConstant(TR::Node *node, TR::SymbolReference *ref, TR
                                         : (uintptr_t)symbol->getMethodSymbol()->getMethodAddress();
 
     if (symbol->isStartPC()) {
-        generateTrg1ImmSymInstruction(cg, OP::adr, node, reg, addr, symbol);
+        Inst_Trg1ImmSym(cg, OP::adr, node, reg, addr, symbol);
         return;
     }
 
     if (symbol->isGCRPatchPoint()) {
-        generateTrg1ImmSymInstruction(cg, OP::adr, node, reg, addr, symbol);
+        Inst_Trg1ImmSym(cg, OP::adr, node, reg, addr, symbol);
         return;
     }
 
@@ -329,13 +329,13 @@ void OMR::ARM64::MemoryReference::validateImmediateOffsetAlignment(TR::Node *nod
 
         if (_baseRegister != NULL) {
             if (constantIsUnsignedImm12(displacement)) {
-                generateTrg1Src1ImmInstruction(cg, OP::addimmx, node, newBase, _baseRegister, displacement);
+                Inst_Trg1Src1Imm(cg, OP::addimmx, node, newBase, _baseRegister, displacement);
             } else if (node->getOpCode().isLoadConst() && node->getRegister() && (node->getLongInt() == displacement)) {
-                generateTrg1Src2Instruction(cg, OP::addx, node, newBase, _baseRegister, node->getRegister());
+                Inst_Trg1Src2(cg, OP::addx, node, newBase, _baseRegister, node->getRegister());
             } else {
                 TR::Register *tempReg = cg->allocateRegister();
                 loadConstant64(cg, node, displacement, tempReg);
-                generateTrg1Src2Instruction(cg, OP::addx, node, newBase, _baseRegister, tempReg);
+                Inst_Trg1Src2(cg, OP::addx, node, newBase, _baseRegister, tempReg);
                 cg->stopUsingRegister(tempReg);
             }
         } else {
@@ -391,14 +391,14 @@ void OMR::ARM64::MemoryReference::normalize(TR::Node *node, TR::CodeGenerator *c
 
             if (_baseRegister != NULL) {
                 if (constantIsUnsignedImm12(displacement)) {
-                    generateTrg1Src1ImmInstruction(cg, OP::addimmx, node, newBase, _baseRegister, displacement);
+                    Inst_Trg1Src1Imm(cg, OP::addimmx, node, newBase, _baseRegister, displacement);
                 } else if (node->getOpCode().isLoadConst() && node->getRegister()
                     && (node->getLongInt() == displacement)) {
-                    generateTrg1Src2Instruction(cg, OP::addx, node, newBase, _baseRegister, node->getRegister());
+                    Inst_Trg1Src2(cg, OP::addx, node, newBase, _baseRegister, node->getRegister());
                 } else {
                     TR::Register *tempReg = cg->allocateRegister();
                     loadConstant64(cg, node, displacement, tempReg);
-                    generateTrg1Src2Instruction(cg, OP::addx, node, newBase, _baseRegister, tempReg);
+                    Inst_Trg1Src2(cg, OP::addx, node, newBase, _baseRegister, tempReg);
                     cg->stopUsingRegister(tempReg);
                 }
             } else {
@@ -714,26 +714,26 @@ void OMR::ARM64::MemoryReference::consolidateRegisters(TR::Node *srcTree, TR::Co
 
     if (_baseRegister != NULL) {
         if (self()->isIndexZeroExtendedWord()) {
-            generateTrg1Src2ExtendedInstruction(cg, OP::addextx, srcTree, tempTargetRegister, _baseRegister,
-                _indexRegister, TR::EXT_UXTW, _scale);
+            Inst_Trg1Src2Extended(cg, OP::addextx, srcTree, tempTargetRegister, _baseRegister, _indexRegister,
+                TR::EXT_UXTW, _scale);
         } else if (self()->isIndexSignExtendedWord()) {
-            generateTrg1Src2ExtendedInstruction(cg, OP::addextx, srcTree, tempTargetRegister, _baseRegister,
-                _indexRegister, TR::EXT_SXTW, _scale);
+            Inst_Trg1Src2Extended(cg, OP::addextx, srcTree, tempTargetRegister, _baseRegister, _indexRegister,
+                TR::EXT_SXTW, _scale);
         } else {
-            generateTrg1Src2ShiftedInstruction(cg, OP::addx, srcTree, tempTargetRegister, _baseRegister, _indexRegister,
-                TR::SH_LSL, _scale);
+            Inst_Trg1Src2Shifted(cg, OP::addx, srcTree, tempTargetRegister, _baseRegister, _indexRegister, TR::SH_LSL,
+                _scale);
         }
     } else if (_scale != 0) {
-        generateLogicalShiftLeftImmInstruction(cg, srcTree, tempTargetRegister, _indexRegister, _scale, true);
+        Inst_LogicalShiftLeftImm(cg, srcTree, tempTargetRegister, _indexRegister, _scale, true);
         if (self()->isIndexZeroExtendedWord()) {
-            generateTrg1Src1ImmInstruction(cg, OP::ubfmx, srcTree, tempTargetRegister, tempTargetRegister, 31);
+            Inst_Trg1Src1Imm(cg, OP::ubfmx, srcTree, tempTargetRegister, tempTargetRegister, 31);
         } else if (self()->isIndexSignExtendedWord()) {
-            generateTrg1Src1ImmInstruction(cg, OP::sbfmx, srcTree, tempTargetRegister, tempTargetRegister, 31);
+            Inst_Trg1Src1Imm(cg, OP::sbfmx, srcTree, tempTargetRegister, tempTargetRegister, 31);
         }
     } else if (self()->isIndexZeroExtendedWord()) {
-        generateTrg1Src1ImmInstruction(cg, OP::ubfmx, srcTree, tempTargetRegister, _indexRegister, 31);
+        Inst_Trg1Src1Imm(cg, OP::ubfmx, srcTree, tempTargetRegister, _indexRegister, 31);
     } else if (self()->isIndexSignExtendedWord()) {
-        generateTrg1Src1ImmInstruction(cg, OP::sbfmx, srcTree, tempTargetRegister, _indexRegister, 31);
+        Inst_Trg1Src1Imm(cg, OP::sbfmx, srcTree, tempTargetRegister, _indexRegister, 31);
     } else {
         TR_ASSERT_FATAL(false,
             "consolidateRegister() expects (_baseRegister != NULL) || (_scale != 0) || isIndexZeroExtendedWord() || "
@@ -1179,7 +1179,7 @@ uint8_t *OMR::ARM64::MemoryReference::generateBinaryEncoding(TR::Instruction *cu
             }
             cursor += ARM64_INSTRUCTION_LENGTH;
         } else {
-            // loadaddrEvaluator() uses addimmx in generateTrg1MemInstruction
+            // loadaddrEvaluator() uses addimmx in Inst_Trg1Mem
             TR_ASSERT(index == NULL, "MemoryReference with unexpected indexed form");
 
             if (constantIsUnsignedImm12(displacement)) {
@@ -1245,8 +1245,8 @@ uint8_t *OMR::ARM64::MemoryReference::generateBinaryEncoding(TR::Instruction *cu
 TR::Instruction *OMR::ARM64::MemoryReference::expandInstruction(TR::Instruction *currentInstruction,
     TR::CodeGenerator *cg)
 {
-    // Due to the way the generate*Instruction helpers work, there's no way to use them to generate an instruction at
-    // the start of the instruction stream at the moment. As a result, we cannot peform expansion if the first
+    // Due to the way the Inst_* functions work, there's no way to use them to generate an instruction at the
+    // start of the instruction stream at the moment. As a result, we cannot peform expansion if the first
     // instruction is a memory instruction.
     TR_ASSERT_FATAL(currentInstruction->getPrev(), "The first instruction cannot be a memory instruction");
 
@@ -1277,7 +1277,7 @@ TR::Instruction *OMR::ARM64::MemoryReference::expandInstruction(TR::Instruction 
                         if (isImm9UnscaledOffsetInstruction(enc)) {
                             if (isBaseModifiable() && constantIsUnsignedImm12(displacement)) {
                                 TR::Instruction *prev = currentInstruction->getPrev();
-                                generateTrg1Src1ImmInstruction(cg, OP::addimmw, currentInstruction->getNode(),
+                                Inst_Trg1Src1Imm(cg, OP::addimmw, currentInstruction->getNode(),
                                     self()->getBaseRegister(), self()->getBaseRegister(), displacement, prev);
                                 self()->setOffset(0);
                                 return currentInstruction;

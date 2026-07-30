@@ -44,7 +44,7 @@ TR::Register *genericReturnEvaluator(TR::Node *node, TR::RealRegister::RegNum rn
 
     auto *deps = RegDeps(1, 0, cg);
     deps->addPreCondition(returnRegister, rnum);
-    generateAdminInstruction(cg, OP::retn, node, deps);
+    Inst_Admin(cg, OP::retn, node, deps);
 
     cg->comp()->setReturnInfo(i);
     cg->decReferenceCount(firstChild);
@@ -70,7 +70,7 @@ TR::Register *OMR::ARM64::TreeEvaluator::areturnEvaluator(TR::Node *node, TR::Co
 // void return
 TR::Register *OMR::ARM64::TreeEvaluator::returnEvaluator(TR::Node *node, TR::CodeGenerator *cg)
 {
-    generateAdminInstruction(cg, OP::retn, node);
+    Inst_Admin(cg, OP::retn, node);
     cg->comp()->setReturnInfo(TR_VoidReturn);
     return NULL;
 }
@@ -81,10 +81,10 @@ TR::Register *OMR::ARM64::TreeEvaluator::gotoEvaluator(TR::Node *node, TR::CodeG
     if (node->getNumChildren() > 0) {
         TR::Node *child = node->getFirstChild();
         cg->evaluate(child);
-        generateLabelInstruction(cg, OP::b, node, gotoLabel, RegDeps(cg, child, 0));
+        Inst_Label(cg, OP::b, node, gotoLabel, RegDeps(cg, child, 0));
         cg->decReferenceCount(child);
     } else {
-        generateLabelInstruction(cg, OP::b, node, gotoLabel);
+        Inst_Label(cg, OP::b, node, gotoLabel);
     }
     return NULL;
 }
@@ -209,9 +209,9 @@ static TR::Instruction *ificmpHelper(TR::Node *node, TR::ARM64ConditionCode cc, 
                 if (!deps->getPreConditions()->containsVirtualRegister(src1Reg, numPreConditions)) {
                     TR::addDependency(deps, src1Reg, TR::RealRegister::NoReg, TR_GPR, cg);
                 }
-                result = generateCompareBranchInstruction(cg, op, node, src1Reg, dstLabel, deps);
+                result = Inst_CompareBranch(cg, op, node, src1Reg, dstLabel, deps);
             } else {
-                result = generateCompareBranchInstruction(cg, op, node, src1Reg, dstLabel);
+                result = Inst_CompareBranch(cg, op, node, src1Reg, dstLabel);
             }
 
             cg->decReferenceCount(firstChild);
@@ -229,14 +229,14 @@ static TR::Instruction *ificmpHelper(TR::Node *node, TR::ARM64ConditionCode cc, 
         int64_t value = is64bit ? secondChild->getLongInt() : secondChild->getInt();
         if (constantIsUnsignedImm12(value) || constantIsUnsignedImm12(-value) || constantIsUnsignedImm12Shifted(value)
             || constantIsUnsignedImm12Shifted(-value)) {
-            generateCompareImmInstruction(cg, node, src1Reg, value, is64bit);
+            Inst_CompareImm(cg, node, src1Reg, value, is64bit);
             useRegCompare = false;
         }
     }
 
     if (useRegCompare) {
         TR::Register *src2Reg = cg->evaluate(secondChild);
-        generateCompareInstruction(cg, node, src1Reg, src2Reg, is64bit);
+        Inst_Compare(cg, node, src1Reg, src2Reg, is64bit);
     }
 
     dstLabel = node->getBranchDestination()->getNode()->getLabel();
@@ -248,9 +248,9 @@ static TR::Instruction *ificmpHelper(TR::Node *node, TR::ARM64ConditionCode cc, 
         cg->evaluate(thirdChild);
 
         deps = RegDeps(cg, thirdChild, 0);
-        result = generateConditionalBranchInstruction(cg, node, dstLabel, cc, deps);
+        result = Inst_ConditionalBranch(cg, node, dstLabel, cc, deps);
     } else {
-        result = generateConditionalBranchInstruction(cg, node, dstLabel, cc);
+        result = Inst_ConditionalBranch(cg, node, dstLabel, cc);
     }
 
     cg->decReferenceCount(firstChild);
@@ -402,17 +402,17 @@ static TR::Register *icmpHelper(TR::Node *node, TR::ARM64ConditionCode cc, bool 
         int64_t value = is64bit ? secondChild->getLongInt() : secondChild->getInt();
         if (constantIsUnsignedImm12(value) || constantIsUnsignedImm12(-value) || constantIsUnsignedImm12Shifted(value)
             || constantIsUnsignedImm12Shifted(-value)) {
-            generateCompareImmInstruction(cg, node, src1Reg, value, is64bit);
+            Inst_CompareImm(cg, node, src1Reg, value, is64bit);
             useRegCompare = false;
         }
     }
 
     if (useRegCompare) {
         TR::Register *src2Reg = cg->evaluate(secondChild);
-        generateCompareInstruction(cg, node, src1Reg, src2Reg, is64bit);
+        Inst_Compare(cg, node, src1Reg, src2Reg, is64bit);
     }
 
-    generateCSetInstruction(cg, node, trgReg, cc);
+    Inst_CSet(cg, node, trgReg, cc);
 
     node->setRegister(trgReg);
     cg->decReferenceCount(firstChild);
@@ -545,10 +545,10 @@ TR::Register *OMR::ARM64::TreeEvaluator::lcmpEvaluator(TR::Node *node, TR::CodeG
     TR::Register *trgReg = cg->allocateRegister();
     TR::Register *tmpReg = cg->allocateRegister();
 
-    generateCompareInstruction(cg, node, src1Reg, src2Reg, true);
-    generateCSetInstruction(cg, node, trgReg, TR::CC_GE);
-    generateCSetInstruction(cg, node, tmpReg, TR::CC_LE);
-    generateTrg1Src2Instruction(cg, OP::subw, node, trgReg, trgReg, tmpReg);
+    Inst_Compare(cg, node, src1Reg, src2Reg, true);
+    Inst_CSet(cg, node, trgReg, TR::CC_GE);
+    Inst_CSet(cg, node, tmpReg, TR::CC_LE);
+    Inst_Trg1Src2(cg, OP::subw, node, trgReg, trgReg, tmpReg);
 
     cg->stopUsingRegister(tmpReg);
 
@@ -571,9 +571,9 @@ static void binarySearchCaseSpace(TR::Register *selectorReg, TR::Node *lookupNod
 
         if (!constantIsUnsignedImm12(pivotValue)) {
             loadConstant32(cg, lookupNode, pivotValue, tmpRegister);
-            generateCompareInstruction(cg, lookupNode, selectorReg, tmpRegister);
+            Inst_Compare(cg, lookupNode, selectorReg, tmpRegister);
         } else {
-            generateCompareImmInstruction(cg, lookupNode, selectorReg, pivotValue);
+            Inst_CompareImm(cg, lookupNode, selectorReg, pivotValue);
         }
 
         int32_t lowVal = lookupNode->getChild(lowChild)->getCaseConstant();
@@ -583,19 +583,19 @@ static void binarySearchCaseSpace(TR::Register *selectorReg, TR::Node *lookupNod
         TR::ARM64ConditionCode branchCond = (highVal < lowVal) ? TR::CC_HI : TR::CC_GT;
 
         TR::LabelSymbol *upperLabel = generateLabelSymbol(cg);
-        generateConditionalBranchInstruction(cg, lookupNode, upperLabel, branchCond);
+        Inst_ConditionalBranch(cg, lookupNode, upperLabel, branchCond);
 
         if (lowChild == pivot) {
-            generateConditionalBranchInstruction(cg, lookupNode,
+            Inst_ConditionalBranch(cg, lookupNode,
                 lookupNode->getChild(lowChild)->getBranchDestination()->getNode()->getLabel(), TR::CC_EQ, conditions);
 
             // default case
-            generateLabelInstruction(cg, OP::b, lookupNode,
-                lookupNode->getChild(1)->getBranchDestination()->getNode()->getLabel(), conditions);
+            Inst_Label(cg, OP::b, lookupNode, lookupNode->getChild(1)->getBranchDestination()->getNode()->getLabel(),
+                conditions);
         } else {
             binarySearchCaseSpace(selectorReg, lookupNode, lowChild, pivot, tmpRegister, conditions, cg);
         }
-        generateLabelInstruction(cg, OP::label, lookupNode, upperLabel);
+        Inst_Label(cg, OP::label, lookupNode, upperLabel);
     }
 
     // upper half
@@ -603,16 +603,16 @@ static void binarySearchCaseSpace(TR::Register *selectorReg, TR::Node *lookupNod
         int32_t highValue = lookupNode->getChild(highChild)->getCaseConstant();
         if (!constantIsUnsignedImm12(highValue)) {
             loadConstant32(cg, lookupNode, highValue, tmpRegister);
-            generateCompareInstruction(cg, lookupNode, selectorReg, tmpRegister);
+            Inst_Compare(cg, lookupNode, selectorReg, tmpRegister);
         } else {
-            generateCompareImmInstruction(cg, lookupNode, selectorReg, highValue);
+            Inst_CompareImm(cg, lookupNode, selectorReg, highValue);
         }
-        generateConditionalBranchInstruction(cg, lookupNode,
+        Inst_ConditionalBranch(cg, lookupNode,
             lookupNode->getChild(highChild)->getBranchDestination()->getNode()->getLabel(), TR::CC_EQ, conditions);
 
         // default case
-        generateLabelInstruction(cg, OP::b, lookupNode,
-            lookupNode->getChild(1)->getBranchDestination()->getNode()->getLabel(), conditions);
+        Inst_Label(cg, OP::b, lookupNode, lookupNode->getChild(1)->getBranchDestination()->getNode()->getLabel(),
+            conditions);
     } else {
         binarySearchCaseSpace(selectorReg, lookupNode, pivot + 1, highChild, tmpRegister, conditions, cg);
     }
@@ -649,9 +649,9 @@ TR::Register *OMR::ARM64::TreeEvaluator::lookupEvaluator(TR::Node *node, TR::Cod
 
             if (!constantIsUnsignedImm12(caseValue)) {
                 loadConstant32(cg, node, caseValue, tmpRegister);
-                generateCompareInstruction(cg, node, selectorReg, tmpRegister);
+                Inst_Compare(cg, node, selectorReg, tmpRegister);
             } else {
-                generateCompareImmInstruction(cg, node, selectorReg, caseValue);
+                Inst_CompareImm(cg, node, selectorReg, caseValue);
             }
 
             TR::RegisterDependencyConditions *cond = conditions;
@@ -660,8 +660,7 @@ TR::Register *OMR::ARM64::TreeEvaluator::lookupEvaluator(TR::Node *node, TR::Cod
                 cg->evaluate(child->getFirstChild());
                 cond = cond->clone(cg, RegDeps(cg, child->getFirstChild(), 0));
             }
-            generateConditionalBranchInstruction(cg, node, child->getBranchDestination()->getNode()->getLabel(),
-                TR::CC_EQ, cond);
+            Inst_ConditionalBranch(cg, node, child->getBranchDestination()->getNode()->getLabel(), TR::CC_EQ, cond);
         }
 
         // Branch to default
@@ -670,8 +669,7 @@ TR::Register *OMR::ARM64::TreeEvaluator::lookupEvaluator(TR::Node *node, TR::Cod
             cg->evaluate(defaultChild->getFirstChild());
             conditions = conditions->clone(cg, RegDeps(cg, defaultChild->getFirstChild(), 0));
         }
-        generateLabelInstruction(cg, OP::b, node, defaultChild->getBranchDestination()->getNode()->getLabel(),
-            conditions);
+        Inst_Label(cg, OP::b, node, defaultChild->getBranchDestination()->getNode()->getLabel(), conditions);
     }
 
     if (tmpRegister) {
@@ -708,33 +706,30 @@ TR::Register *OMR::ARM64::TreeEvaluator::tableEvaluator(TR::Node *node, TR::Code
 
     if (5 > numBranchTableEntries) {
         for (i = 0; i < numBranchTableEntries; i++) {
-            generateCompareImmInstruction(cg, node, selectorReg, i);
-            generateConditionalBranchInstruction(cg, node,
-                node->getChild(2 + i)->getBranchDestination()->getNode()->getLabel(), TR::CC_EQ);
+            Inst_CompareImm(cg, node, selectorReg, i);
+            Inst_ConditionalBranch(cg, node, node->getChild(2 + i)->getBranchDestination()->getNode()->getLabel(),
+                TR::CC_EQ);
         }
 
-        generateLabelInstruction(cg, OP::b, node, defaultChild->getBranchDestination()->getNode()->getLabel(),
-            conditions);
+        Inst_Label(cg, OP::b, node, defaultChild->getBranchDestination()->getNode()->getLabel(), conditions);
     } else {
         if (!constantIsUnsignedImm12(numBranchTableEntries)) {
             loadConstant32(cg, node, numBranchTableEntries, tmpRegister);
-            generateCompareInstruction(cg, node, selectorReg, tmpRegister);
+            Inst_Compare(cg, node, selectorReg, tmpRegister);
         } else {
-            generateCompareImmInstruction(cg, node, selectorReg, numBranchTableEntries);
+            Inst_CompareImm(cg, node, selectorReg, numBranchTableEntries);
         }
 
-        generateConditionalBranchInstruction(cg, node, defaultChild->getBranchDestination()->getNode()->getLabel(),
-            TR::CC_CS);
-        generateTrg1ImmInstruction(cg, OP::adr, node, tmpRegister,
+        Inst_ConditionalBranch(cg, node, defaultChild->getBranchDestination()->getNode()->getLabel(), TR::CC_CS);
+        Inst_Trg1Imm(cg, OP::adr, node, tmpRegister,
             12); // distance between this instruction to the jump table
-        generateTrg1Src2ShiftedInstruction(cg, OP::addx, node, tmpRegister, tmpRegister, selectorReg, TR::SH_LSL, 2);
-        generateRegBranchInstruction(cg, OP::br, node, tmpRegister);
+        Inst_Trg1Src2Shifted(cg, OP::addx, node, tmpRegister, tmpRegister, selectorReg, TR::SH_LSL, 2);
+        Inst_RegBranch(cg, OP::br, node, tmpRegister);
 
         for (i = 2; i < node->getNumChildren() - 1; i++) {
-            generateLabelInstruction(cg, OP::b, node, node->getChild(i)->getBranchDestination()->getNode()->getLabel());
+            Inst_Label(cg, OP::b, node, node->getChild(i)->getBranchDestination()->getNode()->getLabel());
         }
-        generateLabelInstruction(cg, OP::b, node, node->getChild(i)->getBranchDestination()->getNode()->getLabel(),
-            conditions);
+        Inst_Label(cg, OP::b, node, node->getChild(i)->getBranchDestination()->getNode()->getLabel(), conditions);
     }
 
     if (NULL != tmpRegister)
@@ -763,11 +758,11 @@ static TR::Register *commonMinMaxEvaluator(TR::Node *node, bool is64bit, TR::ARM
     TR::Register *src2Reg = cg->evaluate(secondChild);
 
     // ToDo:
-    // Optimize the code by using generateCompareImmInstruction() when possible
-    generateCompareInstruction(cg, node, src1Reg, src2Reg, is64bit);
+    // Optimize the code by using Inst_CompareImm() when possible
+    Inst_Compare(cg, node, src1Reg, src2Reg, is64bit);
 
     OP::Mnemonic op = is64bit ? OP::cselx : OP::cselw;
-    generateCondTrg1Src2Instruction(cg, op, node, trgReg, src1Reg, src2Reg, cc);
+    Inst_CondTrg1Src2(cg, op, node, trgReg, src1Reg, src2Reg, cc);
 
     node->setRegister(trgReg);
     cg->decReferenceCount(firstChild);
@@ -908,15 +903,15 @@ TR::Register *OMR::ARM64::TreeEvaluator::iselectEvaluator(TR::Node *node, TR::Co
         TR::Register *cmp2Reg = cg->evaluate(cmp2Node);
         bool is64bit = (TR::DataType::getSize(cmp1Node->getDataType()) == 8);
 
-        generateCompareInstruction(cg, node, cmp1Reg, cmp2Reg, is64bit);
-        generateCondTrg1Src2Instruction(cg, OP::cselx, node, resultReg, trueReg, falseReg, cc);
+        Inst_Compare(cg, node, cmp1Reg, cmp2Reg, is64bit);
+        Inst_CondTrg1Src2(cg, OP::cselx, node, resultReg, trueReg, falseReg, cc);
 
         cg->recursivelyDecReferenceCount(condNode);
     } else {
         TR::Register *condReg = cg->evaluate(condNode);
 
-        generateCompareImmInstruction(cg, node, condReg, 0, true); // 64-bit compare
-        generateCondTrg1Src2Instruction(cg, OP::cselx, node, resultReg, trueReg, falseReg, TR::CC_NE);
+        Inst_CompareImm(cg, node, condReg, 0, true); // 64-bit compare
+        Inst_CondTrg1Src2(cg, OP::cselx, node, resultReg, trueReg, falseReg, TR::CC_NE);
 
         cg->decReferenceCount(condNode);
     }
@@ -1007,9 +1002,9 @@ TR::Register *OMR::ARM64::TreeEvaluator::igotoEvaluator(TR::Node *node, TR::Code
         cg->decReferenceCount(glregdep);
     }
     if (deps)
-        generateRegBranchInstruction(cg, OP::br, node, addrReg, deps);
+        Inst_RegBranch(cg, OP::br, node, addrReg, deps);
     else
-        generateRegBranchInstruction(cg, OP::br, node, addrReg);
+        Inst_RegBranch(cg, OP::br, node, addrReg);
     cg->decReferenceCount(labelAddr);
     node->setRegister(NULL);
     return NULL;

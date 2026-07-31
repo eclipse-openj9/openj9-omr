@@ -378,7 +378,7 @@ void OMR::ARM64::Machine::spillRegister(TR::Instruction *currentInstruction, TR:
     }
 
     TR::RealRegister *realReg = toRealRegister(virtReg->getAssignedRegister());
-    generateTrg1MemInstruction(cg, loadOp, currentNode, realReg, tmemref, currentInstruction);
+    Inst_Trg1Mem(cg, loadOp, currentNode, realReg, tmemref, currentInstruction);
 
     cg->traceRegFreed(registerToSpill, realReg);
 
@@ -528,7 +528,7 @@ TR::RealRegister *OMR::ARM64::Machine::reverseSpillState(TR::Instruction *curren
             TR_ASSERT(false, "Unsupported RegisterKind.");
             break;
     }
-    generateMemSrc1Instruction(cg(), storeOp, currentNode, tmemref, targetRegister, currentInstruction);
+    Inst_MemSrc1(cg(), storeOp, currentNode, tmemref, targetRegister, currentInstruction);
 
     return targetRegister;
 }
@@ -587,13 +587,13 @@ static void registerCopy(TR::Instruction *precedingInstruction, TR_RegisterKinds
     TR::Node *node = precedingInstruction->getNode();
     switch (rk) {
         case TR_GPR:
-            generateMovInstruction(cg, node, targetReg, sourceReg, true, precedingInstruction);
+            Inst_Mov(cg, node, targetReg, sourceReg, true, precedingInstruction);
             break;
         case TR_FPR:
-            generateTrg1Src1Instruction(cg, OP::fmovd, node, targetReg, sourceReg, precedingInstruction);
+            Inst_Trg1Src1(cg, OP::fmovd, node, targetReg, sourceReg, precedingInstruction);
             break;
         case TR_VRF:
-            generateTrg1Src2Instruction(cg, OP::vorr16b, node, targetReg, sourceReg, sourceReg, precedingInstruction);
+            Inst_Trg1Src2(cg, OP::vorr16b, node, targetReg, sourceReg, sourceReg, precedingInstruction);
             break;
         default:
             TR_ASSERT(false, "Unsupported RegisterKind.");
@@ -609,13 +609,13 @@ static void registerExchange(TR::Instruction *precedingInstruction, TR_RegisterK
 
     TR::Node *node = precedingInstruction->getNode();
     if (rk == TR_GPR) {
-        generateTrg1Src2Instruction(cg, OP::eorx, node, targetReg, targetReg, sourceReg, precedingInstruction);
-        generateTrg1Src2Instruction(cg, OP::eorx, node, sourceReg, targetReg, sourceReg, precedingInstruction);
-        generateTrg1Src2Instruction(cg, OP::eorx, node, targetReg, targetReg, sourceReg, precedingInstruction);
+        Inst_Trg1Src2(cg, OP::eorx, node, targetReg, targetReg, sourceReg, precedingInstruction);
+        Inst_Trg1Src2(cg, OP::eorx, node, sourceReg, targetReg, sourceReg, precedingInstruction);
+        Inst_Trg1Src2(cg, OP::eorx, node, targetReg, targetReg, sourceReg, precedingInstruction);
     } else {
-        generateTrg1Src2Instruction(cg, OP::veor16b, node, targetReg, targetReg, sourceReg, precedingInstruction);
-        generateTrg1Src2Instruction(cg, OP::veor16b, node, sourceReg, targetReg, sourceReg, precedingInstruction);
-        generateTrg1Src2Instruction(cg, OP::veor16b, node, targetReg, targetReg, sourceReg, precedingInstruction);
+        Inst_Trg1Src2(cg, OP::veor16b, node, targetReg, targetReg, sourceReg, precedingInstruction);
+        Inst_Trg1Src2(cg, OP::veor16b, node, sourceReg, targetReg, sourceReg, precedingInstruction);
+        Inst_Trg1Src2(cg, OP::veor16b, node, targetReg, targetReg, sourceReg, precedingInstruction);
     }
 }
 
@@ -1020,7 +1020,7 @@ void OMR::ARM64::Machine::createRegisterAssociationDirective(TR::Instruction *cu
         associations->addPostCondition(self()->getVirtualAssociatedWithReal(regNum), regNum);
     }
 
-    generateAdminInstruction(cg(), OP::assocreg, cursor->getNode(), associations, NULL, cursor);
+    Inst_Admin(cg(), OP::assocreg, cursor->getNode(), associations, NULL, cursor);
 }
 
 TR::Register *OMR::ARM64::Machine::setVirtualAssociatedWithReal(TR::RealRegister::RegNum regNum, TR::Register *virtReg)

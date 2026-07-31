@@ -39,14 +39,14 @@ class RegisterDependencyConditions;
 class SymbolReference;
 } // namespace TR
 
-TR::Instruction *generateInstruction(TR::CodeGenerator *cg, OP::Mnemonic op, TR::Node *node, TR::Instruction *preced)
+TR::Instruction *Inst(TR::CodeGenerator *cg, OP::Mnemonic op, TR::Node *node, TR::Instruction *preced)
 {
     if (preced)
         return new (cg->trHeapMemory()) TR::Instruction(op, node, preced, cg);
     return new (cg->trHeapMemory()) TR::Instruction(op, node, cg);
 }
 
-TR::ARM64ImmInstruction *generateImmInstruction(TR::CodeGenerator *cg, OP::Mnemonic op, TR::Node *node, uint32_t imm,
+TR::ARM64ImmInstruction *Inst_Imm(TR::CodeGenerator *cg, OP::Mnemonic op, TR::Node *node, uint32_t imm,
     TR::Instruction *preced)
 {
     if (preced)
@@ -54,16 +54,16 @@ TR::ARM64ImmInstruction *generateImmInstruction(TR::CodeGenerator *cg, OP::Mnemo
     return new (cg->trHeapMemory()) TR::ARM64ImmInstruction(op, node, imm, cg);
 }
 
-TR::Instruction *generateRelocatableImmInstruction(TR::CodeGenerator *cg, OP::Mnemonic op, TR::Node *node,
-    uintptr_t imm, TR_ExternalRelocationTargetKind relocationKind, TR::Instruction *preced)
+TR::Instruction *Inst_RelocatableImm(TR::CodeGenerator *cg, OP::Mnemonic op, TR::Node *node, uintptr_t imm,
+    TR_ExternalRelocationTargetKind relocationKind, TR::Instruction *preced)
 {
     if (preced)
         return new (cg->trHeapMemory()) TR::ARM64RelocatableImmInstruction(op, node, imm, relocationKind, preced, cg);
     return new (cg->trHeapMemory()) TR::ARM64RelocatableImmInstruction(op, node, imm, relocationKind, cg);
 }
 
-TR::Instruction *generateRelocatableImmInstruction(TR::CodeGenerator *cg, OP::Mnemonic op, TR::Node *node,
-    uintptr_t imm, TR_ExternalRelocationTargetKind relocationKind, TR::SymbolReference *sr, TR::Instruction *preced)
+TR::Instruction *Inst_RelocatableImm(TR::CodeGenerator *cg, OP::Mnemonic op, TR::Node *node, uintptr_t imm,
+    TR_ExternalRelocationTargetKind relocationKind, TR::SymbolReference *sr, TR::Instruction *preced)
 {
     if (preced)
         return new (cg->trHeapMemory())
@@ -71,7 +71,7 @@ TR::Instruction *generateRelocatableImmInstruction(TR::CodeGenerator *cg, OP::Mn
     return new (cg->trHeapMemory()) TR::ARM64RelocatableImmInstruction(op, node, imm, relocationKind, sr, cg);
 }
 
-TR::Instruction *generateImmSymInstruction(TR::CodeGenerator *cg, OP::Mnemonic op, TR::Node *node, uintptr_t imm,
+TR::Instruction *Inst_ImmSym(TR::CodeGenerator *cg, OP::Mnemonic op, TR::Node *node, uintptr_t imm,
     TR::RegisterDependencyConditions *cond, TR::SymbolReference *sr, TR::Snippet *s, TR::Instruction *preced)
 {
     if (preced)
@@ -79,7 +79,7 @@ TR::Instruction *generateImmSymInstruction(TR::CodeGenerator *cg, OP::Mnemonic o
     return new (cg->trHeapMemory()) TR::ARM64ImmSymInstruction(op, node, imm, cond, sr, s, cg);
 }
 
-TR::Instruction *generateLabelInstruction(TR::CodeGenerator *cg, OP::Mnemonic op, TR::Node *node, TR::LabelSymbol *sym,
+TR::Instruction *Inst_Label(TR::CodeGenerator *cg, OP::Mnemonic op, TR::Node *node, TR::LabelSymbol *sym,
     TR::Instruction *preced)
 {
     if (preced)
@@ -87,7 +87,7 @@ TR::Instruction *generateLabelInstruction(TR::CodeGenerator *cg, OP::Mnemonic op
     return new (cg->trHeapMemory()) TR::ARM64LabelInstruction(op, node, sym, cg);
 }
 
-TR::Instruction *generateLabelInstruction(TR::CodeGenerator *cg, OP::Mnemonic op, TR::Node *node, TR::LabelSymbol *sym,
+TR::Instruction *Inst_Label(TR::CodeGenerator *cg, OP::Mnemonic op, TR::Node *node, TR::LabelSymbol *sym,
     TR::RegisterDependencyConditions *cond, TR::Instruction *preced)
 {
     if (preced)
@@ -95,7 +95,7 @@ TR::Instruction *generateLabelInstruction(TR::CodeGenerator *cg, OP::Mnemonic op
     return new (cg->trHeapMemory()) TR::ARM64LabelInstruction(op, node, sym, cond, cg);
 }
 
-TR::Instruction *generateConditionalBranchInstruction(TR::CodeGenerator *cg, TR::Node *node, TR::LabelSymbol *sym,
+TR::Instruction *Inst_ConditionalBranch(TR::CodeGenerator *cg, TR::Node *node, TR::LabelSymbol *sym,
     TR::ARM64ConditionCode cc, TR::Instruction *preced)
 {
     if (preced)
@@ -103,7 +103,7 @@ TR::Instruction *generateConditionalBranchInstruction(TR::CodeGenerator *cg, TR:
     return new (cg->trHeapMemory()) TR::ARM64ConditionalBranchInstruction(OP::b_cond, node, sym, cc, cg);
 }
 
-TR::Instruction *generateConditionalBranchInstruction(TR::CodeGenerator *cg, TR::Node *node, TR::LabelSymbol *sym,
+TR::Instruction *Inst_ConditionalBranch(TR::CodeGenerator *cg, TR::Node *node, TR::LabelSymbol *sym,
     TR::ARM64ConditionCode cc, TR::RegisterDependencyConditions *cond, TR::Instruction *preced)
 {
     if (preced)
@@ -112,33 +112,32 @@ TR::Instruction *generateConditionalBranchInstruction(TR::CodeGenerator *cg, TR:
     return new (cg->trHeapMemory()) TR::ARM64ConditionalBranchInstruction(OP::b_cond, node, sym, cc, cond, cg);
 }
 
-TR::Instruction *generateCompareBranchInstruction(TR::CodeGenerator *cg, OP::Mnemonic op, TR::Node *node,
-    TR::Register *sreg, TR::LabelSymbol *sym, TR::Instruction *preced)
+TR::Instruction *Inst_CompareBranch(TR::CodeGenerator *cg, OP::Mnemonic op, TR::Node *node, TR::Register *sreg,
+    TR::LabelSymbol *sym, TR::Instruction *preced)
 {
     if (preced)
         return new (cg->trHeapMemory()) TR::ARM64CompareBranchInstruction(op, node, sreg, sym, preced, cg);
     return new (cg->trHeapMemory()) TR::ARM64CompareBranchInstruction(op, node, sreg, sym, cg);
 }
 
-TR::Instruction *generateCompareBranchInstruction(TR::CodeGenerator *cg, OP::Mnemonic op, TR::Node *node,
-    TR::Register *sreg, TR::LabelSymbol *sym, TR::RegisterDependencyConditions *cond, TR::Instruction *preced)
+TR::Instruction *Inst_CompareBranch(TR::CodeGenerator *cg, OP::Mnemonic op, TR::Node *node, TR::Register *sreg,
+    TR::LabelSymbol *sym, TR::RegisterDependencyConditions *cond, TR::Instruction *preced)
 {
     if (preced)
         return new (cg->trHeapMemory()) TR::ARM64CompareBranchInstruction(op, node, sreg, sym, cond, preced, cg);
     return new (cg->trHeapMemory()) TR::ARM64CompareBranchInstruction(op, node, sreg, sym, cond, cg);
 }
 
-TR::Instruction *generateTestBitBranchInstruction(TR::CodeGenerator *cg, OP::Mnemonic op, TR::Node *node,
-    TR::Register *sreg, uint32_t bitpos, TR::LabelSymbol *sym, TR::Instruction *preced)
+TR::Instruction *Inst_TestBitBranch(TR::CodeGenerator *cg, OP::Mnemonic op, TR::Node *node, TR::Register *sreg,
+    uint32_t bitpos, TR::LabelSymbol *sym, TR::Instruction *preced)
 {
     if (preced)
         return new (cg->trHeapMemory()) TR::ARM64TestBitBranchInstruction(op, node, sreg, bitpos, sym, preced, cg);
     return new (cg->trHeapMemory()) TR::ARM64TestBitBranchInstruction(op, node, sreg, bitpos, sym, cg);
 }
 
-TR::Instruction *generateTestBitBranchInstruction(TR::CodeGenerator *cg, OP::Mnemonic op, TR::Node *node,
-    TR::Register *sreg, uint32_t bitpos, TR::LabelSymbol *sym, TR::RegisterDependencyConditions *cond,
-    TR::Instruction *preced)
+TR::Instruction *Inst_TestBitBranch(TR::CodeGenerator *cg, OP::Mnemonic op, TR::Node *node, TR::Register *sreg,
+    uint32_t bitpos, TR::LabelSymbol *sym, TR::RegisterDependencyConditions *cond, TR::Instruction *preced)
 {
     if (preced)
         return new (cg->trHeapMemory())
@@ -146,23 +145,23 @@ TR::Instruction *generateTestBitBranchInstruction(TR::CodeGenerator *cg, OP::Mne
     return new (cg->trHeapMemory()) TR::ARM64TestBitBranchInstruction(op, node, sreg, bitpos, sym, cond, cg);
 }
 
-TR::Instruction *generateRegBranchInstruction(TR::CodeGenerator *cg, OP::Mnemonic op, TR::Node *node,
-    TR::Register *treg, TR::Instruction *preced)
+TR::Instruction *Inst_RegBranch(TR::CodeGenerator *cg, OP::Mnemonic op, TR::Node *node, TR::Register *treg,
+    TR::Instruction *preced)
 {
     if (preced)
         return new (cg->trHeapMemory()) TR::ARM64RegBranchInstruction(op, node, treg, preced, cg);
     return new (cg->trHeapMemory()) TR::ARM64RegBranchInstruction(op, node, treg, cg);
 }
 
-TR::Instruction *generateRegBranchInstruction(TR::CodeGenerator *cg, OP::Mnemonic op, TR::Node *node,
-    TR::Register *treg, TR::RegisterDependencyConditions *cond, TR::Instruction *preced)
+TR::Instruction *Inst_RegBranch(TR::CodeGenerator *cg, OP::Mnemonic op, TR::Node *node, TR::Register *treg,
+    TR::RegisterDependencyConditions *cond, TR::Instruction *preced)
 {
     if (preced)
         return new (cg->trHeapMemory()) TR::ARM64RegBranchInstruction(op, node, treg, cond, preced, cg);
     return new (cg->trHeapMemory()) TR::ARM64RegBranchInstruction(op, node, treg, cond, cg);
 }
 
-TR::Instruction *generateAdminInstruction(TR::CodeGenerator *cg, OP::Mnemonic op, TR::Node *node, TR::Node *fenceNode,
+TR::Instruction *Inst_Admin(TR::CodeGenerator *cg, OP::Mnemonic op, TR::Node *node, TR::Node *fenceNode,
     TR::Instruction *preced)
 {
     if (preced)
@@ -170,7 +169,7 @@ TR::Instruction *generateAdminInstruction(TR::CodeGenerator *cg, OP::Mnemonic op
     return new (cg->trHeapMemory()) TR::ARM64AdminInstruction(op, node, fenceNode, cg);
 }
 
-TR::Instruction *generateAdminInstruction(TR::CodeGenerator *cg, OP::Mnemonic op, TR::Node *node,
+TR::Instruction *Inst_Admin(TR::CodeGenerator *cg, OP::Mnemonic op, TR::Node *node,
     TR::RegisterDependencyConditions *cond, TR::Node *fenceNode, TR::Instruction *preced)
 {
     if (preced)
@@ -178,24 +177,16 @@ TR::Instruction *generateAdminInstruction(TR::CodeGenerator *cg, OP::Mnemonic op
     return new (cg->trHeapMemory()) TR::ARM64AdminInstruction(op, cond, node, fenceNode, cg);
 }
 
-TR::Instruction *generateTrgInstruction(TR::CodeGenerator *cg, OP::Mnemonic op, TR::Node *node, TR::Register *treg,
+TR::Instruction *Inst_Trg1Imm(TR::CodeGenerator *cg, OP::Mnemonic op, TR::Node *node, TR::Register *treg, uint32_t imm,
     TR::Instruction *preced)
-{
-    if (preced)
-        return new (cg->trHeapMemory()) TR::ARM64Trg1Instruction(op, node, treg, preced, cg);
-    return new (cg->trHeapMemory()) TR::ARM64Trg1Instruction(op, node, treg, cg);
-}
-
-TR::Instruction *generateTrg1ImmInstruction(TR::CodeGenerator *cg, OP::Mnemonic op, TR::Node *node, TR::Register *treg,
-    uint32_t imm, TR::Instruction *preced)
 {
     if (preced)
         return new (cg->trHeapMemory()) TR::ARM64Trg1ImmInstruction(op, node, treg, imm, preced, cg);
     return new (cg->trHeapMemory()) TR::ARM64Trg1ImmInstruction(op, node, treg, imm, cg);
 }
 
-TR::Instruction *generateTrg1ImmShiftedInstruction(TR::CodeGenerator *cg, OP::Mnemonic op, TR::Node *node,
-    TR::Register *treg, uint32_t imm, uint32_t shiftAmount, TR::Instruction *preced)
+TR::Instruction *Inst_Trg1ImmShifted(TR::CodeGenerator *cg, OP::Mnemonic op, TR::Node *node, TR::Register *treg,
+    uint32_t imm, uint32_t shiftAmount, TR::Instruction *preced)
 {
     if (preced)
         return new (cg->trHeapMemory())
@@ -203,15 +194,15 @@ TR::Instruction *generateTrg1ImmShiftedInstruction(TR::CodeGenerator *cg, OP::Mn
     return new (cg->trHeapMemory()) TR::ARM64Trg1ImmShiftedInstruction(op, node, treg, imm, shiftAmount, cg);
 }
 
-TR::Instruction *generateTrg1ImmSymInstruction(TR::CodeGenerator *cg, OP::Mnemonic op, TR::Node *node,
-    TR::Register *treg, uint32_t imm, TR::Symbol *sym, TR::Instruction *preced)
+TR::Instruction *Inst_Trg1ImmSym(TR::CodeGenerator *cg, OP::Mnemonic op, TR::Node *node, TR::Register *treg,
+    uint32_t imm, TR::Symbol *sym, TR::Instruction *preced)
 {
     if (preced)
         return new (cg->trHeapMemory()) TR::ARM64Trg1ImmSymInstruction(op, node, treg, imm, sym, preced, cg);
     return new (cg->trHeapMemory()) TR::ARM64Trg1ImmSymInstruction(op, node, treg, imm, sym, cg);
 }
 
-TR::Instruction *generateTrg1Src1Instruction(TR::CodeGenerator *cg, OP::Mnemonic op, TR::Node *node, TR::Register *treg,
+TR::Instruction *Inst_Trg1Src1(TR::CodeGenerator *cg, OP::Mnemonic op, TR::Node *node, TR::Register *treg,
     TR::Register *s1reg, TR::Instruction *preced)
 {
     if (preced)
@@ -219,8 +210,8 @@ TR::Instruction *generateTrg1Src1Instruction(TR::CodeGenerator *cg, OP::Mnemonic
     return new (cg->trHeapMemory()) TR::ARM64Trg1Src1Instruction(op, node, treg, s1reg, cg);
 }
 
-TR::Instruction *generateTrg1Src1ImmInstruction(TR::CodeGenerator *cg, OP::Mnemonic op, TR::Node *node,
-    TR::Register *treg, TR::Register *s1reg, uint32_t imm, TR::Instruction *preced)
+TR::Instruction *Inst_Trg1Src1Imm(TR::CodeGenerator *cg, OP::Mnemonic op, TR::Node *node, TR::Register *treg,
+    TR::Register *s1reg, uint32_t imm, TR::Instruction *preced)
 {
     bool isShifted = false;
 
@@ -241,7 +232,7 @@ TR::Instruction *generateTrg1Src1ImmInstruction(TR::CodeGenerator *cg, OP::Mnemo
     return new (cg->trHeapMemory()) TR::ARM64Trg1Src1ImmInstruction(op, node, treg, s1reg, isShifted, imm, cg);
 }
 
-TR::Instruction *generateTrg1Src2Instruction(TR::CodeGenerator *cg, OP::Mnemonic op, TR::Node *node, TR::Register *treg,
+TR::Instruction *Inst_Trg1Src2(TR::CodeGenerator *cg, OP::Mnemonic op, TR::Node *node, TR::Register *treg,
     TR::Register *s1reg, TR::Register *s2reg, TR::Instruction *preced)
 {
     if (preced)
@@ -249,34 +240,24 @@ TR::Instruction *generateTrg1Src2Instruction(TR::CodeGenerator *cg, OP::Mnemonic
     return new (cg->trHeapMemory()) TR::ARM64Trg1Src2Instruction(op, node, treg, s1reg, s2reg, cg);
 }
 
-TR::Instruction *generateCondTrg1Src2Instruction(TR::CodeGenerator *cg, OP::Mnemonic op, TR::Node *node,
-    TR::Register *treg, TR::Register *s1reg, TR::Register *s2reg, TR::ARM64ConditionCode cc, TR::Instruction *preced)
+TR::Instruction *Inst_CondTrg1Src2(TR::CodeGenerator *cg, OP::Mnemonic op, TR::Node *node, TR::Register *treg,
+    TR::Register *s1reg, TR::Register *s2reg, TR::ARM64ConditionCode cc, TR::Instruction *preced)
 {
     if (preced)
         return new (cg->trHeapMemory()) TR::ARM64CondTrg1Src2Instruction(op, node, treg, s1reg, s2reg, cc, preced, cg);
     return new (cg->trHeapMemory()) TR::ARM64CondTrg1Src2Instruction(op, node, treg, s1reg, s2reg, cc, cg);
 }
 
-TR::Instruction *generateCondTrg1Src2Instruction(TR::CodeGenerator *cg, OP::Mnemonic op, TR::Node *node,
-    TR::Register *treg, TR::Register *s1reg, TR::Register *s2reg, TR::ARM64ConditionCode cc,
-    TR::RegisterDependencyConditions *cond, TR::Instruction *preced)
-{
-    if (preced)
-        return new (cg->trHeapMemory())
-            TR::ARM64CondTrg1Src2Instruction(op, node, treg, s1reg, s2reg, cc, cond, preced, cg);
-    return new (cg->trHeapMemory()) TR::ARM64CondTrg1Src2Instruction(op, node, treg, s1reg, s2reg, cc, cond, cg);
-}
-
-TR::Instruction *generateTrg1Src2ImmInstruction(TR::CodeGenerator *cg, OP::Mnemonic op, TR::Node *node,
-    TR::Register *treg, TR::Register *s1reg, TR::Register *s2reg, uint32_t imm, TR::Instruction *preced)
+TR::Instruction *Inst_Trg1Src2Imm(TR::CodeGenerator *cg, OP::Mnemonic op, TR::Node *node, TR::Register *treg,
+    TR::Register *s1reg, TR::Register *s2reg, uint32_t imm, TR::Instruction *preced)
 {
     if (preced)
         return new (cg->trHeapMemory()) TR::ARM64Trg1Src2ImmInstruction(op, node, treg, s1reg, s2reg, imm, preced, cg);
     return new (cg->trHeapMemory()) TR::ARM64Trg1Src2ImmInstruction(op, node, treg, s1reg, s2reg, imm, cg);
 }
 
-TR::Instruction *generateTrg1Src2ShiftedInstruction(TR::CodeGenerator *cg, OP::Mnemonic op, TR::Node *node,
-    TR::Register *treg, TR::Register *s1reg, TR::Register *s2reg, TR::ARM64ShiftCode shiftType, uint32_t shiftAmount,
+TR::Instruction *Inst_Trg1Src2Shifted(TR::CodeGenerator *cg, OP::Mnemonic op, TR::Node *node, TR::Register *treg,
+    TR::Register *s1reg, TR::Register *s2reg, TR::ARM64ShiftCode shiftType, uint32_t shiftAmount,
     TR::Instruction *preced)
 {
     if (preced)
@@ -286,8 +267,8 @@ TR::Instruction *generateTrg1Src2ShiftedInstruction(TR::CodeGenerator *cg, OP::M
         TR::ARM64Trg1Src2ShiftedInstruction(op, node, treg, s1reg, s2reg, shiftType, shiftAmount, cg);
 }
 
-TR::Instruction *generateTrg1Src2ExtendedInstruction(TR::CodeGenerator *cg, OP::Mnemonic op, TR::Node *node,
-    TR::Register *treg, TR::Register *s1reg, TR::Register *s2reg, TR::ARM64ExtendCode extendType, uint32_t shiftAmount,
+TR::Instruction *Inst_Trg1Src2Extended(TR::CodeGenerator *cg, OP::Mnemonic op, TR::Node *node, TR::Register *treg,
+    TR::Register *s1reg, TR::Register *s2reg, TR::ARM64ExtendCode extendType, uint32_t shiftAmount,
     TR::Instruction *preced)
 {
     if (preced)
@@ -297,8 +278,8 @@ TR::Instruction *generateTrg1Src2ExtendedInstruction(TR::CodeGenerator *cg, OP::
         TR::ARM64Trg1Src2ExtendedInstruction(op, node, treg, s1reg, s2reg, extendType, shiftAmount, cg);
 }
 
-TR::Instruction *generateTrg1Src2IndexedElementInstruction(TR::CodeGenerator *cg, OP::Mnemonic op, TR::Node *node,
-    TR::Register *treg, TR::Register *s1reg, TR::Register *s2reg, uint32_t index, TR::Instruction *preced)
+TR::Instruction *Inst_Trg1Src2IndexedElement(TR::CodeGenerator *cg, OP::Mnemonic op, TR::Node *node, TR::Register *treg,
+    TR::Register *s1reg, TR::Register *s2reg, uint32_t index, TR::Instruction *preced)
 {
     if ((op >= OP::fmulelem_4s) && (op <= OP::vfmulelem_2d)) {
         if ((op == OP::fmulelem_4s) || (op == OP::vfmulelem_4s)) {
@@ -315,7 +296,7 @@ TR::Instruction *generateTrg1Src2IndexedElementInstruction(TR::CodeGenerator *cg
     return new (cg->trHeapMemory()) TR::ARM64Trg1Src2IndexedElementInstruction(op, node, treg, s1reg, s2reg, index, cg);
 }
 
-TR::Instruction *generateTrg1Src3Instruction(TR::CodeGenerator *cg, OP::Mnemonic op, TR::Node *node, TR::Register *treg,
+TR::Instruction *Inst_Trg1Src3(TR::CodeGenerator *cg, OP::Mnemonic op, TR::Node *node, TR::Register *treg,
     TR::Register *s1reg, TR::Register *s2reg, TR::Register *s3reg, TR::Instruction *preced)
 {
     if (preced)
@@ -323,7 +304,7 @@ TR::Instruction *generateTrg1Src3Instruction(TR::CodeGenerator *cg, OP::Mnemonic
     return new (cg->trHeapMemory()) TR::ARM64Trg1Src3Instruction(op, node, treg, s1reg, s2reg, s3reg, cg);
 }
 
-TR::Instruction *generateTrg1MemInstruction(TR::CodeGenerator *cg, OP::Mnemonic op, TR::Node *node, TR::Register *treg,
+TR::Instruction *Inst_Trg1Mem(TR::CodeGenerator *cg, OP::Mnemonic op, TR::Node *node, TR::Register *treg,
     TR::MemoryReference *mr, TR::Instruction *preced)
 {
     if (preced)
@@ -331,7 +312,7 @@ TR::Instruction *generateTrg1MemInstruction(TR::CodeGenerator *cg, OP::Mnemonic 
     return new (cg->trHeapMemory()) TR::ARM64Trg1MemInstruction(op, node, treg, mr, cg);
 }
 
-TR::Instruction *generateTrg2MemInstruction(TR::CodeGenerator *cg, OP::Mnemonic op, TR::Node *node, TR::Register *treg1,
+TR::Instruction *Inst_Trg2Mem(TR::CodeGenerator *cg, OP::Mnemonic op, TR::Node *node, TR::Register *treg1,
     TR::Register *treg2, TR::MemoryReference *mr, TR::Instruction *preced)
 {
     if (preced)
@@ -339,39 +320,39 @@ TR::Instruction *generateTrg2MemInstruction(TR::CodeGenerator *cg, OP::Mnemonic 
     return new (cg->trHeapMemory()) TR::ARM64Trg2MemInstruction(op, node, treg1, treg2, mr, cg);
 }
 
-TR::Instruction *generateMemImmInstruction(TR::CodeGenerator *cg, OP::Mnemonic op, TR::Node *node,
-    TR::MemoryReference *mr, uint32_t imm, TR::Instruction *preced)
+TR::Instruction *Inst_MemImm(TR::CodeGenerator *cg, OP::Mnemonic op, TR::Node *node, TR::MemoryReference *mr,
+    uint32_t imm, TR::Instruction *preced)
 {
     if (preced)
         return new (cg->trHeapMemory()) TR::ARM64MemImmInstruction(op, node, mr, imm, preced, cg);
     return new (cg->trHeapMemory()) TR::ARM64MemImmInstruction(op, node, mr, imm, cg);
 }
 
-TR::Instruction *generateMemSrc1Instruction(TR::CodeGenerator *cg, OP::Mnemonic op, TR::Node *node,
-    TR::MemoryReference *mr, TR::Register *sreg, TR::Instruction *preced)
+TR::Instruction *Inst_MemSrc1(TR::CodeGenerator *cg, OP::Mnemonic op, TR::Node *node, TR::MemoryReference *mr,
+    TR::Register *sreg, TR::Instruction *preced)
 {
     if (preced)
         return new (cg->trHeapMemory()) TR::ARM64MemSrc1Instruction(op, node, mr, sreg, preced, cg);
     return new (cg->trHeapMemory()) TR::ARM64MemSrc1Instruction(op, node, mr, sreg, cg);
 }
 
-TR::Instruction *generateMemSrc2Instruction(TR::CodeGenerator *cg, OP::Mnemonic op, TR::Node *node,
-    TR::MemoryReference *mr, TR::Register *s1reg, TR::Register *s2reg, TR::Instruction *preced)
+TR::Instruction *Inst_MemSrc2(TR::CodeGenerator *cg, OP::Mnemonic op, TR::Node *node, TR::MemoryReference *mr,
+    TR::Register *s1reg, TR::Register *s2reg, TR::Instruction *preced)
 {
     if (preced)
         return new (cg->trHeapMemory()) TR::ARM64MemSrc2Instruction(op, node, mr, s1reg, s2reg, preced, cg);
     return new (cg->trHeapMemory()) TR::ARM64MemSrc2Instruction(op, node, mr, s1reg, s2reg, cg);
 }
 
-TR::Instruction *generateTrg1MemSrc1Instruction(TR::CodeGenerator *cg, OP::Mnemonic op, TR::Node *node,
-    TR::Register *treg, TR::MemoryReference *mr, TR::Register *sreg, TR::Instruction *preced)
+TR::Instruction *Inst_Trg1MemSrc1(TR::CodeGenerator *cg, OP::Mnemonic op, TR::Node *node, TR::Register *treg,
+    TR::MemoryReference *mr, TR::Register *sreg, TR::Instruction *preced)
 {
     if (preced)
         return new (cg->trHeapMemory()) TR::ARM64Trg1MemSrc1Instruction(op, node, treg, mr, sreg, preced, cg);
     return new (cg->trHeapMemory()) TR::ARM64Trg1MemSrc1Instruction(op, node, treg, mr, sreg, cg);
 }
 
-TR::Instruction *generateSrc1Instruction(TR::CodeGenerator *cg, OP::Mnemonic op, TR::Node *node, TR::Register *s1reg,
+TR::Instruction *Inst_Src1(TR::CodeGenerator *cg, OP::Mnemonic op, TR::Node *node, TR::Register *s1reg,
     TR::Instruction *preced)
 {
     if (preced)
@@ -379,7 +360,7 @@ TR::Instruction *generateSrc1Instruction(TR::CodeGenerator *cg, OP::Mnemonic op,
     return new (cg->trHeapMemory()) TR::ARM64Src1Instruction(op, node, s1reg, cg);
 }
 
-TR::Instruction *generateSrc2Instruction(TR::CodeGenerator *cg, OP::Mnemonic op, TR::Node *node, TR::Register *s1reg,
+TR::Instruction *Inst_Src2(TR::CodeGenerator *cg, OP::Mnemonic op, TR::Node *node, TR::Register *s1reg,
     TR::Register *s2reg, TR::Instruction *preced)
 {
     if (preced)
@@ -387,7 +368,7 @@ TR::Instruction *generateSrc2Instruction(TR::CodeGenerator *cg, OP::Mnemonic op,
     return new (cg->trHeapMemory()) TR::ARM64Src2Instruction(op, node, s1reg, s2reg, cg);
 }
 
-TR::Instruction *generateArithmeticShiftRightImmInstruction(TR::CodeGenerator *cg, TR::Node *node, TR::Register *treg,
+TR::Instruction *Inst_ArithmeticShiftRightImm(TR::CodeGenerator *cg, TR::Node *node, TR::Register *treg,
     TR::Register *sreg, uint32_t shiftAmount, bool is64bit, TR::Instruction *preced)
 {
     /* Alias of SBFM instruction */
@@ -404,7 +385,7 @@ TR::Instruction *generateArithmeticShiftRightImmInstruction(TR::CodeGenerator *c
     return new (cg->trHeapMemory()) TR::ARM64Trg1Src1ImmInstruction(op, node, treg, sreg, imm, cg);
 }
 
-TR::Instruction *generateLogicalShiftRightImmInstruction(TR::CodeGenerator *cg, TR::Node *node, TR::Register *treg,
+TR::Instruction *Inst_LogicalShiftRightImm(TR::CodeGenerator *cg, TR::Node *node, TR::Register *treg,
     TR::Register *sreg, uint32_t shiftAmount, bool is64bit, TR::Instruction *preced)
 {
     /* Alias of UBFM instruction */
@@ -421,8 +402,8 @@ TR::Instruction *generateLogicalShiftRightImmInstruction(TR::CodeGenerator *cg, 
     return new (cg->trHeapMemory()) TR::ARM64Trg1Src1ImmInstruction(op, node, treg, sreg, imm, cg);
 }
 
-TR::Instruction *generateLogicalShiftLeftImmInstruction(TR::CodeGenerator *cg, TR::Node *node, TR::Register *treg,
-    TR::Register *sreg, uint32_t shiftAmount, bool is64bit, TR::Instruction *preced)
+TR::Instruction *Inst_LogicalShiftLeftImm(TR::CodeGenerator *cg, TR::Node *node, TR::Register *treg, TR::Register *sreg,
+    uint32_t shiftAmount, bool is64bit, TR::Instruction *preced)
 {
     /* Alias of UBFM instruction */
 
@@ -438,16 +419,16 @@ TR::Instruction *generateLogicalShiftLeftImmInstruction(TR::CodeGenerator *cg, T
     return new (cg->trHeapMemory()) TR::ARM64Trg1Src1ImmInstruction(op, node, treg, sreg, imm, cg);
 }
 
-TR::Instruction *generateLogicalImmInstruction(TR::CodeGenerator *cg, OP::Mnemonic op, TR::Node *node,
-    TR::Register *treg, TR::Register *s1reg, bool N, uint32_t imm, TR::Instruction *preced)
+TR::Instruction *Inst_LogicalImm(TR::CodeGenerator *cg, OP::Mnemonic op, TR::Node *node, TR::Register *treg,
+    TR::Register *s1reg, bool N, uint32_t imm, TR::Instruction *preced)
 {
     if (preced)
         return new (cg->trHeapMemory()) TR::ARM64Trg1Src1ImmInstruction(op, node, treg, s1reg, N, imm, preced, cg);
     return new (cg->trHeapMemory()) TR::ARM64Trg1Src1ImmInstruction(op, node, treg, s1reg, N, imm, cg);
 }
 
-TR::Instruction *generateCompareImmInstruction(TR::CodeGenerator *cg, TR::Node *node, TR::Register *sreg, int32_t imm,
-    bool is64bit, TR::Instruction *preced)
+TR::Instruction *Inst_CompareImm(TR::CodeGenerator *cg, TR::Node *node, TR::Register *sreg, int32_t imm, bool is64bit,
+    TR::Instruction *preced)
 {
     OP::Mnemonic op;
     bool isShifted = false;
@@ -477,8 +458,8 @@ TR::Instruction *generateCompareImmInstruction(TR::CodeGenerator *cg, TR::Node *
     return new (cg->trHeapMemory()) TR::ARM64ZeroSrc1ImmInstruction(op, node, sreg, isShifted, imm, cg);
 }
 
-TR::Instruction *generateTestImmInstruction(TR::CodeGenerator *cg, TR::Node *node, TR::Register *sreg, int32_t imm,
-    bool N, bool is64bit, TR::Instruction *preced)
+TR::Instruction *Inst_TestImm(TR::CodeGenerator *cg, TR::Node *node, TR::Register *sreg, int32_t imm, bool N,
+    bool is64bit, TR::Instruction *preced)
 {
     /* Alias of ANDS instruction */
 
@@ -489,8 +470,8 @@ TR::Instruction *generateTestImmInstruction(TR::CodeGenerator *cg, TR::Node *nod
     return new (cg->trHeapMemory()) TR::ARM64ZeroSrc1ImmInstruction(op, node, sreg, N, imm, cg);
 }
 
-TR::Instruction *generateCompareInstruction(TR::CodeGenerator *cg, TR::Node *node, TR::Register *s1reg,
-    TR::Register *s2reg, bool is64bit, TR::Instruction *preced)
+TR::Instruction *Inst_Compare(TR::CodeGenerator *cg, TR::Node *node, TR::Register *s1reg, TR::Register *s2reg,
+    bool is64bit, TR::Instruction *preced)
 {
     /* Alias of SUBS instruction */
 
@@ -501,8 +482,8 @@ TR::Instruction *generateCompareInstruction(TR::CodeGenerator *cg, TR::Node *nod
     return new (cg->trHeapMemory()) TR::ARM64ZeroSrc2Instruction(op, node, s1reg, s2reg, cg);
 }
 
-TR::Instruction *generateTestInstruction(TR::CodeGenerator *cg, TR::Node *node, TR::Register *s1reg,
-    TR::Register *s2reg, bool is64bit, TR::Instruction *preced)
+TR::Instruction *Inst_Test(TR::CodeGenerator *cg, TR::Node *node, TR::Register *s1reg, TR::Register *s2reg,
+    bool is64bit, TR::Instruction *preced)
 {
     /* Alias of ANDS instruction */
 
@@ -513,9 +494,8 @@ TR::Instruction *generateTestInstruction(TR::CodeGenerator *cg, TR::Node *node, 
     return new (cg->trHeapMemory()) TR::ARM64ZeroSrc2Instruction(op, node, s1reg, s2reg, cg);
 }
 
-TR::Instruction *generateConditionalCompareImmInstruction(TR::CodeGenerator *cg, TR::Node *node, TR::Register *sreg,
-    uint32_t imm, uint32_t conditionFlags, TR::ARM64ConditionCode cc, bool is64bit, bool isNegative,
-    TR::Instruction *preced)
+TR::Instruction *Inst_ConditionalCompareImm(TR::CodeGenerator *cg, TR::Node *node, TR::Register *sreg, uint32_t imm,
+    uint32_t conditionFlags, TR::ARM64ConditionCode cc, bool is64bit, bool isNegative, TR::Instruction *preced)
 {
     OP::Mnemonic op = is64bit ? (isNegative ? OP::ccmnimmx : OP::ccmpimmx) : (isNegative ? OP::ccmnimmw : OP::ccmpimmw);
 
@@ -527,7 +507,7 @@ TR::Instruction *generateConditionalCompareImmInstruction(TR::CodeGenerator *cg,
     return new (cg->trHeapMemory()) TR::ARM64Src1ImmCondInstruction(op, node, sreg, imm, cc, conditionFlags, cg);
 }
 
-TR::Instruction *generateConditionalCompareInstruction(TR::CodeGenerator *cg, TR::Node *node, TR::Register *sreg1,
+TR::Instruction *Inst_ConditionalCompare(TR::CodeGenerator *cg, TR::Node *node, TR::Register *sreg1,
     TR::Register *sreg2, uint32_t conditionFlags, TR::ARM64ConditionCode cc, bool is64bit, bool isNegative,
     TR::Instruction *preced)
 {
@@ -539,8 +519,8 @@ TR::Instruction *generateConditionalCompareInstruction(TR::CodeGenerator *cg, TR
     return new (cg->trHeapMemory()) TR::ARM64Src2CondInstruction(op, node, sreg1, sreg2, cc, conditionFlags, cg);
 }
 
-TR::Instruction *generateMovInstruction(TR::CodeGenerator *cg, TR::Node *node, TR::Register *treg, TR::Register *sreg,
-    bool is64bit, TR::Instruction *preced)
+TR::Instruction *Inst_Mov(TR::CodeGenerator *cg, TR::Node *node, TR::Register *treg, TR::Register *sreg, bool is64bit,
+    TR::Instruction *preced)
 {
     /* Alias of ORR instruction */
 
@@ -551,8 +531,8 @@ TR::Instruction *generateMovInstruction(TR::CodeGenerator *cg, TR::Node *node, T
     return new (cg->trHeapMemory()) TR::ARM64Trg1ZeroSrc1Instruction(op, node, treg, sreg, cg);
 }
 
-TR::Instruction *generateMvnInstruction(TR::CodeGenerator *cg, TR::Node *node, TR::Register *treg, TR::Register *sreg,
-    bool is64bit, TR::Instruction *preced)
+TR::Instruction *Inst_Mvn(TR::CodeGenerator *cg, TR::Node *node, TR::Register *treg, TR::Register *sreg, bool is64bit,
+    TR::Instruction *preced)
 {
     /* Alias of ORN instruction */
 
@@ -563,8 +543,8 @@ TR::Instruction *generateMvnInstruction(TR::CodeGenerator *cg, TR::Node *node, T
     return new (cg->trHeapMemory()) TR::ARM64Trg1ZeroSrc1Instruction(op, node, treg, sreg, cg);
 }
 
-TR::Instruction *generateNegInstruction(TR::CodeGenerator *cg, TR::Node *node, TR::Register *treg, TR::Register *sreg,
-    bool is64bit, TR::Instruction *preced)
+TR::Instruction *Inst_Neg(TR::CodeGenerator *cg, TR::Node *node, TR::Register *treg, TR::Register *sreg, bool is64bit,
+    TR::Instruction *preced)
 {
     /* Alias of SUB instruction */
 
@@ -575,8 +555,8 @@ TR::Instruction *generateNegInstruction(TR::CodeGenerator *cg, TR::Node *node, T
     return new (cg->trHeapMemory()) TR::ARM64Trg1ZeroSrc1Instruction(op, node, treg, sreg, cg);
 }
 
-TR::Instruction *generateMovBitMaskInstruction(TR::CodeGenerator *cg, TR::Node *node, TR::Register *treg, bool N,
-    uint32_t imm, bool is64bit, TR::Instruction *preced)
+TR::Instruction *Inst_MovBitMask(TR::CodeGenerator *cg, TR::Node *node, TR::Register *treg, bool N, uint32_t imm,
+    bool is64bit, TR::Instruction *preced)
 {
     /* Alias of ORR instruction */
     OP::Mnemonic op = is64bit ? OP::orrimmx : OP::orrimmw;
@@ -586,13 +566,13 @@ TR::Instruction *generateMovBitMaskInstruction(TR::CodeGenerator *cg, TR::Node *
     return new (cg->trHeapMemory()) TR::ARM64Trg1ZeroImmInstruction(op, node, treg, N, imm, cg);
 }
 
-TR::Instruction *generateMulInstruction(TR::CodeGenerator *cg, TR::Node *node, TR::Register *treg, TR::Register *s1reg,
+TR::Instruction *Inst_Mul(TR::CodeGenerator *cg, TR::Node *node, TR::Register *treg, TR::Register *s1reg,
     TR::Register *s2reg, TR::Instruction *preced)
 {
-    return generateMulInstruction(cg, node, treg, s1reg, s2reg, node->getDataType().isInt64(), preced);
+    return Inst_Mul(cg, node, treg, s1reg, s2reg, node->getDataType().isInt64(), preced);
 }
 
-TR::Instruction *generateMulInstruction(TR::CodeGenerator *cg, TR::Node *node, TR::Register *treg, TR::Register *s1reg,
+TR::Instruction *Inst_Mul(TR::CodeGenerator *cg, TR::Node *node, TR::Register *treg, TR::Register *s1reg,
     TR::Register *s2reg, bool is64bit, TR::Instruction *preced)
 {
     /* Alias of MADD instruction */
@@ -604,8 +584,8 @@ TR::Instruction *generateMulInstruction(TR::CodeGenerator *cg, TR::Node *node, T
     return new (cg->trHeapMemory()) TR::ARM64Trg1Src2ZeroInstruction(op, node, treg, s1reg, s2reg, cg);
 }
 
-TR::Instruction *generateCSetInstruction(TR::CodeGenerator *cg, TR::Node *node, TR::Register *treg,
-    TR::ARM64ConditionCode cc, bool is64bit, TR::Instruction *preced)
+TR::Instruction *Inst_CSet(TR::CodeGenerator *cg, TR::Node *node, TR::Register *treg, TR::ARM64ConditionCode cc,
+    bool is64bit, TR::Instruction *preced)
 {
     /* Alias of CSINC instruction with inverted condition code */
     OP::Mnemonic op = is64bit ? OP::csincx : OP::csincw;
@@ -615,68 +595,65 @@ TR::Instruction *generateCSetInstruction(TR::CodeGenerator *cg, TR::Node *node, 
     return new (cg->trHeapMemory()) TR::ARM64Trg1CondInstruction(op, node, treg, cc_invert(cc), cg);
 }
 
-TR::Instruction *generateCIncInstruction(TR::CodeGenerator *cg, TR::Node *node, TR::Register *treg, TR::Register *sreg,
+TR::Instruction *Inst_CInc(TR::CodeGenerator *cg, TR::Node *node, TR::Register *treg, TR::Register *sreg,
     TR::ARM64ConditionCode cc, bool is64bit, TR::Instruction *preced)
 {
     /* Alias of CSINC instruction with inverted condition code */
     OP::Mnemonic op = is64bit ? OP::csincx : OP::csincw;
-    return generateCondTrg1Src2Instruction(cg, op, node, treg, sreg, sreg, cc_invert(cc), preced);
+    return Inst_CondTrg1Src2(cg, op, node, treg, sreg, sreg, cc_invert(cc), preced);
 }
 
-TR::ARM64SynchronizationInstruction *generateSynchronizationInstruction(TR::CodeGenerator *cg, OP::Mnemonic op,
-    TR::Node *node, OP::AArch64BarrierLimitation lim, TR::Instruction *preced)
+TR::ARM64SynchronizationInstruction *Inst_Synchronization(TR::CodeGenerator *cg, OP::Mnemonic op, TR::Node *node,
+    OP::AArch64BarrierLimitation lim, TR::Instruction *preced)
 {
     if (preced)
         return new (cg->trHeapMemory()) TR::ARM64SynchronizationInstruction(op, node, lim, preced, cg);
     return new (cg->trHeapMemory()) TR::ARM64SynchronizationInstruction(op, node, lim, cg);
 }
 
-TR::ARM64ExceptionInstruction *generateExceptionInstruction(TR::CodeGenerator *cg, OP::Mnemonic op, TR::Node *node,
-    uint32_t imm, TR::Instruction *preced)
+TR::ARM64ExceptionInstruction *Inst_Exception(TR::CodeGenerator *cg, OP::Mnemonic op, TR::Node *node, uint32_t imm,
+    TR::Instruction *preced)
 {
     if (preced)
         return new (cg->trHeapMemory()) TR::ARM64ExceptionInstruction(op, node, imm, preced, cg);
     return new (cg->trHeapMemory()) TR::ARM64ExceptionInstruction(op, node, imm, cg);
 }
 
-TR::Instruction *generateUBFXInstruction(TR::CodeGenerator *cg, TR::Node *node, TR::Register *treg, TR::Register *sreg,
-    uint32_t lsb, uint32_t width, bool is64bit, TR::Instruction *preced)
+TR::Instruction *Inst_UBFX(TR::CodeGenerator *cg, TR::Node *node, TR::Register *treg, TR::Register *sreg, uint32_t lsb,
+    uint32_t width, bool is64bit, TR::Instruction *preced)
 {
     uint32_t imms = (lsb + width - 1);
     uint32_t immr = lsb;
     TR_ASSERT_FATAL((is64bit && (immr <= 63) && (imms <= 63)) || ((!is64bit) && (immr <= 31) && (imms <= 31)),
         "immediate field for ubfm is out of range: is64bit=%d, immr=%d, imms=%d", is64bit, immr, imms);
-    return generateTrg1Src1ImmInstruction(cg, is64bit ? OP::ubfmx : OP::ubfmw, node, treg, sreg, (immr << 6) | imms,
-        preced);
+    return Inst_Trg1Src1Imm(cg, is64bit ? OP::ubfmx : OP::ubfmw, node, treg, sreg, (immr << 6) | imms, preced);
 }
 
-TR::Instruction *generateUBFIZInstruction(TR::CodeGenerator *cg, TR::Node *node, TR::Register *treg, TR::Register *sreg,
-    uint32_t lsb, uint32_t width, bool is64bit, TR::Instruction *preced)
+TR::Instruction *Inst_UBFIZ(TR::CodeGenerator *cg, TR::Node *node, TR::Register *treg, TR::Register *sreg, uint32_t lsb,
+    uint32_t width, bool is64bit, TR::Instruction *preced)
 {
     uint32_t imms = width - 1;
     uint32_t immr = (is64bit ? 64 : 32) - lsb;
     TR_ASSERT_FATAL((is64bit && (immr <= 63) && (imms <= 63)) || ((!is64bit) && (immr <= 31) && (imms <= 31)),
         "immediate field for ubfm is out of range: is64bit=%d, immr=%d, imms=%d", is64bit, immr, imms);
-    return generateTrg1Src1ImmInstruction(cg, is64bit ? OP::ubfmx : OP::ubfmw, node, treg, sreg, (immr << 6) | imms,
-        preced);
+    return Inst_Trg1Src1Imm(cg, is64bit ? OP::ubfmx : OP::ubfmw, node, treg, sreg, (immr << 6) | imms, preced);
 }
 
-TR::Instruction *generateBFIInstruction(TR::CodeGenerator *cg, TR::Node *node, TR::Register *treg, TR::Register *sreg,
-    uint32_t lsb, uint32_t width, bool is64bit, TR::Instruction *preced)
+TR::Instruction *Inst_BFI(TR::CodeGenerator *cg, TR::Node *node, TR::Register *treg, TR::Register *sreg, uint32_t lsb,
+    uint32_t width, bool is64bit, TR::Instruction *preced)
 {
     uint32_t imms = width - 1;
     uint32_t immr = (is64bit ? 64 : 32) - lsb;
     TR_ASSERT_FATAL((is64bit && (immr <= 63) && (imms <= 63)) || ((!is64bit) && (immr <= 31) && (imms <= 31)),
         "immediate field for bfm is out of range: is64bit=%d, immr=%d, imms=%d", is64bit, immr, imms);
-    return generateTrg1Src1ImmInstruction(cg, is64bit ? OP::bfmx : OP::bfmw, node, treg, sreg, (immr << 6) | imms,
-        preced);
+    return Inst_Trg1Src1Imm(cg, is64bit ? OP::bfmx : OP::bfmw, node, treg, sreg, (immr << 6) | imms, preced);
 }
 
-TR::Instruction *generateVectorShiftImmediateInstruction(TR::CodeGenerator *cg, OP::Mnemonic op, TR::Node *node,
-    TR::Register *treg, TR::Register *sreg, uint32_t shiftAmount, TR::Instruction *preced)
+TR::Instruction *Inst_VectorShiftImmediate(TR::CodeGenerator *cg, OP::Mnemonic op, TR::Node *node, TR::Register *treg,
+    TR::Register *sreg, uint32_t shiftAmount, TR::Instruction *preced)
 {
     TR_ASSERT_FATAL_WITH_NODE(node, (op >= OP::vshl16b) && (op <= OP::vsri2d),
-        "Illegal opcode for generateVectorShiftImmediateInstruction: %d", op);
+        "Illegal opcode for Inst_VectorShiftImmediate: %d", op);
 
     bool isShiftLeft = (op <= OP::vsli2d);
     const auto opcodeBinaryEncoding = OP::getOpCodeBinaryEncoding(op);
@@ -693,13 +670,13 @@ TR::Instruction *generateVectorShiftImmediateInstruction(TR::CodeGenerator *cg, 
         "Illegal shift amount: %d", shiftAmount);
 
     uint32_t imm = isShiftLeft ? (shiftAmount + elementSize) : (elementSize * 2 - shiftAmount);
-    return generateTrg1Src1ImmInstruction(cg, op, node, treg, sreg, imm, preced);
+    return Inst_Trg1Src1Imm(cg, op, node, treg, sreg, imm, preced);
 }
 
-TR::Instruction *generateVectorUXTLInstruction(TR::CodeGenerator *cg, TR::DataType elementType, TR::Node *node,
-    TR::Register *treg, TR::Register *sreg, bool isUXTL2, TR::Instruction *preced)
+TR::Instruction *Inst_VectorUXTL(TR::CodeGenerator *cg, TR::DataType elementType, TR::Node *node, TR::Register *treg,
+    TR::Register *sreg, bool isUXTL2, TR::Instruction *preced)
 {
-    OP::Mnemonic op;
+    OP::Mnemonic op = OP::bad;
     switch (elementType) {
         case TR::Int8:
             op = isUXTL2 ? OP::vushll2_8h : OP::vushll_8h;
@@ -714,7 +691,7 @@ TR::Instruction *generateVectorUXTLInstruction(TR::CodeGenerator *cg, TR::DataTy
             TR_ASSERT_FATAL_WITH_NODE(node, false, "Unexpected element type");
             break;
     }
-    return generateVectorShiftImmediateInstruction(cg, op, node, treg, sreg, 0, preced);
+    return Inst_VectorShiftImmediate(cg, op, node, treg, sreg, 0, preced);
 }
 
 static bool isVectorRegister(TR::Register *reg)
@@ -722,11 +699,11 @@ static bool isVectorRegister(TR::Register *reg)
     return (reg->getRealRegister() != NULL) ? (reg->getKind() == TR_FPR) : (reg->getKind() == TR_VRF);
 }
 
-TR::Instruction *generateVectorDupElementInstruction(TR::CodeGenerator *cg, OP::Mnemonic op, TR::Node *node,
-    TR::Register *treg, TR::Register *sreg, uint32_t srcIndex, TR::Instruction *preced)
+TR::Instruction *Inst_VectorDupElement(TR::CodeGenerator *cg, OP::Mnemonic op, TR::Node *node, TR::Register *treg,
+    TR::Register *sreg, uint32_t srcIndex, TR::Instruction *preced)
 {
     TR_ASSERT_FATAL_WITH_NODE(node, (op >= OP::vdupe16b) && (op <= OP::vdupe2d),
-        "Illegal opcode for generateVectorDupElementInstruction: %d", op);
+        "Illegal opcode for Inst_VectorDupElement: %d", op);
     TR_ASSERT_FATAL_WITH_NODE(node, isVectorRegister(treg) && isVectorRegister(sreg),
         "The target and source register must be VRF");
     const uint32_t elementSizeShift = op - OP::vdupe16b;
@@ -735,14 +712,14 @@ TR::Instruction *generateVectorDupElementInstruction(TR::CodeGenerator *cg, OP::
         "srcIndex (%d) must be less than the number of elements (%d)", srcIndex, nelements);
 
     uint32_t imm5 = (srcIndex << (elementSizeShift + 1)) & 0x1f;
-    return generateTrg1Src1ImmInstruction(cg, op, node, treg, sreg, imm5, preced);
+    return Inst_Trg1Src1Imm(cg, op, node, treg, sreg, imm5, preced);
 }
 
-TR::Instruction *generateMovVectorElementToGPRInstruction(TR::CodeGenerator *cg, OP::Mnemonic op, TR::Node *node,
-    TR::Register *treg, TR::Register *sreg, uint32_t srcIndex, TR::Instruction *preced)
+TR::Instruction *Inst_MovVectorElementToGPR(TR::CodeGenerator *cg, OP::Mnemonic op, TR::Node *node, TR::Register *treg,
+    TR::Register *sreg, uint32_t srcIndex, TR::Instruction *preced)
 {
     TR_ASSERT_FATAL_WITH_NODE(node, (op >= OP::smovwb) && (op <= OP::umovxd),
-        "Illegal opcode for generateMovVectorElementToGPRInstruction: %d", op);
+        "Illegal opcode for Inst_MovVectorElementToGPR: %d", op);
     TR_ASSERT_FATAL_WITH_NODE(node, (treg->getKind() == TR_GPR) && isVectorRegister(sreg),
         "The target register must be GPR and the source register must be VRF");
     const uint32_t elementSizeShift
@@ -752,14 +729,14 @@ TR::Instruction *generateMovVectorElementToGPRInstruction(TR::CodeGenerator *cg,
         "srcIndex (%d) must be less than the number of elements (%d)", srcIndex, nelements);
 
     uint32_t imm5 = (srcIndex << (elementSizeShift + 1)) & 0x1f;
-    return generateTrg1Src1ImmInstruction(cg, op, node, treg, sreg, imm5, preced);
+    return Inst_Trg1Src1Imm(cg, op, node, treg, sreg, imm5, preced);
 }
 
-TR::Instruction *generateMovGPRToVectorElementInstruction(TR::CodeGenerator *cg, OP::Mnemonic op, TR::Node *node,
-    TR::Register *treg, TR::Register *sreg, uint32_t trgIndex, TR::Instruction *preced)
+TR::Instruction *Inst_MovGPRToVectorElement(TR::CodeGenerator *cg, OP::Mnemonic op, TR::Node *node, TR::Register *treg,
+    TR::Register *sreg, uint32_t trgIndex, TR::Instruction *preced)
 {
     TR_ASSERT_FATAL_WITH_NODE(node, (op >= OP::vinswb) && (op <= OP::vinsxd),
-        "Illegal opcode for generateMovGPRToVectorElementInstruction: %d", op);
+        "Illegal opcode for Inst_MovGPRToVectorElement: %d", op);
     TR_ASSERT_FATAL_WITH_NODE(node, isVectorRegister(treg) && (sreg->getKind() == TR_GPR),
         "The target register must be VRF and the source register must be GPR");
     const uint32_t elementSizeShift = op - OP::vinswb;
@@ -768,14 +745,14 @@ TR::Instruction *generateMovGPRToVectorElementInstruction(TR::CodeGenerator *cg,
         "trgIndex (%d) must be less than the number of elements (%d)", trgIndex, nelements);
 
     uint32_t imm5 = (trgIndex << (elementSizeShift + 1)) & 0x1f;
-    return generateTrg1Src1ImmInstruction(cg, op, node, treg, sreg, imm5, preced);
+    return Inst_Trg1Src1Imm(cg, op, node, treg, sreg, imm5, preced);
 }
 
-TR::Instruction *generateMovVectorElementInstruction(TR::CodeGenerator *cg, OP::Mnemonic op, TR::Node *node,
-    TR::Register *treg, TR::Register *sreg, uint32_t trgIndex, uint32_t srcIndex, TR::Instruction *preced)
+TR::Instruction *Inst_MovVectorElement(TR::CodeGenerator *cg, OP::Mnemonic op, TR::Node *node, TR::Register *treg,
+    TR::Register *sreg, uint32_t trgIndex, uint32_t srcIndex, TR::Instruction *preced)
 {
     TR_ASSERT_FATAL_WITH_NODE(node, (op >= OP::vinseb) && (op <= OP::vinsed),
-        "Illegal opcode for generateMovVectorElementInstruction: %d", op);
+        "Illegal opcode for Inst_MovVectorElement: %d", op);
     TR_ASSERT_FATAL_WITH_NODE(node, isVectorRegister(treg) && isVectorRegister(sreg),
         "The target and source register must be VRF");
     const uint32_t elementSizeShift = op - OP::vinseb;
@@ -797,7 +774,7 @@ TR::Instruction *generateMovVectorElementInstruction(TR::CodeGenerator *cg, OP::
      * +------+--------------+--+-----------+
      */
     uint32_t imm = (imm5 << 5) | imm4;
-    return generateTrg1Src1ImmInstruction(cg, op, node, treg, sreg, imm, preced);
+    return Inst_Trg1Src1Imm(cg, op, node, treg, sreg, imm, preced);
 }
 
 #ifdef J9_PROJECT_SPECIFIC

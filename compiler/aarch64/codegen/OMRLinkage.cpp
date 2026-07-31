@@ -515,8 +515,8 @@ TR::Instruction *OMR::ARM64::Linkage::copyParametersToHomeLocation(TR::Instructi
 
                 // ai := stack
                 TR::MemoryReference *stackMR = MRef_disp(cg(), stackPtr, offset);
-                loadCursor = generateTrg1MemInstruction(cg(), getOpCodeForParmLoads(paramType), NULL,
-                    machine->getRealRegister(ai), stackMR, loadCursor);
+                loadCursor = Inst_Trg1Mem(cg(), getOpCodeForParmLoads(paramType), NULL, machine->getRealRegister(ai),
+                    stackMR, loadCursor);
             }
         } else // It's in a linkage register
         {
@@ -537,8 +537,7 @@ TR::Instruction *OMR::ARM64::Linkage::copyParametersToHomeLocation(TR::Instructi
 
                     TR::RealRegister *linkageReg = machine->getRealRegister(sourceIndex);
                     TR::MemoryReference *stackMR = MRef_disp(cg(), stackPtr, offset);
-                    cursor = generateMemSrc1Instruction(cg(), getOpCodeForParmStores(paramType), NULL, stackMR,
-                        linkageReg, cursor);
+                    cursor = Inst_MemSrc1(cg(), getOpCodeForParmStores(paramType), NULL, stackMR, linkageReg, cursor);
                 }
             }
 
@@ -621,12 +620,12 @@ TR::Instruction *OMR::ARM64::Linkage::copyParametersToHomeLocation(TR::Instructi
                 TR::Register *trgReg = machine->getRealRegister(regCursor);
                 TR::Register *srcReg = machine->getRealRegister(source);
                 if ((paramType == TR::Double) || (paramType == TR::Float)) {
-                    cursor = generateTrg1Src1Instruction(cg(), (paramType == TR::Double) ? OP::fmovd : OP::fmovs, NULL,
-                        trgReg, srcReg, cursor);
+                    cursor = Inst_Trg1Src1(cg(), (paramType == TR::Double) ? OP::fmovd : OP::fmovs, NULL, trgReg,
+                        srcReg, cursor);
                 } else {
-                    // generateMovInstruction cannot be used in the binary encoding phase because it relies on RegDep
+                    // Inst_Mov cannot be used in the binary encoding phase because it relies on RegDep
                     // for assigning xzr for 1st source register.
-                    cursor = generateTrg1Src2Instruction(cg(),
+                    cursor = Inst_Trg1Src2(cg(),
                         (paramType == TR::Int64) || (paramType == TR::Address) ? OP::orrx : OP::orrw, NULL, trgReg,
                         machine->getRealRegister(TR::RealRegister::xzr), srcReg, cursor);
                 }

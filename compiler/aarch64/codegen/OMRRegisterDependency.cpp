@@ -107,15 +107,14 @@ OMR::ARM64::RegisterDependencyConditions::RegisterDependencyConditions(TR::CodeG
                     copyReg->setContainsInternalPointer();
                     copyReg->setPinningArrayPointer(reg->getPinningArrayPointer());
                 }
-                iCursor = generateMovInstruction(cg, node, copyReg, reg, true, iCursor);
+                iCursor = Inst_Mov(cg, node, copyReg, reg, true, iCursor);
             } else if (kind == TR_VRF) {
                 copyReg = cg->allocateRegister(TR_VRF);
-                iCursor = generateTrg1Src2Instruction(cg, OP::vorr16b, node, copyReg, reg, reg, iCursor);
+                iCursor = Inst_Trg1Src2(cg, OP::vorr16b, node, copyReg, reg, reg, iCursor);
             } else {
                 bool isSinglePrecision = reg->isSinglePrecision();
                 copyReg = isSinglePrecision ? cg->allocateSinglePrecisionRegister() : cg->allocateRegister(TR_FPR);
-                iCursor = generateTrg1Src1Instruction(cg, isSinglePrecision ? OP::fmovs : OP::fmovd, node, copyReg, reg,
-                    iCursor);
+                iCursor = Inst_Trg1Src1(cg, isSinglePrecision ? OP::fmovs : OP::fmovd, node, copyReg, reg, iCursor);
             }
 
             reg = copyReg;
@@ -432,8 +431,7 @@ void OMR::ARM64::RegisterDependencyGroup::assignRegisters(TR::Instruction *curre
                         break;
                 }
 
-                TR::Instruction *inst
-                    = generateTrg1MemInstruction(cg, opCode, currentNode, assignedReg, tempMR, currentInstruction);
+                TR::Instruction *inst = Inst_Trg1Mem(cg, opCode, currentNode, assignedReg, tempMR, currentInstruction);
 
                 assignedReg->setAssignedRegister(NULL);
                 virtReg->setAssignedRegister(NULL);

@@ -39,7 +39,7 @@ void TR_ARM64OutOfLineCodeSection::generateARM64OutOfLineCodeSectionDispatch()
     //
     swapInstructionListsWithCompilation();
 
-    TR::Instruction *entryLabelInstruction = generateLabelInstruction(_cg, OP::label, _callNode, _entryLabel);
+    TR::Instruction *entryLabelInstruction = Inst_Label(_cg, OP::label, _callNode, _entryLabel);
 
     _cg->incOutOfLineColdPathNestedDepth();
     TR_Debug *debugObj = _cg->getDebug();
@@ -51,11 +51,11 @@ void TR_ARM64OutOfLineCodeSection::generateARM64OutOfLineCodeSectionDispatch()
 
     if (_targetReg) {
         TR_ASSERT(resultReg, "resultReg must not be a NULL");
-        generateMovInstruction(_cg, _callNode, _targetReg, resultReg);
+        Inst_Mov(_cg, _callNode, _targetReg, resultReg);
     }
     _cg->decReferenceCount(_callNode);
 
-    TR::Instruction *returnBranchInstruction = generateLabelInstruction(_cg, OP::b, _callNode, _restartLabel);
+    TR::Instruction *returnBranchInstruction = Inst_Label(_cg, OP::b, _callNode, _restartLabel);
 
     if (debugObj) {
         debugObj->addInstructionComment(returnBranchInstruction, "Denotes end of OOL: return to mainline");

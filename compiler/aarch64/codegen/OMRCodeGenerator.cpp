@@ -219,7 +219,7 @@ void OMR::ARM64::CodeGenerator::beginInstructionSelection()
     TR::Compilation *comp = self()->comp();
     TR::Node *startNode = comp->getStartTree()->getNode();
     if (comp->getMethodSymbol()->getLinkageConvention() == TR_Private) {
-        _returnTypeInfoInstruction = generateImmInstruction(self(), OP::dd, startNode, 0);
+        _returnTypeInfoInstruction = Inst_Imm(self(), OP::dd, startNode, 0);
     } else {
         _returnTypeInfoInstruction = NULL;
     }
@@ -446,7 +446,7 @@ TR::Register *OMR::ARM64::CodeGenerator::gprClobberEvaluate(TR::Node *node)
             targetReg->setPinningArrayPointer(resultReg->getPinningArrayPointer());
         }
 
-        generateMovInstruction(self(), node, targetReg, resultReg);
+        Inst_Mov(self(), node, targetReg, resultReg);
         return targetReg;
     } else {
         return resultReg;
@@ -841,9 +841,9 @@ TR::Instruction *OMR::ARM64::CodeGenerator::generateDebugCounterBump(TR::Instruc
 
     cursor
         = loadAddressConstant(self(), comp()->compileRelocatableCode(), node, addr, addrReg, cursor, TR_DebugCounter);
-    cursor = generateTrg1MemInstruction(self(), OP::ldrimmw, node, counterReg, MRef_disp(self(), addrReg, 0), cursor);
-    cursor = generateTrg1Src1ImmInstruction(self(), OP::addimmw, node, counterReg, counterReg, delta, cursor);
-    cursor = generateMemSrc1Instruction(self(), OP::strimmw, node, MRef_disp(self(), addrReg, 0), counterReg, cursor);
+    cursor = Inst_Trg1Mem(self(), OP::ldrimmw, node, counterReg, MRef_disp(self(), addrReg, 0), cursor);
+    cursor = Inst_Trg1Src1Imm(self(), OP::addimmw, node, counterReg, counterReg, delta, cursor);
+    cursor = Inst_MemSrc1(self(), OP::strimmw, node, MRef_disp(self(), addrReg, 0), counterReg, cursor);
 
     if (cond) {
         TR::addDependency(cond, addrReg, TR::RealRegister::NoReg, TR_GPR, self());
@@ -867,9 +867,9 @@ TR::Instruction *OMR::ARM64::CodeGenerator::generateDebugCounterBump(TR::Instruc
 
     cursor
         = loadAddressConstant(self(), comp()->compileRelocatableCode(), node, addr, addrReg, cursor, TR_DebugCounter);
-    cursor = generateTrg1MemInstruction(self(), OP::ldrimmw, node, counterReg, MRef_disp(self(), addrReg, 0), cursor);
-    cursor = generateTrg1Src2Instruction(self(), OP::addw, node, counterReg, counterReg, deltaReg, cursor);
-    cursor = generateMemSrc1Instruction(self(), OP::strimmw, node, MRef_disp(self(), addrReg, 0), counterReg, cursor);
+    cursor = Inst_Trg1Mem(self(), OP::ldrimmw, node, counterReg, MRef_disp(self(), addrReg, 0), cursor);
+    cursor = Inst_Trg1Src2(self(), OP::addw, node, counterReg, counterReg, deltaReg, cursor);
+    cursor = Inst_MemSrc1(self(), OP::strimmw, node, MRef_disp(self(), addrReg, 0), counterReg, cursor);
 
     if (cond) {
         TR::addDependency(cond, addrReg, TR::RealRegister::NoReg, TR_GPR, self());
@@ -902,9 +902,9 @@ TR::Instruction *OMR::ARM64::CodeGenerator::generateDebugCounterBump(TR::Instruc
 
     cursor
         = loadAddressConstant(self(), comp()->compileRelocatableCode(), node, addr, addrReg, cursor, TR_DebugCounter);
-    cursor = generateTrg1MemInstruction(self(), OP::ldrimmw, node, counterReg, MRef_disp(self(), addrReg, 0), cursor);
-    cursor = generateTrg1Src1ImmInstruction(self(), OP::addimmw, node, counterReg, counterReg, delta, cursor);
-    cursor = generateMemSrc1Instruction(self(), OP::strimmw, node, MRef_disp(self(), addrReg, 0), counterReg, cursor);
+    cursor = Inst_Trg1Mem(self(), OP::ldrimmw, node, counterReg, MRef_disp(self(), addrReg, 0), cursor);
+    cursor = Inst_Trg1Src1Imm(self(), OP::addimmw, node, counterReg, counterReg, delta, cursor);
+    cursor = Inst_MemSrc1(self(), OP::strimmw, node, MRef_disp(self(), addrReg, 0), counterReg, cursor);
 
     srm.reclaimScratchRegister(addrReg);
     srm.reclaimScratchRegister(counterReg);
@@ -924,9 +924,9 @@ TR::Instruction *OMR::ARM64::CodeGenerator::generateDebugCounterBump(TR::Instruc
 
     cursor
         = loadAddressConstant(self(), comp()->compileRelocatableCode(), node, addr, addrReg, cursor, TR_DebugCounter);
-    cursor = generateTrg1MemInstruction(self(), OP::ldrimmw, node, counterReg, MRef_disp(self(), addrReg, 0), cursor);
-    cursor = generateTrg1Src2Instruction(self(), OP::addw, node, counterReg, counterReg, deltaReg, cursor);
-    cursor = generateMemSrc1Instruction(self(), OP::strimmw, node, MRef_disp(self(), addrReg, 0), counterReg, cursor);
+    cursor = Inst_Trg1Mem(self(), OP::ldrimmw, node, counterReg, MRef_disp(self(), addrReg, 0), cursor);
+    cursor = Inst_Trg1Src2(self(), OP::addw, node, counterReg, counterReg, deltaReg, cursor);
+    cursor = Inst_MemSrc1(self(), OP::strimmw, node, MRef_disp(self(), addrReg, 0), counterReg, cursor);
     srm.reclaimScratchRegister(addrReg);
     srm.reclaimScratchRegister(counterReg);
     return cursor;

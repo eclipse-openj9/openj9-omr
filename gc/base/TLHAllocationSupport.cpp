@@ -98,25 +98,55 @@ MM_TLHAllocationSupport::clear(MM_EnvironmentBase *env)
 	_tlh->refreshSize = extensions->tlhInitialSize;
 }
 
+uintptr_t
+MM_TLHAllocationSupport::getThreadAbandonSize()
+{
+	MM_GCExtensionsBase *extensions = MM_GCExtensionsBase::getExtensions(_omrVMThread->_vm);
+	uintptr_t tlhMinimumSize = extensions->tlhMinimumSize;
+	uintptr_t halfRefreshSize = getRefreshSize() >> 1;
+
+	if (tlhMinimumSize > halfRefreshSize) {
+		return tlhMinimumSize;
+	} else {
+		return halfRefreshSize;
+	}
+}
+
 void
 MM_TLHAllocationSupport::restart(MM_EnvironmentBase *env)
 {
-	MM_GCExtensionsBase* extensions = env->getExtensions();
-	uintptr_t refreshSize;
+	MM_GCExtensionsBase *extensions = env->getExtensions();
 
 	/* Preserve the refresh size across the zeroing */
-	refreshSize = _tlh->refreshSize;
+	uintptr_t refreshSize = _tlh->refreshSize;
+
+	/* Update the global high-water mark of a realistic abandonSize estimate across all threads
+	 * (see tlhMaxAbandonSize seed value in GCExtensionsBase.hpp).
+	 * abandonSize for a thread is a function of its refresh size.
+	 *
+	 * The average is approximated from two sample points that bracket the cycle:
+	 *   1. Just before restart: refreshSize is at its peak (end of cycle),
+	 *   2. Just after restart: refreshSize has been reduced (start of next cycle),
+	 * The average of these two endpoints approximates the mean abandonSize over the cycle.
+	 *
+	 * Note: threadPeakAbandonSize must be captured before setAllZeroes() clears _tlh,
+	 * and the new refreshSize must be set before the second getThreadAbandonSize() call.
+	 */
+	uintptr_t threadPeakAbandonSize = getThreadAbandonSize();
 
 	/* Clear current information accumulated */
 	setAllZeroes();
 
 	_tlh->refreshSize = MM_Math::roundToCeiling(extensions->tlhInitialSize, refreshSize / 2);
+
+	uintptr_t threadAverageAbandonSize = (threadPeakAbandonSize + getThreadAbandonSize()) / 2;
+	extensions->tlhMaxAbandonSize = OMR_MAX(extensions->tlhMaxAbandonSize, threadAverageAbandonSize);
 }
 
 bool
 MM_TLHAllocationSupport::refresh(MM_EnvironmentBase *env, MM_AllocateDescription *allocDescription, bool shouldCollectOnFailure)
 {
-	MM_GCExtensionsBase* extensions = env->getExtensions();
+	MM_GCExtensionsBase *extensions = env->getExtensions();
 	bool const compressed = extensions->compressObjectReferences();
 
 	/* Refresh the TLH only if the allocation request will fit in half the refresh size
@@ -125,8 +155,7 @@ MM_TLHAllocationSupport::refresh(MM_EnvironmentBase *env, MM_AllocateDescription
 	uintptr_t sizeInBytesRequired = allocDescription->getContiguousBytes();
 	uintptr_t tlhMinimumSize = extensions->tlhMinimumSize;
 	uintptr_t tlhMaximumSize = extensions->tlhMaximumSize;
-	uintptr_t halfRefreshSize = getRefreshSize() >> 1;
-	uintptr_t abandonSize = (tlhMinimumSize > halfRefreshSize ? tlhMinimumSize : halfRefreshSize);
+	uintptr_t abandonSize = getThreadAbandonSize();
 	if (sizeInBytesRequired > abandonSize) {
 		/* increase thread hungriness if we did not refresh */
 		if (getRefreshSize() < tlhMaximumSize && sizeInBytesRequired < tlhMaximumSize) {

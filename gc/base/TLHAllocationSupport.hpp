@@ -173,6 +173,13 @@ private:
 	 */
 	void reconnect(MM_EnvironmentBase *env);
 
+
+	/**
+	 *
+	 * Get calculated abandon size.
+	 */
+	uintptr_t getThreadAbandonSize();
+
 	/**
 	 * Restart the cache from its current start to an appropriate base state.
 	 * Reset the cache details back to a starting state that is appropriate for where it currently is.

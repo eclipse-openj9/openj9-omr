@@ -971,21 +971,7 @@ uint32_t OMR::X86::RegisterDependencyConditions::numReferencedGPRegisters(TR::Co
 
 #endif // defined(DEBUG) || defined(PROD_WITH_ASSUMES)
 
-////////////////////////////////////////////////////////////////////////////////
-// Generate methods
-////////////////////////////////////////////////////////////////////////////////
-
-TR::RegisterDependencyConditions *generateRegisterDependencyConditions(uint32_t numPreConds, uint32_t numPostConds,
-    TR::CodeGenerator *cg)
-{
-    return new (cg->trHeapMemory()) TR::RegisterDependencyConditions(numPreConds, numPostConds, cg->trMemory());
-}
-
-TR::RegisterDependencyConditions *generateRegisterDependencyConditions(TR::Node *node, TR::CodeGenerator *cg,
-    uint32_t additionalRegDeps, List<TR::Register> *popRegisters)
-{
-    return new (cg->trHeapMemory()) TR::RegisterDependencyConditions(node, cg, additionalRegDeps);
-}
+// Factory functions
 
 namespace TR {
 

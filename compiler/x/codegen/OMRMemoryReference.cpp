@@ -126,10 +126,10 @@ OMR::X86::MemoryReference::MemoryReference(TR::SymbolReference *symRef, TR::Code
     , _flags(0)
     , _reloKind(-1)
 {
-    self()->initialize(symRef, cg);
+    self()->initializeFromSymRef(symRef, cg);
 }
 
-OMR::X86::MemoryReference::MemoryReference(TR::SymbolReference *symRef, intptr_t displacement, TR::CodeGenerator *cg)
+OMR::X86::MemoryReference::MemoryReference(TR::SymbolReference *symRef, intptr_t extraOffset, TR::CodeGenerator *cg)
     : _baseRegister(NULL)
     , _baseNode(NULL)
     , _indexRegister(NULL)
@@ -141,8 +141,8 @@ OMR::X86::MemoryReference::MemoryReference(TR::SymbolReference *symRef, intptr_t
     , _flags(0)
     , _reloKind(-1)
 {
-    self()->initialize(symRef, cg);
-    _symbolReference.addToOffset(displacement);
+    self()->initializeFromSymRef(symRef, cg);
+    _symbolReference.addToOffset(extraOffset);
 }
 
 // Constructor called to generate a memory reference for all kinds of
@@ -164,96 +164,93 @@ OMR::X86::MemoryReference::MemoryReference(TR::Node *rootLoadOrStore, TR::CodeGe
     TR::SymbolReference *symRef = rootLoadOrStore->getSymbolReference();
     TR::Compilation *comp = cg->comp();
 
-    if (symRef) {
-        TR::Symbol *symbol = symRef->getSymbol();
+    TR_ASSERT_FATAL_WITH_NODE(rootLoadOrStore, symRef, "Expecting node to have a symRef");
 
-        bool isStore = rootLoadOrStore->getOpCode().isStore();
-        bool isUnresolved = symRef->isUnresolved();
+    TR::Symbol *symbol = symRef->getSymbol();
 
-        _symbolReference.setSymbol(symbol);
-        _symbolReference.addToOffset(symRef->getOffset());
-        _symbolReference.setOwningMethodIndex(symRef->getOwningMethodIndex());
-        _symbolReference.setCPIndex(symRef->getCPIndex());
-        _symbolReference.copyFlags(symRef);
-        _symbolReference.copyRefNumIfPossible(symRef, comp->getSymRefTab());
+    bool isStore = rootLoadOrStore->getOpCode().isStore();
+    bool isUnresolved = symRef->isUnresolved();
 
-        if (rootLoadOrStore->getOpCode().isIndirect()) {
-            // Special case an indirect load or store off a local object. This
-            // can be treated as a direct load or store off the frame pointer
-            // We can't do this when the access is unresolved.
-            //
-            TR::Node *base = rootLoadOrStore->getFirstChild();
+    _symbolReference.setSymbol(symbol);
+    _symbolReference.addToOffset(symRef->getOffset());
+    _symbolReference.setOwningMethodIndex(symRef->getOwningMethodIndex());
+    _symbolReference.setCPIndex(symRef->getCPIndex());
+    _symbolReference.copyFlags(symRef);
+    _symbolReference.copyRefNumIfPossible(symRef, comp->getSymRefTab());
 
-            // Use the register evaluated from the loadaddr as the base object
-            // in a memory reference rather than accessing directly from the
-            // stack.
-            //
-            static bool useLoadAddrRegisterForLocalObjectMemRef
-                = feGetEnv("TR_useLoadAddrRegisterForLocalObjectMemRef") ? true : false;
+    if (rootLoadOrStore->getOpCode().isIndirect()) {
+        // Special case an indirect load or store off a local object. This
+        // can be treated as a direct load or store off the frame pointer
+        // We can't do this when the access is unresolved.
+        //
+        TR::Node *base = rootLoadOrStore->getFirstChild();
 
-            if (!isUnresolved && !useLoadAddrRegisterForLocalObjectMemRef && base->getOpCodeValue() == TR::loadaddr
-                && base->getSymbol()->isLocalObject()) {
-                _baseRegister = cg->getFrameRegister();
-                _symbolReference.setSymbol(base->getSymbol());
-                _symbolReference.copyFlags(base->getSymbolReference());
-                _baseNode = base;
-            } else {
-                if (isUnresolved) {
-                    // If it is an unresolved reference to a field of a local object
-                    // then force the localobject address to be evaluated into a register
-                    // otherwise the resolution may not work properly if the computation
-                    // is folded away into an esp + offset computation
-                    //
-                    if (base->getOpCodeValue() == TR::loadaddr && base->getSymbol()->isLocalObject())
-                        cg->evaluate(base);
+        // Use the register evaluated from the loadaddr as the base object
+        // in a memory reference rather than accessing directly from the
+        // stack.
+        //
+        static bool useLoadAddrRegisterForLocalObjectMemRef
+            = feGetEnv("TR_useLoadAddrRegisterForLocalObjectMemRef") ? true : false;
 
-                    setUnresolvedDataSnippet(TR::UnresolvedDataSnippet::create(cg, rootLoadOrStore, &_symbolReference,
-                        isStore, symRef->canCauseGC()));
-                    cg->addSnippet(getUnresolvedDataSnippet());
-                }
-
-                if (!debug("noAddressAddRemat") && canRematerializeAddressAdds) {
-                    rematerializeAddressAdds(rootLoadOrStore, cg);
-                    base = rootLoadOrStore->getFirstChild(); // It may have changed
-                }
-
-                if (symbol->isMethodMetaData()) {
-                    _baseRegister = cg->getMethodMetaDataRegister();
-                }
-
-                rcount_t refCount = base->getReferenceCount();
-                self()->populateMemoryReference(base, cg);
-                self()->checkAndDecReferenceCount(base, refCount, cg);
-            }
+        if (!isUnresolved && !useLoadAddrRegisterForLocalObjectMemRef && base->getOpCodeValue() == TR::loadaddr
+            && base->getSymbol()->isLocalObject()) {
+            _baseRegister = cg->getFrameRegister();
+            _symbolReference.setSymbol(base->getSymbol());
+            _symbolReference.copyFlags(base->getSymbolReference());
+            _baseNode = base;
         } else {
-            if (symbol->isStatic()) {
-                if (isUnresolved) {
-                    setUnresolvedDataSnippet(TR::UnresolvedDataSnippet::create(cg, rootLoadOrStore, &_symbolReference,
-                        isStore, symRef->canCauseGC()));
-                    cg->addSnippet(getUnresolvedDataSnippet());
-                }
-                _baseNode = rootLoadOrStore;
-            } else {
-                if (!symbol->isMethodMetaData()) {
-                    // Must be either auto or parm or error
-                    //
-                    _baseRegister = cg->getFrameRegister();
-                } else {
-                    _baseRegister = cg->getMethodMetaDataRegister();
-                }
-                _baseNode = NULL;
+            if (isUnresolved) {
+                // If it is an unresolved reference to a field of a local object
+                // then force the localobject address to be evaluated into a register
+                // otherwise the resolution may not work properly if the computation
+                // is folded away into an esp + offset computation
+                //
+                if (base->getOpCodeValue() == TR::loadaddr && base->getSymbol()->isLocalObject())
+                    cg->evaluate(base);
+
+                setUnresolvedDataSnippet(TR::UnresolvedDataSnippet::create(cg, rootLoadOrStore, &_symbolReference,
+                    isStore, symRef->canCauseGC()));
+                cg->addSnippet(getUnresolvedDataSnippet());
             }
-        }
 
-        if (isUnresolved) {
-            // Need a wide field because we don't know how big the displacement
-            // may turn out to be once resolved.
-            //
-            setForceWideDisplacement();
-        }
+            if (!debug("noAddressAddRemat") && canRematerializeAddressAdds) {
+                rematerializeAddressAdds(rootLoadOrStore, cg);
+                base = rootLoadOrStore->getFirstChild(); // It may have changed
+            }
 
+            if (symbol->isMethodMetaData()) {
+                _baseRegister = cg->getMethodMetaDataRegister();
+            }
+
+            rcount_t refCount = base->getReferenceCount();
+            self()->populateMemoryReference(base, cg);
+            self()->checkAndDecReferenceCount(base, refCount, cg);
+        }
     } else {
-        diagnostic("OMR::X86::MemoryReference::OMR::X86::MemoryReference() ==> no symbol reference");
+        if (symbol->isStatic()) {
+            if (isUnresolved) {
+                setUnresolvedDataSnippet(TR::UnresolvedDataSnippet::create(cg, rootLoadOrStore, &_symbolReference,
+                    isStore, symRef->canCauseGC()));
+                cg->addSnippet(getUnresolvedDataSnippet());
+            }
+            _baseNode = rootLoadOrStore;
+        } else {
+            if (!symbol->isMethodMetaData()) {
+                // Must be either auto or parm or error
+                //
+                _baseRegister = cg->getFrameRegister();
+            } else {
+                _baseRegister = cg->getMethodMetaDataRegister();
+            }
+            _baseNode = NULL;
+        }
+    }
+
+    if (isUnresolved) {
+        // Need a wide field because we don't know how big the displacement
+        // may turn out to be once resolved.
+        //
+        setForceWideDisplacement();
     }
 
     // TODO: aliasing sets?
@@ -275,7 +272,7 @@ TR::X86DataSnippet *OMR::X86::MemoryReference::getDataSnippet()
     return hasUnresolvedDataSnippet() ? NULL : (TR::X86DataSnippet *)_dataSnippet;
 }
 
-void OMR::X86::MemoryReference::initialize(TR::SymbolReference *symRef, TR::CodeGenerator *cg)
+void OMR::X86::MemoryReference::initializeFromSymRef(TR::SymbolReference *symRef, TR::CodeGenerator *cg)
 {
     TR::Compilation *comp = cg->comp();
     TR::Symbol *symbol = symRef->getSymbol();
@@ -290,6 +287,11 @@ void OMR::X86::MemoryReference::initialize(TR::SymbolReference *symRef, TR::Code
 
     _indexRegister = NULL;
     _symbolReference.setSymbol(symbol);
+
+    // The TR::SymbolReference for a newly allocated MemoryReference should have an offset of 0.
+    // However, the `addToOffset` API is used (rather than `setOffset`) just in case an additional
+    // displacement was provided to the MemoryReference constructor.
+    //
     _symbolReference.addToOffset(symRef->getOffset());
     _symbolReference.setOwningMethodIndex(symRef->getOwningMethodIndex());
     _symbolReference.setCPIndex(symRef->getCPIndex());
@@ -302,10 +304,11 @@ void OMR::X86::MemoryReference::initialize(TR::SymbolReference *symRef, TR::Code
         cg->addSnippet(getUnresolvedDataSnippet());
         setForceWideDisplacement();
     }
+
     // TODO: aliasing sets?
 }
 
-OMR::X86::MemoryReference::MemoryReference(TR::MemoryReference &mr, intptr_t n, TR::CodeGenerator *cg,
+OMR::X86::MemoryReference::MemoryReference(TR::MemoryReference &mr, intptr_t extraOffset, TR::CodeGenerator *cg,
     TR_ScratchRegisterManager *srm)
     : _symbolReference(cg->comp()->getSymRefTab())
 {
@@ -315,7 +318,7 @@ OMR::X86::MemoryReference::MemoryReference(TR::MemoryReference &mr, intptr_t n, 
     _indexRegister = mr._indexRegister;
     _indexNode = mr._indexNode;
     _label = mr._label;
-    _symbolReference = TR::SymbolReference(comp->getSymRefTab(), mr._symbolReference, n);
+    _symbolReference = TR::SymbolReference(comp->getSymRefTab(), mr._symbolReference, extraOffset);
     _reloKind = -1;
 
     if (mr.getUnresolvedDataSnippet() != NULL) {
@@ -1509,12 +1512,12 @@ TR::MemoryReference *TR::MRef_sym(TR::SymbolReference *sr, TR::CodeGenerator *cg
     return new (cg->trHeapMemory()) TR::MemoryReference(sr, cg);
 }
 
-TR::MemoryReference *TR::MRef_symOff(TR::SymbolReference *sr, intptr_t offset, TR::CodeGenerator *cg)
+TR::MemoryReference *TR::MRef_symOff(TR::SymbolReference *sr, intptr_t extraOffset, TR::CodeGenerator *cg)
 {
-    return new (cg->trHeapMemory()) TR::MemoryReference(sr, offset, cg);
+    return new (cg->trHeapMemory()) TR::MemoryReference(sr, extraOffset, cg);
 }
 
-TR::MemoryReference *TR::MRef_MRefOff(TR::MemoryReference &mr, intptr_t offset, TR::CodeGenerator *cg)
+TR::MemoryReference *TR::MRef_MRefOff(TR::MemoryReference &mr, intptr_t extraOffset, TR::CodeGenerator *cg)
 {
-    return new (cg->trHeapMemory()) TR::MemoryReference(mr, offset, cg);
+    return new (cg->trHeapMemory()) TR::MemoryReference(mr, extraOffset, cg);
 }

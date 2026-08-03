@@ -1247,7 +1247,6 @@ uint8_t *OMR::X86::MemoryReference::generateBinaryEncoding(uint8_t *modRM, TR::I
 
             if (symbol) {
                 TR::StaticSymbol *staticSym = symbol->getStaticSymbol();
-                TR::MethodSymbol *methodSym = symbol->getMethodSymbol();
 
                 if (staticSym) {
                     if (getUnresolvedDataSnippet() == NULL) {
@@ -1256,18 +1255,6 @@ uint8_t *OMR::X86::MemoryReference::generateBinaryEncoding(uint8_t *modRM, TR::I
                     } else {
                         *(int32_t *)cursor = (int32_t)getSymbolReference().getOffset();
                     }
-                } else if (methodSym) {
-                    /* ----------------------------------------------------- */
-                    /* This is fake. Not supported for JIT compilation;      */
-                    /* just avoiding a core dump                             */
-                    /* ----------------------------------------------------- */
-                    *(int32_t *)cursor = 0;
-                } else if (symbol->isRegisterMappedSymbol()) {
-                    displacement = getSymbolReference().getOffset() + symbol->getRegisterMappedSymbol()->getOffset();
-                    TR_ASSERT(IS_32BIT_SIGNED(displacement),
-                        "64-bit displacement should have been replaced in "
-                        "TR_AMD64MemoryReference::generateBinaryEncoding");
-                    *(int32_t *)cursor = (int32_t)displacement;
                 } else if (symbol->isShadow()) {
                     *(int32_t *)cursor = (int32_t)getSymbolReference().getOffset();
                 } else

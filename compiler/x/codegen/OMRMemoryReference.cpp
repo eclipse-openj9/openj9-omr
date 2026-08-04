@@ -89,8 +89,8 @@ OMR::X86::MemoryReference::MemoryReference(TR::X86DataSnippet *cds, TR::CodeGene
     , _baseNode(NULL)
     , _indexRegister(NULL)
     , _indexNode(NULL)
-    , _dataSnippet(cds)
-    , _label(NULL)
+    , _dataSnippet(NULL)
+    , _label(cds->getSnippetLabel())
     , _symbolReference(cg->comp()->getSymRefTab())
     , _stride(0)
     , _flags(0)
@@ -267,11 +267,6 @@ TR::UnresolvedDataSnippet *OMR::X86::MemoryReference::setUnresolvedDataSnippet(T
     return ((TR::UnresolvedDataSnippet *)(_dataSnippet = s));
 }
 
-TR::X86DataSnippet *OMR::X86::MemoryReference::getDataSnippet()
-{
-    return hasUnresolvedDataSnippet() ? NULL : (TR::X86DataSnippet *)_dataSnippet;
-}
-
 void OMR::X86::MemoryReference::initializeFromSymRef(TR::SymbolReference *symRef, TR::CodeGenerator *cg)
 {
     TR::Compilation *comp = cg->comp();
@@ -325,8 +320,6 @@ OMR::X86::MemoryReference::MemoryReference(TR::MemoryReference &mr, intptr_t ext
         _dataSnippet
             = TR::UnresolvedDataSnippet::create(cg, _baseNode, &_symbolReference, false, _symbolReference.canCauseGC());
         cg->addSnippet(_dataSnippet);
-    } else if (mr.getDataSnippet() != NULL) {
-        _dataSnippet = mr.getDataSnippet();
     } else {
         _dataSnippet = NULL;
     }
@@ -1117,15 +1110,9 @@ void OMR::X86::MemoryReference::addMetaDataForCodeAddress(uint32_t addressTypes,
                     }
                 }
             } else {
-                TR::X86DataSnippet *cds = getDataSnippet();
-                TR::LabelSymbol *label = NULL;
+                TR::LabelSymbol *label = getLabel();
 
-                if (cds)
-                    label = cds->getSnippetLabel();
-                else
-                    label = getLabel();
-
-                if (label != NULL) {
+                if (label) {
                     if (cg->comp()->target().is64Bit()) {
                         // Assume the snippet is in RIP range
                         // TODO:AMD64: Would it be cleaner to have some kind of "isRelative" flag rather than
@@ -1260,16 +1247,7 @@ uint8_t *OMR::X86::MemoryReference::generateBinaryEncoding(uint8_t *modRM, TR::I
                 } else
                     TR_ASSERT(0, "generateBinaryEncoding, new symbol hierarchy problem");
             } else {
-                TR::X86DataSnippet *cds = getDataSnippet();
-                TR_ASSERT(cds == NULL || getLabel() == NULL,
-                    "a memRef cannot have both a constant data snippet and a label");
-                TR::LabelSymbol *label = NULL;
-                if (cds)
-                    label = cds->getSnippetLabel();
-                else
-                    label = getLabel();
-
-                if (label != NULL) {
+                if (getLabel()) {
                     if (comp->target().is64Bit()) {
                         // This cast is ok because we only need the low 32 bits of the address
                         // *(int32_t *)cursor = -(int32_t)(intptr_t)(cursor+4);

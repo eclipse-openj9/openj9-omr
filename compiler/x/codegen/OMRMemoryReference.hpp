@@ -235,19 +235,9 @@ public:
 
     OMR_FINAL intptr_t getDisplacement();
 
-    // An unresolved data snippet, unresolved virtual call snippet, and constant data snippet are mutually exclusive for
-    // a given memory reference.  Hence, they share the same pointer.
-    //
     OMR_FINAL TR::UnresolvedDataSnippet *getUnresolvedDataSnippet();
 
     OMR_FINAL TR::UnresolvedDataSnippet *setUnresolvedDataSnippet(TR::UnresolvedDataSnippet *s);
-
-    OMR_FINAL TR::X86DataSnippet *getDataSnippet();
-
-    OMR_FINAL TR::X86DataSnippet *setConstantDataSnippet(TR::X86DataSnippet *s)
-    {
-        return ((TR::X86DataSnippet *)(_dataSnippet = s));
-    }
 
     OMR_FINAL TR::LabelSymbol *getLabel() { return _label; }
 

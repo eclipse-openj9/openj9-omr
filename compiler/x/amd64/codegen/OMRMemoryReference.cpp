@@ -181,15 +181,15 @@ void OMR::X86::AMD64::MemoryReference::finishInitialization(TR::CodeGenerator *c
         // Binary encoding will fatally assert otherwise.
         //
         mightNeedAddressRegister = false;
-    } else if (getDataSnippet()) {
-        // Assume snippets are in RIP range
-        //
-        mightNeedAddressRegister = false;
     } else if (!getBaseRegister() && !getIndexRegister()
         && (cg->needRelocationsForStatics() || cg->needClassAndMethodPointerRelocations()
             || cg->needRelocationsForBodyInfoData() || cg->needRelocationsForPersistentInfoData()
             || cg->needRelocationsForPersistentProfileInfoData())) {
         mightNeedAddressRegister = true;
+    } else if (getLabel()) {
+        // Assume labels are in RIP range
+        //
+        mightNeedAddressRegister = false;
     } else if (sr.getSymbol() != NULL
         && (sr.isUnresolved() || (sr.stackAllocatedArrayAccess() && !IS_32BIT_SIGNED(getDisplacement())))) {
         // Once resolved, the address could be anything, so be conservative.
@@ -516,8 +516,8 @@ uint8_t *OMR::X86::AMD64::MemoryReference::generateBinaryEncoding(uint8_t *modRM
             "malformed memory reference for RIP-relative addressing");
     }
 
-    if (getDataSnippet() || getLabel()) {
-        // The inherited logic has a special case for RIP-based ConstantDataSnippet and label references.
+    if (getLabel()) {
+        // The inherited logic has a special case for RIP-based label references.
         //
         return OMR::X86::MemoryReference::generateBinaryEncoding(modRM, containingInstruction, cg);
     }

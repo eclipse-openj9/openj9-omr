@@ -854,7 +854,7 @@ uint32_t OMR::X86::MemoryReference::estimateBinaryLength(TR::Instruction *contai
             }
             if (displacement == 0 && !base->needsDisp() && !base->needsSIB() && !isForceWideDisplacement()) {
                 length = 0;
-            } else if (displacement >= -128 && displacement <= 127 && !isForceWideDisplacement()) {
+            } else if (IS_8BIT_SIGNED(displacement) && !isForceWideDisplacement()) {
                 length = 1;
             } else {
                 // If there is a symbol or if the displacement will not fit in a byte,
@@ -877,7 +877,7 @@ uint32_t OMR::X86::MemoryReference::estimateBinaryLength(TR::Instruction *contai
                 length = 5;
                 break;
             }
-            if (displacement >= -128 && displacement <= 127 && !isForceWideDisplacement()) {
+            if (IS_8BIT_SIGNED(displacement) && !isForceWideDisplacement()) {
                 length = 2;
             } else {
                 // If there is a symbol or if the displacement will not fit in a byte,
@@ -943,7 +943,7 @@ uint32_t OMR::X86::MemoryReference::getBinaryLengthLowerBound(TR::CodeGenerator 
 
             if (displacement == 0 && !base->needsDisp() && !base->needsSIB() && !isForceWideDisplacement()) {
                 length = 0;
-            } else if (displacement >= -128 && displacement <= 127 && !isForceWideDisplacement()) {
+            } else if (IS_8BIT_SIGNED(displacement) && !isForceWideDisplacement()) {
                 if (displacement != 0)
                     length = 1;
             } else
@@ -1196,7 +1196,7 @@ uint8_t *OMR::X86::MemoryReference::generateBinaryEncoding(uint8_t *modRM, TR::I
 
             immediateCursor = cursor;
 
-            *(int32_t *)cursor = (int32_t)getSymbolReference().getOffset();
+            *(int32_t *)cursor = static_cast<int32_t>(getSymbolReference().getOffset());
 
             if (getUnresolvedDataSnippet() != NULL) {
                 getUnresolvedDataSnippet()->setAddressOfDataReference(cursor);
@@ -1233,34 +1233,32 @@ uint8_t *OMR::X86::MemoryReference::generateBinaryEncoding(uint8_t *modRM, TR::I
             immediateCursor = cursor;
 
             if (symbol) {
-                TR::StaticSymbol *staticSym = symbol->getStaticSymbol();
-
-                if (staticSym) {
-                    if (getUnresolvedDataSnippet() == NULL) {
-                        *(int32_t *)cursor
-                            = (int32_t)(getSymbolReference().getOffset() + (intptr_t)staticSym->getStaticAddress());
-                    } else {
-                        *(int32_t *)cursor = (int32_t)getSymbolReference().getOffset();
-                    }
-                } else if (symbol->isShadow()) {
-                    *(int32_t *)cursor = (int32_t)getSymbolReference().getOffset();
-                } else
-                    TR_ASSERT(0, "generateBinaryEncoding, new symbol hierarchy problem");
+                displacement = getDisplacement();
+                TR_ASSERT_FATAL(IS_32BIT_SIGNED(displacement),
+                    "MR_disp symbol displacement out of range: %" OMR_PRIxPTR, displacement);
             } else {
                 if (getLabel()) {
+                    // The MemoryReference for a Label is an address in the code cache within this
+                    // compilation unit. Because the address of labels appearing in the code after
+                    // this memory reference has not been determined yet, use the relocation
+                    // mechanism to patch it in after binary encoding. For 64-bit targets, RIP-relative
+                    // addressing is used (relative relocation), but for 32-bit targets the absolute
+                    // address of the label is used (absolute relocation).
+                    //
                     if (comp->target().is64Bit()) {
-                        // This cast is ok because we only need the low 32 bits of the address
-                        // *(int32_t *)cursor = -(int32_t)(intptr_t)(cursor+4);
-                        // if it is X86MEMIMM instruction, offset need consider immedidate length
-                        *(int32_t *)cursor = -(
+                        displacement = -(
                             int32_t)(intptr_t)(cursor + 4 + containingInstruction->getOpCode().info().ImmediateSize());
                     } else {
-                        *(int32_t *)cursor = (int32_t)0;
+                        displacement = 0;
                     }
                 } else {
-                    *(int32_t *)cursor = (int32_t)getSymbolReference().getOffset();
+                    displacement = getSymbolReference().getOffset();
+                    TR_ASSERT_FATAL(IS_32BIT_SIGNED(displacement),
+                        "MR_disp no symbol no label displacement out of range: %" OMR_PRIxPTR, displacement);
                 }
             }
+
+            *(int32_t *)cursor = static_cast<int32_t>(displacement);
 
             if (getUnresolvedDataSnippet() != NULL) {
                 getUnresolvedDataSnippet()->setAddressOfDataReference(cursor);
@@ -1296,10 +1294,9 @@ uint8_t *OMR::X86::MemoryReference::generateBinaryEncoding(uint8_t *modRM, TR::I
 
             if (displacement == 0 && !base->needsDisp() && !base->needsDisp() && !isForceWideDisplacement()) {
                 ModRM(modRM)->setBase();
-            } else if (displacement >= -128 && displacement <= 127 && !isForceWideDisplacement()) {
+            } else if (IS_8BIT_SIGNED(displacement) && !isForceWideDisplacement()) {
                 ModRM(modRM)->setBaseDisp8();
-                *cursor = (uint8_t)displacement;
-                ++cursor;
+                *(int8_t *)cursor++ = static_cast<int8_t>(displacement);
             } else {
                 // If there is a symbol or if the displacement will not fit in a byte,
                 // then displacement will be 4 bytes.
@@ -1324,9 +1321,9 @@ uint8_t *OMR::X86::MemoryReference::generateBinaryEncoding(uint8_t *modRM, TR::I
             index->setIndexRegisterFieldInSIB(cursor);
             setStrideFieldInSIB(cursor);
             ++cursor;
-            displacement = getDisplacement();
             immediateCursor = cursor;
 
+            displacement = getDisplacement();
             TR_ASSERT(IS_32BIT_SIGNED(displacement),
                 "64-bit displacement should have been replaced in TR_AMD64MemoryReference::generateBinaryEncoding");
 
@@ -1337,15 +1334,15 @@ uint8_t *OMR::X86::MemoryReference::generateBinaryEncoding(uint8_t *modRM, TR::I
                 setForceWideDisplacement();
             }
 
-            if (displacement >= -128 && displacement <= 127 && !isForceWideDisplacement()) {
+            if (IS_8BIT_SIGNED(displacement) && !isForceWideDisplacement()) {
                 ModRM(modRM)->setBaseDisp8()->setHasSIB();
-                *cursor++ = (uint8_t)displacement;
+                *(int8_t *)cursor++ = static_cast<int8_t>(displacement);
             } else {
                 // If there is a symbol or if the displacement will not fit in a byte,
                 // then displacement will be 4 bytes.
                 //
                 ModRM(modRM)->setBaseDisp32()->setHasSIB();
-                *(int32_t *)cursor = (int32_t)displacement;
+                *(int32_t *)cursor = static_cast<int32_t>(displacement);
                 if (getUnresolvedDataSnippet() != NULL) {
                     getUnresolvedDataSnippet()->setAddressOfDataReference(cursor);
                 }

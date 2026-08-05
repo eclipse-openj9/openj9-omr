@@ -94,13 +94,13 @@ BOOLEAN
 isIipHonorPrioritySet(struct OMRPortLibrary *portLibrary);
 
 /**
- * Indicate whether simultaneous multithreading (SMT) is enabled. When enabled,
- * each zIIP engine provides two logical processors.
+ * Indicate whether simultaneous multithreading (SMT) is enabled for zIIPs. When
+ * enabled, each zIIP engine provides two logical processors.
  *
  * @return TRUE if multithreading is enabled and FALSE otherwise
  */
 BOOLEAN
-isSMTEnabled(void);
+isZiipSMTEnabled(void);
 
 /**
  * Return the available zIIP capacity. For SMT-1, this matches the online zIIP

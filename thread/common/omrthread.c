@@ -4200,7 +4200,7 @@ omrthread_monitor_try_enter(omrthread_monitor_t monitor)
 intptr_t
 omrthread_monitor_try_enter_using_threadId(omrthread_monitor_t monitor, omrthread_t threadId)
 {
-	intptr_t lockAcquired = -1;
+	intptr_t lockAcquireResult = -1;
 #if defined(OMR_THR_MCS_LOCKS)
 	omrthread_mcs_node_t mcsNode = NULL;
 #endif /* defined(OMR_THR_MCS_LOCKS) */
@@ -4220,20 +4220,31 @@ omrthread_monitor_try_enter_using_threadId(omrthread_monitor_t monitor, omrthrea
 #if defined(OMR_THR_MCS_LOCKS)
 	mcsNode = omrthread_mcs_node_allocate(threadId);
 	if (NULL != mcsNode) {
-		lockAcquired = omrthread_mcs_trylock(threadId, monitor, mcsNode);
+		lockAcquireResult = omrthread_mcs_trylock(threadId, monitor, mcsNode);
 	}
 #else /* defined(OMR_THR_MCS_LOCKS) */
 	if (J9THREAD_MONITOR_TRY_ENTER_SPIN == (monitor->flags & J9THREAD_MONITOR_TRY_ENTER_SPIN)) {
-		lockAcquired = omrthread_spinlock_acquire(threadId, monitor);
+		lockAcquireResult = omrthread_spinlock_acquire(threadId, monitor);
+#if defined(OMR_THR_SPIN_WAKE_CONTROL)
+		if (0 != lockAcquireResult) {
+			/* The monitor release path may have skipped waking blocked threads while this
+			 * thread was included in spinThreads. omrthread_spinlock_acquire() has now
+			 * removed this thread from spinThreads, so make one final acquisition attempt
+			 * before returning failure.
+			 */
+			lockAcquireResult = omrthread_spinlock_acquire_no_spin(threadId, monitor);
+		}
+#endif /* defined(OMR_THR_SPIN_WAKE_CONTROL) */
 	} else {
-		lockAcquired = omrthread_spinlock_acquire_no_spin(threadId, monitor);
+		lockAcquireResult = omrthread_spinlock_acquire_no_spin(threadId, monitor);
 	}
 #endif /* defined(OMR_THR_MCS_LOCKS) */
 #else /* defined(OMR_THR_THREE_TIER_LOCKING) */
-	lockAcquired = MONITOR_TRY_LOCK(monitor);
+	lockAcquireResult = MONITOR_TRY_LOCK(monitor);
 #endif /* defined(OMR_THR_THREE_TIER_LOCKING) */
 
-	if (0 == lockAcquired) {
+	if (0 == lockAcquireResult) {
+		/* Lock acquired. */
 		ASSERT(NULL == monitor->owner);
 		ASSERT(0 == monitor->count);
 

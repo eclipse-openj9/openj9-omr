@@ -1109,22 +1109,6 @@ void OMR::X86::MemoryReference::addMetaDataForCodeAddress(uint32_t addressTypes,
                         }
                     }
                 }
-            } else {
-                TR::LabelSymbol *label = getLabel();
-
-                if (label) {
-                    if (cg->comp()->target().is64Bit()) {
-                        // Assume the snippet is in RIP range
-                        // TODO:AMD64: Would it be cleaner to have some kind of "isRelative" flag rather than
-                        // "is64BitTarget"?
-                        cg->addRelocation(new (cg->trHeapMemory()) TR::LabelRelative32BitRelocation(cursor, label));
-                    } else {
-                        cg->addRelocation(new (cg->trHeapMemory()) TR::LabelAbsoluteRelocation(cursor, label));
-                        cg->addExternalRelocation(
-                            TR::ExternalRelocation::create(cursor, 0, TR_AbsoluteMethodAddress, cg), __FILE__, __LINE__,
-                            node);
-                    }
-                }
             }
 
             break;
@@ -1186,6 +1170,8 @@ uint8_t *OMR::X86::MemoryReference::generateBinaryEncoding(uint8_t *modRM, TR::I
 
         case MR_index + MR_disp:
         case MR_index: {
+            // To encode these cases, the ISA always requires a SIB and a disp32
+            //
             index = toRealRegister(getIndexRegister());
             ModRM(modRM)->setBase()->setHasSIB();
             *++cursor = 0x00;
@@ -1237,19 +1223,35 @@ uint8_t *OMR::X86::MemoryReference::generateBinaryEncoding(uint8_t *modRM, TR::I
                 TR_ASSERT_FATAL(IS_32BIT_SIGNED(displacement),
                     "MR_disp symbol displacement out of range: %" OMR_PRIxPTR, displacement);
             } else {
-                if (getLabel()) {
-                    // The MemoryReference for a Label is an address in the code cache within this
-                    // compilation unit. Because the address of labels appearing in the code after
-                    // this memory reference has not been determined yet, use the relocation
-                    // mechanism to patch it in after binary encoding. For 64-bit targets, RIP-relative
-                    // addressing is used (relative relocation), but for 32-bit targets the absolute
-                    // address of the label is used (absolute relocation).
+                TR::LabelSymbol *labelSym = getLabel();
+                if (labelSym) {
+                    // The MemoryReference for a label is an address in the code cache within this
+                    // compilation unit
                     //
                     if (comp->target().is64Bit()) {
+                        // Use RIP-relative addressing on 64-bit. All labels are assumed to be
+                        // within RIP-relative displacement range.
+                        //
                         displacement = -(
                             int32_t)(intptr_t)(cursor + 4 + containingInstruction->getOpCode().info().ImmediateSize());
+
+                        if (labelSym->getCodeLocation()) {
+                            // Compute the displacement to the known label location. No relocation is required.
+                            //
+                            displacement = reinterpret_cast<intptr_t>(labelSym->getCodeLocation()) + displacement;
+                        } else {
+                            cg->addRelocation(
+                                new (cg->trHeapMemory()) TR::LabelRelative32BitRelocation(cursor, labelSym));
+                        }
                     } else {
+                        // Use an absolute code address on 32-bit, which will be filled in during
+                        // relocation processing
+                        //
                         displacement = 0;
+                        cg->addRelocation(new (cg->trHeapMemory()) TR::LabelAbsoluteRelocation(cursor, labelSym));
+                        cg->addExternalRelocation(
+                            TR::ExternalRelocation::create(cursor, 0, TR_AbsoluteMethodAddress, cg), __FILE__, __LINE__,
+                            containingInstruction->getNode());
                     }
                 } else {
                     displacement = getSymbolReference().getOffset();
@@ -1302,7 +1304,7 @@ uint8_t *OMR::X86::MemoryReference::generateBinaryEncoding(uint8_t *modRM, TR::I
                 // then displacement will be 4 bytes.
                 //
                 ModRM(modRM)->setBaseDisp32();
-                *(int32_t *)cursor = (int32_t)displacement;
+                *(int32_t *)cursor = static_cast<int32_t>(displacement);
                 if (getUnresolvedDataSnippet() != NULL) {
                     getUnresolvedDataSnippet()->setAddressOfDataReference(cursor);
                 }

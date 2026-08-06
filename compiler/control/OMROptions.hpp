@@ -813,7 +813,7 @@ enum TR_CompilationOptions {
     TR_UseHigherMethodCounts                                 = 0x00000020 + 24,
     TR_FullInlineUnderOSRDebug                               = 0x00000040 + 24,
     TR_DisablePRBE                                           = 0x00000080 + 24,
-    // Available                                             = 0x00000100 + 24,
+    TR_EnableRecompDueToPatchedNopableGuards                 = 0x00000100 + 24,
     TR_X86HLE                                                = 0x00000200 + 24,
     TR_DisableAdaptiveDumbInliner                            = 0x00000400 + 24,
     // Available                                             = 0x00000800 + 24,

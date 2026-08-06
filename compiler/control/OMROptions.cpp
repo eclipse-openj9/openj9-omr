@@ -1314,6 +1314,8 @@ TR::OptionTable OMR::Options::_jitOptions[] = {
      SET_OPTION_BIT(TR_EnableRATPurging), "F" },
     { "enableReassociation", "O\tapply reassociation rules in Simplifier", SET_OPTION_BIT(TR_EnableReassociation),
      "F" },
+    { "enableRecompDueToPatchedNopableGuards",
+     "O\tRecompile high optimization compiles if the nopable guard has been patched", SET_OPTION_BIT(TR_EnableRecompDueToPatchedNopableGuards), "F" },
     { "enableRecompilationPushing", "O\tenable pushing methods to be recompiled",
      SET_OPTION_BIT(TR_EnableRecompilationPushing), "F" },
     { "enableRefinedAliases",

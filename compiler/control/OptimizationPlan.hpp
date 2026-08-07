@@ -138,6 +138,10 @@ public:
 
     void setInsertPatchableJProfiling(bool b) { _flags.set(InsertPatchableJProfiling, b); }
 
+    bool getDoNotInsertPhaseChangeRecomp() const { return _flags.testAny(DoNotInsertPhaseChangeRecomp); }
+
+    void setDoNotInsertPhaseChangeRecomp(bool b) { _flags.set(DoNotInsertPhaseChangeRecomp, b); }
+
     // Insert epilogue yieldpoints if the method is being sampled
     bool getInsertEpilogueYieldpoints() const { return _flags.testAny(UseSampling); }
 
@@ -287,6 +291,8 @@ public:
         InducedByDLT = 0x00800000, // Compilation that follows a DLT compilation
         DisableEDO = 0x01000000, // Do not insert EDO profiling trees for this compilation
         InsertPatchableJProfiling = 0x02000000, // Insert patchable JProfiling trees for this compilation
+        DoNotInsertPhaseChangeRecomp
+            = 0x04000000, // Do not insert a test in cold blocks to detect phase change and trigger recompilation
     };
 
 private:

@@ -2975,7 +2975,23 @@ TR::Register *OMR::ARM64::TreeEvaluator::vcastEvaluator(TR::Node *node, TR::Code
 
 TR::Register *OMR::ARM64::TreeEvaluator::vconvEvaluator(TR::Node *node, TR::CodeGenerator *cg)
 {
-    return TR::TreeEvaluator::unImpOpEvaluator(node, cg);
+    TR::DataType st = node->getOpCode().getVectorSourceDataType().getVectorElementType();
+    TR::DataType et = node->getOpCode().getVectorResultDataType().getVectorElementType();
+    OP::Mnemonic convOp = OP::bad;
+
+    if (st == TR::Int32 && et == TR::Float) {
+        convOp = OP::vscvtf_wtos4s;
+    } else if (st == TR::Int64 && et == TR::Double) {
+        convOp = OP::vscvtf_xtod2d;
+    } else if (st == TR::Float && et == TR::Int32) {
+        convOp = OP::vfcvtzs_stow4s;
+    } else if (st == TR::Double && et == TR::Int64) {
+        convOp = OP::vfcvtzs_dtox2d;
+    } else {
+        TR_ASSERT_FATAL(false, "Unsupported type combination for vconv");
+    }
+
+    return inlineVectorUnaryOp(node, cg, convOp);
 }
 
 TR::Register *OMR::ARM64::TreeEvaluator::vsetelemEvaluator(TR::Node *node, TR::CodeGenerator *cg)

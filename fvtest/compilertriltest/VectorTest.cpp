@@ -995,3 +995,92 @@ INSTANTIATE_TEST_CASE_P(Long128ShiftRotateTest, BinaryDataDriven128Int64Test, ::
     std::make_tuple(TR::vrol, BinaryLongTest { { 30064771072, 4 }, { 0x70000000, 4}, { 4, 0 }, }),
     std::make_tuple(TR::vrol, BinaryLongTest { { 8, 2305843009213693953 }, { 8, 9}, { 64, -3 }, })
 )));
+
+typedef bool (*vconvEqFunc)(void *, void *);
+
+bool eq_f2i(void *pf, void *pi)
+{
+    return (static_cast<int32_t>(*static_cast<float *>(pf)) == *static_cast<int32_t *>(pi));
+}
+bool eq_i2f(void *pi, void *pf)
+{
+    return (static_cast<float>(*static_cast<int32_t *>(pi)) == *static_cast<float *>(pf));
+}
+bool eq_d2l(void *pd, void *pl)
+{
+    return (static_cast<int64_t>(*static_cast<double *>(pd)) == *static_cast<int64_t *>(pl));
+}
+bool eq_l2d(void *pl, void *pd)
+{
+    return (static_cast<double>(*static_cast<int64_t *>(pl)) == *static_cast<double *>(pd));
+}
+
+class ParameterizedVectorConvTest : public VectorTest, public ::testing::WithParamInterface<std::tuple<TR::DataTypes, TR::DataTypes, vconvEqFunc>> {};
+
+TEST_P(ParameterizedVectorConvTest, Vector128ConvTest) {
+    // Assuming VectorLength128 and conversion between types of same size only
+    TR::DataTypes sourceType = std::get<0>(GetParam());
+    TR::DataTypes resultType = std::get<1>(GetParam());
+    vconvEqFunc fn = std::get<2>(GetParam());
+
+    int sourceTypeSize = TRTest::typeSize(sourceType);
+    int resultTypeSize = TRTest::typeSize(resultType);
+    ASSERT_NE(sourceType, resultType);
+    ASSERT_EQ(sourceTypeSize, resultTypeSize);
+
+    char sourceTypeName[8];
+    char resultTypeName[8];
+    char inputTrees[1024];
+
+    std::snprintf(sourceTypeName, sizeof(sourceTypeName), "%s", TR::DataType::getName(sourceType));
+    std::snprintf(resultTypeName, sizeof(resultTypeName), "%s", TR::DataType::getName(resultType));
+    std::snprintf(inputTrees, sizeof(inputTrees),
+                  "(method return= NoType args=[Address,Address] "
+                  "  (block                                      "
+                  "    (vstoreiVector128%s offset=0              "
+                  "      (aload parm=0)                          "
+                  "        (vconvVector128%s_Vector128%s         "
+                  "          (vloadiVector128%s (aload parm=1))))"
+                  "    (return)))                                ",
+                  resultTypeName, sourceTypeName, resultTypeName, sourceTypeName);
+
+    auto trees = parseString(inputTrees);
+
+    ASSERT_NOTNULL(trees);
+    SKIP_ON_RISCV(MissingImplementation);
+    SKIP_ON_X86(MissingImplementation);
+    SKIP_ON_HAMMER(MissingImplementation);
+    if (!(sourceType == TR::Int64 && resultType == TR::Double)) {
+        SKIP_ON_POWER(MissingImplementation);
+        SKIP_ON_S390(MissingImplementation);
+        SKIP_ON_S390X(MissingImplementation);
+    }
+
+    Tril::DefaultCompiler compiler(trees);
+    ASSERT_EQ(0, compiler.compile()) << "Compilation failed unexpectedly\n" << "Input trees: " << inputTrees;
+
+    auto entry_point = compiler.getEntryPoint<void (*)(void *, void *)>();
+
+    int8_t output[16] = { 0 };
+    int8_t input[16];
+
+    for (int32_t i = 0; i < sizeof(input)/sourceTypeSize; i++) {
+        int32_t offset = sourceTypeSize * i;
+        TRTest::generateByType(input + offset, sourceType, false);
+    }
+
+    entry_point(output, input);
+
+    for (int32_t i = 0; i < sizeof(input)/sourceTypeSize; i++) {
+        int32_t offset = sourceTypeSize * i;
+        EXPECT_TRUE(fn(input + offset, output + offset));
+    }
+
+}
+
+INSTANTIATE_TEST_CASE_P(Vector128Conv, ParameterizedVectorConvTest, ::testing::ValuesIn(*TRTest::MakeVector<std::tuple<TR::DataTypes, TR::DataTypes, vconvEqFunc>>(
+    std::make_tuple(TR::Int32, TR::Float, eq_i2f),
+    std::make_tuple(TR::Float, TR::Int32, eq_f2i),
+    std::make_tuple(TR::Int64, TR::Double, eq_l2d),
+    std::make_tuple(TR::Double, TR::Int64, eq_d2l)
+)));

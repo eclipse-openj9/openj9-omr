@@ -668,6 +668,10 @@ static const char *opCodeToNameMap[] = {
     "scvtf_wtod",
     "scvtf_xtos",
     "scvtf_xtod",
+    "vfcvtzs_stow4s",
+    "vfcvtzs_dtox2d",
+    "vscvtf_wtos4s",
+    "vscvtf_xtod2d",
     "fmovimms",
     "fmovimmd",
     "fcmps",
@@ -1583,7 +1587,7 @@ void TR_Debug::print(OMR::Logger *log, TR::ARM64Trg1Src1Instruction *instr)
     uint32_t enc = OP::getOpCodeBinaryEncoding(op);
     log->printf("%s \t", getOpCodeName(&instr->getOpCode()));
 
-    if (op >= OP::fcvt_stod && op <= OP::scvtf_xtod) {
+    if (op >= OP::fcvt_stod && op <= OP::vscvtf_xtod2d) {
         TR_RegisterSizes regSize1 = TR_UnknownSizeReg; // trg register size
         TR_RegisterSizes regSize2 = TR_UnknownSizeReg; // src register size
         uint32_t sf = getSFbit(enc);
@@ -1600,6 +1604,9 @@ void TR_Debug::print(OMR::Logger *log, TR::ARM64Trg1Src1Instruction *instr)
         } else if (op >= OP::scvtf_wtos && op <= OP::scvtf_xtod) {
             regSize1 = getRegisterSizeFromFType(ftype);
             regSize2 = (sf == 1) ? TR_DoubleWordReg : TR_WordReg;
+        } else if (op >= OP::vfcvtzs_stow4s && op <= OP::vscvtf_xtod2d) {
+            regSize1 = TR_VectorReg128;
+            regSize2 = TR_VectorReg128;
         }
 
         print(log, instr->getTargetRegister(), regSize1);

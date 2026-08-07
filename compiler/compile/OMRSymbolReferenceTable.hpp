@@ -150,7 +150,7 @@ public:
         osrFrameIndexSymbol, // osrFrameIndex slot on j9vmthread
         osrReturnAddressSymbol, // osrFrameIndex slot on j9vmthread
         contiguousArrayDataAddrFieldSymbol, // dataAddr field symbol used to track data portion of the array
-
+        coldPathRecompTriggerCounterSymbol,
         /** \brief
          *
          *  A call with this symbol marks a place in the jitted code where OSR transition to the VM interpreter is
@@ -778,7 +778,7 @@ public:
 
     // base recompilation
     TR::SymbolReference *findOrCreateRecompilationCounterSymbolRef(void *counterAddress);
-
+    TR::SymbolReference *findOrCreateColdPathRecompTriggerCounterSymbolRef(void *counterAddress);
     TR::SymbolReference *findOrCreateMethodSymbol(mcount_t owningMethodIndex, int32_t cpIndex, TR_ResolvedMethod *,
         TR::MethodSymbol::Kinds, bool = false);
     TR::SymbolReference *findOrCreateComputedStaticMethodSymbol(mcount_t owningMethodIndex, int32_t cpIndex,

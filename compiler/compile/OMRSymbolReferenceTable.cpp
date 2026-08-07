@@ -476,6 +476,19 @@ TR::SymbolReference *OMR::SymbolReferenceTable::createRefinedArrayShadowSymbolRe
     return newRef;
 }
 
+TR::SymbolReference *OMR::SymbolReferenceTable::findOrCreateColdPathRecompTriggerCounterSymbolRef(void *counterAddress)
+{
+    if (!element(coldPathRecompTriggerCounterSymbol)) {
+        TR::StaticSymbol *sym = TR::StaticSymbol::create(trHeapMemory(), TR::Int32);
+        sym->setStaticAddress(counterAddress);
+        sym->setNotDataAddress();
+        sym->setRecompilationCounter();
+        element(coldPathRecompTriggerCounterSymbol)
+            = new (trHeapMemory()) TR::SymbolReference(self(), coldPathRecompTriggerCounterSymbol, sym);
+    }
+    return element(coldPathRecompTriggerCounterSymbol);
+}
+
 TR::SymbolReference *OMR::SymbolReferenceTable::findOrCreateRecompilationCounterSymbolRef(void *counterAddress)
 {
     if (!element(recompilationCounterSymbol)) {

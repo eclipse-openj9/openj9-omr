@@ -1415,6 +1415,8 @@ const char *TR_Debug::getName(TR::SymbolReference *symRef)
                 return "<this-range-extension>";
             case TR::SymbolReferenceTable::recompilationCounterSymbol:
                 return "<recompilation-counter>";
+            case TR::SymbolReferenceTable::coldPathRecompTriggerCounterSymbol:
+                return "<cold-path-recomp-trigger-counter>";
             case TR::SymbolReferenceTable::counterAddressSymbol:
                 return "<recompilation-counter-address>";
             case TR::SymbolReferenceTable::countForRecompileSymbol:
@@ -1845,28 +1847,28 @@ const char *TR_Debug::getStaticName(TR::SymbolReference *symRef)
 }
 
 // Note: This array needs to match up with what is in compile/SymbolReferenceTable.hpp
-static const char *commonNonhelperSymbolNames[]
-    = { "<contiguousArraySize>", "<discontiguousArraySize>", "<arrayClassRomPtr>", "<classRomPtr>",
-          "<javaLangClassFromClass>", "<classFromJavaLangClass>", "<addressOfClassOfMethod>", "<ramStaticsFromClass>",
-          "<componentClass>", "<componentClassAsPrimitive>", "<isArray>", "<isClassDepthAndFlags>",
-          "<initializeStatusFromClass>", "<isClassFlags>", "<vft>", "<currentThread>", "<recompilationCounter>",
-          "<excp>", "<indexableSize>", "<resolveCheck>", "<arrayTranslate>", "<arrayTranslateAndTest>", "<long2String>",
-          "<bitOpMem>", "<reverseLoad>", "<reverseStore>", "<currentTimeMaxPrecision>", "<encodeASCII>",
-          "<headerFlags>", "<singlePrecisionSQRT>", "<threadPrivateFlags>", "<arrayletSpineFirstElement>", "<dltBlock>",
-          "<countForRecompile>", "<gcrPatchPoint>", "<counterAddress>", "<startPC>", "<compiledMethod>",
-          "<thisRangeExtension>", "<profilingBufferCursor>", "<profilingBufferEnd>", "<profilingBuffer>", "<osrBuffer>",
-          "<osrScratchBuffer>", "<osrFrameIndex>", "<osrReturnAddress>", "<contiguousArrayDataAddrField>",
-          "<potentialOSRPointHelper>", "<osrFearPointHelper>", "<eaEscapeHelper>", "<lowTenureAddress>",
-          "<highTenureAddress>", "<fragmentParent>", "<globalFragment>", "<instanceShape>", "<instanceDescription>",
-          "<descriptionWordFromPtr>", "<classFromJavaLangClassAsPrimitive>", "<javaVM>", "<heapBase>", "<heapTop>",
-          "<j9methodExtraField>", "<j9methodConstantPoolField>", "<startPCLinkageInfo>", "<instanceShapeFromROMClass>",
-          "<objectEqualityComparison>", "<objectInequalityComparison>", "<nonNullableArrayNullStoreCheck>",
-          "<loadFlattenableArrayElementNonHelper>", "<storeFlattenableArrayElementNonHelper>", "<isIdentityObject>",
-          "<synchronizedFieldLoad>", "<atomicAdd>", "<atomicFetchAndAdd>", "<atomicFetchAndAdd32Bit>",
-          "<atomicFetchAndAdd64Bit>", "<atomicSwap>", "<atomicSwap32Bit>", "<atomicSwap64Bit>",
-          "<atomicCompareAndSwapReturnStatus>", "<atomicCompareAndSwapReturnValue>", "<jProfileValueSymbol>",
-          "<jProfileValueWithNullCHKSymbol>", "<j9VMThreadTempSlotField>", "<computedStaticCallSymbol>",
-          "<j9VMThreadFloatTemp1>", "<J9JNIMethodIDvTableIndexFieldSymbol>", "<jitDispatchJ9Method>" };
+static const char *commonNonhelperSymbolNames[] = { "<contiguousArraySize>", "<discontiguousArraySize>",
+    "<arrayClassRomPtr>", "<classRomPtr>", "<javaLangClassFromClass>", "<classFromJavaLangClass>",
+    "<addressOfClassOfMethod>", "<ramStaticsFromClass>", "<componentClass>", "<componentClassAsPrimitive>", "<isArray>",
+    "<isClassDepthAndFlags>", "<initializeStatusFromClass>", "<isClassFlags>", "<vft>", "<currentThread>",
+    "<recompilationCounter>", "<excp>", "<indexableSize>", "<resolveCheck>", "<arrayTranslate>",
+    "<arrayTranslateAndTest>", "<long2String>", "<bitOpMem>", "<reverseLoad>", "<reverseStore>",
+    "<currentTimeMaxPrecision>", "<encodeASCII>", "<headerFlags>", "<singlePrecisionSQRT>", "<threadPrivateFlags>",
+    "<arrayletSpineFirstElement>", "<dltBlock>", "<countForRecompile>", "<gcrPatchPoint>", "<counterAddress>",
+    "<startPC>", "<compiledMethod>", "<thisRangeExtension>", "<profilingBufferCursor>", "<profilingBufferEnd>",
+    "<profilingBuffer>", "<osrBuffer>", "<osrScratchBuffer>", "<osrFrameIndex>", "<osrReturnAddress>",
+    "<contiguousArrayDataAddrField>", "<coldPathRecompTriggerCounterSymbol>", "<potentialOSRPointHelper>",
+    "<osrFearPointHelper>", "<eaEscapeHelper>", "<lowTenureAddress>", "<highTenureAddress>", "<fragmentParent>",
+    "<globalFragment>", "<instanceShape>", "<instanceDescription>", "<descriptionWordFromPtr>",
+    "<classFromJavaLangClassAsPrimitive>", "<javaVM>", "<heapBase>", "<heapTop>", "<j9methodExtraField>",
+    "<j9methodConstantPoolField>", "<startPCLinkageInfo>", "<instanceShapeFromROMClass>", "<objectEqualityComparison>",
+    "<objectInequalityComparison>", "<nonNullableArrayNullStoreCheck>", "<loadFlattenableArrayElementNonHelper>",
+    "<storeFlattenableArrayElementNonHelper>", "<isIdentityObject>", "<synchronizedFieldLoad>", "<atomicAdd>",
+    "<atomicFetchAndAdd>", "<atomicFetchAndAdd32Bit>", "<atomicFetchAndAdd64Bit>", "<atomicSwap>", "<atomicSwap32Bit>",
+    "<atomicSwap64Bit>", "<atomicCompareAndSwapReturnStatus>", "<atomicCompareAndSwapReturnValue>",
+    "<jProfileValueSymbol>", "<jProfileValueWithNullCHKSymbol>", "<j9VMThreadTempSlotField>",
+    "<computedStaticCallSymbol>", "<j9VMThreadFloatTemp1>", "<J9JNIMethodIDvTableIndexFieldSymbol>",
+    "<jitDispatchJ9Method>" };
 
 const char *TR_Debug::getShadowName(TR::SymbolReference *symRef)
 {

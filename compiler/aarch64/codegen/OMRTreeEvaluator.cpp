@@ -6080,7 +6080,7 @@ TR::Register *OMR::ARM64::TreeEvaluator::arraysetEvaluator(TR::Node *node, TR::C
                         TR::Register *countReg = srm->findOrCreateScratchRegister();
                         loadConstant64(cg, node, (length - 32) / constLoopLen, countReg);
                         TR::LabelSymbol *loopLabel = generateLabelSymbol(cg);
-                        Inst_Label(cg, OP::label, node, loopLabel);
+                        Inst_Label(cg, node, loopLabel);
                         Inst_Trg1Src1Imm(cg, OP::subsimmx, node, countReg, countReg, 1);
                         for (int i = 1; i <= 7; i++) {
                             Inst_MemSrc2(cg, OP::vstpoffq, node, MRef_disp(cg, dstReg, i * 32), vectorValueReg,
@@ -6170,7 +6170,7 @@ TR::Register *OMR::ARM64::TreeEvaluator::arraysetEvaluator(TR::Node *node, TR::C
             TR::LabelSymbol *doneLabel = generateLabelSymbol(cg);
             auto *conditions = RegDeps(0, 1, cg);
             conditions->addPostCondition(valueReg, TR::RealRegister::xzr);
-            Inst_Label(cg, OP::label, node, doneLabel, conditions);
+            Inst_Label(cg, node, doneLabel, conditions);
         }
     } else {
         /*
@@ -6235,7 +6235,7 @@ TR::Register *OMR::ARM64::TreeEvaluator::arraysetEvaluator(TR::Node *node, TR::C
             Inst_Trg1Src1(cg, dupOpCode, node, vectorValueReg, valueReg);
         }
 
-        Inst_Label(cg, OP::label, node, startLabel);
+        Inst_Label(cg, node, startLabel);
         auto branchToDoneLabelInstr = Inst_CompareBranch(cg, OP::cbzx, node, lengthReg, doneLabel);
         if (debugObj) {
             debugObj->addInstructionComment(branchToDoneLabelInstr, "Done if length is 0.");
@@ -6277,7 +6277,7 @@ TR::Register *OMR::ARM64::TreeEvaluator::arraysetEvaluator(TR::Node *node, TR::C
         srm->reclaimScratchRegister(remainderReg);
 
         TR::LabelSymbol *mainLoopLabel = generateLabelSymbol(cg);
-        auto mainLoopLabelInstr = Inst_Label(cg, OP::label, node, mainLoopLabel);
+        auto mainLoopLabelInstr = Inst_Label(cg, node, mainLoopLabel);
         Inst_Trg1Src1Imm(cg, OP::subsimmx, node, lengthReg, lengthReg, 64);
         Inst_MemSrc2(cg, OP::vstpoffq, node, MRef_disp(cg, dstReg, 32), vectorValueReg, vectorValueReg);
         Inst_MemSrc2(cg, OP::vstppreq, node, MRef_disp(cg, dstReg, 64), vectorValueReg, vectorValueReg);
@@ -6293,18 +6293,18 @@ TR::Register *OMR::ARM64::TreeEvaluator::arraysetEvaluator(TR::Node *node, TR::C
             debugObj->addInstructionComment(adjustDstRegInstr,
                 "Adjusts dst register so that they point to 64bytes before the end");
         }
-        auto branchToDoneLabelInstr2 = Inst_Label(cg, OP::b, node, doneLabel);
+        auto branchToDoneLabelInstr2 = Inst_Branch(cg, node, doneLabel);
         if (debugObj) {
             debugObj->addInstructionComment(branchToDoneLabelInstr2, "Jumps to doneLabel.");
         }
 
         TR::LabelSymbol *lessThan64Label = generateLabelSymbol(cg);
-        auto lessThanOrEqual96LabelInstr = Inst_Label(cg, OP::label, node, lessThanOrEqual96Label);
+        auto lessThanOrEqual96LabelInstr = Inst_Label(cg, node, lessThanOrEqual96Label);
         auto branchToLessThan64LabelInstr = Inst_TestBitBranch(cg, OP::tbz, node, lengthReg, 6, lessThan64Label);
         Inst_MemSrc2(cg, OP::vstpoffq, node, MRef_disp(cg, dstReg, 32), vectorValueReg, vectorValueReg);
-        auto lessThan64LabelInstr = Inst_Label(cg, OP::label, node, lessThan64Label);
+        auto lessThan64LabelInstr = Inst_Label(cg, node, lessThan64Label);
         Inst_MemSrc2(cg, OP::vstpoffq, node, MRef_disp(cg, dstEndReg, -32), vectorValueReg, vectorValueReg);
-        auto branchToDoneLabelInstr3 = Inst_Label(cg, OP::b, node, doneLabel);
+        auto branchToDoneLabelInstr3 = Inst_Branch(cg, node, doneLabel);
         if (debugObj) {
             debugObj->addInstructionComment(lessThanOrEqual96LabelInstr, "lessThanOrEqual96Label");
             debugObj->addInstructionComment(branchToLessThan64LabelInstr, "Jumps to lessThan64Label if length < 64.");
@@ -6313,7 +6313,7 @@ TR::Register *OMR::ARM64::TreeEvaluator::arraysetEvaluator(TR::Node *node, TR::C
         }
 
         TR::LabelSymbol *lessThan16Label = generateLabelSymbol(cg);
-        auto lessThan32LabelInstr = Inst_Label(cg, OP::label, node, lessThan32Label);
+        auto lessThan32LabelInstr = Inst_Label(cg, node, lessThan32Label);
         auto branchToLessThan16LabelInstr = Inst_TestBitBranch(cg, OP::tbz, node, lengthReg, 4, lessThan16Label);
 
         if (debugObj) {
@@ -6324,18 +6324,18 @@ TR::Register *OMR::ARM64::TreeEvaluator::arraysetEvaluator(TR::Node *node, TR::C
         Inst_MemSrc1(cg, OP::vstrimmq, node, MRef_disp(cg, dstReg, 0), vectorValueReg);
         Inst_MemSrc1(cg, OP::vsturq, node, MRef_disp(cg, dstEndReg, -16), vectorValueReg);
 
-        auto branchToDoneLabelInstr4 = Inst_Label(cg, OP::b, node, doneLabel);
+        auto branchToDoneLabelInstr4 = Inst_Branch(cg, node, doneLabel);
         if (debugObj) {
             debugObj->addInstructionComment(branchToDoneLabelInstr4, "Jumps to doneLabel.");
         }
 
-        auto lessThan16LabelInstr = Inst_Label(cg, OP::label, node, lessThan16Label);
+        auto lessThan16LabelInstr = Inst_Label(cg, node, lessThan16Label);
         if (elementSize == 8) {
             Inst_MemSrc1(cg, valueNode->getDataType().isFloatingPoint() ? OP::vstrimmd : OP::strimmx, node,
                 MRef_disp(cg, dstReg, 0), valueReg);
         } else {
             TR::LabelSymbol *elementLoopLabel = generateLabelSymbol(cg);
-            auto elementLoopLabelInstr = Inst_Label(cg, OP::label, node, elementLoopLabel);
+            auto elementLoopLabelInstr = Inst_Label(cg, node, elementLoopLabel);
             Inst_Trg1Src1Imm(cg, OP::subsimmx, node, lengthReg, lengthReg, elementSize);
             const OP::Mnemonic strOpCode = (!valueNode->getDataType().isFloatingPoint())
                 ? ((elementSize == 1)          ? OP::strbpost
@@ -6361,7 +6361,7 @@ TR::Register *OMR::ARM64::TreeEvaluator::arraysetEvaluator(TR::Node *node, TR::C
         conditions->addPostCondition(valueReg, isValueZero ? TR::RealRegister::xzr : TR::RealRegister::NoReg);
         srm->addScratchRegistersToDependencyList(conditions);
 
-        auto doneLabelInstr = Inst_Label(cg, OP::label, node, doneLabel, conditions);
+        auto doneLabelInstr = Inst_Label(cg, node, doneLabel, conditions);
         if (debugObj) {
             debugObj->addInstructionComment(doneLabelInstr, "doneLabel");
         }
@@ -6510,7 +6510,7 @@ static TR::Register *arraycmpEvaluatorHelper(TR::Node *node, TR::CodeGenerator *
     startLabel->setStartInternalControlFlow();
     doneLabel->setEndInternalControlFlow();
 
-    Inst_Label(cg, OP::label, node, startLabel);
+    Inst_Label(cg, node, startLabel);
     if (isArrayCmpLen) {
         Inst_Mov(cg, node, resultReg, lengthReg, true);
     } else {
@@ -6550,7 +6550,7 @@ static TR::Register *arraycmpEvaluatorHelper(TR::Node *node, TR::CodeGenerator *
 
     TR::LabelSymbol *loop16Label = generateLabelSymbol(cg);
     {
-        auto loop16LabelInstr = Inst_Label(cg, OP::label, node, loop16Label);
+        auto loop16LabelInstr = Inst_Label(cg, node, loop16Label);
         Inst_Trg2Mem(cg, OP::ldppostx, node, data1Reg, data3Reg, MRef_disp(cg, src1Reg, 16));
         Inst_Trg2Mem(cg, OP::ldppostx, node, data2Reg, data4Reg, MRef_disp(cg, src2Reg, 16));
         if (isArrayCmpLen) {
@@ -6576,7 +6576,7 @@ static TR::Register *arraycmpEvaluatorHelper(TR::Node *node, TR::CodeGenerator *
         auto adjustSrc1RegInstr = Inst_Trg1Src2(cg, OP::addx, node, src1Reg, src1Reg, lengthReg);
         Inst_Trg1Src2(cg, OP::addx, node, src2Reg, src2Reg, lengthReg);
         loadConstant64(cg, node, 0, lengthReg);
-        auto branchBacktoLoop16LabelInstr = Inst_Label(cg, OP::b, node, loop16Label);
+        auto branchBacktoLoop16LabelInstr = Inst_Branch(cg, node, loop16Label);
         if (debugObj) {
             if (isArrayCmpLen) {
                 debugObj->addInstructionComment(branchToDoneLabelInstr3,
@@ -6595,7 +6595,7 @@ static TR::Register *arraycmpEvaluatorHelper(TR::Node *node, TR::CodeGenerator *
         branchToDoneLabelInstr3
             = Inst_CompareBranch(cg, OP::cbzx, node, lengthReg, isArrayCmpLen ? done0Label : doneLabel);
 
-        auto branchToLessThan16Label2 = Inst_Label(cg, OP::b, node, lessThan16Label);
+        auto branchToLessThan16Label2 = Inst_Branch(cg, node, lessThan16Label);
 
         if (debugObj) {
             if (isArrayCmpLen) {
@@ -6609,7 +6609,7 @@ static TR::Register *arraycmpEvaluatorHelper(TR::Node *node, TR::CodeGenerator *
         }
     }
 
-    auto notEqual16LabelInstr = Inst_Label(cg, OP::label, node, notEqual16Label);
+    auto notEqual16LabelInstr = Inst_Label(cg, node, notEqual16Label);
     if (debugObj) {
         debugObj->addInstructionComment(notEqual16LabelInstr,
             "notEqual16Label. src register points 16-byte ahead of the location where the data in the registers was "
@@ -6645,9 +6645,9 @@ static TR::Register *arraycmpEvaluatorHelper(TR::Node *node, TR::CodeGenerator *
     srm->reclaimScratchRegister(data4Reg);
 
     if (!isLengthGreaterThan15) {
-        auto branchToDone0LabelInstr = Inst_Label(cg, OP::b, node, done0Label);
+        auto branchToDone0LabelInstr = Inst_Branch(cg, node, done0Label);
 
-        auto lessThan16LabelInstr = Inst_Label(cg, OP::label, node, lessThan16Label);
+        auto lessThan16LabelInstr = Inst_Label(cg, node, lessThan16Label);
         Inst_Trg1Src1Imm(cg, OP::subsimmx, node, lengthReg, lengthReg, 1);
         Inst_Trg1Mem(cg, OP::ldrbpost, node, data1Reg, MRef_disp(cg, src1Reg, 1));
         Inst_Trg1Mem(cg, OP::ldrbpost, node, data2Reg, MRef_disp(cg, src2Reg, 1));
@@ -6673,13 +6673,13 @@ static TR::Register *arraycmpEvaluatorHelper(TR::Node *node, TR::CodeGenerator *
     }
 
     if (isArrayCmpLen) {
-        auto done0LabelInstr = Inst_Label(cg, OP::label, node, done0Label);
+        auto done0LabelInstr = Inst_Label(cg, node, done0Label);
         Inst_Trg1Src2(cg, OP::subx, node, resultReg, src1Reg, savedSrc1Reg);
         if (debugObj) {
             debugObj->addInstructionComment(done0LabelInstr, "done0Label");
         }
     } else {
-        auto done0LabelInstr = Inst_Label(cg, OP::label, node, done0Label); /* Result: 0, 1 or 2 */
+        auto done0LabelInstr = Inst_Label(cg, node, done0Label); /* Result: 0, 1 or 2 */
         Inst_Compare(cg, node, data1Reg, data2Reg, true);
         Inst_CSet(cg, node, resultReg, TR::CC_NE);
         Inst_CInc(cg, node, resultReg, resultReg, TR::CC_HI, false);
@@ -6696,7 +6696,7 @@ static TR::Register *arraycmpEvaluatorHelper(TR::Node *node, TR::CodeGenerator *
     conditions->addPostCondition(resultReg, TR::RealRegister::NoReg);
     srm->addScratchRegistersToDependencyList(conditions);
 
-    auto doneLabelInstr = Inst_Label(cg, OP::label, node, doneLabel, conditions);
+    auto doneLabelInstr = Inst_Label(cg, node, doneLabel, conditions);
     if (debugObj) {
         debugObj->addInstructionComment(doneLabelInstr, "doneLabel");
     }
@@ -6745,7 +6745,7 @@ static void inlineConstantLengthForwardArrayCopy(TR::Node *node, int64_t byteLen
 
         TR::LabelSymbol *loopLabel = generateLabelSymbol(cg);
         loopLabel->setStartInternalControlFlow();
-        Inst_Label(cg, OP::label, node, loopLabel);
+        Inst_Label(cg, node, loopLabel);
 
         // Copy 32x4 bytes in a loop
         Inst_Trg2Mem(cg, OP::vldppostq, node, dataReg1, dataReg2, MRef_disp(cg, srcReg, 32));
@@ -6761,7 +6761,7 @@ static void inlineConstantLengthForwardArrayCopy(TR::Node *node, int64_t byteLen
 
         TR::LabelSymbol *loopEndLabel = generateLabelSymbol(cg);
         loopEndLabel->setEndInternalControlFlow();
-        Inst_Label(cg, OP::label, node, loopEndLabel, deps);
+        Inst_Label(cg, node, loopEndLabel, deps);
     } else if (iteration == 1) {
         residue += 128;
     }
@@ -6844,7 +6844,7 @@ static void inlineConstantLengthBackwardArrayCopy(TR::Node *node, int64_t byteLe
 
         TR::LabelSymbol *loopLabel = generateLabelSymbol(cg);
         loopLabel->setStartInternalControlFlow();
-        Inst_Label(cg, OP::label, node, loopLabel);
+        Inst_Label(cg, node, loopLabel);
 
         // Copy 32x4 bytes in a loop
         Inst_Trg2Mem(cg, OP::vldppreq, node, dataReg1, dataReg2, MRef_disp(cg, srcReg, -32));
@@ -6860,7 +6860,7 @@ static void inlineConstantLengthBackwardArrayCopy(TR::Node *node, int64_t byteLe
 
         TR::LabelSymbol *loopEndLabel = generateLabelSymbol(cg);
         loopEndLabel->setEndInternalControlFlow();
-        Inst_Label(cg, OP::label, node, loopEndLabel, deps);
+        Inst_Label(cg, node, loopEndLabel, deps);
     } else if (iteration == 1) {
         residue += 128;
     }
@@ -6971,14 +6971,14 @@ static void inlinePrimitiveForwardArraycopy(TR::Node *node, TR::Register *srcAdd
     cg->getARM64OutOfLineCodeSectionList().push_front(oolSection);
     oolSection->swapInstructionListsWithCompilation();
 
-    Inst_Label(cg, OP::label, node, oolArraycopyLabel);
+    Inst_Label(cg, node, oolArraycopyLabel);
 
     TR::SymbolReference *arrayCopyHelper
         = cg->symRefTab()->findOrCreateRuntimeHelper(TR_ARM64arrayCopy, false, false, false);
 
     Inst_ImmSym(cg, OP::bl, node, (uintptr_t)arrayCopyHelper->getMethodAddress(), NULL, arrayCopyHelper, NULL);
 
-    Inst_Label(cg, OP::b, node, doneLabel);
+    Inst_Branch(cg, node, doneLabel);
 
     cg->machine()->setLinkRegisterKilled(true);
     oolSection->swapInstructionListsWithCompilation();
@@ -7030,7 +7030,7 @@ static void inlinePrimitiveForwardArraycopy(TR::Node *node, TR::Register *srcAdd
 
     // Copy 16 bytes
     //
-    Inst_Label(cg, OP::label, node, fwAC16Label);
+    Inst_Label(cg, node, fwAC16Label);
     TR::LabelSymbol *fwAC8Label = generateLabelSymbol(cg);
     Inst_TestBitBranch(cg, OP::tbz, node, lengthReg, 4, fwAC8Label);
     Inst_Trg1Mem(cg, OP::vldrpostq, node, v30ScratchReg, MRef_disp(cg, srcAddrReg, 16));
@@ -7038,7 +7038,7 @@ static void inlinePrimitiveForwardArraycopy(TR::Node *node, TR::Register *srcAdd
 
     // Copy 8 bytes
     //
-    Inst_Label(cg, OP::label, node, fwAC8Label);
+    Inst_Label(cg, node, fwAC8Label);
     TR::LabelSymbol *fwAC4Label = generateLabelSymbol(cg);
     Inst_TestBitBranch(cg, OP::tbz, node, lengthReg, 3, fwAC4Label);
     Inst_Trg1Mem(cg, OP::ldrpostx, node, x3ScratchReg, MRef_disp(cg, srcAddrReg, 8));
@@ -7046,7 +7046,7 @@ static void inlinePrimitiveForwardArraycopy(TR::Node *node, TR::Register *srcAdd
 
     // Copy 4 bytes
     //
-    Inst_Label(cg, OP::label, node, fwAC4Label);
+    Inst_Label(cg, node, fwAC4Label);
     TR::LabelSymbol *fwAC2Label = generateLabelSymbol(cg);
     Inst_TestBitBranch(cg, OP::tbz, node, lengthReg, 2, fwAC2Label);
     Inst_Trg1Mem(cg, OP::ldrpostw, node, x3ScratchReg, MRef_disp(cg, srcAddrReg, 4));
@@ -7054,7 +7054,7 @@ static void inlinePrimitiveForwardArraycopy(TR::Node *node, TR::Register *srcAdd
 
     // Copy 2 bytes
     //
-    Inst_Label(cg, OP::label, node, fwAC2Label);
+    Inst_Label(cg, node, fwAC2Label);
     TR::LabelSymbol *fwAC1Label = generateLabelSymbol(cg);
     Inst_TestBitBranch(cg, OP::tbz, node, lengthReg, 1, fwAC1Label);
     Inst_Trg1Mem(cg, OP::ldrhpost, node, x3ScratchReg, MRef_disp(cg, srcAddrReg, 2));
@@ -7062,12 +7062,12 @@ static void inlinePrimitiveForwardArraycopy(TR::Node *node, TR::Register *srcAdd
 
     // Copy 1 byte
     //
-    Inst_Label(cg, OP::label, node, fwAC1Label);
+    Inst_Label(cg, node, fwAC1Label);
     Inst_TestBitBranch(cg, OP::tbz, node, lengthReg, 0, doneLabel);
     Inst_Trg1Mem(cg, OP::ldrbpost, node, x3ScratchReg, MRef_disp(cg, srcAddrReg, 1));
     Inst_MemSrc1(cg, OP::strbpost, node, MRef_disp(cg, dstAddrReg, 1), x3ScratchReg);
 
-    Inst_Label(cg, OP::label, node, doneLabel, deps);
+    Inst_Label(cg, node, doneLabel, deps);
 
     cg->stopUsingRegister(x3ScratchReg);
     cg->stopUsingRegister(v30ScratchReg);
@@ -7402,7 +7402,7 @@ TR::Register *OMR::ARM64::TreeEvaluator::BBStartEvaluator(TR::Node *node, TR::Co
         labelSym = generateLabelSymbol(cg);
         node->setLabel(labelSym);
     }
-    TR::Instruction *labelInst = Inst_Label(cg, OP::label, node, labelSym, deps);
+    TR::Instruction *labelInst = Inst_Label(cg, node, labelSym, deps);
     labelSym->setInstruction(labelInst);
     block->setFirstInstruction(labelInst);
 
@@ -7618,7 +7618,7 @@ static TR::Register *intrinsicAtomicAdd(TR::Node *node, TR::CodeGenerator *cg)
         TR::Register *oldValueReg = cg->allocateRegister();
 
         loopLabel->setStartInternalControlFlow();
-        Inst_Label(cg, OP::label, node, loopLabel);
+        Inst_Label(cg, node, loopLabel);
 
         auto loadop = is64Bit ? OP::ldxrx : OP::ldxrw;
         Inst_Trg1Mem(cg, loadop, node, oldValueReg, MRef_disp(cg, addressReg, 0));
@@ -7641,7 +7641,7 @@ static TR::Register *intrinsicAtomicAdd(TR::Node *node, TR::CodeGenerator *cg)
         conditions->addPostCondition(valueReg, TR::RealRegister::NoReg);
 
         doneLabel->setEndInternalControlFlow();
-        Inst_Label(cg, OP::label, node, doneLabel, conditions);
+        Inst_Label(cg, node, doneLabel, conditions);
         cg->stopUsingRegister(oldValueReg);
     }
 
@@ -7755,7 +7755,7 @@ TR::Register *intrinsicAtomicFetchAndAdd(TR::Node *node, TR::CodeGenerator *cg)
         TR::LabelSymbol *loopLabel = TR::LabelSymbol::create(cg->trHeapMemory(), cg);
 
         loopLabel->setStartInternalControlFlow();
-        Inst_Label(cg, OP::label, node, loopLabel);
+        Inst_Label(cg, node, loopLabel);
 
         // load acquire exclusive register
         auto loadop = is64Bit ? OP::ldxrx : OP::ldxrw;
@@ -7790,7 +7790,7 @@ TR::Register *intrinsicAtomicFetchAndAdd(TR::Node *node, TR::CodeGenerator *cg)
         }
 
         doneLabel->setEndInternalControlFlow();
-        Inst_Label(cg, OP::label, node, doneLabel, conditions);
+        Inst_Label(cg, node, doneLabel, conditions);
 
         cg->stopUsingRegister(newValueReg);
         cg->stopUsingRegister(tempReg);
@@ -7876,7 +7876,7 @@ TR::Register *intrinsicAtomicSwap(TR::Node *node, TR::CodeGenerator *cg)
         TR::LabelSymbol *loopLabel = TR::LabelSymbol::create(cg->trHeapMemory(), cg);
 
         loopLabel->setStartInternalControlFlow();
-        Inst_Label(cg, OP::label, node, loopLabel);
+        Inst_Label(cg, node, loopLabel);
 
         // load acquire exclusive register
         auto loadop = is64Bit ? OP::ldxrx : OP::ldxrw;
@@ -7898,7 +7898,7 @@ TR::Register *intrinsicAtomicSwap(TR::Node *node, TR::CodeGenerator *cg)
         conditions->addPostCondition(tempReg, TR::RealRegister::NoReg);
 
         doneLabel->setEndInternalControlFlow();
-        Inst_Label(cg, OP::label, node, doneLabel, conditions);
+        Inst_Label(cg, node, doneLabel, conditions);
 
         cg->stopUsingRegister(tempReg);
     }

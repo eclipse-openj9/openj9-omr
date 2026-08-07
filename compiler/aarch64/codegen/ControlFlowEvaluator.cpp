@@ -81,10 +81,10 @@ TR::Register *OMR::ARM64::TreeEvaluator::gotoEvaluator(TR::Node *node, TR::CodeG
     if (node->getNumChildren() > 0) {
         TR::Node *child = node->getFirstChild();
         cg->evaluate(child);
-        Inst_Label(cg, OP::b, node, gotoLabel, RegDeps(cg, child, 0));
+        Inst_Branch(cg, node, gotoLabel, RegDeps(cg, child, 0));
         cg->decReferenceCount(child);
     } else {
-        Inst_Label(cg, OP::b, node, gotoLabel);
+        Inst_Branch(cg, node, gotoLabel);
     }
     return NULL;
 }
@@ -590,12 +590,12 @@ static void binarySearchCaseSpace(TR::Register *selectorReg, TR::Node *lookupNod
                 lookupNode->getChild(lowChild)->getBranchDestination()->getNode()->getLabel(), TR::CC_EQ, conditions);
 
             // default case
-            Inst_Label(cg, OP::b, lookupNode, lookupNode->getChild(1)->getBranchDestination()->getNode()->getLabel(),
+            Inst_Branch(cg, lookupNode, lookupNode->getChild(1)->getBranchDestination()->getNode()->getLabel(),
                 conditions);
         } else {
             binarySearchCaseSpace(selectorReg, lookupNode, lowChild, pivot, tmpRegister, conditions, cg);
         }
-        Inst_Label(cg, OP::label, lookupNode, upperLabel);
+        Inst_Label(cg, lookupNode, upperLabel);
     }
 
     // upper half
@@ -611,8 +611,7 @@ static void binarySearchCaseSpace(TR::Register *selectorReg, TR::Node *lookupNod
             lookupNode->getChild(highChild)->getBranchDestination()->getNode()->getLabel(), TR::CC_EQ, conditions);
 
         // default case
-        Inst_Label(cg, OP::b, lookupNode, lookupNode->getChild(1)->getBranchDestination()->getNode()->getLabel(),
-            conditions);
+        Inst_Branch(cg, lookupNode, lookupNode->getChild(1)->getBranchDestination()->getNode()->getLabel(), conditions);
     } else {
         binarySearchCaseSpace(selectorReg, lookupNode, pivot + 1, highChild, tmpRegister, conditions, cg);
     }
@@ -669,7 +668,7 @@ TR::Register *OMR::ARM64::TreeEvaluator::lookupEvaluator(TR::Node *node, TR::Cod
             cg->evaluate(defaultChild->getFirstChild());
             conditions = conditions->clone(cg, RegDeps(cg, defaultChild->getFirstChild(), 0));
         }
-        Inst_Label(cg, OP::b, node, defaultChild->getBranchDestination()->getNode()->getLabel(), conditions);
+        Inst_Branch(cg, node, defaultChild->getBranchDestination()->getNode()->getLabel(), conditions);
     }
 
     if (tmpRegister) {
@@ -711,7 +710,7 @@ TR::Register *OMR::ARM64::TreeEvaluator::tableEvaluator(TR::Node *node, TR::Code
                 TR::CC_EQ);
         }
 
-        Inst_Label(cg, OP::b, node, defaultChild->getBranchDestination()->getNode()->getLabel(), conditions);
+        Inst_Branch(cg, node, defaultChild->getBranchDestination()->getNode()->getLabel(), conditions);
     } else {
         if (!constantIsUnsignedImm12(numBranchTableEntries)) {
             loadConstant32(cg, node, numBranchTableEntries, tmpRegister);
@@ -727,9 +726,9 @@ TR::Register *OMR::ARM64::TreeEvaluator::tableEvaluator(TR::Node *node, TR::Code
         Inst_RegBranch(cg, OP::br, node, tmpRegister);
 
         for (i = 2; i < node->getNumChildren() - 1; i++) {
-            Inst_Label(cg, OP::b, node, node->getChild(i)->getBranchDestination()->getNode()->getLabel());
+            Inst_Branch(cg, node, node->getChild(i)->getBranchDestination()->getNode()->getLabel());
         }
-        Inst_Label(cg, OP::b, node, node->getChild(i)->getBranchDestination()->getNode()->getLabel(), conditions);
+        Inst_Branch(cg, node, node->getChild(i)->getBranchDestination()->getNode()->getLabel(), conditions);
     }
 
     if (NULL != tmpRegister)

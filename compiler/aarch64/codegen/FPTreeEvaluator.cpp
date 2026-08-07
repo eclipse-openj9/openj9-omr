@@ -545,7 +545,7 @@ static TR::Instruction *iffcmpHelper(TR::Node *node, TR::ARM64ConditionCode cc, 
                 TR::LabelSymbol *doneLabel = generateLabelSymbol(cg);
                 Inst_ConditionalBranch(cg, node, doneLabel, TR::CC_VS);
                 Inst_ConditionalBranch(cg, node, dstLabel, cc, deps);
-                result = Inst_Label(cg, OP::label, node, doneLabel);
+                result = Inst_Label(cg, node, doneLabel);
             } else {
                 Inst_ConditionalBranch(cg, node, dstLabel, cc);
                 result = Inst_ConditionalBranch(cg, node, dstLabel, TR::CC_VS, deps);
@@ -560,7 +560,7 @@ static TR::Instruction *iffcmpHelper(TR::Node *node, TR::ARM64ConditionCode cc, 
                 TR::LabelSymbol *doneLabel = generateLabelSymbol(cg);
                 Inst_ConditionalBranch(cg, node, doneLabel, TR::CC_VS);
                 Inst_ConditionalBranch(cg, node, dstLabel, cc);
-                result = Inst_Label(cg, OP::label, node, doneLabel);
+                result = Inst_Label(cg, node, doneLabel);
             } else {
                 Inst_ConditionalBranch(cg, node, dstLabel, cc);
                 result = Inst_ConditionalBranch(cg, node, dstLabel, TR::CC_VS);
@@ -770,7 +770,7 @@ static TR::Register *floatThreeWayCompareHelper(TR::Node *node, bool isDouble, b
     Inst_ConditionalBranch(cg, node, doneLabel, TR::CC_EQ);
     Inst_Trg1Imm(cg, movOp, node, trgReg, movVal); // 1 or -1
     Inst_CondTrg1Src2(cg, OP::csnegx, node, trgReg, trgReg, trgReg, cc);
-    Inst_Label(cg, OP::label, node, doneLabel);
+    Inst_Label(cg, node, doneLabel);
 
     node->setRegister(trgReg);
     cg->decReferenceCount(firstChild);

@@ -147,6 +147,7 @@ inline TR::Instruction *generateImmSymInstruction(TR::CodeGenerator *cg, OP::Mne
  * @param[in] preced : preceding instruction
  * @return generated instruction
  */
+// TO BE DEPRECATED
 TR::Instruction *Inst_Label(TR::CodeGenerator *cg, OP::Mnemonic op, TR::Node *node, TR::LabelSymbol *sym,
     TR::Instruction *preced = NULL);
 
@@ -166,6 +167,7 @@ inline TR::Instruction *generateLabelInstruction(TR::CodeGenerator *cg, OP::Mnem
  * @param[in] preced : preceding instruction
  * @return generated instruction
  */
+// TO BE DEPRECATED
 TR::Instruction *Inst_Label(TR::CodeGenerator *cg, OP::Mnemonic op, TR::Node *node, TR::LabelSymbol *sym,
     TR::RegisterDependencyConditions *cond, TR::Instruction *preced = NULL);
 
@@ -174,6 +176,52 @@ inline TR::Instruction *generateLabelInstruction(TR::CodeGenerator *cg, OP::Mnem
 {
     return Inst_Label(cg, op, node, sym, cond, preced);
 }
+
+/*
+ * @brief Generates label instruction
+ * @param[in] cg : CodeGenerator
+ * @param[in] node : node
+ * @param[in] sym : label symbol
+ * @param[in] preced : preceding instruction
+ * @return generated instruction
+ */
+TR::Instruction *Inst_Label(TR::CodeGenerator *cg, TR::Node *node, TR::LabelSymbol *sym,
+    TR::Instruction *preced = NULL);
+
+/*
+ * @brief Generates label instruction with register dependency
+ * @param[in] cg : CodeGenerator
+ * @param[in] node : node
+ * @param[in] sym : label symbol
+ * @param[in] cond : register dependency condition
+ * @param[in] preced : preceding instruction
+ * @return generated instruction
+ */
+TR::Instruction *Inst_Label(TR::CodeGenerator *cg, TR::Node *node, TR::LabelSymbol *sym,
+    TR::RegisterDependencyConditions *cond, TR::Instruction *preced = NULL);
+
+/*
+ * @brief Generates unconditional branch instruction
+ * @param[in] cg : CodeGenerator
+ * @param[in] node : node
+ * @param[in] sym : label symbol
+ * @param[in] preced : preceding instruction
+ * @return generated instruction
+ */
+TR::Instruction *Inst_Branch(TR::CodeGenerator *cg, TR::Node *node, TR::LabelSymbol *sym,
+    TR::Instruction *preced = NULL);
+
+/*
+ * @brief Generates unconditional branch instruction with register dependency
+ * @param[in] cg : CodeGenerator
+ * @param[in] node : node
+ * @param[in] sym : label symbol
+ * @param[in] cond : register dependency condition
+ * @param[in] preced : preceding instruction
+ * @return generated instruction
+ */
+TR::Instruction *Inst_Branch(TR::CodeGenerator *cg, TR::Node *node, TR::LabelSymbol *sym,
+    TR::RegisterDependencyConditions *cond, TR::Instruction *preced = NULL);
 
 /*
  * @brief Generates conditional branch instruction

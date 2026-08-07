@@ -2297,10 +2297,10 @@ TR::Register *OMR::Z::TreeEvaluator::vbitswapEvaluator(TR::Node *node, TR::CodeG
 
     TR::Register *bitMaskReg = cg->allocateRegister(TR_VRF);
     // Using a bitmask and VERIM instruction to rotate and swap 2 bit chunks in byte elements.
-    generateVRIaInstruction(cg, TR::InstOpCode::VREPI, node, bitMaskReg, 0b00110011, 0);
+    generateVRIaInstruction(cg, TR::InstOpCode::VREPI, node, bitMaskReg, 0x33, 0);
     generateVRIdInstruction(cg, TR::InstOpCode::VERIM, node, resultReg, resultReg, bitMaskReg, 4, 0);
     // Using a bitmask and VERIM instruction to rotate and swap odd and even bits in byte elements.
-    generateVRIaInstruction(cg, TR::InstOpCode::VREPI, node, bitMaskReg, 0b01010101, 0);
+    generateVRIaInstruction(cg, TR::InstOpCode::VREPI, node, bitMaskReg, 0x55, 0);
     generateVRIdInstruction(cg, TR::InstOpCode::VERIM, node, resultReg, resultReg, bitMaskReg, 2, 0);
 
     cg->stopUsingRegister(bitMaskReg);

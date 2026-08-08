@@ -182,7 +182,7 @@ static const OptimizationStrategy partialRedundancyEliminationOpts[] = {
     { OMR::deadTreesElimination },
     { OMR::treeSimplification, OMR::IfEnabled },
     { OMR::treeSimplification }, // might fold expressions created by versioning/induction variables
-    { OMR::treeSimplification, OMR::IfEnabled }, // Array length simplification shd be followed by reassoc before PRE
+    { OMR::treeSimplificationWithReassociation }, // Array length simplification shd be followed by reassoc before PRE
     { OMR::reorderArrayExprGroup, OMR::IfEnabled }, // maximize opportunities hoisting of index array expressions
     { OMR::catchBlockRemoval }, // can help exception ordering in PRE
     { OMR::partialRedundancyElimination, OMR::IfMoreThanOneBlock },

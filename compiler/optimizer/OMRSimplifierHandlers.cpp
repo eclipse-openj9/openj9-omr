@@ -480,7 +480,7 @@ static bool isSmallConstant(TR::Node *node, TR::Simplifier *s)
 
 static void reassociateBigConstants(TR::Node *node, TR::Simplifier *s)
 {
-    if (s->reassociate() && (node->getOpCode().isAdd() || node->getOpCode().isSub())
+    if (s->enableFullReassociation() && (node->getOpCode().isAdd() || node->getOpCode().isSub())
         && node->getFirstChild()->getReferenceCount() > 1 && node->getSecondChild()->getOpCode().isLoadConst()
         && s->comp()->cg()->isMaterialized(node->getSecondChild())) {
         TR_HashId index;
@@ -532,7 +532,7 @@ static TR::Node *addSimplifierCommon(TR::Node *node, TR::Block *block, TR::Simpl
     //
     // clang-format on
     //
-    if (s->reassociate() && node->getOpCode().isArrayRef()) {
+    if (s->enableFullReassociation() && node->getOpCode().isArrayRef()) {
         firstChild = node->getFirstChild();
         secondChild = node->getSecondChild();
         if (firstChild->getOpCodeValue() == node->getOpCodeValue()
@@ -554,7 +554,7 @@ static TR::Node *addSimplifierCommon(TR::Node *node, TR::Block *block, TR::Simpl
     }
 
     TR_RegionStructure *region = s->containingStructure();
-    if (s->reassociate() && node->getOpCode().isAdd()) {
+    if (s->withReassociation() && node->getOpCode().isAdd() && !node->getDataType().isFloatingPoint()) {
         firstChild = node->getFirstChild();
         secondChild = node->getSecondChild();
 
@@ -605,6 +605,11 @@ static TR::Node *addSimplifierCommon(TR::Node *node, TR::Block *block, TR::Simpl
                 node = s->simplify(node, block);
             }
         }
+    }
+
+    if (s->enableFullReassociation() && node->getOpCode().isAdd()) {
+        firstChild = node->getFirstChild();
+        secondChild = node->getSecondChild();
 
         // clang-format off
         //
@@ -617,7 +622,7 @@ static TR::Node *addSimplifierCommon(TR::Node *node, TR::Block *block, TR::Simpl
         //
         // clang-format on
         //
-        else if (isExprInvariant(region, firstChild) && secondChild->getOpCode().isAdd()
+        if (isExprInvariant(region, firstChild) && secondChild->getOpCode().isAdd()
             && !isExprInvariant(region, secondChild->getFirstChild())
             && isExprInvariant(region, secondChild->getSecondChild())
             && !isSmallConstant(secondChild->getSecondChild(), s)) {
@@ -1009,7 +1014,7 @@ template<class T> static TR::Node *addSimplifier(TR::Node *node, TR::Block *bloc
         TR::Node *lrChild = firstChild->getSecondChild();
         if (lrChild->getOpCode().isLoadConst()) {
             if (secondChildOp.isLoadConst()) {
-                if (!s->reassociate() && // use new rules
+                if (!s->enableFullReassociation() && // use new rules
                     performTransformation(s->comp(),
                         "%sFound xadd of xconst with xadd or xsub of x and const in node [%s]\n", s->optDetailString(),
                         node->getName(s->getDebug()))) {
@@ -1048,7 +1053,7 @@ template<class T> static TR::Node *addSimplifier(TR::Node *node, TR::Block *bloc
                     node->setVisitCount(0);
                     s->_alteredBlock = true;
                 }
-            } else if (!s->reassociate() && // use new rules
+            } else if (!s->enableFullReassociation() && // use new rules
                 (firstChild->getReferenceCount() == 1)
                 && performTransformation(s->comp(),
                     "%sFound xadd of non-xconst with xadd or isub of x and const in node [%s]\n", s->optDetailString(),
@@ -5855,7 +5860,7 @@ TR::Node *iaddSimplifier(TR::Node *node, TR::Block *block, TR::Simplifier *s)
         TR::Node *lrChild = firstChild->getSecondChild();
         if (lrChild->getOpCodeValue() == TR::iconst) {
             if (secondChildOp == TR::iconst) {
-                if (!s->reassociate() && // use new rules
+                if (!s->enableFullReassociation() && // use new rules
                     performTransformation(s->comp(),
                         "%sFound iadd of iconst with iadd or isub of x and const in node [%s]\n", s->optDetailString(),
                         node->getName(s->getDebug()))) {
@@ -5901,7 +5906,7 @@ TR::Node *iaddSimplifier(TR::Node *node, TR::Block *block, TR::Simplifier *s)
                     node->setVisitCount(0);
                     s->_alteredBlock = true;
                 }
-            } else if (!s->reassociate() && // use new rules
+            } else if (!s->enableFullReassociation() && // use new rules
                 (firstChild->getReferenceCount() == 1)
                 && performTransformation(s->comp(),
                     "%sFound iadd of non-iconst with iadd or isub of x and const in node [%s]\n", s->optDetailString(),
@@ -7530,7 +7535,7 @@ TR::Node *imulSimplifier(TR::Node *node, TR::Block *block, TR::Simplifier *s)
         }
     }
 
-    if (s->reassociate()) {
+    if (s->enableFullReassociation()) {
         TR_RegionStructure *region = s->containingStructure();
 
         // clang-format off

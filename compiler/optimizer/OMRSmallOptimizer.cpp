@@ -82,6 +82,7 @@
 #include "optimizer/LoopCanonicalizer.hpp"
 #include "optimizer/OrderBlocks.hpp"
 #include "optimizer/Simplifier.hpp"
+#include "optimizer/OMRSimplifierWithReassociation.hpp"
 #include "optimizer/Inliner.hpp"
 #include "ras/Debug.hpp"
 #include "optimizer/InductionVariable.hpp"
@@ -120,11 +121,8 @@ static const OptimizationStrategy globalDeadStoreOpts[] = {
     { OMR::endGroup }
 };
 
-static const OptimizationStrategy isolatedStoreOpts[] = {
-    { OMR::isolatedStoreElimination },
-    { OMR::deadTreesElimination },
-    { OMR::endGroup }
-};
+static const OptimizationStrategy isolatedStoreOpts[]
+    = { { OMR::isolatedStoreElimination }, { OMR::deadTreesElimination }, { OMR::endGroup } };
 
 static const OptimizationStrategy smallNoOptStrategyOpts[] = {
     { OMR::endOpts },
@@ -279,6 +277,8 @@ OMR::SmallOptimizer::SmallOptimizer(TR::Compilation *comp, TR::ResolvedMethodSym
         = new (comp->allocator()) TR::OptimizationManager(self(), TR_Rematerialization::create, OMR::rematerialization);
     _opts[OMR::treeSimplification]
         = new (comp->allocator()) TR::OptimizationManager(self(), TR::Simplifier::create, OMR::treeSimplification);
+    _opts[OMR::treeSimplificationWithReassociation] = new (comp->allocator()) TR::OptimizationManager(self(),
+        OMR::SimplifierWithReassociation::create, OMR::treeSimplificationWithReassociation);
     _opts[OMR::trivialDeadTreeRemoval] = new (comp->allocator())
         TR::OptimizationManager(self(), TR_TrivialDeadTreeRemoval::create, OMR::trivialDeadTreeRemoval);
     _opts[OMR::globalValuePropagation] = new (comp->allocator())

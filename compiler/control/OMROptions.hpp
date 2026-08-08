@@ -320,7 +320,7 @@ enum TR_CompilationOptions {
     // Option word 7
     //
     TR_DisableCodeCacheSnippets                               = 0x00000020 + 7,
-    TR_EnableReassociation                                    = 0x00000040 + 7,
+    TR_EnableFullReassociation                                = 0x00000040 + 7,
     TR_DisableSSOpts                                          = 0x00000080 + 7,
     TR_EnableFieldWatch                                       = 0x00000100 + 7,
     TR_DisableDelayRelocationForAOTCompilations               = 0x00000200 + 7,

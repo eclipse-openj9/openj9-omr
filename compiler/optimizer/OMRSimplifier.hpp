@@ -117,7 +117,15 @@ public:
 
     TR_RegionStructure *containingStructure() { return _containingStructure; }
 
-    bool reassociate() { return _reassociate; }
+    // True when this is a treeSimplificationWithReassociation pass.  Gates the
+    // structure-computation machinery and any rules enabled unconditionally by
+    // that optimization.
+    bool withReassociation() { return _withReassociation; }
+
+    // True when this is a treeSimplificationWithReassociation pass AND
+    // TR_EnableFullReassociation is set.  Gates rules that are expensive or not yet
+    // validated for unconditional use.
+    bool enableFullReassociation() { return _enableFullReassociation; }
 
     using OMR::Optimization::prepareToReplaceNode;
     void prepareToReplaceNode(TR::Node *node);
@@ -274,7 +282,8 @@ public:
     bool _invalidateValueNumberInfo;
     bool _alteredBlock;
     bool _blockRemoved;
-    bool _reassociate;
+    bool _withReassociation;
+    bool _enableFullReassociation;
     TR_RegionStructure *_containingStructure;
     TR_HashTabInt _hashTable; // used by reassociation
     TR_HashTabInt _ccHashTab; // used by zEmulator

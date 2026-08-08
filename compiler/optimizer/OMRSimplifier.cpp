@@ -20,6 +20,7 @@
  *******************************************************************************/
 
 #include "optimizer/Simplifier.hpp"
+#include "optimizer/OMRSimplifierWithReassociation.hpp"
 
 #include "optimizer/OMRSimplifierHelpers.hpp"
 #include "optimizer/SimplifierHandlers.hpp"
@@ -155,7 +156,8 @@ OMR::Simplifier::Simplifier(TR::OptimizationManager *manager)
     _useDefInfo = optimizer()->getUseDefInfo();
     _valueNumberInfo = optimizer()->getValueNumberInfo();
 
-    _reassociate = comp()->getOption(TR_EnableReassociation);
+    _withReassociation = false;
+    _enableFullReassociation = false;
 
     _containingStructure = NULL;
 
@@ -165,6 +167,23 @@ OMR::Simplifier::Simplifier(TR::OptimizationManager *manager)
 TR::Optimization *OMR::Simplifier::create(TR::OptimizationManager *manager)
 {
     return new (manager->allocator()) TR::Simplifier(manager);
+}
+
+OMR::SimplifierWithReassociation::SimplifierWithReassociation(TR::OptimizationManager *manager)
+    : TR::Simplifier(manager)
+{
+    _withReassociation = true;
+    _enableFullReassociation = comp()->getOption(TR_EnableFullReassociation);
+}
+
+TR::Optimization *OMR::SimplifierWithReassociation::create(TR::OptimizationManager *manager)
+{
+    return new (manager->allocator()) OMR::SimplifierWithReassociation(manager);
+}
+
+const char *OMR::SimplifierWithReassociation::optDetailString() const throw()
+{
+    return "O^O TREE SIMPLIFICATION WITH REASSOCIATION: ";
 }
 
 void OMR::Simplifier::prePerformOnBlocks()
@@ -177,11 +196,12 @@ void OMR::Simplifier::prePerformOnBlocks()
     _valueNumberInfo = optimizer()->getValueNumberInfo();
     _containingStructure = NULL;
 
-    if (_reassociate) {
+    if (_withReassociation) {
         _hashTable.reset();
         _hashTable.init(1000, true);
 
-        TR_ASSERT(comp()->getFlowGraph()->getStructure(), "assertion failure");
+        TR_ASSERT_FATAL(comp()->getFlowGraph()->getStructure(),
+            "Structure should exist for SimplifierWithReassociation");
         computeInvarianceOfAllStructures(comp(), comp()->getFlowGraph()->getStructure());
     }
     _ccHashTab.reset();
@@ -314,7 +334,7 @@ TR::TreeTop *OMR::Simplifier::simplifyExtendedBlock(TR::TreeTop *treeTop)
             continue;
         }
 
-        if (!block && _reassociate
+        if (!block && _withReassociation
             && comp()->getFlowGraph()->getStructure()
                 != NULL // [99391] getStructureOf() only valid if structure isn't invalidated
         ) { // b is first block in the extended block

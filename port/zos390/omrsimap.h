@@ -97,11 +97,11 @@ typedef struct J9CCT {
  * Resources Manager Control Table Extension 3 (RMCTX3). Also known as IRARMCTZ.
  *
  * Fields of interest:
- *    RMCTZ_MT_zIIP - bit indicating whether SMT-2 is enabled for zIIP processors
+ *    RMCTZ_MT_zIIP - Thread count per zIIP core, 1 for SMT-1 and 2 for SMT-2
  */
 typedef struct J9IRARMCTZ {
 	uint8_t rmctzFiller[1270];        /**< 0:1270 Ignore fields not relevant to current implementation */
-	uint8_t rmctz_mt_ziip;            /**< 1270:1 bit indicating whether SMT-2 is enabled for zIIP processors */
+	uint8_t rmctz_mt_ziip;            /**< 1270:1 Thread count per zIIP core */
 	/**< Ignore rest of the RMCT Extension 3 */
 } J9IRARMCTZ;
 

@@ -201,17 +201,17 @@ isIipHonorPrioritySet(struct OMRPortLibrary *portLibrary)
 }
 
 BOOLEAN
-isSMTEnabled(void)
+isZiipSMTEnabled(void)
 {
 	J9CVT * __ptr32 cvtp = ((J9PSA *)0)->flccvt;
-	return (0 != cvtp->cvtopctp->rmctirarmctz->rmctz_mt_ziip) ? TRUE : FALSE;
+	return (2 == cvtp->cvtopctp->rmctirarmctz->rmctz_mt_ziip) ? TRUE : FALSE;
 }
 
 double
 retrieveZosZiipCapacity(void)
 {
 	double ziipCount = retrieveZosOnlineZiipCount();
-	if (isSMTEnabled()) {
+	if (isZiipSMTEnabled()) {
 		ziipCount *= SMT_2_GAIN_FACTOR;
 	}
 	return ziipCount;
@@ -228,7 +228,7 @@ retrieveZosOnlineZiipCount(void)
 	 * online_zIIP_count already accounts for SMT-2 by returning
 	 * double the actual number of physical zIIP engines.
 	 */
-	if (isSMTEnabled()) {
+	if (isZiipSMTEnabled()) {
 		ziipCount = (ziipCount + 1) / 2;
 	}
 	return ziipCount;

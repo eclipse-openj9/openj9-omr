@@ -265,11 +265,20 @@ MM_TLHAllocationSupport::refresh(MM_EnvironmentBase *env, MM_AllocateDescription
 	}
 
 	if (didRefresh) {
-
-		uintptr_t samplingBytesGranularity = env->getExtensions()->objectSamplingBytesGranularity;
-		if (!extensions->needDisableInlineAllocation() && (UDATA_MAX != samplingBytesGranularity)) {
-			uintptr_t traceBytes = (env->_traceAllocationBytes + usedSize) % samplingBytesGranularity;
-			env->setTLHSamplingTop(samplingBytesGranularity - traceBytes);
+		if (!extensions->needDisableInlineAllocation()) {
+			uintptr_t samplingBytesGranularity = env->getExtensions()->objectSamplingBytesGranularity;
+			if (UDATA_MAX != samplingBytesGranularity) {
+				uintptr_t traceBytes = (env->_traceAllocationBytes + usedSize) % samplingBytesGranularity;
+				samplingBytesGranularity -= traceBytes;
+			}
+			uintptr_t recorderSamplingBytesGranularity = env->getExtensions()->recorderObjectSamplingBytesGranularity;
+			if (UDATA_MAX != recorderSamplingBytesGranularity) {
+				uintptr_t traceBytes = (env->_recorderTraceAllocationBytes + usedSize) % recorderSamplingBytesGranularity;
+				recorderSamplingBytesGranularity -= traceBytes;
+			}
+			if ((UDATA_MAX != samplingBytesGranularity) || (UDATA_MAX != recorderSamplingBytesGranularity)) {
+				env->setTLHSamplingTop(OMR_MIN(samplingBytesGranularity, recorderSamplingBytesGranularity));
+			}
 		}
 		/*
 		 * THL was refreshed however it might be already flushed in GC

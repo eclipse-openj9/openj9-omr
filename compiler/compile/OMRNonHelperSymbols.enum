@@ -80,6 +80,7 @@
    osrScratchBufferSymbol,    //osrScratchBuffer slot on  j9vmthread
    osrFrameIndexSymbol,       // osrFrameIndex slot on j9vmthread
    osrReturnAddressSymbol,       // osrFrameIndex slot on j9vmthread
+   coldPathRecompTriggerCounterSymbol,
 
    /** \brief
     *

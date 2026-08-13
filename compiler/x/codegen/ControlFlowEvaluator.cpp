@@ -1104,7 +1104,7 @@ TR::Register *OMR::X86::TreeEvaluator::integerReturnEvaluator(TR::Node *node, TR
     }
 
     if (linkageProperties.getCallerCleanup()) {
-        Inst(OP::RET, node, dependencies, cg);
+        Inst0(OP::RET, node, dependencies, cg);
     } else {
         Inst_Imm(OP::RETImm2, node, 0, dependencies, cg);
     }
@@ -1148,7 +1148,7 @@ TR::Register *OMR::X86::TreeEvaluator::returnEvaluator(TR::Node *node, TR::CodeG
     }
 
     if (cg->getProperties().getCallerCleanup()) {
-        Inst(OP::RET, node, cg);
+        Inst0(OP::RET, node, cg);
     } else {
         Inst_Imm(OP::RETImm2, node, 0, cg);
     }

@@ -1491,7 +1491,7 @@ static void generateRepMovsInstruction(OP::Mnemonic repmovs, TR::Node *node, TR:
             TR_ASSERT(false, "Invalid REP MOVS opcode [%d]", repmovs);
             break;
     }
-    Inst(repmovs, node, dependencies, cg);
+    Inst0(repmovs, node, dependencies, cg);
 }
 
 /** \brief
@@ -1782,7 +1782,7 @@ void OMR::X86::TreeEvaluator::arrayCopy64BitPrimitiveInlineSmallSizeWithoutREPMO
 
     // 40-64 Bytes
     generateMemoryCopyInstructions(node, dstReg, srcReg, sizeReg, tmpXmmYmmReg1, tmpXmmYmmReg2, 32, cg);
-    Inst(OP::VZEROUPPER, node, cg);
+    Inst0(OP::VZEROUPPER, node, cg);
     Inst_Label(OP::JMP4, node, mainEndLabel, cg);
 
     if (repMovsThresholdBytes == 64)
@@ -1795,7 +1795,7 @@ void OMR::X86::TreeEvaluator::arrayCopy64BitPrimitiveInlineSmallSizeWithoutREPMO
 
     // 72-128 Bytes
     generateMemoryCopyInstructions(node, dstReg, srcReg, sizeReg, tmpXmmYmmReg1, tmpXmmYmmReg2, 64, cg);
-    Inst(OP::VZEROUPPER, node, cg);
+    Inst0(OP::VZEROUPPER, node, cg);
     Inst_Label(OP::JMP4, node, mainEndLabel, cg);
 }
 
@@ -1907,7 +1907,7 @@ void OMR::X86::TreeEvaluator::arrayCopy32BitPrimitiveInlineSmallSizeWithoutREPMO
 
     // 36-64 Bytes
     generateMemoryCopyInstructions(node, dstReg, srcReg, sizeReg, tmpXmmYmmReg1, tmpXmmYmmReg2, 32, cg);
-    Inst(OP::VZEROUPPER, node, cg);
+    Inst0(OP::VZEROUPPER, node, cg);
     Inst_Label(OP::JMP4, node, mainEndLabel, cg);
 
     if (repMovsThresholdBytes == 64)
@@ -1920,7 +1920,7 @@ void OMR::X86::TreeEvaluator::arrayCopy32BitPrimitiveInlineSmallSizeWithoutREPMO
 
     // 68-128 Bytes
     generateMemoryCopyInstructions(node, dstReg, srcReg, sizeReg, tmpXmmYmmReg1, tmpXmmYmmReg2, 64, cg);
-    Inst(OP::VZEROUPPER, node, cg);
+    Inst0(OP::VZEROUPPER, node, cg);
     Inst_Label(OP::JMP4, node, mainEndLabel, cg);
 }
 
@@ -1961,7 +1961,7 @@ static void arrayCopy16BitPrimitive(TR::Node *node, TR::Register *dstReg, TR::Re
     Inst_Label(OP::label, node, mainBegLabel, cg);
     if (node->isForwardArrayCopy()) {
         Inst_RegImm(OP::SHRRegImm1(), node, sizeReg, 2, cg);
-        Inst(OP::REPMOVSD, node, cg);
+        Inst0(OP::REPMOVSD, node, cg);
         Inst_Label(OP::JAE1, node, mainEndLabel, cg);
         Inst_RegMem(OP::L2RegMem, node, sizeReg, MRef_Bdisp32(srcReg, 0, cg), cg);
         Inst_MemReg(OP::S2MemReg, node, MRef_Bdisp32(dstReg, 0, cg), sizeReg, cg);
@@ -1975,7 +1975,7 @@ static void arrayCopy16BitPrimitive(TR::Node *node, TR::Register *dstReg, TR::Re
         Inst_Label(OP::JB4, node, backwardLabel, cg); // jb, skip backward copy setup
 
         Inst_RegImm(OP::SHRRegImm1(), node, sizeReg, 2, cg);
-        Inst(OP::REPMOVSD, node, cg);
+        Inst0(OP::REPMOVSD, node, cg);
         Inst_Label(OP::JAE1, node, mainEndLabel, cg);
         Inst_RegMem(OP::L2RegMem, node, sizeReg, MRef_Bdisp32(srcReg, 0, cg), cg);
         Inst_MemReg(OP::S2MemReg, node, MRef_Bdisp32(dstReg, 0, cg), sizeReg, cg);
@@ -1984,9 +1984,9 @@ static void arrayCopy16BitPrimitive(TR::Node *node, TR::Register *dstReg, TR::Re
             TR_OutlinedInstructionsGenerator og(backwardLabel, node, cg);
             Inst_RegMem(OP::LEARegMem(), node, srcReg, MRef_BISdisp32(srcReg, sizeReg, 0, -2, cg), cg);
             Inst_RegMem(OP::LEARegMem(), node, dstReg, MRef_BISdisp32(dstReg, sizeReg, 0, -2, cg), cg);
-            Inst(OP::STD, node, cg);
+            Inst0(OP::STD, node, cg);
             generateRepMovsInstruction(OP::REPMOVSW, node, sizeReg, NULL, cg);
-            Inst(OP::CLD, node, cg);
+            Inst0(OP::CLD, node, cg);
             Inst_Label(OP::JMP4, node, mainEndLabel, cg);
             og.endOutlinedInstructionSequence();
         }
@@ -2123,7 +2123,7 @@ static void arrayCopy16BitPrimitiveInlineSmallSizeWithoutREPMOVSImplRoot16(TR::N
 
     // 34-64 Bytes
     generateMemoryCopyInstructions(node, dstReg, srcReg, sizeReg, tmpXmmYmmReg1, tmpXmmYmmReg2, 32, cg);
-    Inst(OP::VZEROUPPER, node, cg);
+    Inst0(OP::VZEROUPPER, node, cg);
     Inst_Label(OP::JMP4, node, mainEndLabel, cg);
 }
 
@@ -2262,7 +2262,7 @@ static void arrayCopy8BitPrimitiveInlineSmallSizeWithoutREPMOVSImplRoot8(TR::Nod
 
     // 33-64 Bytes
     generateMemoryCopyInstructions(node, dstReg, srcReg, sizeReg, tmpXmmYmmReg1, tmpXmmYmmReg2, 32, cg);
-    Inst(OP::VZEROUPPER, node, cg);
+    Inst0(OP::VZEROUPPER, node, cg);
     Inst_Label(OP::JMP4, node, mainEndLabel, cg);
 }
 
@@ -2374,7 +2374,7 @@ static void generateRepMovsInstructionBasedOnElementSize(uint8_t elementSize, bo
             TR_ASSERT_FATAL(repmovs == OP::REPMOVSQ, "Unsupported REP MOVS opcode %d for elementSize 8\n", repmovs);
 
             Inst_RegImm(OP::SHRRegImm1(), node, sizeReg, 3, cg);
-            Inst(OP::REPMOVSQ, node, dependencies, cg);
+            Inst0(OP::REPMOVSQ, node, dependencies, cg);
 
             break;
         }
@@ -2382,20 +2382,20 @@ static void generateRepMovsInstructionBasedOnElementSize(uint8_t elementSize, bo
             TR_ASSERT_FATAL(repmovs == OP::REPMOVSD, "Unsupported REP MOVS opcode %d for elementSize 4\n", repmovs);
 
             Inst_RegImm(OP::SHRRegImm1(), node, sizeReg, 2, cg);
-            Inst(OP::REPMOVSD, node, dependencies, cg);
+            Inst0(OP::REPMOVSD, node, dependencies, cg);
 
             break;
         }
         case 2: {
             if (repmovs == OP::REPMOVSD) {
                 Inst_RegImm(OP::SHRRegImm1(), node, sizeReg, 2, cg);
-                Inst(OP::REPMOVSD, node, cg);
+                Inst0(OP::REPMOVSD, node, cg);
                 Inst_Label(OP::JAE1, node, mainEndLabel, cg);
                 Inst_RegMem(OP::L2RegMem, node, sizeReg, MRef_Bdisp32(srcReg, 0, cg), cg);
                 Inst_MemReg(OP::S2MemReg, node, MRef_Bdisp32(dstReg, 0, cg), sizeReg, cg);
             } else if (repmovs == OP::REPMOVSW) {
                 Inst_Reg(OP::SHRReg1(), node, sizeReg, cg);
-                Inst(OP::REPMOVSW, node, dependencies, cg);
+                Inst0(OP::REPMOVSW, node, dependencies, cg);
             } else {
                 TR_ASSERT_FATAL(false, "Unsupported REP MOVS opcode %d for elementSize 2\n", repmovs);
             }
@@ -2405,7 +2405,7 @@ static void generateRepMovsInstructionBasedOnElementSize(uint8_t elementSize, bo
             TR_ASSERT_FATAL((repmovs == OP::REPMOVSB) && (elementSize == 1),
                 "Unsupported REP MOVS opcode %d for elementSize %u\n", repmovs, elementSize);
 
-            Inst(OP::REPMOVSB, node, dependencies, cg);
+            Inst0(OP::REPMOVSB, node, dependencies, cg);
             break;
         }
     }
@@ -2521,12 +2521,12 @@ static void arrayCopyPrimitiveInlineSmallSizeWithoutREPMOVS(TR::Node *node, TR::
                 cg);
             Inst_RegMem(OP::LEARegMem(), node, dstReg, MRef_BISdisp32(dstReg, sizeReg, 0, -(intptr_t)elementSize, cg),
                 cg);
-            Inst(OP::STD, node, cg);
+            Inst0(OP::STD, node, cg);
 
             generateRepMovsInstructionBasedOnElementSize(elementSize, false /* basedOnCPU */, node, dstReg, srcReg,
                 sizeReg, NULL, mainEndLabel, cg);
 
-            Inst(OP::CLD, node, cg);
+            Inst0(OP::CLD, node, cg);
             Inst_Label(OP::JMP4, node, mainEndLabel, cg);
             og.endOutlinedInstructionSequence();
         }
@@ -2835,7 +2835,7 @@ static void arrayCopyPrimitiveInlineSmallSizeConstantCopySize(TR::Node *node, TR
     }
 
     if (emitVzeroupper)
-        Inst(OP::VZEROUPPER, node, cg);
+        Inst0(OP::VZEROUPPER, node, cg);
 
     cg->stopUsingRegister(tmpReg1);
     cg->stopUsingRegister(tmpReg2);
@@ -2934,9 +2934,9 @@ static void arrayCopyDefault(TR::Node *node, uint8_t elementSize, TR::Register *
                 cg);
             Inst_RegMem(OP::LEARegMem(), node, dstReg, MRef_BISdisp32(dstReg, sizeReg, 0, -(intptr_t)elementSize, cg),
                 cg);
-            Inst(OP::STD, node, cg);
+            Inst0(OP::STD, node, cg);
             generateRepMovsInstruction(repmovs, node, sizeReg, NULL, cg);
-            Inst(OP::CLD, node, cg);
+            Inst0(OP::CLD, node, cg);
             Inst_Label(OP::JMP4, node, mainEndLabel, cg);
             og.endOutlinedInstructionSequence();
         }
@@ -3606,7 +3606,7 @@ static void arraySetDefault(TR::Node *node, uint8_t elementSize, TR::Register *a
 
     if (shiftAmount)
         Inst_RegImm(OP::SHRRegImm1(), node, sizeReg, shiftAmount, cg);
-    Inst(repOpcode, node, stosDependencies, cg);
+    Inst0(repOpcode, node, stosDependencies, cg);
     cg->stopUsingRegister(EAX);
 }
 
@@ -4498,7 +4498,7 @@ TR::Register *OMR::X86::TreeEvaluator::BBStartEvaluator(TR::Node *node, TR::Code
     if (comp->getOption(TR_BreakBBStart)) {
         TR::Machine *machine = cg->machine();
         Inst_RegImm(OP::TEST4RegImm4, node, machine->getRealRegister(TR::RealRegister::esp), block->getNumber(), cg);
-        Inst(OP::INT3, node, cg);
+        Inst0(OP::INT3, node, cg);
     }
 
     cg->generateDebugCounter((node->getBlock()->isExtensionOfPreviousBlock()) ? "cg.blocks/extensions" : "cg.blocks", 1,
@@ -5015,7 +5015,7 @@ TR::Register *OMR::X86::TreeEvaluator::tstartEvaluator(TR::Node *node, TR::CodeG
 
 TR::Register *OMR::X86::TreeEvaluator::tfinishEvaluator(TR::Node *node, TR::CodeGenerator *cg)
 {
-    Inst(OP::XEND, node, cg);
+    Inst0(OP::XEND, node, cg);
     return NULL;
 }
 

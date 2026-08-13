@@ -122,6 +122,7 @@ struct J9AnnotationInfoEntry;
 struct J9PortLibrary;
 
 namespace TR {
+class X86NoOperandInstruction;
 class X86LabelInstruction;
 class X86PaddingInstruction;
 class X86AlignmentInstruction;
@@ -898,6 +899,7 @@ public:
     void printX86OOLSequences(OMR::Logger *log);
 
     void printx(OMR::Logger *log, TR::Instruction *);
+    void print(OMR::Logger *log, TR::X86NoOperandInstruction *);
     void print(OMR::Logger *log, TR::X86LabelInstruction *);
     void print(OMR::Logger *log, TR::X86PaddingInstruction *);
     void print(OMR::Logger *log, TR::X86AlignmentInstruction *);

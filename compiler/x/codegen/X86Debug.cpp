@@ -69,6 +69,9 @@ class Register;
 void TR_Debug::printx(OMR::Logger *log, TR::Instruction *instr)
 {
     switch (instr->getKind()) {
+        case TR::Instruction::IsNoOperand:
+            print(log, (TR::X86NoOperandInstruction *)instr);
+            break;
         case TR::Instruction::IsLabel:
             print(log, (TR::X86LabelInstruction *)instr);
             break;
@@ -408,6 +411,15 @@ void TR_Debug::print(OMR::Logger *log, TR::X86PatchableCodeAlignmentInstruction 
 
     log->prints("Align patchable code");
     printBoundaryAvoidanceInfo(log, instr);
+    dumpDependencies(log, instr);
+    log->flush();
+}
+
+void TR_Debug::print(OMR::Logger *log, TR::X86NoOperandInstruction *instr)
+{
+    printPrefix(log, instr);
+    log->printf("%-32s", getMnemonicName(&instr->getOpCode()));
+    printInstructionComment(log, 0, instr);
     dumpDependencies(log, instr);
     log->flush();
 }

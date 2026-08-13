@@ -2975,6 +2975,9 @@ TR::Register *OMR::ARM64::TreeEvaluator::vcastEvaluator(TR::Node *node, TR::Code
 
 TR::Register *OMR::ARM64::TreeEvaluator::vconvEvaluator(TR::Node *node, TR::CodeGenerator *cg)
 {
+    TR_ASSERT_FATAL_WITH_NODE(node, node->getFirstChild()->getDataType().getVectorLength() == TR::VectorLength128,
+        "Only 128-bit vectors are supported %s", node->getFirstChild()->getDataType().toString());
+
     TR::DataType st = node->getOpCode().getVectorSourceDataType().getVectorElementType();
     TR::DataType et = node->getOpCode().getVectorResultDataType().getVectorElementType();
     OP::Mnemonic convOp = OP::bad;

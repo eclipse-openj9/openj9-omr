@@ -1000,16 +1000,13 @@ static inline void generateMergedGuardCodeIfNeeded(TR::Node *node, TR::CodeGener
 TR::Register *OMR::Z::TreeEvaluator::ificmpeqEvaluator(TR::Node *node, TR::CodeGenerator *cg)
 {
     TR::Compilation *comp = cg->comp();
-
     if (virtualGuardHelper(node, cg)) {
         return NULL;
     }
-
     if (TR::TreeEvaluator::isCandidateForButestEvaluation(node)) {
         TR::Node *cmpNode = node;
         TR::Node *butestNode = node->getFirstChild();
         TR::Node *valueNode = node->getSecondChild();
-
         return TR::TreeEvaluator::inlineIfButestEvaluator(butestNode, cg, cmpNode, valueNode);
     }
 
@@ -1019,17 +1016,17 @@ TR::Register *OMR::Z::TreeEvaluator::ificmpeqEvaluator(TR::Node *node, TR::CodeG
         if (cmpNode->getOpCodeValue() == TR::bu2i)
             cmpNode = cmpNode->getFirstChild();
         TR::Node *valueNode = node->getSecondChild();
-
         return TR::TreeEvaluator::inlineIfBifEvaluator(ifNode, cg, cmpNode, valueNode);
     }
 
     TR::Node *firstChild = node->getFirstChild(), *secondChild = node->getSecondChild();
 
 #ifdef J9_PROJECT_SPECIFIC
-    if ((firstChild->getOpCodeValue() == TR:: instanceof) && !(debug("noInlineIfInstanceOf"))
+    if ((firstChild->getOpCodeValue() == TR:: instanceof) && !comp->getOption(TR_DisableInlineIfInstanceOf)
         && (firstChild->getRegister() == NULL) && (node->getReferenceCount() <= 1)
         && secondChild->getOpCode().isLoadConst() && (((secondChild->getInt() == 0 || secondChild->getInt() == 1)))) {
-        if (TR::TreeEvaluator::VMifInstanceOfEvaluator(node, cg) == NULL) {
+        if (TR::TreeEvaluator::VMifInstanceOfEvaluator(node, cg)) {
+            logprints(comp->getOption(TR_TraceCG), comp->log(), "\t\tifInstanceOf test - success\n");
             cg->decReferenceCount(secondChild);
             return NULL;
         }

@@ -583,6 +583,16 @@ void OMR::Power::MemoryReference::populateMemoryReference(TR::Node *subTree, TR:
             TR::Node *addressChild = subTree->getFirstChild();
             TR::Node *integerChild = subTree->getSecondChild();
 
+            // aladd/aiadd with a NULL base: the address child contributes nothing,
+            // skip it and treat the integer child as the sole address component.
+            if (subTree->getOpCode().isArrayRef() && addressChild->getOpCodeValue() == TR::aconst
+                && addressChild->getAddress() == 0) {
+                self()->populateMemoryReference(integerChild, cg);
+                cg->decReferenceCount(addressChild);
+                cg->decReferenceCount(subTree);
+                return;
+            }
+
             if (integerChild->getOpCode().isLoadConst()) {
                 self()->populateMemoryReference(addressChild, cg);
                 if (cg->comp()->target().is64Bit()) {

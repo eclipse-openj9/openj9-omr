@@ -1078,9 +1078,11 @@ TEST_P(ParameterizedVectorConvTest, Vector128ConvTest) {
 
 }
 
+#if !defined(AIXPPC)
 INSTANTIATE_TEST_CASE_P(Vector128Conv, ParameterizedVectorConvTest, ::testing::ValuesIn(*TRTest::MakeVector<std::tuple<TR::DataTypes, TR::DataTypes, vconvEqFunc>>(
     std::make_tuple(TR::Int32, TR::Float, eq_i2f),
     std::make_tuple(TR::Float, TR::Int32, eq_f2i),
     std::make_tuple(TR::Int64, TR::Double, eq_l2d),
     std::make_tuple(TR::Double, TR::Int64, eq_d2l)
 )));
+#endif /* !defined(AIXPPC) */

@@ -886,6 +886,8 @@ int32_t TR_Debug::nodePrintAllFlags(OMR::Logger *log, TR::Node *node)
     FLAG(chkIsReferenceNonNull, "referenceIsNonNull");
     FLAG(isPreparedForDirectJNI, "preparedForDirectJNI");
     FLAG(chkSafeForCGToFastPathUnsafeCall, "safeForCGToFastPathUnsafeCall");
+    FLAG(chkSafeForCGToInlineStringIntrinsic, "safeForCGToInlineStringIntrinsic");
+    FLAG(chkSkippedInRecognizedCallTransformation, "skipRecognizedCallTransformation");
 
 #undef FLAG
 #undef FLAG_IF

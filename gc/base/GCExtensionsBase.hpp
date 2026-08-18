@@ -346,6 +346,7 @@ public:
 	uintptr_t tlhMaximumSize;
 	uintptr_t tlhInitialSize;
 	uintptr_t tlhIncrementSize;
+	uintptr_t tlhMaxAbandonSize; /**< cycle-average estimate of abandonSize (max(tlhMinimumSize, refreshSize/2)) across all threads, updated each GC by TLHAllocationSupport::restart() */
 	uintptr_t tlhSurvivorDiscardThreshold; /**< below this size GC (Scavenger) will discard survivor copy cache TLH, if alloc not succeeded (otherwise we reuse memory for next TLH) */
 	uintptr_t tlhTenureDiscardThreshold; /**< below this size GC (Scavenger) will discard tenure copy cache TLH, if alloc not succeeded (otherwise we reuse memory for next TLH) */
 
@@ -1573,6 +1574,10 @@ public:
 		, tlhMaximumSize(131072)
 		, tlhInitialSize(2048)
 		, tlhIncrementSize(4096)
+		, tlhMaxAbandonSize(tlhInitialSize * 3/8) /* seed: best estimate of tlhMaxAbandonSize before any GC has run, computed by applying the two-point average formula
+		                                           * in MM_TLHAllocationSupport::restart() to the initial state where every thread starts at refreshSize = tlhInitialSize.
+		                                           * Using the formula result rather than 0 ensures consumers active before the first GC see a realistic value,
+		                                           * and avoids seeding the OMR_MAX in restart() so high that early real updates would be silently suppressed. */
 		, tlhSurvivorDiscardThreshold(tlhMinimumSize)
 		, tlhTenureDiscardThreshold(tlhMinimumSize)
 		, allocationStats()

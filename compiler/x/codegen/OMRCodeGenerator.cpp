@@ -648,7 +648,7 @@ void OMR::X86::CodeGenerator::beginInstructionSelection()
     }
 
     if (getAppendInstruction())
-        Inst(OP::proc, startNode, self());
+        Inst0(OP::proc, startNode, self());
     else
         new (self()->trHeapMemory()) TR::Instruction(OP::proc, (TR::Instruction *)NULL, self());
 

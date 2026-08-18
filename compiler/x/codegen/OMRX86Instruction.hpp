@@ -89,6 +89,34 @@ struct TR_AtomicRegion {
 
 namespace TR {
 
+/**
+ * @brief Instruction class for x86 instructions with no operands
+ */
+class X86NoOperandInstruction : public TR::Instruction {
+public:
+    X86NoOperandInstruction(OP::Mnemonic op, TR::Node *node, TR::CodeGenerator *cg)
+        : TR::Instruction(node, op, cg)
+    {}
+
+    X86NoOperandInstruction(TR::Instruction *precedingInstruction, OP::Mnemonic op, TR::CodeGenerator *cg)
+        : TR::Instruction(op, precedingInstruction, cg)
+    {}
+
+    X86NoOperandInstruction(OP::Mnemonic op, TR::Node *node, TR::RegisterDependencyConditions *cond,
+        TR::CodeGenerator *cg)
+        : TR::Instruction(cond, node, op, cg)
+    {}
+
+    X86NoOperandInstruction(TR::Instruction *precedingInstruction, OP::Mnemonic op,
+        TR::RegisterDependencyConditions *cond, TR::CodeGenerator *cg)
+        : TR::Instruction(cond, op, precedingInstruction, cg)
+    {}
+
+    virtual const char *description() { return "X86NoOperand"; }
+
+    virtual Kind getKind() { return IsNoOperand; }
+};
+
 class X86PaddingInstruction : public TR::Instruction {
     uint8_t _length;
     TR_PaddingProperties _properties;
@@ -2452,6 +2480,13 @@ TR::Instruction *Inst(TR::Instruction *prev, OP::Mnemonic op, TR::CodeGenerator 
     OMR::X86::Encoding encoding = OMR::X86::Default);
 TR::Instruction *Inst(OP::Mnemonic op, TR::Node *node, TR::RegisterDependencyConditions *cond, TR::CodeGenerator *cg,
     OMR::X86::Encoding encoding = OMR::X86::Default);
+
+// X86NoOperandInstruction
+//
+TR::X86NoOperandInstruction *Inst0(OP::Mnemonic op, TR::Node *node, TR::CodeGenerator *cg);
+TR::X86NoOperandInstruction *Inst0(TR::Instruction *prev, OP::Mnemonic op, TR::CodeGenerator *cg);
+TR::X86NoOperandInstruction *Inst0(OP::Mnemonic op, TR::Node *node, TR::RegisterDependencyConditions *cond,
+    TR::CodeGenerator *cg);
 
 // X86AlignmentInstruction
 //

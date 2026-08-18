@@ -2977,6 +2977,24 @@ TR::Instruction *Inst(OP::Mnemonic op, TR::Node *node, TR::RegisterDependencyCon
     return new (cg->trHeapMemory()) TR::Instruction(cond, node, op, cg, encoding);
 }
 
+// X86NoOperandInstruction
+//
+TR::X86NoOperandInstruction *Inst0(TR::Instruction *prev, OP::Mnemonic op, TR::CodeGenerator *cg)
+{
+    return new (cg->trHeapMemory()) TR::X86NoOperandInstruction(prev, op, cg);
+}
+
+TR::X86NoOperandInstruction *Inst0(OP::Mnemonic op, TR::Node *node, TR::CodeGenerator *cg)
+{
+    return new (cg->trHeapMemory()) TR::X86NoOperandInstruction(op, node, cg);
+}
+
+TR::X86NoOperandInstruction *Inst0(OP::Mnemonic op, TR::Node *node, TR::RegisterDependencyConditions *cond,
+    TR::CodeGenerator *cg)
+{
+    return new (cg->trHeapMemory()) TR::X86NoOperandInstruction(op, node, cond, cg);
+}
+
 // X86AlignmentInstruction
 //
 TR::X86AlignmentInstruction *Inst_Alignment(TR::Node *node, uint8_t boundary, TR::CodeGenerator *cg)

@@ -2269,7 +2269,7 @@ TR::Register *OMR::X86::I386::TreeEvaluator::integerPairReturnEvaluator(TR::Node
     }
 
     if (linkageProperties.getCallerCleanup()) {
-        Inst(OP::RET, node, dependencies, cg);
+        Inst0(OP::RET, node, dependencies, cg);
     } else {
         Inst_Imm(OP::RETImm2, node, 0, dependencies, cg);
     }
@@ -3835,7 +3835,7 @@ TR::Register *OMR::X86::I386::TreeEvaluator::i2lEvaluator(TR::Node *node, TR::Co
         cdqDependencies->addPreCondition(highReg, TR::RealRegister::edx, cg);
         cdqDependencies->addPostCondition(childReg, TR::RealRegister::eax, cg);
         cdqDependencies->addPostCondition(highReg, TR::RealRegister::edx, cg);
-        Inst(OP::CDQAcc, node, cdqDependencies, cg);
+        Inst0(OP::CDQAcc, node, cdqDependencies, cg);
     } else {
         Inst_RegReg(OP::MOV4RegReg, node, highReg, childReg, cg);
         Inst_RegImm(OP::SAR4RegImm1, node, highReg, 31, cg);

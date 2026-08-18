@@ -382,7 +382,7 @@ TR::Register *OMR::X86::TreeEvaluator::fpReturnEvaluator(TR::Node *node, TR::Cod
     }
 
     if (linkageProperties.getCallerCleanup()) {
-        Inst(OP::RET, node, dependencies, cg);
+        Inst0(OP::RET, node, dependencies, cg);
     } else {
         Inst_Imm(OP::RETImm2, node, 0, dependencies, cg);
     }
@@ -797,7 +797,7 @@ TR::Register *OMR::X86::TreeEvaluator::fpConvertToLong(TR::Node *node, TR::Symbo
         Inst_MemReg(OP::MOVSSMemReg, node, tempMR, floatReg, cg);
         Inst_Mem(OP::FLDMem, node, MRef_MRefOff(*tempMR, 0, cg), cg);
 
-        Inst(OP::FLDDUP, node, cg);
+        Inst0(OP::FLDDUP, node, cg);
 
         // For slow conversion only, change the rounding mode on the FPU via its control word register.
         //
@@ -852,7 +852,7 @@ TR::Register *OMR::X86::TreeEvaluator::fpConvertToLong(TR::Node *node, TR::Symbo
         Inst_Label(OP::label, node, reStartLabel, deps, cg);
 
         cg->decReferenceCount(child);
-        Inst(OP::FSTPST0, node, cg);
+        Inst0(OP::FSTPST0, node, cg);
 
         TR::Register *targetRegister = cg->allocateRegisterPair(lowReg, highReg);
         node->setRegister(targetRegister);

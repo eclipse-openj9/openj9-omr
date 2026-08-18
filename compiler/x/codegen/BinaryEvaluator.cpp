@@ -1770,7 +1770,7 @@ TR::Register *OMR::X86::TreeEvaluator::signedIntegerDivOrRemAnalyser(TR::Node *n
                 cdqDependencies->addPreCondition(edxRegister, TR::RealRegister::edx, cg);
                 cdqDependencies->addPostCondition(tempRegister, TR::RealRegister::eax, cg);
                 cdqDependencies->addPostCondition(edxRegister, TR::RealRegister::edx, cg);
-                Inst(OP::CXXAcc(nodeIs64Bit), node, cdqDependencies, cg);
+                Inst0(OP::CXXAcc(nodeIs64Bit), node, cdqDependencies, cg);
 
                 if (dvalue == 2) // special case when working with 2
                 {
@@ -2023,7 +2023,7 @@ TR::Register *OMR::X86::TreeEvaluator::integerDivOrRemEvaluator(TR::Node *node, 
                 if (node->getFirstChild()->isNonNegative() || node->getOpCode().isUnsigned())
                     Inst_RegReg(OP::XOR4RegReg, node, edxRegister, edxRegister, edxDeps, cg);
                 else
-                    Inst(OP::CXXAcc(nodeIs64Bit), node, eaxEdxDeps, cg);
+                    Inst0(OP::CXXAcc(nodeIs64Bit), node, eaxEdxDeps, cg);
                 if (node->getOpCode().isUnsigned()
                     || (node->getFirstChild()->isNonNegative() && node->getSecondChild()->isNonNegative()))
                     divideInstr
@@ -2036,7 +2036,7 @@ TR::Register *OMR::X86::TreeEvaluator::integerDivOrRemEvaluator(TR::Node *node, 
                 if (node->getFirstChild()->isNonNegative() || node->getOpCode().isUnsigned())
                     Inst_RegReg(OP::XOR4RegReg, node, edxRegister, edxRegister, edxDeps, cg);
                 else
-                    Inst(OP::CXXAcc(nodeIs64Bit), node, eaxEdxDeps, cg);
+                    Inst0(OP::CXXAcc(nodeIs64Bit), node, eaxEdxDeps, cg);
                 if (node->getOpCode().isUnsigned()
                     || (node->getFirstChild()->isNonNegative() && node->getSecondChild()->isNonNegative()))
                     divideInstr = Inst_RegMem(OP::DIVAccMem(nodeIs64Bit), node, eaxRegister, tempMR, eaxEdxDeps, cg);

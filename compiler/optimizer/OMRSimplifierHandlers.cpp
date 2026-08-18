@@ -6272,7 +6272,7 @@ TR::Node *laddSimplifier(TR::Node *node, TR::Block *block, TR::Simplifier *s)
         }
     }
     addSimplifierJavaPacked(node, block, s);
-    return node;
+    return addSimplifierCommon(node, block, s);
 }
 
 TR::Node *faddSimplifier(TR::Node *node, TR::Block *block, TR::Simplifier *s)

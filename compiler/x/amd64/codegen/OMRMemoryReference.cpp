@@ -58,9 +58,6 @@ class Machine;
 #define MAX_MEMREF_SIZE (6) // ModRM + SIB + disp32
 #define MAX_INSTRUCTION_SIZE (15) // See x86-64 processor manual vol 3 sec 1.1
 
-// Hack markers
-#define REGISTERS_CAN_CHANGE_AFTER_INITIALIZATION (true)
-
 OMR::X86::AMD64::MemoryReference::MemoryReference(TR::CodeGenerator *cg)
     : OMR::X86::MemoryReference(cg)
     , _forceRIPRelative(false)
@@ -367,21 +364,7 @@ void OMR::X86::AMD64::MemoryReference::assignRegisters(TR::Instruction *currentI
 uint32_t OMR::X86::AMD64::MemoryReference::estimateBinaryLength(TR::Instruction *containingInstruction,
     TR::CodeGenerator *cg)
 {
-    uint32_t estimate;
-
-    if (0 && REGISTERS_CAN_CHANGE_AFTER_INITIALIZATION && getBaseRegister() && getIndexRegister() && _addressRegister) {
-        // We thought we might need _addressRegister during initialization
-        // because _baseRegister or _indexRegister NULL.  However, someone
-        // subsequently changed the registers, and we can't handle
-        // [base+index+disp64] anyway, so don't even try.
-        //
-        // TODO:AMD64: Always pass the regs in the constructor, rather than using
-        // the vanilla constructor and setting the regs afterward.
-        //
-        _addressRegister = NULL;
-    }
-
-    estimate = OMR::X86::MemoryReference::estimateBinaryLength(containingInstruction, cg);
+    uint32_t estimate = OMR::X86::MemoryReference::estimateBinaryLength(containingInstruction, cg);
 
     // For [disp32], AMD64 needs a SIB byte
     //

@@ -2262,6 +2262,8 @@ public:
      */
     int32_t getJProfilingLoopRecompThreshold() { return _jProfilingLoopRecompThreshold; }
 
+    int32_t getColdPatRecompTriggerCount() { return _coldPathRecompTriggerCount; }
+
     inline static float getMinProfiledCheckcastFrequency() { return _minProfiledCheckcastFrequency / ((float)100.0); }
 
     static bool isQuickstartDetected() { return _quickstartDetected; }

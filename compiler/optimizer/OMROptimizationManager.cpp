@@ -82,8 +82,10 @@ OMR::OptimizationManager::OptimizationManager(TR::Optimizer *o, OptimizationFact
             break;
         case OMR::treeSimplification:
             _flags.set(verifyTrees | verifyBlocks | checkTheCFG);
-            if (self()->comp()->getOption(TR_EnableReassociation))
-                self()->setRequiresStructure(true);
+            break;
+        case OMR::treeSimplificationWithReassociation:
+            _flags.set(verifyTrees | verifyBlocks | checkTheCFG);
+            self()->setRequiresStructure(true);
             break;
         case OMR::loopCanonicalization:
             _flags.set(requiresStructure | checkStructure | dumpStructure | requiresAccurateNodeCount);

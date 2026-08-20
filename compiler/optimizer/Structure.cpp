@@ -2956,8 +2956,14 @@ void TR_RegionStructure::resetInvariance()
 
 bool TR_RegionStructure::isExprInvariant(TR::Node *expr, bool usePrecomputed)
 {
-    if (_invariantExpressions && usePrecomputed)
-        return _invariantExpressions->get(expr->getGlobalIndex()) != 0;
+    if (_invariantExpressions && usePrecomputed) {
+        // A node created after the invariant expressions were precomputed will have a
+        // global index outside the scanned set and its bit will be 0.  Fall back to the
+        // live symbol check so that such nodes are not incorrectly treated as variant.
+        if ((int32_t)expr->getGlobalIndex() < (int32_t)_invariantExpressions->elementCount())
+            return _invariantExpressions->get(expr->getGlobalIndex()) != 0;
+        return isExprTreeInvariant(expr);
+    }
 
     return isExprTreeInvariant(expr);
 }

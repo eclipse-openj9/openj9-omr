@@ -223,6 +223,8 @@ TR::OptionTable OMR::Options::_jitOptions[] = {
     { "classRedefinitionUPICRatSize=", "M<nnn>\tsize of runtime assumption table for classRedefinitionUPIC",
      TR::Options::setStaticNumeric, (intptr_t)&OMR::Options::_classRedefinitionUPICRatSize, 0, "F%d",
      NOT_IN_SUBSET },
+    { "coldPathRecompTriggerCount=",
+     "O<nnn>\tNumber Of times a cold path in method needs to execute to trigger recompilation", TR::Options::setCount, offsetof(OMR::Options, _coldPathRecompTriggerCount), 0, "F%d" },
     { "coldRunBCount=", "O<nnn>\tnumber of invocations before compiling methods with loops in AOT cold runs",
      TR::Options::setCount, offsetof(OMR::Options, _initialColdRunBCount), 0, "F%d", NOT_IN_SUBSET },
     { "coldRunCount=", "O<nnn>\tnumber of invocations before compiling methods with loops in AOT cold runs",
@@ -3653,7 +3655,7 @@ void OMR::Options::jitPreProcess()
     _blockShufflingSequence = (char *)"S";
     _delayCompileWithCPUBurn = 0;
     _largeNumberOfLoops = 6500;
-
+    _coldPathRecompTriggerCount = 100;
     _serverInlinerBorderFrequency = -1;
     _serverInlinerVeryColdBorderFrequency = -1;
 

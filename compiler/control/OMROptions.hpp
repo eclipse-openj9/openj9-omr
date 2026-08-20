@@ -2720,6 +2720,7 @@ protected:
     int32_t _initialColdRunBCount;
     int32_t _maxSpreadCountLoopless;
     int32_t _maxSpreadCountLoopy;
+    int32_t _coldPathRecompTriggerCount;
     static int32_t _highCodeCacheOccupancyCount;
     static int32_t _highCodeCacheOccupancyBCount;
     int32_t _GCRCount;

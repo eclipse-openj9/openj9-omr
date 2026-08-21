@@ -2907,6 +2907,11 @@ TR::Node *constrainMonent(OMR::ValuePropagation *vp, TR::Node *node)
         if (clazz && (TR::Compiler->cls.classDepthOf(clazz) == 0) && !constraint->isFixedClass())
             clazz = NULL;
 
+        // Don't use interface classes for monitors as it will incorrectly trigger the fixed offset inline sequence
+        // in codegen, even if the concrete class doesn't have a lockword at the corresponding offset.
+        if (clazz && TR::Compiler->cls.isInterfaceClass(vp->comp(), clazz))
+            clazz = NULL;
+
         if (node->hasMonitorClassInNode() && clazz && (node->getMonitorClassInNode() != clazz)) {
             TR_YesNoMaybe answer = vp->fe()->isInstanceOf(clazz, node->getMonitorClassInNode(), true, true);
             if (answer != TR_yes)
@@ -2946,6 +2951,11 @@ TR::Node *constrainMonexit(OMR::ValuePropagation *vp, TR::Node *node)
             clazz = vp->fe()->getClassClassPointer(clazz);
 
         if (clazz && (TR::Compiler->cls.classDepthOf(clazz) == 0) && !constraint->isFixedClass())
+            clazz = NULL;
+
+        // Don't use interface classes for monitors as it will incorrectly trigger the fixed offset inline sequence
+        // in codegen, even if the concrete class doesn't have a lockword at the corresponding offset.
+        if (clazz && TR::Compiler->cls.isInterfaceClass(vp->comp(), clazz))
             clazz = NULL;
 
         if (node->hasMonitorClassInNode() && clazz && (node->getMonitorClassInNode() != clazz)) {

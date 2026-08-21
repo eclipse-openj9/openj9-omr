@@ -2262,7 +2262,7 @@ public:
      */
     int32_t getJProfilingLoopRecompThreshold() { return _jProfilingLoopRecompThreshold; }
 
-    int32_t getColdPatRecompTriggerCount() { return _coldPathRecompTriggerCount; }
+    int32_t getColdPathRecompTriggerCount() { return _coldPathRecompTriggerCount; }
 
     inline static float getMinProfiledCheckcastFrequency() { return _minProfiledCheckcastFrequency / ((float)100.0); }
 

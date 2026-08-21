@@ -1273,19 +1273,20 @@ void TR_Debug::print(OMR::Logger *log, TR::MemoryReference *mr, TR_RegisterSizes
     }
 
     if (!hasTerm) {
-        // This must be an absolute memory reference (a constant data snippet or a label)
+        // This must be an absolute memory reference to a label
         //
-        TR::X86DataSnippet *cds = mr->getDataSnippet();
-        TR::LabelSymbol *label = NULL;
-        if (cds)
-            label = cds->getSnippetLabel();
-        else
-            label = mr->getLabel();
-        TR_ASSERT(label, "expecting a constant data snippet or a label");
+        TR::LabelSymbol *label = mr->getLabel();
+
+        TR_ASSERT_FATAL(label, "expecting a label");
+
+        TR::X86ConstantDataSnippet *cds = NULL;
+        if (label->getSnippet() && label->getSnippet()->getKind() == TR::Snippet::IsConstantData) {
+            cds = static_cast<TR::X86ConstantDataSnippet *>(label->getSnippet());
+        }
 
         int64_t disp = (int64_t)(label->getCodeLocation());
 
-        if (mr->getLabel()) {
+        if (label && !cds) {
             print(log, label);
             if (disp) {
                 log->prints(" : ");
@@ -1296,7 +1297,7 @@ void TR_Debug::print(OMR::Logger *log, TR::MemoryReference *mr, TR_RegisterSizes
                 true);
         } else if (cds) {
             log->prints("Data ");
-            print(log, cds->getSnippetLabel());
+            print(log, label);
             log->prints(": ");
             auto data = cds->getRawData();
             for (auto i = 0; i < cds->getDataSize(); i++) {

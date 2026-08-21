@@ -89,8 +89,8 @@ OMR::X86::MemoryReference::MemoryReference(TR::X86DataSnippet *cds, TR::CodeGene
     , _baseNode(NULL)
     , _indexRegister(NULL)
     , _indexNode(NULL)
-    , _dataSnippet(cds)
-    , _label(NULL)
+    , _dataSnippet(NULL)
+    , _label(cds->getSnippetLabel())
     , _symbolReference(cg->comp()->getSymRefTab())
     , _stride(0)
     , _flags(0)
@@ -126,10 +126,10 @@ OMR::X86::MemoryReference::MemoryReference(TR::SymbolReference *symRef, TR::Code
     , _flags(0)
     , _reloKind(-1)
 {
-    self()->initialize(symRef, cg);
+    self()->initializeFromSymRef(symRef, cg);
 }
 
-OMR::X86::MemoryReference::MemoryReference(TR::SymbolReference *symRef, intptr_t displacement, TR::CodeGenerator *cg)
+OMR::X86::MemoryReference::MemoryReference(TR::SymbolReference *symRef, intptr_t extraOffset, TR::CodeGenerator *cg)
     : _baseRegister(NULL)
     , _baseNode(NULL)
     , _indexRegister(NULL)
@@ -141,8 +141,8 @@ OMR::X86::MemoryReference::MemoryReference(TR::SymbolReference *symRef, intptr_t
     , _flags(0)
     , _reloKind(-1)
 {
-    self()->initialize(symRef, cg);
-    _symbolReference.addToOffset(displacement);
+    self()->initializeFromSymRef(symRef, cg);
+    _symbolReference.addToOffset(extraOffset);
 }
 
 // Constructor called to generate a memory reference for all kinds of
@@ -164,96 +164,93 @@ OMR::X86::MemoryReference::MemoryReference(TR::Node *rootLoadOrStore, TR::CodeGe
     TR::SymbolReference *symRef = rootLoadOrStore->getSymbolReference();
     TR::Compilation *comp = cg->comp();
 
-    if (symRef) {
-        TR::Symbol *symbol = symRef->getSymbol();
+    TR_ASSERT_FATAL_WITH_NODE(rootLoadOrStore, symRef, "Expecting node to have a symRef");
 
-        bool isStore = rootLoadOrStore->getOpCode().isStore();
-        bool isUnresolved = symRef->isUnresolved();
+    TR::Symbol *symbol = symRef->getSymbol();
 
-        _symbolReference.setSymbol(symbol);
-        _symbolReference.addToOffset(symRef->getOffset());
-        _symbolReference.setOwningMethodIndex(symRef->getOwningMethodIndex());
-        _symbolReference.setCPIndex(symRef->getCPIndex());
-        _symbolReference.copyFlags(symRef);
-        _symbolReference.copyRefNumIfPossible(symRef, comp->getSymRefTab());
+    bool isStore = rootLoadOrStore->getOpCode().isStore();
+    bool isUnresolved = symRef->isUnresolved();
 
-        if (rootLoadOrStore->getOpCode().isIndirect()) {
-            // Special case an indirect load or store off a local object. This
-            // can be treated as a direct load or store off the frame pointer
-            // We can't do this when the access is unresolved.
-            //
-            TR::Node *base = rootLoadOrStore->getFirstChild();
+    _symbolReference.setSymbol(symbol);
+    _symbolReference.addToOffset(symRef->getOffset());
+    _symbolReference.setOwningMethodIndex(symRef->getOwningMethodIndex());
+    _symbolReference.setCPIndex(symRef->getCPIndex());
+    _symbolReference.copyFlags(symRef);
+    _symbolReference.copyRefNumIfPossible(symRef, comp->getSymRefTab());
 
-            // Use the register evaluated from the loadaddr as the base object
-            // in a memory reference rather than accessing directly from the
-            // stack.
-            //
-            static bool useLoadAddrRegisterForLocalObjectMemRef
-                = feGetEnv("TR_useLoadAddrRegisterForLocalObjectMemRef") ? true : false;
+    if (rootLoadOrStore->getOpCode().isIndirect()) {
+        // Special case an indirect load or store off a local object. This
+        // can be treated as a direct load or store off the frame pointer
+        // We can't do this when the access is unresolved.
+        //
+        TR::Node *base = rootLoadOrStore->getFirstChild();
 
-            if (!isUnresolved && !useLoadAddrRegisterForLocalObjectMemRef && base->getOpCodeValue() == TR::loadaddr
-                && base->getSymbol()->isLocalObject()) {
-                _baseRegister = cg->getFrameRegister();
-                _symbolReference.setSymbol(base->getSymbol());
-                _symbolReference.copyFlags(base->getSymbolReference());
-                _baseNode = base;
-            } else {
-                if (isUnresolved) {
-                    // If it is an unresolved reference to a field of a local object
-                    // then force the localobject address to be evaluated into a register
-                    // otherwise the resolution may not work properly if the computation
-                    // is folded away into an esp + offset computation
-                    //
-                    if (base->getOpCodeValue() == TR::loadaddr && base->getSymbol()->isLocalObject())
-                        cg->evaluate(base);
+        // Use the register evaluated from the loadaddr as the base object
+        // in a memory reference rather than accessing directly from the
+        // stack.
+        //
+        static bool useLoadAddrRegisterForLocalObjectMemRef
+            = feGetEnv("TR_useLoadAddrRegisterForLocalObjectMemRef") ? true : false;
 
-                    setUnresolvedDataSnippet(TR::UnresolvedDataSnippet::create(cg, rootLoadOrStore, &_symbolReference,
-                        isStore, symRef->canCauseGC()));
-                    cg->addSnippet(getUnresolvedDataSnippet());
-                }
-
-                if (!debug("noAddressAddRemat") && canRematerializeAddressAdds) {
-                    rematerializeAddressAdds(rootLoadOrStore, cg);
-                    base = rootLoadOrStore->getFirstChild(); // It may have changed
-                }
-
-                if (symbol->isMethodMetaData()) {
-                    _baseRegister = cg->getMethodMetaDataRegister();
-                }
-
-                rcount_t refCount = base->getReferenceCount();
-                self()->populateMemoryReference(base, cg);
-                self()->checkAndDecReferenceCount(base, refCount, cg);
-            }
+        if (!isUnresolved && !useLoadAddrRegisterForLocalObjectMemRef && base->getOpCodeValue() == TR::loadaddr
+            && base->getSymbol()->isLocalObject()) {
+            _baseRegister = cg->getFrameRegister();
+            _symbolReference.setSymbol(base->getSymbol());
+            _symbolReference.copyFlags(base->getSymbolReference());
+            _baseNode = base;
         } else {
-            if (symbol->isStatic()) {
-                if (isUnresolved) {
-                    setUnresolvedDataSnippet(TR::UnresolvedDataSnippet::create(cg, rootLoadOrStore, &_symbolReference,
-                        isStore, symRef->canCauseGC()));
-                    cg->addSnippet(getUnresolvedDataSnippet());
-                }
-                _baseNode = rootLoadOrStore;
-            } else {
-                if (!symbol->isMethodMetaData()) {
-                    // Must be either auto or parm or error
-                    //
-                    _baseRegister = cg->getFrameRegister();
-                } else {
-                    _baseRegister = cg->getMethodMetaDataRegister();
-                }
-                _baseNode = NULL;
+            if (isUnresolved) {
+                // If it is an unresolved reference to a field of a local object
+                // then force the localobject address to be evaluated into a register
+                // otherwise the resolution may not work properly if the computation
+                // is folded away into an esp + offset computation
+                //
+                if (base->getOpCodeValue() == TR::loadaddr && base->getSymbol()->isLocalObject())
+                    cg->evaluate(base);
+
+                setUnresolvedDataSnippet(TR::UnresolvedDataSnippet::create(cg, rootLoadOrStore, &_symbolReference,
+                    isStore, symRef->canCauseGC()));
+                cg->addSnippet(getUnresolvedDataSnippet());
             }
-        }
 
-        if (isUnresolved) {
-            // Need a wide field because we don't know how big the displacement
-            // may turn out to be once resolved.
-            //
-            setForceWideDisplacement();
-        }
+            if (!debug("noAddressAddRemat") && canRematerializeAddressAdds) {
+                rematerializeAddressAdds(rootLoadOrStore, cg);
+                base = rootLoadOrStore->getFirstChild(); // It may have changed
+            }
 
+            if (symbol->isMethodMetaData()) {
+                _baseRegister = cg->getMethodMetaDataRegister();
+            }
+
+            rcount_t refCount = base->getReferenceCount();
+            self()->populateMemoryReference(base, cg);
+            self()->checkAndDecReferenceCount(base, refCount, cg);
+        }
     } else {
-        diagnostic("OMR::X86::MemoryReference::OMR::X86::MemoryReference() ==> no symbol reference");
+        if (symbol->isStatic()) {
+            if (isUnresolved) {
+                setUnresolvedDataSnippet(TR::UnresolvedDataSnippet::create(cg, rootLoadOrStore, &_symbolReference,
+                    isStore, symRef->canCauseGC()));
+                cg->addSnippet(getUnresolvedDataSnippet());
+            }
+            _baseNode = rootLoadOrStore;
+        } else {
+            if (!symbol->isMethodMetaData()) {
+                // Must be either auto or parm or error
+                //
+                _baseRegister = cg->getFrameRegister();
+            } else {
+                _baseRegister = cg->getMethodMetaDataRegister();
+            }
+            _baseNode = NULL;
+        }
+    }
+
+    if (isUnresolved) {
+        // Need a wide field because we don't know how big the displacement
+        // may turn out to be once resolved.
+        //
+        setForceWideDisplacement();
     }
 
     // TODO: aliasing sets?
@@ -270,12 +267,7 @@ TR::UnresolvedDataSnippet *OMR::X86::MemoryReference::setUnresolvedDataSnippet(T
     return ((TR::UnresolvedDataSnippet *)(_dataSnippet = s));
 }
 
-TR::X86DataSnippet *OMR::X86::MemoryReference::getDataSnippet()
-{
-    return hasUnresolvedDataSnippet() ? NULL : (TR::X86DataSnippet *)_dataSnippet;
-}
-
-void OMR::X86::MemoryReference::initialize(TR::SymbolReference *symRef, TR::CodeGenerator *cg)
+void OMR::X86::MemoryReference::initializeFromSymRef(TR::SymbolReference *symRef, TR::CodeGenerator *cg)
 {
     TR::Compilation *comp = cg->comp();
     TR::Symbol *symbol = symRef->getSymbol();
@@ -290,6 +282,11 @@ void OMR::X86::MemoryReference::initialize(TR::SymbolReference *symRef, TR::Code
 
     _indexRegister = NULL;
     _symbolReference.setSymbol(symbol);
+
+    // The TR::SymbolReference for a newly allocated MemoryReference should have an offset of 0.
+    // However, the `addToOffset` API is used (rather than `setOffset`) just in case an additional
+    // displacement was provided to the MemoryReference constructor.
+    //
     _symbolReference.addToOffset(symRef->getOffset());
     _symbolReference.setOwningMethodIndex(symRef->getOwningMethodIndex());
     _symbolReference.setCPIndex(symRef->getCPIndex());
@@ -302,10 +299,11 @@ void OMR::X86::MemoryReference::initialize(TR::SymbolReference *symRef, TR::Code
         cg->addSnippet(getUnresolvedDataSnippet());
         setForceWideDisplacement();
     }
+
     // TODO: aliasing sets?
 }
 
-OMR::X86::MemoryReference::MemoryReference(TR::MemoryReference &mr, intptr_t n, TR::CodeGenerator *cg,
+OMR::X86::MemoryReference::MemoryReference(TR::MemoryReference &mr, intptr_t extraOffset, TR::CodeGenerator *cg,
     TR_ScratchRegisterManager *srm)
     : _symbolReference(cg->comp()->getSymRefTab())
 {
@@ -315,15 +313,13 @@ OMR::X86::MemoryReference::MemoryReference(TR::MemoryReference &mr, intptr_t n, 
     _indexRegister = mr._indexRegister;
     _indexNode = mr._indexNode;
     _label = mr._label;
-    _symbolReference = TR::SymbolReference(comp->getSymRefTab(), mr._symbolReference, n);
+    _symbolReference = TR::SymbolReference(comp->getSymRefTab(), mr._symbolReference, extraOffset);
     _reloKind = -1;
 
     if (mr.getUnresolvedDataSnippet() != NULL) {
         _dataSnippet
             = TR::UnresolvedDataSnippet::create(cg, _baseNode, &_symbolReference, false, _symbolReference.canCauseGC());
         cg->addSnippet(_dataSnippet);
-    } else if (mr.getDataSnippet() != NULL) {
-        _dataSnippet = mr.getDataSnippet();
     } else {
         _dataSnippet = NULL;
     }
@@ -858,7 +854,7 @@ uint32_t OMR::X86::MemoryReference::estimateBinaryLength(TR::Instruction *contai
             }
             if (displacement == 0 && !base->needsDisp() && !base->needsSIB() && !isForceWideDisplacement()) {
                 length = 0;
-            } else if (displacement >= -128 && displacement <= 127 && !isForceWideDisplacement()) {
+            } else if (IS_8BIT_SIGNED(displacement) && !isForceWideDisplacement()) {
                 length = 1;
             } else {
                 // If there is a symbol or if the displacement will not fit in a byte,
@@ -881,7 +877,7 @@ uint32_t OMR::X86::MemoryReference::estimateBinaryLength(TR::Instruction *contai
                 length = 5;
                 break;
             }
-            if (displacement >= -128 && displacement <= 127 && !isForceWideDisplacement()) {
+            if (IS_8BIT_SIGNED(displacement) && !isForceWideDisplacement()) {
                 length = 2;
             } else {
                 // If there is a symbol or if the displacement will not fit in a byte,
@@ -947,7 +943,7 @@ uint32_t OMR::X86::MemoryReference::getBinaryLengthLowerBound(TR::CodeGenerator 
 
             if (displacement == 0 && !base->needsDisp() && !base->needsSIB() && !isForceWideDisplacement()) {
                 length = 0;
-            } else if (displacement >= -128 && displacement <= 127 && !isForceWideDisplacement()) {
+            } else if (IS_8BIT_SIGNED(displacement) && !isForceWideDisplacement()) {
                 if (displacement != 0)
                     length = 1;
             } else
@@ -1113,28 +1109,6 @@ void OMR::X86::MemoryReference::addMetaDataForCodeAddress(uint32_t addressTypes,
                         }
                     }
                 }
-            } else {
-                TR::X86DataSnippet *cds = getDataSnippet();
-                TR::LabelSymbol *label = NULL;
-
-                if (cds)
-                    label = cds->getSnippetLabel();
-                else
-                    label = getLabel();
-
-                if (label != NULL) {
-                    if (cg->comp()->target().is64Bit()) {
-                        // Assume the snippet is in RIP range
-                        // TODO:AMD64: Would it be cleaner to have some kind of "isRelative" flag rather than
-                        // "is64BitTarget"?
-                        cg->addRelocation(new (cg->trHeapMemory()) TR::LabelRelative32BitRelocation(cursor, label));
-                    } else {
-                        cg->addRelocation(new (cg->trHeapMemory()) TR::LabelAbsoluteRelocation(cursor, label));
-                        cg->addExternalRelocation(
-                            TR::ExternalRelocation::create(cursor, 0, TR_AbsoluteMethodAddress, cg), __FILE__, __LINE__,
-                            node);
-                    }
-                }
             }
 
             break;
@@ -1196,6 +1170,8 @@ uint8_t *OMR::X86::MemoryReference::generateBinaryEncoding(uint8_t *modRM, TR::I
 
         case MR_index + MR_disp:
         case MR_index: {
+            // To encode these cases, the ISA always requires a SIB and a disp32
+            //
             index = toRealRegister(getIndexRegister());
             ModRM(modRM)->setBase()->setHasSIB();
             *++cursor = 0x00;
@@ -1206,7 +1182,7 @@ uint8_t *OMR::X86::MemoryReference::generateBinaryEncoding(uint8_t *modRM, TR::I
 
             immediateCursor = cursor;
 
-            *(int32_t *)cursor = (int32_t)getSymbolReference().getOffset();
+            *(int32_t *)cursor = static_cast<int32_t>(getSymbolReference().getOffset());
 
             if (getUnresolvedDataSnippet() != NULL) {
                 getUnresolvedDataSnippet()->setAddressOfDataReference(cursor);
@@ -1243,56 +1219,48 @@ uint8_t *OMR::X86::MemoryReference::generateBinaryEncoding(uint8_t *modRM, TR::I
             immediateCursor = cursor;
 
             if (symbol) {
-                TR::StaticSymbol *staticSym = symbol->getStaticSymbol();
-                TR::MethodSymbol *methodSym = symbol->getMethodSymbol();
-
-                if (staticSym) {
-                    if (getUnresolvedDataSnippet() == NULL) {
-                        *(int32_t *)cursor
-                            = (int32_t)(getSymbolReference().getOffset() + (intptr_t)staticSym->getStaticAddress());
-                    } else {
-                        *(int32_t *)cursor = (int32_t)getSymbolReference().getOffset();
-                    }
-                } else if (methodSym) {
-                    /* ----------------------------------------------------- */
-                    /* This is fake. Not supported for JIT compilation;      */
-                    /* just avoiding a core dump                             */
-                    /* ----------------------------------------------------- */
-                    *(int32_t *)cursor = 0;
-                } else if (symbol->isRegisterMappedSymbol()) {
-                    displacement = getSymbolReference().getOffset() + symbol->getRegisterMappedSymbol()->getOffset();
-                    TR_ASSERT(IS_32BIT_SIGNED(displacement),
-                        "64-bit displacement should have been replaced in "
-                        "TR_AMD64MemoryReference::generateBinaryEncoding");
-                    *(int32_t *)cursor = (int32_t)displacement;
-                } else if (symbol->isShadow()) {
-                    *(int32_t *)cursor = (int32_t)getSymbolReference().getOffset();
-                } else
-                    TR_ASSERT(0, "generateBinaryEncoding, new symbol hierarchy problem");
+                displacement = getDisplacement();
+                TR_ASSERT_FATAL(IS_32BIT_SIGNED(displacement),
+                    "MR_disp symbol displacement out of range: %" OMR_PRIxPTR, displacement);
             } else {
-                TR::X86DataSnippet *cds = getDataSnippet();
-                TR_ASSERT(cds == NULL || getLabel() == NULL,
-                    "a memRef cannot have both a constant data snippet and a label");
-                TR::LabelSymbol *label = NULL;
-                if (cds)
-                    label = cds->getSnippetLabel();
-                else
-                    label = getLabel();
-
-                if (label != NULL) {
+                TR::LabelSymbol *labelSym = getLabel();
+                if (labelSym) {
+                    // The MemoryReference for a label is an address in the code cache within this
+                    // compilation unit
+                    //
                     if (comp->target().is64Bit()) {
-                        // This cast is ok because we only need the low 32 bits of the address
-                        // *(int32_t *)cursor = -(int32_t)(intptr_t)(cursor+4);
-                        // if it is X86MEMIMM instruction, offset need consider immedidate length
-                        *(int32_t *)cursor = -(
+                        // Use RIP-relative addressing on 64-bit. All labels are assumed to be
+                        // within RIP-relative displacement range.
+                        //
+                        displacement = -(
                             int32_t)(intptr_t)(cursor + 4 + containingInstruction->getOpCode().info().ImmediateSize());
+
+                        if (labelSym->getCodeLocation()) {
+                            // Compute the displacement to the known label location. No relocation is required.
+                            //
+                            displacement = reinterpret_cast<intptr_t>(labelSym->getCodeLocation()) + displacement;
+                        } else {
+                            cg->addRelocation(
+                                new (cg->trHeapMemory()) TR::LabelRelative32BitRelocation(cursor, labelSym));
+                        }
                     } else {
-                        *(int32_t *)cursor = (int32_t)0;
+                        // Use an absolute code address on 32-bit, which will be filled in during
+                        // relocation processing
+                        //
+                        displacement = 0;
+                        cg->addRelocation(new (cg->trHeapMemory()) TR::LabelAbsoluteRelocation(cursor, labelSym));
+                        cg->addExternalRelocation(
+                            TR::ExternalRelocation::create(cursor, 0, TR_AbsoluteMethodAddress, cg), __FILE__, __LINE__,
+                            containingInstruction->getNode());
                     }
                 } else {
-                    *(int32_t *)cursor = (int32_t)getSymbolReference().getOffset();
+                    displacement = getSymbolReference().getOffset();
+                    TR_ASSERT_FATAL(IS_32BIT_SIGNED(displacement),
+                        "MR_disp no symbol no label displacement out of range: %" OMR_PRIxPTR, displacement);
                 }
             }
+
+            *(int32_t *)cursor = static_cast<int32_t>(displacement);
 
             if (getUnresolvedDataSnippet() != NULL) {
                 getUnresolvedDataSnippet()->setAddressOfDataReference(cursor);
@@ -1328,16 +1296,15 @@ uint8_t *OMR::X86::MemoryReference::generateBinaryEncoding(uint8_t *modRM, TR::I
 
             if (displacement == 0 && !base->needsDisp() && !base->needsDisp() && !isForceWideDisplacement()) {
                 ModRM(modRM)->setBase();
-            } else if (displacement >= -128 && displacement <= 127 && !isForceWideDisplacement()) {
+            } else if (IS_8BIT_SIGNED(displacement) && !isForceWideDisplacement()) {
                 ModRM(modRM)->setBaseDisp8();
-                *cursor = (uint8_t)displacement;
-                ++cursor;
+                *(int8_t *)cursor++ = static_cast<int8_t>(displacement);
             } else {
                 // If there is a symbol or if the displacement will not fit in a byte,
                 // then displacement will be 4 bytes.
                 //
                 ModRM(modRM)->setBaseDisp32();
-                *(int32_t *)cursor = (int32_t)displacement;
+                *(int32_t *)cursor = static_cast<int32_t>(displacement);
                 if (getUnresolvedDataSnippet() != NULL) {
                     getUnresolvedDataSnippet()->setAddressOfDataReference(cursor);
                 }
@@ -1356,9 +1323,9 @@ uint8_t *OMR::X86::MemoryReference::generateBinaryEncoding(uint8_t *modRM, TR::I
             index->setIndexRegisterFieldInSIB(cursor);
             setStrideFieldInSIB(cursor);
             ++cursor;
-            displacement = getDisplacement();
             immediateCursor = cursor;
 
+            displacement = getDisplacement();
             TR_ASSERT(IS_32BIT_SIGNED(displacement),
                 "64-bit displacement should have been replaced in TR_AMD64MemoryReference::generateBinaryEncoding");
 
@@ -1369,15 +1336,15 @@ uint8_t *OMR::X86::MemoryReference::generateBinaryEncoding(uint8_t *modRM, TR::I
                 setForceWideDisplacement();
             }
 
-            if (displacement >= -128 && displacement <= 127 && !isForceWideDisplacement()) {
+            if (IS_8BIT_SIGNED(displacement) && !isForceWideDisplacement()) {
                 ModRM(modRM)->setBaseDisp8()->setHasSIB();
-                *cursor++ = (uint8_t)displacement;
+                *(int8_t *)cursor++ = static_cast<int8_t>(displacement);
             } else {
                 // If there is a symbol or if the displacement will not fit in a byte,
                 // then displacement will be 4 bytes.
                 //
                 ModRM(modRM)->setBaseDisp32()->setHasSIB();
-                *(int32_t *)cursor = (int32_t)displacement;
+                *(int32_t *)cursor = static_cast<int32_t>(displacement);
                 if (getUnresolvedDataSnippet() != NULL) {
                     getUnresolvedDataSnippet()->setAddressOfDataReference(cursor);
                 }
@@ -1509,12 +1476,12 @@ TR::MemoryReference *TR::MRef_sym(TR::SymbolReference *sr, TR::CodeGenerator *cg
     return new (cg->trHeapMemory()) TR::MemoryReference(sr, cg);
 }
 
-TR::MemoryReference *TR::MRef_symOff(TR::SymbolReference *sr, intptr_t offset, TR::CodeGenerator *cg)
+TR::MemoryReference *TR::MRef_symOff(TR::SymbolReference *sr, intptr_t extraOffset, TR::CodeGenerator *cg)
 {
-    return new (cg->trHeapMemory()) TR::MemoryReference(sr, offset, cg);
+    return new (cg->trHeapMemory()) TR::MemoryReference(sr, extraOffset, cg);
 }
 
-TR::MemoryReference *TR::MRef_MRefOff(TR::MemoryReference &mr, intptr_t offset, TR::CodeGenerator *cg)
+TR::MemoryReference *TR::MRef_MRefOff(TR::MemoryReference &mr, intptr_t extraOffset, TR::CodeGenerator *cg)
 {
-    return new (cg->trHeapMemory()) TR::MemoryReference(mr, offset, cg);
+    return new (cg->trHeapMemory()) TR::MemoryReference(mr, extraOffset, cg);
 }

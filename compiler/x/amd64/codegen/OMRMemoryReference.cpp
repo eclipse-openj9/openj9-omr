@@ -58,9 +58,6 @@ class Machine;
 #define MAX_MEMREF_SIZE (6) // ModRM + SIB + disp32
 #define MAX_INSTRUCTION_SIZE (15) // See x86-64 processor manual vol 3 sec 1.1
 
-// Hack markers
-#define REGISTERS_CAN_CHANGE_AFTER_INITIALIZATION (true)
-
 OMR::X86::AMD64::MemoryReference::MemoryReference(TR::CodeGenerator *cg)
     : OMR::X86::MemoryReference(cg)
     , _forceRIPRelative(false)
@@ -181,15 +178,15 @@ void OMR::X86::AMD64::MemoryReference::finishInitialization(TR::CodeGenerator *c
         // Binary encoding will fatally assert otherwise.
         //
         mightNeedAddressRegister = false;
-    } else if (getDataSnippet()) {
-        // Assume snippets are in RIP range
-        //
-        mightNeedAddressRegister = false;
     } else if (!getBaseRegister() && !getIndexRegister()
         && (cg->needRelocationsForStatics() || cg->needClassAndMethodPointerRelocations()
             || cg->needRelocationsForBodyInfoData() || cg->needRelocationsForPersistentInfoData()
             || cg->needRelocationsForPersistentProfileInfoData())) {
         mightNeedAddressRegister = true;
+    } else if (getLabel()) {
+        // Assume labels are in RIP range
+        //
+        mightNeedAddressRegister = false;
     } else if (sr.getSymbol() != NULL
         && (sr.isUnresolved() || (sr.stackAllocatedArrayAccess() && !IS_32BIT_SIGNED(getDisplacement())))) {
         // Once resolved, the address could be anything, so be conservative.
@@ -272,9 +269,14 @@ bool OMR::X86::AMD64::MemoryReference::needsAddressLoadInstruction(intptr_t next
         return !IS_32BIT_SIGNED(displacement);
     }
 
-    // At this point, the memory reference is known not to have a base or index register.
-    // The remaining logic determines how to interpret the displacement.
+    // At this point, the memory reference is known not to have a base or index register
+    // (a displacement only).
     //
+    // The displacement holds an address in memory, and the remaining logic determines
+    // whether a 64-bit immediate load instruction is required to materialize the address.
+    // If not, the address is materialized through either a 32-bit RIP-relative form or
+    // a 32-bit absolute form.
+
     if (cg->needClassAndMethodPointerRelocations()) {
         return true;
     }
@@ -296,7 +298,11 @@ bool OMR::X86::AMD64::MemoryReference::needsAddressLoadInstruction(intptr_t next
 
     if (IS_32BIT_SIGNED(displacement)) {
         return false;
-    } else if (cg->comp()->isOutOfProcessCompilation() && sym && sym->isStatic()
+    }
+
+    // At this point, the displacement is known to be 64-bit
+
+    if (cg->comp()->isOutOfProcessCompilation() && sym && sym->isStatic()
         && !sym->isStaticAddressWithinMethodBounds()) {
         return true;
     } else if (IS_32BIT_RIP(displacement, nextInstructionAddress)) {
@@ -358,21 +364,7 @@ void OMR::X86::AMD64::MemoryReference::assignRegisters(TR::Instruction *currentI
 uint32_t OMR::X86::AMD64::MemoryReference::estimateBinaryLength(TR::Instruction *containingInstruction,
     TR::CodeGenerator *cg)
 {
-    uint32_t estimate;
-
-    if (0 && REGISTERS_CAN_CHANGE_AFTER_INITIALIZATION && getBaseRegister() && getIndexRegister() && _addressRegister) {
-        // We thought we might need _addressRegister during initialization
-        // because _baseRegister or _indexRegister NULL.  However, someone
-        // subsequently changed the registers, and we can't handle
-        // [base+index+disp64] anyway, so don't even try.
-        //
-        // TODO:AMD64: Always pass the regs in the constructor, rather than using
-        // the vanilla constructor and setting the regs afterward.
-        //
-        _addressRegister = NULL;
-    }
-
-    estimate = OMR::X86::MemoryReference::estimateBinaryLength(containingInstruction, cg);
+    uint32_t estimate = OMR::X86::MemoryReference::estimateBinaryLength(containingInstruction, cg);
 
     // For [disp32], AMD64 needs a SIB byte
     //
@@ -516,8 +508,8 @@ uint8_t *OMR::X86::AMD64::MemoryReference::generateBinaryEncoding(uint8_t *modRM
             "malformed memory reference for RIP-relative addressing");
     }
 
-    if (getDataSnippet() || getLabel()) {
-        // The inherited logic has a special case for RIP-based ConstantDataSnippet and label references.
+    if (getLabel()) {
+        // The inherited logic has a special case for RIP-based label references.
         //
         return OMR::X86::MemoryReference::generateBinaryEncoding(modRM, containingInstruction, cg);
     }

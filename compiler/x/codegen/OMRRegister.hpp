@@ -144,6 +144,15 @@ public:
 
     void setIsSpilledToSecondHalf(bool b = true) { _flags.set(SpilledToSecondHalf, b); }
 
+    /**
+     * @brief Answers whether this register requires a REX prefix when encoded
+     *     in an instruction. This question can only be answered definitively
+     *     when asked on a RealRegister.
+     *
+     * @return true : prefix is required, false otherwise
+     */
+    virtual bool encodeWithREXPrefix() { return false; }
+
 private:
     enum {
         // AVAILABLE                  = 0x0002,

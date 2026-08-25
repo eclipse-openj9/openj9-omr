@@ -3655,7 +3655,10 @@ void OMR::Options::jitPreProcess()
     _blockShufflingSequence = (char *)"S";
     _delayCompileWithCPUBurn = 0;
     _largeNumberOfLoops = 6500;
-    _coldPathRecompTriggerCount = 100;
+    // Value set to positive non zero through JIT option will enable the code
+    // that inserts the call to recompilation method in cold path in various
+    // optimization.
+    _coldPathRecompTriggerCount = -1;
     _serverInlinerBorderFrequency = -1;
     _serverInlinerVeryColdBorderFrequency = -1;
 

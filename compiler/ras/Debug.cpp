@@ -3134,6 +3134,8 @@ const char *TR_Debug::getRuntimeHelperName(int32_t index)
                 return "jitGetFlattenableStaticField";
             case TR_putFlattenableStaticField:
                 return "jitPutFlattenableStaticField";
+            case TR_resolveFlattenableField:
+                return "jitResolveFlattenableField";
             case TR_ldFlattenableArrayElement:
                 return "jitLoadFlattenableArrayElement";
             case TR_strFlattenableArrayElement:

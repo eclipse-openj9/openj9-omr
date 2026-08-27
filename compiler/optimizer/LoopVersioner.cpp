@@ -4499,6 +4499,20 @@ void TR_LoopVersioner::versionNaturalLoop(TR_RegionStructure *whileLoop, List<TR
         properRegion->removeExternalEdgeTo(predBlock->getStructureOf(), succBlock->getStructureOf()->getNumber());
     }
 
+#ifdef J9_PROJECT_SPECIFIC
+    // Phase-change recompilation trigger.
+    //
+    if (comp()->getMethodHotness() >= hot && comp()->getRecompilationInfo() != NULL
+        && comp()->getOptions()->getColdPathRecompTriggerCount() > 0
+        && !(comp()->getOptimizationPlan()->getDoNotInsertPhaseChangeRecomp() || comp()->isProfilingCompilation())
+        && !shouldOnlySpecializeLoops() && !_neitherLoopCold
+        && performTransformation(comp(),
+            "%s Inserting phase-change recompilation counter into cold loop pre-header block_%d\n",
+            OPT_DETAILS_LOOP_VERSIONER, clonedLoopInvariantBlock)) {
+        TR::TransformUtil::insertColdPathCounterRecompilation(comp(), clonedLoopInvariantBlock);
+    }
+#endif
+
     if (trace())
         comp()->dumpMethodTrees(log, "Trees after this versioning");
 }

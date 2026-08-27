@@ -366,25 +366,38 @@ uint32_t OMR::X86::AMD64::MemoryReference::estimateBinaryLength(TR::Instruction 
 {
     uint32_t estimate = OMR::X86::MemoryReference::estimateBinaryLength(containingInstruction, cg);
 
-    // For [disp32], AMD64 needs a SIB byte
+    // For [disp32] form, AMD64 requires a SIB byte
     //
-    if (_baseRegister == NULL && _indexRegister == NULL)
+    if (!getBaseRegister() && !getIndexRegister())
         estimate += 1;
 
-    if (_addressRegister != NULL) {
-        // TODO:AMD64: Should be able to do a tighter estimate than this
-        //
-        // (Note: we assume the memory needed is always bigger after adding the
-        // great big load instruction.  Thus, the size we use for the estimate is
-        // the size after adding the big load instruction.)
+    if (getAddressRegister()) {
+        // Account for the possibility of an address materialization instruction
         //
         estimate += IMM64_LOAD_SIZE;
 
-        // Add one byte to the estimate to account for the REX prefix
-        // in the event that the index register has been changed during
-        // code generation due to the insertion of an address load instruction
-        if (_indexRegister == NULL)
+        if (getBaseRegister()) {
+            if (!getIndexRegister()) {
+                // The addressLoadRegister will be used as the index register.
+                // A SIB byte is required.
+                //
+                estimate += 1;
+            } else {
+                // The base register will be replaced with a consolidated address
+                // computed with an ADD instruction
+                //
+                estimate += 3; // REX + ADD8 + modRM
+            }
+        }
+
+        if (getAddressRegister()->encodeWithREXPrefix()) {
+            // If the address materialization register requires a REX prefix to
+            // encode when it is used as either the base register or index register,
+            // account for it in case the containingInstruction does not emit it
+            // already.
+            //
             estimate += 1;
+        }
     }
 
     return estimate;
@@ -535,13 +548,13 @@ uint8_t *OMR::X86::AMD64::MemoryReference::generateBinaryEncoding(uint8_t *modRM
         // Create a mov immediate to load the address
         //
         TR::SymbolReference *symRef = NULL;
-        if (_symbolReference.getSymbol()) {
+        if (sr.getSymbol()) {
             // Clone the symbol reference because we're going to clobber it shortly
             //
-            symRef = new (cg->trHeapMemory()) TR::SymbolReference(cg->symRefTab(), _symbolReference, 0);
+            symRef = new (cg->trHeapMemory()) TR::SymbolReference(cg->symRefTab(), sr, 0);
 
             addressLoadInstruction
-                = Inst_RegImm64Sym(containingInstruction->getPrev(), OP::MOV8RegImm64, _addressRegister,
+                = Inst_RegImm64Sym(containingInstruction->getPrev(), OP::MOV8RegImm64, getAddressRegister(),
                     (!getUnresolvedDataSnippet() && sr.getSymbol()->isStatic() && sr.getSymbol()->isClassObject()
                         && cg->needClassAndMethodPointerRelocations())
                         ? (uint64_t)TR::Compiler->cls.persistentClassPointerFromClassPointer(comp,
@@ -556,15 +569,14 @@ uint8_t *OMR::X86::AMD64::MemoryReference::generateBinaryEncoding(uint8_t *modRM
         } else {
             TR_ASSERT(!getUnresolvedDataSnippet(), "Unresolved references should always have a symbol");
 
-            addressLoadInstruction
-                = Inst_RegImm64(containingInstruction->getPrev(), OP::MOV8RegImm64, _addressRegister, displacement, cg);
+            addressLoadInstruction = Inst_RegImm64(containingInstruction->getPrev(), OP::MOV8RegImm64,
+                getAddressRegister(), displacement, cg);
         }
 
         addMetaDataForCodeAddressWithLoad(displacementLocation, containingInstruction, cg, symRef);
 
-        // addressLoadInstruction's node should be that of containingInstruction
-        //
-        addressLoadInstruction->setNode(_baseNode ? _baseNode : containingInstruction->getNode());
+        addressLoadInstruction->setNode(getBaseNode() ? getBaseNode() : containingInstruction->getNode());
+
         if (comp->target().isSMP() && getUnresolvedDataSnippet()) {
             // Also adjust the node of the TR::X86PatchableCodeAlignmentInstruction
             //
@@ -576,41 +588,53 @@ uint8_t *OMR::X86::AMD64::MemoryReference::generateBinaryEncoding(uint8_t *modRM
         }
 
         // Emit the instruction to load the address over top of the
-        // already-emitted binary for containingInstruction.
+        // already-emitted binary for containingInstruction
         //
         uint8_t *cursor = containingInstruction->getBinaryEncoding();
         cg->setBinaryBufferCursor(cursor);
         cursor = addressLoadInstruction->generateBinaryEncoding();
         cg->setBinaryBufferCursor(cursor);
 
-        if (getBaseRegister() && getIndexRegister()) {
-            TR::Instruction *addressAddInstruction
-                = Inst_RegReg(addressLoadInstruction, OP::ADD8RegReg, getAddressRegister(), getBaseRegister(), cg);
-            cursor = addressAddInstruction->generateBinaryEncoding();
-            cg->setBinaryBufferCursor(cursor);
-        }
-
         // If it's unresolved, tell the snippet where the data reference is
         //
         if (getUnresolvedDataSnippet())
             getUnresolvedDataSnippet()->setAddressOfDataReference(cursor - 8);
 
-        // Transform this memref from [whatever + offset64] to [whatever + _addressRegister]
-        // Also transforms [base + index + offset64] to [_addressRegister + index]
-        //
-        if (_indexRegister == NULL) {
-            _indexRegister = _addressRegister;
-            _indexNode = NULL;
-            _stride = 0;
+        // Transform the original MemoryReference to use the materialized
+        // address register most effectively
+
+        if (!getBaseRegister()) {
+            // Prefer to use the base register position in the MemoryReference
+            // because it generally yields smaller instructions
+            //
+            setBaseRegister(getAddressRegister());
+            setBaseNode(NULL);
+        } else if (!getIndexRegister()) {
+            setIndexRegister(getAddressRegister());
+            setIndexNode(NULL);
+            setStride(0);
         } else {
-            _baseRegister = _addressRegister;
-            _baseNode = NULL;
+            // Both base and index registers are used in the MemoryReference.
+            // Replace the base register with a new consolidated address.
+            //
+            TR::Instruction *addressAddInstruction
+                = Inst_RegReg(addressLoadInstruction, OP::ADD8RegReg, getAddressRegister(), getBaseRegister(), cg);
+            cursor = addressAddInstruction->generateBinaryEncoding();
+            cg->setBinaryBufferCursor(cursor);
+
+            setBaseRegister(getAddressRegister());
+            setBaseNode(NULL);
         }
 
-        _flags.reset(MemRef_ForceWideDisplacement);
-        _flags.reset(MemRef_NeedExternalCodeAbsoluteRelocation); // TODO:AMD64: Do I need this?
-        _symbolReference.setSymbol(NULL);
-        _symbolReference.setOffset(0);
+        resetForceWideDisplacement();
+
+        // The external code absolute relocation would have been created for the address
+        // materialization instruction and is no longer needed
+        //
+        resetNeedsCodeAbsoluteExternalRelocation();
+
+        sr.setSymbol(NULL);
+        sr.setOffset(0);
         setUnresolvedDataSnippet(NULL); // Otherwise it will get damaged when we re-emit containingInstruction
 
         // Indicate to caller that it must try again to emit its binary

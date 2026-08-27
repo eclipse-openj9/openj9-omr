@@ -251,6 +251,8 @@ public:
 
     OMR_FINAL void setForceWideDisplacement() { _flags.set(MemRef_ForceWideDisplacement); }
 
+    OMR_FINAL void resetForceWideDisplacement() { _flags.reset(MemRef_ForceWideDisplacement); }
+
     OMR_FINAL bool isForceSIBByte() { return _flags.testAny(MemRef_ForceSIBByte); }
 
     OMR_FINAL void setForceSIBByte() { _flags.set(MemRef_ForceSIBByte); }
@@ -291,6 +293,11 @@ public:
     }
 
     OMR_FINAL void setNeedsCodeAbsoluteExternalRelocation() { _flags.set(MemRef_NeedExternalCodeAbsoluteRelocation); }
+
+    OMR_FINAL void resetNeedsCodeAbsoluteExternalRelocation()
+    {
+        _flags.reset(MemRef_NeedExternalCodeAbsoluteRelocation);
+    }
 
     OMR_FINAL bool ignoreVolatile() { return _flags.testAny(MemRef_IgnoreVolatile); }
 

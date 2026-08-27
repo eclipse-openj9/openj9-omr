@@ -325,6 +325,11 @@ public:
 
     bool needsSIB() { return _fullRegisterBinaryEncodings[_registerNumber].needsSIB; }
 
+    virtual bool encodeWithREXPrefix()
+    {
+        return (getRegisterNumber() >= OMR::RealRegister::r8) && (getRegisterNumber() <= OMR::RealRegister::r15);
+    }
+
 private:
     // TODO: Consider making this back into a plain old byte for consistency with other platforms.
     static const struct TR_RegisterBinaryEncoding _fullRegisterBinaryEncodings[NumRegisters];

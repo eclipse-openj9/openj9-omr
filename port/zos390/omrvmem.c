@@ -452,6 +452,7 @@ omrvmem_free_memory(struct OMRPortLibrary *portLibrary, void *address, uintptr_t
 	case OMRPORT_VMEM_RESERVE_USED_J9ALLOCATE_4K_PAGES_IN_2TO32G_AREA:   /* FALLTHROUGH */
 	case OMRPORT_VMEM_RESERVE_USED_J9ALLOCATE_LARGE_FIXED_PAGES_ABOVE_BAR:  /* FALLTHROUGH */
 	case  OMRPORT_VMEM_RESERVE_USED_J9ALLOCATE_LARGE_PAGEABLE_PAGES_ABOVE_BAR:  /* FALLTHROUGH */
+	case OMRPORT_VMEM_RESERVE_USED_J9ALLOCATE_4K_PAGES_ABOVE_BAR:
 	{
 		const char *const ttkn = PPG_ipt_ttoken;
 
@@ -462,8 +463,6 @@ omrvmem_free_memory(struct OMRPortLibrary *portLibrary, void *address, uintptr_t
 	break;
 	case OMRPORT_VMEM_RESERVE_USED_MOSERVICES:
 		Trc_PRT_vmem_omrvmem_free_memory_using_moservices(address, byteAmount, allocator);  /* FALLTHROUGH */
-	case OMRPORT_VMEM_RESERVE_USED_J9ALLOCATE_4K_PAGES_ABOVE_BAR:
-		Trc_PRT_vmem_omrvmem_free_memory_using_free_memory_above_bar(address, byteAmount, allocator);
 		rc = __moservices(__MO_DETACH, 0, NULL, &address);
 		omrmem_categories_decrement_counters(category, size);
 		break;
@@ -863,7 +862,7 @@ default_pageSize_reserve_memory(struct OMRPortLibrary *portLibrary, uintptr_t by
 					Trc_PRT_vmem_default_reserve_using_4K_pages_above_bar_iarv64_failed(mymopl.__mopl_iarv64_rc, mymopl.__mopl_iarv64_rsn);
 				}
 			} else {
-				allocator = OMRPORT_VMEM_RESERVE_USED_J9ALLOCATE_4K_PAGES_ABOVE_BAR;
+				allocator = OMRPORT_VMEM_RESERVE_USED_MOSERVICES;
 			}
 		}
 #endif /* if 0 */
@@ -1100,6 +1099,7 @@ omrvmem_reserve_memory_ex(struct OMRPortLibrary *portLibrary, struct J9PortVmemI
 			baseAddress = reserve_memory_with_moservices(portLibrary, identifier, &params, category);
 		} else
 #endif /* OMR_ENV_DATA64 */
+		{
 			if (FOUR_K == params.pageSize) {
 				if (0 != (params.pageFlags & OMRPORT_VMEM_PAGE_FLAG_PAGEABLE)) {
 					baseAddress = reserve4KPages(portLibrary, identifier, &params, category);
@@ -1110,6 +1110,7 @@ omrvmem_reserve_memory_ex(struct OMRPortLibrary *portLibrary, struct J9PortVmemI
 			} else {
 				baseAddress = reservePages(portLibrary, identifier, &params, category);
 			}
+		}
 
 		if ((NULL != baseAddress) && isStrictAndOutOfRange(&params, baseAddress)) {
 			/* if strict flag is set and returned pointer is not within range then fail */

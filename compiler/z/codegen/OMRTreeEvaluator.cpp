@@ -1690,8 +1690,8 @@ TR::Register *OMR::Z::TreeEvaluator::vnotEvaluator(TR::Node *node, TR::CodeGener
 
     TR::Register *resultReg = TR::TreeEvaluator::tryToReuseInputVectorRegs(node, cg);
     TR::Register *sourceReg = cg->evaluate(node->getFirstChild());
-    // NAND the source with itself to perform NOT operation.
-    generateVRRcInstruction(cg, TR::InstOpCode::VNN, node, resultReg, sourceReg, sourceReg, 0);
+    // NOR the source with itself to perform NOT operation.
+    generateVRRcInstruction(cg, TR::InstOpCode::VNO, node, resultReg, sourceReg, sourceReg, 0);
     node->setRegister(resultReg);
     cg->decReferenceCount(node->getFirstChild());
     return resultReg;

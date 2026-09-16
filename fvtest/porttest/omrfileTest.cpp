@@ -941,7 +941,7 @@ TEST_F(PortFileTest2, file_test7)
 		goto exit;
 	}
 
-	/* lets read back what we wrote */
+	/* let's read back what we wrote */
 	rc = FILE_READ_FUNCTION(OMRPORTLIB, fd, outputLine, 128);
 	if (rc != expectedReturnValue)	{
 		outputErrorMessage(PORTTEST_ERROR_ARGS, "%s() returned %d, expected %d\n", FILE_READ_FUNCTION_NAME, rc, expectedReturnValue);
@@ -995,7 +995,7 @@ TEST_F(PortFileTest2, file_test8)
 	reportTestEntry(OMRPORTLIB, testName);
 	expectedReturnValue = sizeof(inputLine1) - 1; /* don't want the final 0x00 */
 
-	/*lets try opening a "new" file - if file exists then should still work */
+	/* let's try opening a "new" file - if file exists then should still work */
 	fd = FILE_OPEN_FUNCTION(OMRPORTLIB, fileName, EsOpenWrite | EsOpenCreate | EsOpenTruncate, 0666);
 	if (-1 == fd) {
 		outputErrorMessage(PORTTEST_ERROR_ARGS, "%s() returned %d expected valid file handle\n", FILE_OPEN_FUNCTION_NAME, -1);
@@ -1007,7 +1007,7 @@ TEST_F(PortFileTest2, file_test8)
 		outputErrorMessage(PORTTEST_ERROR_ARGS, "File pointer location is wrong after opening file. Expected = 0, Got = %lld", prevFilePtr);
 	}
 
-	/* now lets write to it */
+	/* now let's write to it */
 	rc = FILE_WRITE_FUNCTION(OMRPORTLIB, fd, inputLine1, expectedReturnValue);
 
 	if (rc != expectedReturnValue) {
@@ -1046,7 +1046,7 @@ TEST_F(PortFileTest2, file_test8)
 		goto exit;
 	}
 
-	/* now lets write to it */
+	/* now let's write to it */
 	expectedReturnValue = sizeof(inputLine2) - 1; /* don't want the final 0x00 */
 	rc = FILE_WRITE_FUNCTION(OMRPORTLIB, fd, inputLine2, expectedReturnValue);
 
@@ -1077,7 +1077,7 @@ TEST_F(PortFileTest2, file_test8)
 		outputErrorMessage(PORTTEST_ERROR_ARGS, "File pointer location is wrong after opening the file. Expected = 0, Got = %lld", prevFilePtr);
 	}
 
-	/* lets read back what we wrote */
+	/* let's read back what we wrote */
 	expectedReturnValue = 10;
 	rc = FILE_READ_FUNCTION(OMRPORTLIB, fd, outputLine, expectedReturnValue);
 	if (rc != expectedReturnValue) {
@@ -1264,14 +1264,14 @@ TEST_F(PortFileTest2, file_test10)
 	}
 	omrfile_sync(fd); /* need this to ensure that length matches what we expect */
 
-	/* now lets look at file length - should always be 0 */
+	/* now let's look at file length - should always be 0 */
 	fileLength = omrfile_length(fileName);
 	if (0 != fileLength) {
 		outputErrorMessage(PORTTEST_ERROR_ARGS, "omrfile_length() returned %lld expected 0\n", fileLength);
 		goto exit;
 	}
 
-	/* now lets write to it */
+	/* now let's write to it */
 	expectedReturnValue = sizeof(inputLine1);
 	rc = FILE_WRITE_FUNCTION(OMRPORTLIB, fd, inputLine1, expectedReturnValue);
 	if (rc != expectedReturnValue) {
@@ -1293,7 +1293,7 @@ TEST_F(PortFileTest2, file_test10)
 		goto exit;
 	}
 
-	/* lets find current offset */
+	/* let's find current offset */
 	offset = 0;
 	expectedOffset = 0;
 	resultingOffset = omrfile_seek(fd, offset, EsSeekCur);
@@ -1302,7 +1302,7 @@ TEST_F(PortFileTest2, file_test10)
 		goto exit;
 	}
 
-	/* lets seek to pos 40 in file */
+	/* let's seek to pos 40 in file */
 	offset = 40;
 	expectedOffset = 40;
 	resultingOffset = omrfile_seek(fd, offset, EsSeekSet);
@@ -1311,7 +1311,7 @@ TEST_F(PortFileTest2, file_test10)
 		goto exit;
 	}
 
-	/* ok now lets write something - should overwrite total file length should remain 81 */
+	/* ok now let's write something - should overwrite total file length should remain 81 */
 	expectedReturnValue = sizeof(inputLine2);
 	rc = FILE_WRITE_FUNCTION(OMRPORTLIB, fd, inputLine2, expectedReturnValue);
 	omrfile_sync(fd); /* need this to ensure that length matches what we expect */
@@ -1320,14 +1320,14 @@ TEST_F(PortFileTest2, file_test10)
 		goto exit;
 	}
 
-	/* now lets look at file length */
+	/* now let's look at file length */
 	fileLength = omrfile_length(fileName);
 	if (fileLength != expectedFileLength) {
 		outputErrorMessage(PORTTEST_ERROR_ARGS, "omrfile_length() returned %lld expected %lld\n", fileLength, expectedFileLength);
 		goto exit;
 	}
 
-	/* lets try seeking beyond end of file - this should be allowed however the
+	/* let's try seeking beyond end of file - this should be allowed however the
 	 * length of the file will remain untouched until we do a write
 	 */
 	resultingOffset = omrfile_seek(fd, fileLength + 5, EsSeekSet);
@@ -1337,14 +1337,14 @@ TEST_F(PortFileTest2, file_test10)
 	}
 	omrfile_sync(fd); /* need this to ensure that length matches what we expect */
 
-	/* now lets look at file length */
+	/* now let's look at file length */
 	fileLength = omrfile_length(fileName);
 	if (fileLength != expectedFileLength) {
 		outputErrorMessage(PORTTEST_ERROR_ARGS, "omrfile_length() returned %lld expected %lld\n", fileLength, expectedFileLength);
 		goto exit;
 	}
 
-	/* Now lets write to the file - expecting some nulls to be inserted and
+	/* Now let's write to the file - expecting some nulls to be inserted and
 	 * file length to change appropriately
 	 */
 	rc = FILE_WRITE_FUNCTION(OMRPORTLIB, fd, (char *)"X", 1); /* Note this should just do 1 character X*/
@@ -1354,7 +1354,7 @@ TEST_F(PortFileTest2, file_test10)
 	}
 	omrfile_sync(fd); /* need this to ensure that length matches what we expect */
 
-	/* now lets look at file length - should be 87 */
+	/* now let's look at file length - should be 87 */
 	expectedFileLength += 6; /* we seeked 5 past end and have written 1 more */
 	fileLength = omrfile_length(fileName);
 	if (fileLength != expectedFileLength) {
@@ -1362,7 +1362,7 @@ TEST_F(PortFileTest2, file_test10)
 		goto exit;
 	}
 
-	/* lets seek to pos 40 in file */
+	/* let's seek to pos 40 in file */
 	offset = 40;
 	expectedOffset = 40;
 	resultingOffset = omrfile_seek(fd, offset, EsSeekSet);
@@ -1371,14 +1371,14 @@ TEST_F(PortFileTest2, file_test10)
 		goto exit;
 	}
 
-	/* lets try seeking to a negative offset */
+	/* let's try seeking to a negative offset */
 	resultingOffset = omrfile_seek(fd, -3, EsSeekSet);
 	if (-1 != resultingOffset) {
 		outputErrorMessage(PORTTEST_ERROR_ARGS, "omrfile_seek() returned %lld expected -1\n", resultingOffset);
 		goto exit;
 	}
 
-	/* lets see that current offset is still 40 */
+	/* let's see that current offset is still 40 */
 	resultingOffset = omrfile_seek(fd, 0, EsSeekCur);
 	if (40 != resultingOffset) {
 		outputErrorMessage(PORTTEST_ERROR_ARGS, "omrfile_seek() returned %lld expected 40\n", resultingOffset);
@@ -4760,7 +4760,7 @@ TEST_F(PortFileTest2, file_test40)
 		outputErrorMessage(PORTTEST_ERROR_ARGS, "File pointer location is wrong after opening file. Expected = 0, Got = %lld", prevFilePtr);
 	}
 
-	/* now lets write to it */
+	/* now let's write to it */
 	rc = FILE_WRITE_FUNCTION(OMRPORTLIB, fd, inputLine1, expectedReturnValue);
 
 	if (rc != expectedReturnValue) {
@@ -4784,7 +4784,7 @@ TEST_F(PortFileTest2, file_test40)
 
 	if (prevFilePtr != filePtr) {
 		outputErrorMessage(PORTTEST_ERROR_ARGS, "%s() Changed the location of file pointer. Expected : %lld. Got : %lld \n", FILE_SET_LENGTH_FUNCTION_NAME, prevFilePtr, filePtr);
-		goto exit; /* Although we dont need this, lets keep it to make it look like other failure cases */
+		goto exit; /* Although we don't need this, let's keep it to make it look like other failure cases */
 	}
 
 exit:

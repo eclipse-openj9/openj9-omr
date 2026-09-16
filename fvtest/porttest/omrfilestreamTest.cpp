@@ -598,7 +598,7 @@ TEST(PortFileStreamTest, omrfilestream_test_write_append)
 		goto unlinkFile;
 	}
 
-	/* now lets write to it */
+	/* now let's write to it */
 	filestream_write_all(OMRPORTLIB, testName, filestream, outputLine1, sizeof(outputLine1) - 1);
 	if (rc < 0) {
 		outputErrorMessage(PORTTEST_ERROR_ARGS, "filestream_write_all() returned %d expected %d\n", rc , sizeof(outputLine1) - 1);
@@ -1122,7 +1122,7 @@ TEST(PortFileStreamTest, omrfilestream_test_sync)
 		goto closeFile;
 	}
 
-	/* lets read back what we wrote, and make sure its accurate */
+	/* let's read back what we wrote, and make sure its accurate */
 	readCount = file_read_all(OMRPORTLIB, testName, readFile, inputLine+totalReadCount, expectedReturnValue);
 	totalReadCount += readCount;
 	if (readCount != expectedReturnValue) {

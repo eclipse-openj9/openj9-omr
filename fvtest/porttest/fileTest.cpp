@@ -273,11 +273,11 @@ TEST_F(PortFileTest, WriteAppendRead)
 
 	expectedReturnValue = sizeof(inputLine1) - 1; /* don't want the final 0x00 */
 
-	/*lets try opening a "new" file - if file exists then should still work */
+	/* let's try opening a "new" file - if file exists then should still work * /
 	fileDescriptor = omrfile_open(fileName, EsOpenWrite | EsOpenCreate | EsOpenTruncate, 0666);
 	OMRTEST_ASSERT_TRUE((-1 != fileDescriptor), "omrfile_open \"" << fileName << "\" failed\n");
 
-	/* now lets write to it */
+	/* now let's write to it */
 	rc = omrfile_write(fileDescriptor, inputLine1, expectedReturnValue);
 	OMRTEST_ASSERT_TRUE((rc == expectedReturnValue), "omrfile_write() returned " << rc << " expected " << expectedReturnValue << "\n");
 
@@ -287,7 +287,7 @@ TEST_F(PortFileTest, WriteAppendRead)
 	fileDescriptor = omrfile_open(fileName, EsOpenWrite | EsOpenAppend, 0666);
 	OMRTEST_ASSERT_TRUE((-1 != fileDescriptor), "omrfile_open \"" << fileName << "\" failed\n");
 
-	/* now lets write to it */
+	/* now let's write to it */
 	expectedReturnValue = sizeof(inputLine2) - 1; /* don't want the final 0x00 */
 	rc = omrfile_write(fileDescriptor, inputLine2, expectedReturnValue);
 	OMRTEST_ASSERT_TRUE((rc == expectedReturnValue), "omrfile_write() returned " << rc << ", expected " << expectedReturnValue << "\n");
@@ -298,7 +298,7 @@ TEST_F(PortFileTest, WriteAppendRead)
 	fileDescriptor = omrfile_open(fileName, EsOpenRead, 0444);
 	OMRTEST_ASSERT_TRUE((-1 != fileDescriptor), "omrfile_open \"" << fileName << "\" failed\n");
 
-	/* lets read back what we wrote */
+	/* let's read back what we wrote */
 	expectedReturnValue = 10;
 	rc = omrfile_read(fileDescriptor, outputLine, expectedReturnValue);
 

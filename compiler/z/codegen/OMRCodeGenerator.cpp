@@ -4472,7 +4472,7 @@ bool OMR::Z::CodeGenerator::getSupportsOpCodeForAutoSIMD(TR::CPU *cpu, TR::ILOpC
         case TR::mLongBitsToMask:
             return true;
         case TR::mToLongBits:
-            return cpu->isAtLeast(OMR_PROCESSOR_S390_Z14);
+            return cpu->supportsFeature(OMR_FEATURE_S390_VECTOR_FACILITY_ENHANCEMENT_1);
         case TR::vushr:
         case TR::vmushr:
         case TR::vshr:

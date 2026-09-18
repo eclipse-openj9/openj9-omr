@@ -2191,6 +2191,9 @@ TR::Register *OMR::Z::TreeEvaluator::mcompressEvaluator(TR::Node *node, TR::Code
      */
     TR_ASSERT_FATAL_WITH_NODE(node, node->getDataType().getVectorLength() == TR::VectorLength128,
         "Only 128-bit vectors are supported %s", node->getDataType().toString());
+    TR_ASSERT_FATAL_WITH_NODE(node,
+        cg->comp()->target().cpu.supportsFeature(OMR_FEATURE_S390_VECTOR_FACILITY_ENHANCEMENT_1),
+        "mcompress opcode is only supported on z14 onward.");
 
     TR::Register *resultReg = cg->allocateRegister(TR_VRF);
     TR::Register *sourceReg = cg->gprClobberEvaluate(node->getFirstChild());
@@ -2199,7 +2202,7 @@ TR::Register *OMR::Z::TreeEvaluator::mcompressEvaluator(TR::Node *node, TR::Code
     generateVRRaInstruction(cg, TR::InstOpCode::VPOPCT, node, sourceReg, sourceReg, 0, 0, 3);
 
     // Initialize the result register to all 1 bits.
-    generateVRRcInstruction(cg, TR::InstOpCode::VOC, node, resultReg, resultReg, resultReg, 0);
+    generateVRIaInstruction(cg, TR::InstOpCode::VGBM, node, resultReg, 0xffff, 0);
 
     // VSRLB derives the shift count from bits 1–4 of the 7th byte in the third operand,
     // which effectively divides the 7th byte value by 8 to determine the byte shift amount.
@@ -2217,7 +2220,7 @@ TR::Register *OMR::Z::TreeEvaluator::mcompressEvaluator(TR::Node *node, TR::Code
     generateVRRcInstruction(cg, TR::InstOpCode::VSRLB, node, resultReg, resultReg, sourceReg, 0);
 
     // Since zeros were shifted in, invert the register so zero bits become ones.
-    generateVRRcInstruction(cg, TR::InstOpCode::VNN, node, resultReg, resultReg, resultReg, 0);
+    generateVRRcInstruction(cg, TR::InstOpCode::VNO, node, resultReg, resultReg, resultReg, 0);
 
     node->setRegister(resultReg);
     cg->decReferenceCount(node->getFirstChild());

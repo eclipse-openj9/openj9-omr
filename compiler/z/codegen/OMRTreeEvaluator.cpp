@@ -1298,7 +1298,8 @@ TR::Register *OMR::Z::TreeEvaluator::mToLongBitsEvaluator(TR::Node *node, TR::Co
      * A bit value of 0 indicates a false lane, and 1 indicates a true lane.
      * The rightmost bit (LSB) in the result corresponds to the first lane of the mask vector.
      */
-    TR_ASSERT_FATAL_WITH_NODE(node, cg->comp()->target().cpu.isAtLeast(OMR_PROCESSOR_S390_Z14),
+    TR_ASSERT_FATAL_WITH_NODE(node,
+        cg->comp()->target().cpu.supportsFeature(OMR_FEATURE_S390_VECTOR_FACILITY_ENHANCEMENT_1),
         "mToLongBits opcode is only supported on z14 onwards");
     TR::Node *sourceNode = node->getFirstChild();
     TR_ASSERT_FATAL_WITH_NODE(node, sourceNode->getDataType().getVectorLength() == TR::VectorLength128,

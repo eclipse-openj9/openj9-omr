@@ -4353,8 +4353,6 @@ bool OMR::Z::CodeGenerator::getSupportsOpCodeForAutoSIMD(TR::CPU *cpu, TR::ILOpC
         case TR::msplats:
         case TR::vabs:
         case TR::vmabs:
-        case TR::vpopcnt:
-        case TR::vmpopcnt:
         case TR::vbitselect:
         case TR::vblend:
         case TR::vreductionAdd:
@@ -4473,6 +4471,9 @@ bool OMR::Z::CodeGenerator::getSupportsOpCodeForAutoSIMD(TR::CPU *cpu, TR::ILOpC
         case TR::mToLongBits:
         case TR::mcompress:
             return cpu->supportsFeature(OMR_FEATURE_S390_VECTOR_FACILITY_ENHANCEMENT_1);
+        case TR::vpopcnt:
+        case TR::vmpopcnt:
+            return (cpu->supportsFeature(OMR_FEATURE_S390_VECTOR_FACILITY_ENHANCEMENT_1) || (et == TR::Int8));
         case TR::vushr:
         case TR::vmushr:
         case TR::vshr:

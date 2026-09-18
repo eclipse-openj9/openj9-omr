@@ -1117,7 +1117,8 @@ static void copyIdentityValueToUnmaskedLanes(TR::Node *node, TR::CodeGenerator *
         // AND the target register with the mask register to zero the unmasked lanes.
         // Masked lanes (mask bit = 1) retain their values, unmasked lanes (mask bit = 0) become 0.
         generateVRRcInstruction(cg, TR::InstOpCode::VN, node, targetReg, targetReg, maskReg, 0, 0, 0);
-    } else if (-1 == identityValue) {
+    } else if (-1 == identityValue
+        && cg->comp()->target().cpu.supportsFeature(OMR_FEATURE_S390_VECTOR_FACILITY_ENHANCEMENT_1)) {
         // Optimized path for identity value of -1 (all bits set):
         // OR the target register with the complement of the mask register to set unmasked lanes to -1.
         // Masked lanes (mask bit = 1) retain their values, unmasked lanes (mask bit = 0) become all 1s.
@@ -16929,7 +16930,14 @@ static TR::Register *logicalReductionHelper(TR::Node *node, TR::CodeGenerator *c
         TR::Register *maskReg = cg->evaluate(maskChild);
         if (setUnmaskedLanes) {
             // Set all bits of unmasked lanes to 1.
-            generateVRRcInstruction(cg, TR::InstOpCode::VOC, node, sourceReg, sourceReg, maskReg, 0, 0, 0);
+            if (cg->comp()->target().cpu.supportsFeature(OMR_FEATURE_S390_VECTOR_FACILITY_ENHANCEMENT_1)) {
+                generateVRRcInstruction(cg, TR::InstOpCode::VOC, node, sourceReg, sourceReg, maskReg, 0, 0, 0);
+            } else {
+                TR::Register *vectorScratchReg = cg->allocateRegister(TR_VRF);
+                generateVRRcInstruction(cg, TR::InstOpCode::VNO, node, vectorScratchReg, maskReg, maskReg, 0, 0, 0);
+                generateVRRcInstruction(cg, TR::InstOpCode::VO, node, sourceReg, sourceReg, vectorScratchReg, 0, 0, 0);
+                cg->stopUsingRegister(vectorScratchReg);
+            }
         } else {
             // Zero all bits of unmasked lanes.
             generateVRRcInstruction(cg, TR::InstOpCode::VN, node, sourceReg, sourceReg, maskReg, 0, 0, 0);

@@ -4359,10 +4359,6 @@ bool OMR::Z::CodeGenerator::getSupportsOpCodeForAutoSIMD(TR::CPU *cpu, TR::ILOpC
         case TR::vmreductionAdd:
         case TR::vreductionMul:
         case TR::vmreductionMul:
-        case TR::vreductionMax:
-        case TR::vmreductionMax:
-        case TR::vreductionMin:
-        case TR::vmreductionMin:
         case TR::vcompress:
         case TR::vexpand:
         case TR::vcompressbits:
@@ -4423,6 +4419,10 @@ bool OMR::Z::CodeGenerator::getSupportsOpCodeForAutoSIMD(TR::CPU *cpu, TR::ILOpC
         case TR::vmmax:
         case TR::vmin:
         case TR::vmmin:
+        case TR::vreductionMax:
+        case TR::vmreductionMax:
+        case TR::vreductionMin:
+        case TR::vmreductionMin:
             if ((et == TR::Float || et == TR::Double)
                 && !cpu->supportsFeature(OMR_FEATURE_S390_VECTOR_FACILITY_ENHANCEMENT_1))
                 return false;

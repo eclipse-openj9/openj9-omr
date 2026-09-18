@@ -14874,6 +14874,7 @@ TR::Register *OMR::Z::TreeEvaluator::inlineVectorUnaryOp(TR::Node *node, TR::Cod
     TR::Register *returnReg
         = isMasked ? cg->allocateRegister(TR_VRF) : TR::TreeEvaluator::tryToReuseInputVectorRegs(node, cg);
     TR::Register *sourceReg1 = cg->evaluate(firstChild);
+    uint8_t elementSizeMask = getVectorElementSizeMask(node);
 
     switch (op) {
         case TR::InstOpCode::VCDG:
@@ -14883,8 +14884,14 @@ TR::Register *OMR::Z::TreeEvaluator::inlineVectorUnaryOp(TR::Node *node, TR::Cod
         case TR::InstOpCode::VLP:
         case TR::InstOpCode::VCTZ:
         case TR::InstOpCode::VCLZ:
+            generateVRRaInstruction(cg, op, node, returnReg, sourceReg1, 0, 0, elementSizeMask);
+            break;
         case TR::InstOpCode::VPOPCT:
-            generateVRRaInstruction(cg, op, node, returnReg, sourceReg1, 0, 0, getVectorElementSizeMask(node));
+            TR_ASSERT_FATAL_WITH_NODE(node,
+                (cg->comp()->target().cpu.supportsFeature(OMR_FEATURE_S390_VECTOR_FACILITY_ENHANCEMENT_1)
+                    || (elementSizeMask == 0)),
+                "VPOPCT with element size mask > 0 is only supported on z14 onward.");
+            generateVRRaInstruction(cg, op, node, returnReg, sourceReg1, 0, 0, elementSizeMask);
             break;
         case TR::InstOpCode::VFPSO: {
             /**
@@ -14906,8 +14913,7 @@ TR::Register *OMR::Z::TreeEvaluator::inlineVectorUnaryOp(TR::Node *node, TR::Cod
                     && (opcode.getVectorOperation() == TR::vabs || opcode.getVectorOperation() == TR::vmabs)
                 ? 2
                 : 0;
-            breakInst = generateVRRaInstruction(cg, op, node, returnReg, sourceReg1, mask5, 0,
-                getVectorElementSizeMask(node));
+            breakInst = generateVRRaInstruction(cg, op, node, returnReg, sourceReg1, mask5, 0, elementSizeMask);
             break;
         }
         case TR::InstOpCode::VFSQ:
@@ -14917,7 +14923,7 @@ TR::Register *OMR::Z::TreeEvaluator::inlineVectorUnaryOp(TR::Node *node, TR::Cod
                         && cg->comp()->target().cpu.supportsFeature(OMR_FEATURE_S390_VECTOR_FACILITY_ENHANCEMENT_1)),
                 "VFSQ is only supported for VectorElementDataType TR::Double on z13 and onwards and TR::Float on z14 "
                 "onwards");
-            generateVRRaInstruction(cg, op, node, returnReg, sourceReg1, 0, 0, getVectorElementSizeMask(node));
+            generateVRRaInstruction(cg, op, node, returnReg, sourceReg1, 0, 0, elementSizeMask);
             break;
         default:
             TR_ASSERT_FATAL_WITH_NODE(node, false, "Unary Vector IL evaluation unimplemented for node\n");

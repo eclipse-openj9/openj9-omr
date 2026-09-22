@@ -273,7 +273,7 @@ TEST_F(PortFileTest, WriteAppendRead)
 
 	expectedReturnValue = sizeof(inputLine1) - 1; /* don't want the final 0x00 */
 
-	/* let's try opening a "new" file - if file exists then should still work * /
+	/* let's try opening a "new" file - if file exists then should still work */
 	fileDescriptor = omrfile_open(fileName, EsOpenWrite | EsOpenCreate | EsOpenTruncate, 0666);
 	OMRTEST_ASSERT_TRUE((-1 != fileDescriptor), "omrfile_open \"" << fileName << "\" failed\n");
 

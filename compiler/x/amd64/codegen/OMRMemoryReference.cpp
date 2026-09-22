@@ -178,15 +178,15 @@ void OMR::X86::AMD64::MemoryReference::finishInitialization(TR::CodeGenerator *c
         // Binary encoding will fatally assert otherwise.
         //
         mightNeedAddressRegister = false;
+    } else if (getLabel()) {
+        // Assume labels are in RIP range
+        //
+        mightNeedAddressRegister = false;
     } else if (!getBaseRegister() && !getIndexRegister()
         && (cg->needRelocationsForStatics() || cg->needClassAndMethodPointerRelocations()
             || cg->needRelocationsForBodyInfoData() || cg->needRelocationsForPersistentInfoData()
             || cg->needRelocationsForPersistentProfileInfoData())) {
         mightNeedAddressRegister = true;
-    } else if (getLabel()) {
-        // Assume labels are in RIP range
-        //
-        mightNeedAddressRegister = false;
     } else if (sr.getSymbol() != NULL
         && (sr.isUnresolved() || (sr.stackAllocatedArrayAccess() && !IS_32BIT_SIGNED(getDisplacement())))) {
         // Once resolved, the address could be anything, so be conservative.

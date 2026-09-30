@@ -518,22 +518,9 @@ TR::Register *OMR::X86::TreeEvaluator::aloadEvaluator(TR::Node *node, TR::CodeGe
     TR::Register *reg
         = TR::TreeEvaluator::loadMemory(node, sourceMR, TR_RematerializableAddress, node->getOpCode().isIndirect(), cg);
     reg->setMemRef(sourceMR);
-    TR::Compilation *comp = cg->comp();
-
-    if (!node->getSymbolReference()->isUnresolved()
-        && (node->getSymbolReference()->getSymbol()->getKind() == TR::Symbol::IsShadow)
-        && (node->getSymbolReference()->getCPIndex() >= 0) && (comp->getMethodHotness() >= scorching)) {
-        int32_t len;
-        const char *fieldName = node->getSymbolReference()->getOwningMethod(comp)->fieldSignatureChars(
-            node->getSymbolReference()->getCPIndex(), len);
-
-        if (fieldName && strstr(fieldName, "Ljava/lang/String;")) {
-            Inst_Mem(OP::PREFETCHT0, node, MRef_Bdisp32(reg, 0, cg), cg);
-        }
-    }
 
 #ifdef J9_PROJECT_SPECIFIC
-    if (node->getSymbolReference() == comp->getSymRefTab()->findVftSymbolRef())
+    if (node->getSymbolReference() == cg->comp()->getSymRefTab()->findVftSymbolRef())
         TR::TreeEvaluator::generateVFTMaskInstruction(node, reg, cg);
 #endif
 
@@ -608,22 +595,6 @@ TR::Register *OMR::X86::TreeEvaluator::iloadEvaluator(TR::Node *node, TR::CodeGe
     TR::Register *reg = TR::TreeEvaluator::performIload(node, sourceMR, cg);
     reg->setMemRef(sourceMR);
     sourceMR->decNodeReferenceCounts(cg);
-    TR::Compilation *comp = cg->comp();
-    if (comp->useCompressedPointers()
-        && (node->getOpCode().hasSymbolReference()
-            && node->getSymbolReference()->getSymbol()->getDataType() == TR::Address)) {
-        if (!node->getSymbolReference()->isUnresolved()
-            && (node->getSymbolReference()->getSymbol()->getKind() == TR::Symbol::IsShadow)
-            && (node->getSymbolReference()->getCPIndex() >= 0) && (comp->getMethodHotness() >= scorching)) {
-            int32_t len;
-            const char *fieldName = node->getSymbolReference()->getOwningMethod(comp)->fieldSignatureChars(
-                node->getSymbolReference()->getCPIndex(), len);
-
-            if (fieldName && strstr(fieldName, "Ljava/lang/String;")) {
-                Inst_Mem(OP::PREFETCHT0, node, MRef_Bdisp32(reg, 0, cg), cg);
-            }
-        }
-    }
     return reg;
 }
 

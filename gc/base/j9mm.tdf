@@ -739,10 +739,10 @@ TraceEvent=Trc_MM_LocalGCEnd Overhead=1 Level=1 Group=gclogger Template="LocalGC
 TraceEvent=Trc_MM_SchedulingDelegate_measureScanRate_summary Overhead=1 Level=1 Group=kickoff Template="%zu threads scanned %9zu bytes in %7lluus. Historical bytes scanned: %zu. Historical scan time: %7lluus.  Thread scan rate: %f us/byte"
 TraceEvent=Trc_MM_SchedulingDelegate_currentGlobalMarkIncrementTimeMillis_summary Overhead=1 Level=1 Group=kickoff Template="Increment time: %zums"
 
-TraceEvent=Trc_MM_CopyForwardScheme_setRegionAsSurvivor Overhead=1 Level=1 Group=ageblending Template="setRegionAsSurvivor region %zu compactGroup %zu (allocAge %.4fM * usedBytes %.4fM) -> newAllocAgeSize %.4fM^2"
-TraceEvent=Trc_MM_CopyForwardScheme_reinitCache Overhead=1 Level=3 Group=ageblending Template="reinitCache region %zu cache %llx allocAgeSize %.4fM^2 usedBytes %.4fM"
-TraceEvent=Trc_MM_CopyForwardScheme_stopCopyingIntoCache Overhead=1 Level=3 Group=ageblending Template="stopCopyingIntoCache region %zu cache %llx  region allocAgeSize %.4fM^2 usedBytes %.4fM cache allocAgeSize %.2fM^2 objectSize %.4fM newAllocAgeSize %.4fM^2"
-TraceEvent=Trc_MM_CopyForwardScheme_setAllocationAgeForMergedRegion Overhead=1 Level=1 Group=ageblending Template="setMergedAllocationAge region %zu compactGroup %zu (allocAgeSize %.4fM^2 / usedBytes %.4fM) -> newAllocAge %.4fM (low %.4fM hi %.4fM)"
+TraceEvent=Trc_MM_CopyForwardScheme_setRegionAsSurvivor Obsolete Overhead=1 Level=1 Group=ageblending Template="setRegionAsSurvivor region %zu compactGroup %zu (allocAge %.4fM * usedBytes %.4fM) -> newAllocAgeSize %.4fM^2"
+TraceEvent=Trc_MM_CopyForwardScheme_reinitCache Obsolete Overhead=1 Level=3 Group=ageblending Template="reinitCache region %zu cache %llx allocAgeSize %.4fM^2 usedBytes %.4fM"
+TraceEvent=Trc_MM_CopyForwardScheme_stopCopyingIntoCache Obsolete Overhead=1 Level=3 Group=ageblending Template="stopCopyingIntoCache region %zu cache %llx  region allocAgeSize %.4fM^2 usedBytes %.4fM cache allocAgeSize %.2fM^2 objectSize %.4fM newAllocAgeSize %.4fM^2"
+TraceEvent=Trc_MM_CopyForwardScheme_setAllocationAgeForMergedRegion Obsolete Overhead=1 Level=1 Group=ageblending Template="setMergedAllocationAge region %zu compactGroup %zu (allocAgeSize %.4fM^2 / usedBytes %.4fM) -> newAllocAge %.4fM (low %.4fM hi %.4fM)"
 
 TraceEvent=Trc_MM_SchedulingDelegate_updateGMPStats Overhead=1 Level=1 Group=reclaim Template="historicTotalIncrementalScanTimePerGMP: %lluus, incrementalScanTime:%lluus, historicBytesScannedConcurrentlyPerGMP:%zu, concurrentBytesScanned:%zu"
 

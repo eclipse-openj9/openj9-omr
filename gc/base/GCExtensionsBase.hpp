@@ -343,10 +343,10 @@ public:
 	bool _isStandardGC; /**< Is it one of standard GC policy */
 #endif /* defined(OMR_GC_COMBINATION_SPEC) */
 
-	uintptr_t tlhMinimumSize;
-	uintptr_t tlhMaximumSize;
-	uintptr_t tlhInitialSize;
-	uintptr_t tlhIncrementSize;
+	uintptr_t tlhMinimumSize; /**< TLH minimum size, also used as a minimum free entry size across the code */
+	uintptr_t tlhMaximumSize; /**< TLH maximum size */
+	uintptr_t tlhInitialSize; /**< TLH initial size */
+	uintptr_t tlhIncrementSize; /**< TLH increment size */
 	uintptr_t tlhMaxAbandonSize; /**< cycle-average estimate of abandonSize (max(tlhMinimumSize, refreshSize/2)) across all threads, updated each GC by TLHAllocationSupport::restart() */
 	uintptr_t tlhSurvivorDiscardThreshold; /**< below this size GC (Scavenger) will discard survivor copy cache TLH, if alloc not succeeded (otherwise we reuse memory for next TLH) */
 	uintptr_t tlhTenureDiscardThreshold; /**< below this size GC (Scavenger) will discard tenure copy cache TLH, if alloc not succeeded (otherwise we reuse memory for next TLH) */
@@ -1574,7 +1574,7 @@ public:
 #endif /* defined(OMR_GC_COMBINATION_SPEC) */
 		, tlhMinimumSize(MINIMUM_TLH_SIZE)
 		, tlhMaximumSize(131072)
-		, tlhInitialSize(2048)
+		, tlhInitialSize(4096)
 		, tlhIncrementSize(4096)
 		, tlhMaxAbandonSize(tlhInitialSize * 3/8) /* seed: best estimate of tlhMaxAbandonSize before any GC has run, computed by applying the two-point average formula
 		                                           * in MM_TLHAllocationSupport::restart() to the initial state where every thread starts at refreshSize = tlhInitialSize.

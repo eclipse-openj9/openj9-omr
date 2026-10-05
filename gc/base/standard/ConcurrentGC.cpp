@@ -1686,6 +1686,12 @@ MM_ConcurrentGC::timeToKickoffConcurrent(MM_EnvironmentBase *env, MM_AllocateDes
 
 		if (_stats.switchExecutionMode(env, CONCURRENT_OFF, CONCURRENT_INIT_RUNNING)) {
 			_stats.setRemainingFree(remainingFree);
+#if defined(OMR_GC_MODRON_SCAVENGER)
+			if (_extensions->scavengerEnabled) {
+				_stats.setRemainingTenureFree(currentTenureFree());
+				_stats.setRemainingNurseryFree(currentNurseryFree());
+			}
+#endif /* OMR_GC_MODRON_SCAVENGER */
 
 			/* Set kickoff reason if it is not set yet */
 			_stats.setKickoffReason(KICKOFF_THRESHOLD_REACHED);

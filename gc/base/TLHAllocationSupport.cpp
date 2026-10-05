@@ -158,8 +158,8 @@ MM_TLHAllocationSupport::refresh(MM_EnvironmentBase *env, MM_AllocateDescription
 	uintptr_t abandonSize = getThreadAbandonSize();
 	if (sizeInBytesRequired > abandonSize) {
 		/* increase thread hungriness if we did not refresh */
-		if (getRefreshSize() < tlhMaximumSize && sizeInBytesRequired < tlhMaximumSize) {
-			setRefreshSize(getRefreshSize() + extensions->tlhIncrementSize);
+		if ((getRefreshSize() < tlhMaximumSize) && (sizeInBytesRequired < tlhMaximumSize)) {
+			setRefreshSize(OMR_MIN((getRefreshSize() + extensions->tlhIncrementSize), tlhMaximumSize));
 		}
 		return false;
 	}
@@ -295,7 +295,7 @@ MM_TLHAllocationSupport::refresh(MM_EnvironmentBase *env, MM_AllocateDescription
 			/* Increase thread hungriness */
 			/* TODO: TLH values (max/min/inc) should be per tlh, or somewhere else? */
 			if (getRefreshSize() < tlhMaximumSize) {
-				setRefreshSize(getRefreshSize() + extensions->tlhIncrementSize);
+				setRefreshSize(OMR_MIN((getRefreshSize() + extensions->tlhIncrementSize), tlhMaximumSize));
 			}
 			reserveTLHTopForGC(env);
 		}

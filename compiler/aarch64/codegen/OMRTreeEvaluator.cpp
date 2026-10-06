@@ -4119,6 +4119,70 @@ static TR::Register *vectorShiftImmediateHelper(TR::Node *node, TR::CodeGenerato
     return NULL;
 }
 
+/**
+ * @brief Helper function for vector shift operation
+ *
+ * @param[in] node: node
+ * @param[in] resultReg: the result register
+ * @param[in] lhsReg: the first argument register
+ * @param[in] rhsReg: the second argument register (shift amount)
+ * @param[in] cg: CodeGenerator
+ * @return the result register
+ */
+static TR::Register *vectorShiftHelper(TR::Node *node, TR::Register *resultReg, TR::Register *lhsReg,
+    TR::Register *rhsReg, TR::CodeGenerator *cg)
+{
+    TR::VectorOperation vectorOp = node->getOpCode().getVectorOperation();
+    TR::DataType elementType = node->getDataType().getVectorElementType();
+    TR_ASSERT_FATAL_WITH_NODE(node,
+        (vectorOp == TR::vshl) || (vectorOp == TR::vshr) || (vectorOp == TR::vushr) || (vectorOp == TR::vmshl)
+            || (vectorOp == TR::vmshr) || (vectorOp == TR::vmushr),
+        "opcode must be vector shift");
+    const bool isLeftShift = (vectorOp == TR::vshl) || (vectorOp == TR::vmshl);
+    const bool isLogicalRightShift = (vectorOp == TR::vushr) || (vectorOp == TR::vmushr);
+    OP::Mnemonic shiftOp
+        = static_cast<OP::Mnemonic>((isLogicalRightShift ? OP::vushl16b : OP::vsshl16b) + (elementType - TR::Int8));
+
+    // mask the shift amount
+    int32_t shiftAmountMask = TR::DataType::getSize(elementType) * 8 - 1;
+    OP::Mnemonic vmoviOp = OP::bad;
+    switch (elementType) {
+        case TR::Int8:
+            vmoviOp = OP::vmovi16b;
+            break;
+        case TR::Int16:
+            vmoviOp = OP::vmovi8h;
+            break;
+        case TR::Int32:
+            vmoviOp = OP::vmovi4s;
+            break;
+        case TR::Int64:
+            vmoviOp = OP::vmovi2d;
+            break;
+        default:
+            TR_ASSERT_FATAL_WITH_NODE(node, false, "elementType must be integer");
+            return NULL;
+    }
+    if (vmoviOp == OP::vmovi2d) {
+        // Int64: Cannot encode "movi vN.2d, #63"
+        Inst_Trg1Imm(cg, OP::vmovi4s, node, resultReg, shiftAmountMask);
+        Inst_VectorUXTL(cg, TR::Int32, node, resultReg, resultReg, false);
+    } else {
+        Inst_Trg1Imm(cg, vmoviOp, node, resultReg, shiftAmountMask);
+    }
+    Inst_Trg1Src2(cg, OP::vand16b, node, resultReg, rhsReg, resultReg);
+
+    if (!isLeftShift) {
+        // AArch64 does not have instruction for vector right shift
+        // use negated shift amount with vector left shift instruction (vsshl/vushl)
+        OP::Mnemonic negOp = static_cast<OP::Mnemonic>(OP::vneg16b + (elementType - TR::Int8));
+        Inst_Trg1Src1(cg, negOp, node, resultReg, resultReg);
+    }
+    Inst_Trg1Src2(cg, shiftOp, node, resultReg, lhsReg, resultReg);
+
+    return resultReg;
+}
+
 TR::Register *OMR::ARM64::TreeEvaluator::vshlEvaluator(TR::Node *node, TR::CodeGenerator *cg)
 {
     TR_ASSERT_FATAL_WITH_NODE(node, node->getDataType().getVectorLength() == TR::VectorLength128,
@@ -4129,25 +4193,7 @@ TR::Register *OMR::ARM64::TreeEvaluator::vshlEvaluator(TR::Node *node, TR::CodeG
         return resultReg;
     }
 
-    OP::Mnemonic shiftOp;
-    switch (node->getDataType().getVectorElementType()) {
-        case TR::Int8:
-            shiftOp = OP::vsshl16b;
-            break;
-        case TR::Int16:
-            shiftOp = OP::vsshl8h;
-            break;
-        case TR::Int32:
-            shiftOp = OP::vsshl4s;
-            break;
-        case TR::Int64:
-            shiftOp = OP::vsshl2d;
-            break;
-        default:
-            TR_ASSERT(false, "unrecognized vector type %s", node->getDataType().toString());
-            return NULL;
-    }
-    return inlineVectorBinaryOp(node, cg, shiftOp);
+    return inlineVectorBinaryOp(node, cg, OP::bad, vectorShiftHelper);
 }
 
 TR::Register *OMR::ARM64::TreeEvaluator::vmshlEvaluator(TR::Node *node, TR::CodeGenerator *cg)
@@ -4160,55 +4206,7 @@ TR::Register *OMR::ARM64::TreeEvaluator::vmshlEvaluator(TR::Node *node, TR::Code
         return resultReg;
     }
 
-    OP::Mnemonic shiftOp;
-    switch (node->getDataType().getVectorElementType()) {
-        case TR::Int8:
-            shiftOp = OP::vsshl16b;
-            break;
-        case TR::Int16:
-            shiftOp = OP::vsshl8h;
-            break;
-        case TR::Int32:
-            shiftOp = OP::vsshl4s;
-            break;
-        case TR::Int64:
-            shiftOp = OP::vsshl2d;
-            break;
-        default:
-            TR_ASSERT(false, "unrecognized vector type %s", node->getDataType().toString());
-            return NULL;
-    }
-    return inlineVectorMaskedBinaryOp(node, cg, shiftOp);
-}
-
-/**
- * @brief Helper function for vector right shift operation
- *
- * @param[in] node: node
- * @param[in] resultReg: the result register
- * @param[in] lhsReg: the first argument register
- * @param[in] rhsReg: the second argument register
- * @param[in] cg: CodeGenerator
- * @return the result register
- */
-static TR::Register *vectorRightShiftHelper(TR::Node *node, TR::Register *resultReg, TR::Register *lhsReg,
-    TR::Register *rhsReg, TR::CodeGenerator *cg)
-{
-    TR::VectorOperation vectorOp = node->getOpCode().getVectorOperation();
-    TR::DataType elementType = node->getDataType().getVectorElementType();
-    TR_ASSERT_FATAL_WITH_NODE(node,
-        (vectorOp == TR::vshr) || (vectorOp == TR::vushr) || (vectorOp == TR::vmshr) || (vectorOp == TR::vmushr),
-        "opcode must be vector right shift");
-    TR_ASSERT_FATAL_WITH_NODE(node, (elementType >= TR::Int8) && (elementType <= TR::Int64),
-        "elementType must be integer");
-    const bool isLogicalShift = (vectorOp == TR::vushr) || (vectorOp == TR::vmushr);
-    OP::Mnemonic negOp = static_cast<OP::Mnemonic>(OP::vneg16b + (elementType - TR::Int8));
-    OP::Mnemonic shiftOp
-        = static_cast<OP::Mnemonic>((isLogicalShift ? OP::vushl16b : OP::vsshl16b) + (elementType - TR::Int8));
-    Inst_Trg1Src1(cg, negOp, node, resultReg, rhsReg);
-    Inst_Trg1Src2(cg, shiftOp, node, resultReg, lhsReg, resultReg);
-
-    return resultReg;
+    return inlineVectorMaskedBinaryOp(node, cg, OP::bad, vectorShiftHelper);
 }
 
 TR::Register *OMR::ARM64::TreeEvaluator::vshrEvaluator(TR::Node *node, TR::CodeGenerator *cg)
@@ -4221,7 +4219,7 @@ TR::Register *OMR::ARM64::TreeEvaluator::vshrEvaluator(TR::Node *node, TR::CodeG
         return resultReg;
     }
 
-    return inlineVectorBinaryOp(node, cg, OP::bad, vectorRightShiftHelper);
+    return inlineVectorBinaryOp(node, cg, OP::bad, vectorShiftHelper);
 }
 
 TR::Register *OMR::ARM64::TreeEvaluator::vmshrEvaluator(TR::Node *node, TR::CodeGenerator *cg)
@@ -4234,7 +4232,7 @@ TR::Register *OMR::ARM64::TreeEvaluator::vmshrEvaluator(TR::Node *node, TR::Code
         return resultReg;
     }
 
-    return inlineVectorMaskedBinaryOp(node, cg, OP::bad, vectorRightShiftHelper);
+    return inlineVectorMaskedBinaryOp(node, cg, OP::bad, vectorShiftHelper);
 }
 
 TR::Register *OMR::ARM64::TreeEvaluator::vushrEvaluator(TR::Node *node, TR::CodeGenerator *cg)
@@ -4247,7 +4245,7 @@ TR::Register *OMR::ARM64::TreeEvaluator::vushrEvaluator(TR::Node *node, TR::Code
         return resultReg;
     }
 
-    return inlineVectorBinaryOp(node, cg, OP::bad, vectorRightShiftHelper);
+    return inlineVectorBinaryOp(node, cg, OP::bad, vectorShiftHelper);
 }
 
 TR::Register *OMR::ARM64::TreeEvaluator::vmushrEvaluator(TR::Node *node, TR::CodeGenerator *cg)
@@ -4260,7 +4258,7 @@ TR::Register *OMR::ARM64::TreeEvaluator::vmushrEvaluator(TR::Node *node, TR::Cod
         return resultReg;
     }
 
-    return inlineVectorMaskedBinaryOp(node, cg, OP::bad, vectorRightShiftHelper);
+    return inlineVectorMaskedBinaryOp(node, cg, OP::bad, vectorShiftHelper);
 }
 
 /**
@@ -4281,11 +4279,19 @@ static TR::Register *vectorRotateHelper(TR::Node *node, TR::Register *resultReg,
         "elementType must be integer");
     TR::Register *tempReg = cg->allocateRegister(TR_VRF);
     TR::Register *temp2Reg = cg->allocateRegister(TR_VRF);
-    TR::Register *temp3Reg = cg->allocateRegister(TR_VRF);
-    OP::Mnemonic cmpOp = static_cast<OP::Mnemonic>(OP::vcmlt16b_zero + (elementType - TR::Int8));
     OP::Mnemonic addOp = static_cast<OP::Mnemonic>(OP::vadd16b + (elementType - TR::Int8));
-    OP::Mnemonic shiftOp = static_cast<OP::Mnemonic>(OP::vushl16b + (elementType - TR::Int8));
     OP::Mnemonic subOp = static_cast<OP::Mnemonic>(OP::vsub16b + (elementType - TR::Int8));
+    OP::Mnemonic shiftOp = static_cast<OP::Mnemonic>(OP::vushl16b + (elementType - TR::Int8));
+
+    /*
+     * movi tempReg, sizeInBits-1
+     * movi temp2Reg, sizeInBits
+     * and tempReg, rhsReg, tempReg ; leftShiftAmount = n & (size - 1)
+     * sub temp2Reg, tempReg, temp2Reg ; leftShiftAmount - sizeInBits (negative value)
+     * ushl resultReg, lhsReg, tempReg
+     * ushl tempReg2, lhsReg, tempReg2
+     * orr resultReg, resultReg, tempReg2 ; (lhs << leftShiftAmount) || (lhs >>> (sizeInBits - leftShiftAmount))
+     */
 
     if (elementType == TR::Int64) {
         /*
@@ -4293,35 +4299,26 @@ static TR::Register *vectorRotateHelper(TR::Node *node, TR::Register *resultReg,
          * integer elements. Loading the value to a vector of 32-bit integer elements and using UXTL to extend elements
          * to 64-bit.
          */
-        Inst_Trg1Imm(cg, OP::vmovi4s, node, tempReg, 64);
+        Inst_Trg1Imm(cg, OP::vmovi4s, node, tempReg, 63);
+        Inst_Trg1Imm(cg, OP::vmovi4s, node, temp2Reg, 64);
         Inst_VectorUXTL(cg, TR::Int32, node, tempReg, tempReg, false);
+        Inst_VectorUXTL(cg, TR::Int32, node, temp2Reg, temp2Reg, false);
     } else {
         const int32_t sizeInBits = TR::DataType::getSize(elementType) * 8;
         OP::Mnemonic movOp
             = (elementType == TR::Int8) ? OP::vmovi16b : ((elementType == TR::Int16) ? OP::vmovi8h : OP::vmovi4s);
-        Inst_Trg1Imm(cg, movOp, node, tempReg, sizeInBits);
+        Inst_Trg1Imm(cg, movOp, node, tempReg, sizeInBits - 1);
+        Inst_Trg1Imm(cg, movOp, node, temp2Reg, sizeInBits);
     }
 
-    /*
-     * cmlt_zero temp2Reg, rhsReg
-     * add       temp3Reg, rhsReg, tempReg     ; rhs + sizeInBits
-     * bif       temp3Reg, rhsReg, temp2Reg    ; leftShitAmount = (rhs < 0) ? (rhs + sizeInBits) : rhs
-     * sub       temp2Reg, temp3Reg, tempReg
-     * ushl      resultReg, lhsReg, temp3Reg
-     * ushl      tempReg, lhsReg, temp2Reg
-     * orr       resultReg, resultReg, tempReg ; (lhs << leftShitAmount) || (lhs >>> (sizeInBits - leftShitAmount))
-     */
-    Inst_Trg1Src1(cg, cmpOp, node, temp2Reg, rhsReg);
-    Inst_Trg1Src2(cg, addOp, node, temp3Reg, rhsReg, tempReg);
-    Inst_Trg1Src2(cg, OP::vbif16b, node, temp3Reg, rhsReg, temp2Reg);
-    Inst_Trg1Src2(cg, subOp, node, temp2Reg, temp3Reg, tempReg);
-    Inst_Trg1Src2(cg, shiftOp, node, resultReg, lhsReg, temp3Reg);
-    Inst_Trg1Src2(cg, shiftOp, node, tempReg, lhsReg, temp2Reg);
-    Inst_Trg1Src2(cg, OP::vorr16b, node, resultReg, resultReg, tempReg);
+    Inst_Trg1Src2(cg, OP::vand16b, node, tempReg, rhsReg, tempReg);
+    Inst_Trg1Src2(cg, subOp, node, temp2Reg, tempReg, temp2Reg);
+    Inst_Trg1Src2(cg, shiftOp, node, resultReg, lhsReg, tempReg);
+    Inst_Trg1Src2(cg, shiftOp, node, temp2Reg, lhsReg, temp2Reg);
+    Inst_Trg1Src2(cg, OP::vorr16b, node, resultReg, resultReg, temp2Reg);
 
     cg->stopUsingRegister(tempReg);
     cg->stopUsingRegister(temp2Reg);
-    cg->stopUsingRegister(temp3Reg);
 
     return resultReg;
 }

@@ -5197,6 +5197,12 @@ TR::Node *constrainImul(OMR::ValuePropagation *vp, TR::Node *node)
 
             vp->addBlockOrGlobalConstraint(node, constraint, lhsGlobal);
         }
+    } else if (lhs && lhs->asIntConst() && lhs->asIntConst()->getInt() == 0) {
+        vp->replaceByConstant(node, lhs, lhsGlobal);
+        return node;
+    } else if (rhs && rhs->asIntConst() && rhs->asIntConst()->getInt() == 0) {
+        vp->replaceByConstant(node, rhs, rhsGlobal);
+        return node;
     }
 
     checkForNonNegativeAndOverflowProperties(vp, node);
@@ -5362,6 +5368,12 @@ TR::Node *constrainLmul(OMR::ValuePropagation *vp, TR::Node *node)
                     return node;
             }
         }
+    } else if (lhs && lhs->asLongConst() && lhs->asLongConst()->getLong() == 0) {
+        vp->replaceByConstant(node, lhs, lhsGlobal);
+        return node;
+    } else if (rhs && rhs->asLongConst() && rhs->asLongConst()->getLong() == 0) {
+        vp->replaceByConstant(node, rhs, rhsGlobal);
+        return node;
     }
 
     checkForNonNegativeAndOverflowProperties(vp, node);

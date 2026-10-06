@@ -309,7 +309,7 @@ const OMR::ARM64::InstOpCode::OpCodeBinaryEntry OMR::ARM64::InstOpCode::binaryEn
     0xB8601000, /* LDCLRL    	ldclrlw 	*/
     0xB8E01000, /* LDCLRAL    	ldclralw 	*/
     0x38201000, /* LDCLRB    	ldclrb		*/
-    0x38A01000, /* LDCLRAB    	ldlrab 		*/
+    0x38A01000, /* LDCLRAB    	ldclrab 	*/
     0x38601000, /* LDCLRLB    	ldclrlb 	*/
     0x38E01000, /* LDCLRALB    	ldclralb 	*/
     0x78201000, /* LDCLRH    	ldclrh		*/
@@ -722,9 +722,9 @@ const OMR::ARM64::InstOpCode::OpCodeBinaryEntry OMR::ARM64::InstOpCode::binaryEn
     0x6F00E400, /* MOVI      	vmovi2d	 */
     0x4F00F400, /* FMOV      	vfmov4s	 */
     0x6F00F400, /* FMOV      	vfmov2d	 */
-    0x6F008400, /* MVNI      	vmovi8h	 */
-    0x6F000400, /* MVNI      	vmovi4s	 */
-    0x6F00C400, /* MVNI      	vmovi4s_one */
+    0x6F008400, /* MVNI      	vmvni8h	 */
+    0x6F000400, /* MVNI      	vmvni4s	 */
+    0x6F00C400, /* MVNI      	vmvni4s_one */
     0x6F009400, /* BIC      	vbicimm8h */
     0x6F001400, /* BIC      	vbicimm4s */
     0x4F009400, /* ORR      	vorrimm8h */
@@ -1008,7 +1008,7 @@ const OMR::ARM64::InstOpCode::OpCodeBinaryEntry OMR::ARM64::InstOpCode::binaryEn
     0x5F809000, /* FMUL (scalar)  	fmulelem_4s */
     0x5FC09000, /* FMUL (scalar)  	fmulelem_2d */
     0x4F809000, /* FMUL  	vfmulelem_4s */
-    0x4FC09000, /* FMUL  	vfmulelem_4s */
+    0x4FC09000, /* FMUL  	vfmulelem_2d */
     /* Vector widening and narrowing arithmetics */
     0x2E208000, /* UMLAL   	vumlal_8h */
     0x2E608000, /* UMLAL   	vumlal_4s */

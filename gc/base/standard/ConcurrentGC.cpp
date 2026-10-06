@@ -20,6 +20,8 @@
  * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0 OR GPL-2.0-only WITH Classpath-exception-2.0 OR GPL-2.0-only WITH OpenJDK-assembly-exception-1.0
  *******************************************************************************/
 
+// Assisted-by: IBM Bob
+
 /**
  * @file
  * @ingroup GC_Modron_Standard
@@ -1270,7 +1272,7 @@ MM_ConcurrentGC::potentialFreeSpace(MM_EnvironmentBase *env, MM_AllocateDescript
 		_stats.setKickoffReason(NEXT_SCAVENGE_WILL_PERCOLATE);
 		_languageKickoffReason = NO_LANGUAGE_KICKOFF_REASON;
 	} else {
-		scavengesRemaining = (uintptr_t)(tenureFree / nurseryPromotion);
+		scavengesRemaining = tenureFree / nurseryPromotion;
 	}
 
 	/* The headroom remaining will be the maximum value between 1 , and the current
@@ -1284,27 +1286,30 @@ MM_ConcurrentGC::potentialFreeSpace(MM_EnvironmentBase *env, MM_AllocateDescript
 	scavengesRemaining = MM_Math::saturatingSubtract(scavengesRemaining, (uintptr_t)scavengesRemainingHeadroom);
 
 	/* Now calculate how many bytes we can therefore allocate in the nursery before
-	 * we will fill the tenure area. On 32 bit platforms this can be greater than 4G
-	 * hence the 64 bit maths. We assume that the heap will not be big enough on 64 bit
-	 * platforms to overflow 64 bits!
+	 * we will fill the tenure area:
+	 *
+	 * potentialFree = nurseryFree + nurseryInitialFree * scavengesRemaining
+	 *
+	 * Use overflow-safe 64-bit arithmetic, capped at
+	 * UDATA_MAX so the result fits in the return type on both 32-bit and 64-bit platforms.
 	 */
 
-	uint64_t potentialFree = (uint64_t)nurseryFree + ((uint64_t)nurseryInitialFree * (uint64_t)scavengesRemaining);
-
-#if !defined(OMR_ENV_DATA64)
-	/* On a 32 bit platforms the amount of free space could be more than 4G. Therefore
-	 * if the amount of potential free space is greater than can be expressed in 32
-	 * bits we just return 4G.
-	 */
-	uint64_t maxFree = 0xFFFFFFFF;
-	if (potentialFree > maxFree) {
-		return (uintptr_t)maxFree;
-	} else {
-		return (uintptr_t)potentialFree;
+	uint64_t potentialFree = 0;
+	if (0 != scavengesRemaining) {
+		if ((uint64_t)nurseryInitialFree > (U_64_MAX / (uint64_t)scavengesRemaining)) {
+			potentialFree = U_64_MAX;
+		} else {
+			potentialFree = (uint64_t)nurseryInitialFree * (uint64_t)scavengesRemaining;
+		}
 	}
-#else
-	return (uintptr_t)potentialFree;
-#endif
+
+	if ((uint64_t)nurseryFree > (U_64_MAX - potentialFree)) {
+		potentialFree = U_64_MAX;
+	} else {
+		potentialFree += (uint64_t)nurseryFree;
+	}
+
+	return (uintptr_t)OMR_MIN(potentialFree, (uint64_t)UDATA_MAX);
 }
 
 #endif /* OMR_GC_MODRON_SCAVENGER */

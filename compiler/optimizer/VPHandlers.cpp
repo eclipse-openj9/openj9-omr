@@ -5197,6 +5197,12 @@ TR::Node *constrainImul(OMR::ValuePropagation *vp, TR::Node *node)
 
             vp->addBlockOrGlobalConstraint(node, constraint, lhsGlobal);
         }
+    } else if (lhs && lhs->asIntConst() && lhs->asIntConst()->getInt() == 0) {
+        vp->replaceByConstant(node, lhs, lhsGlobal);
+        return node;
+    } else if (rhs && rhs->asIntConst() && rhs->asIntConst()->getInt() == 0) {
+        vp->replaceByConstant(node, rhs, rhsGlobal);
+        return node;
     }
 
     checkForNonNegativeAndOverflowProperties(vp, node);
@@ -5362,6 +5368,12 @@ TR::Node *constrainLmul(OMR::ValuePropagation *vp, TR::Node *node)
                     return node;
             }
         }
+    } else if (lhs && lhs->asLongConst() && lhs->asLongConst()->getLong() == 0) {
+        vp->replaceByConstant(node, lhs, lhsGlobal);
+        return node;
+    } else if (rhs && rhs->asLongConst() && rhs->asLongConst()->getLong() == 0) {
+        vp->replaceByConstant(node, rhs, rhsGlobal);
+        return node;
     }
 
     checkForNonNegativeAndOverflowProperties(vp, node);
@@ -6729,7 +6741,12 @@ TR::Node *constrainIand(OMR::ValuePropagation *vp, TR::Node *node)
     TR::VPConstraint *lrhs = NULL;
     if (node->getFirstChild()->getNumChildren() > 1)
         lrhs = vp->getConstraint(node->getFirstChild()->getSecondChild(), lrhsGlobal);
-    if (rhs && lrhs && lrhs->asIntConst()) {
+
+    // If the result of the iand has already been determined, no need to analyze it further.
+    // Otherwise, consider cases where the first operand is an imul or ishl operation, and
+    // its second operand has a constant value.
+    //
+    if ((constraint == NULL || !constraint->asIntConst()) && rhs && lrhs && lrhs->asIntConst()) {
         int32_t mask = lrhs->asIntConst()->getInt();
         int32_t shift = 0;
         if (rhs->asIntRange()) {
@@ -6738,12 +6755,18 @@ TR::Node *constrainIand(OMR::ValuePropagation *vp, TR::Node *node)
             int32_t high = range->getHighInt();
             if (node->getFirstChild()->getOpCodeValue() == TR::imul && ((high & 0x80000000) == 0)
                 && ((low & 0x80000000) == 0)) {
-                while (!(mask & 0x1)) {
-                    shift++;
-                    mask >>= 1;
-                }
-                if (high < 1 << shift)
+                // Loop will not terminate if mask is zero.
+                if (mask != 0) {
+                    while (!(mask & 0x1)) {
+                        shift++;
+                        mask >>= 1;
+                    }
+                    if (high < 1 << shift)
+                        constraint = TR::VPIntConst::create(vp, 0);
+                } else {
+                    // mask is zero if second imul operand value is zero, which means results of imul and iand are zero
                     constraint = TR::VPIntConst::create(vp, 0);
+                }
             } else if (node->getFirstChild()->getOpCodeValue() == TR::ishl && ((high & 0x80000000) == 0)
                 && ((low & 0x80000000) == 0)) {
                 if (high < 1 << mask)
@@ -6752,12 +6775,18 @@ TR::Node *constrainIand(OMR::ValuePropagation *vp, TR::Node *node)
         } else if (rhs->asIntConst()) {
             int32_t iandMask = rhs->asIntConst()->getInt();
             if (node->getFirstChild()->getOpCodeValue() == TR::imul && ((iandMask & 0x80000000) == 0)) {
-                while (!(mask & 0x1)) {
-                    shift++;
-                    mask >>= 1;
-                }
-                if (iandMask < 1 << shift)
+                // Loop will not terminate if mask is zero.
+                if (mask != 0) {
+                    while (!(mask & 0x1)) {
+                        shift++;
+                        mask >>= 1;
+                    }
+                    if (iandMask < 1 << shift)
+                        constraint = TR::VPIntConst::create(vp, 0);
+                } else {
+                    // mask is zero if second imul operand value is zero, which means results of imul and iand are zero
                     constraint = TR::VPIntConst::create(vp, 0);
+                }
             } else if (node->getFirstChild()->getOpCodeValue() == TR::ishl && ((iandMask & 0x80000000) == 0)) {
                 if (iandMask < 1 << mask)
                     constraint = TR::VPIntConst::create(vp, 0);

@@ -39,15 +39,19 @@ qualifiedSize(uintptr_t *byteSize, const char **qualifier)
 
 	size = *byteSize;
 	*qualifier = "";
-	if(!(size % 1024)) {
+	if (!(size % 1024)) {
 		size /= 1024;
 		*qualifier = "K";
-		if(size && !(size % 1024)) {
+		if (size && !(size % 1024)) {
 			size /= 1024;
 			*qualifier = "M";
-			if(size && !(size % 1024)) {
+			if (size && !(size % 1024)) {
 				size /= 1024;
 				*qualifier = "G";
+				if (size && !(size % 1024)) {
+					size /= 1024;
+					*qualifier = "T";
+				}
 			}
 		}
 	}

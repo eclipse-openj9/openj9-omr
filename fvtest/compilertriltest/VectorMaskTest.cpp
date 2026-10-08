@@ -266,6 +266,54 @@ TEST_P(ParameterizedMaskTest, mLoadStore) {
    EXPECT_EQ(0, memcmp(output + maskSize, zero, maxVectorLength - maskSize));
 }
 
+TEST_P(ParameterizedMaskTest, mArrayLoadStore) {
+   TR::VectorLength vl = std::get<0>(GetParam());
+   TR::DataTypes et = std::get<1>(GetParam());
+
+   SKIP_IF(vl > TR::NumVectorLengths, MissingImplementation) << "Vector length is not supported by the target platform";
+   SKIP_ON_S390(KnownBug) << "This test is currently disabled on Z platforms because not all Z platforms have vector support (issue #1843)";
+   SKIP_ON_S390X(KnownBug) << "This test is currently disabled on Z platforms because not all Z platforms have vector support (issue #1843)";
+
+   TR::DataType mt = TR::DataType::createMaskType(et, vl);
+   TR::ILOpCode loadOp = TR::ILOpCode::createVectorOpCode(TR::mloadiFromArray, mt);
+   TR::ILOpCode storeOp = TR::ILOpCode::createVectorOpCode(TR::mstoreiToArray, mt);
+
+   TR::CPU cpu = TR::CPU::detect(privateOmrPortLibrary);
+   bool platformSupport = TR::CodeGenerator::getSupportsOpCodeForAutoSIMD(&cpu, loadOp) && TR::CodeGenerator::getSupportsOpCodeForAutoSIMD(&cpu, storeOp);
+   SKIP_IF(!platformSupport, MissingImplementation) << "Opcode is not supported by the target platform";
+
+   const size_t inputTreesSize = 1024;
+   char inputTrees[inputTreesSize];
+   char *formatStr = "(method return= NoType args=[Address,Address]   \n"
+                     "  (block                                        \n"
+                     "     (mstoreiToArray%s offset=0                 \n"
+                     "         (aload parm=0)                         \n"
+                     "         (mloadiFromArray%s (aload parm=1)))    \n"
+                     "     (return)))                                 \n";
+
+   snprintf(inputTrees, inputTreesSize, formatStr, mt.toString(), mt.toString());
+   auto trees = parseString(inputTrees);
+   ASSERT_NOTNULL(trees);
+
+   Tril::DefaultCompiler compiler(trees);
+   ASSERT_EQ(0, compiler.compile()) << "Compilation failed unexpectedly\n" << "Input trees:\n" << inputTrees;
+
+   auto entry_point = compiler.getEntryPoint<void (*)(void *, void *)>();
+
+   const uint8_t maxVectorLength = MAX_NUM_LANES;
+   char output[maxVectorLength] = {0};
+   char input[maxVectorLength] = {0};
+
+   size_t numLanes = mt.getVectorNumLanes();
+   for (size_t i = 0; i < numLanes; i++) {
+      input[i] = (i % 2) ? 1 : 0;
+   }
+
+   entry_point(output, input);
+
+   EXPECT_EQ(0, memcmp(input, output, numLanes));
+}
+
 TEST_P(ParameterizedBinaryMaskTest, bitwiseMaskTests) {
    TR::VectorLength vl = std::get<0>(GetParam());
    TR::DataTypes et = std::get<1>(GetParam());

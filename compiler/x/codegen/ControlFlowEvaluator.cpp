@@ -430,6 +430,9 @@ TR::Register *OMR::X86::TreeEvaluator::tableEvaluator(TR::Node *node, TR::CodeGe
         cg->getCurrentEvaluationBlock()->isCold());
 
     TR::Register *selectorReg = cg->evaluate(node->getFirstChild());
+    if (cg->comp()->target().is64Bit()) {
+        Inst_RegReg(OP::MOVSXReg8Reg4, node, selectorReg, selectorReg, cg);
+    }
     OP::Mnemonic opCode;
 
     bool canSkipBoundTest = node->isSafeToSkipTableBoundCheck();

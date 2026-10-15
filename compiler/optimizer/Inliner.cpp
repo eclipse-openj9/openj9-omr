@@ -4118,6 +4118,18 @@ TR_CallSite *TR_InlinerBase::findAndUpdateCallSiteInGraph(TR_CallStack *callStac
         return 0;
     }
 
+    // A direct call node whose symbol is not a resolved method, such as a helper, or an intrinsic that replaced the
+    // original call during ILGen is not the call that the call site was created for, even though it has the same
+    // bytecode index. The handling of direct calls relies on _initialCalleeSymbol being set, which in such cases
+    // would be NULL.
+    if (foundCall && !callNode->getOpCode().isCallIndirect()
+        && callNode->getSymbolReference()->getSymbol()->castToMethodSymbol()->getResolvedMethodSymbol() == NULL) {
+        debugTrace(tracer(),
+            "findAndUpdateCallSiteInGraph: direct call at node %p does not have a resolved method symbol. Bail out",
+            callNode);
+        return 0;
+    }
+
     // preventing recursive inlining by methodHandleInliningGroup
     if (callNode->isTheVirtualCallNodeForAGuardedInlinedCall()) {
         heuristicTrace(tracer(), "findAndUpdateCallSiteInGraph: this call %p is on a cold side. Bail out", callNode);

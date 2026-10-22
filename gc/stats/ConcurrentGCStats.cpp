@@ -67,13 +67,14 @@ MM_ConcurrentGCStats::getConcurrentStatusString(MM_EnvironmentBase *env, uintptr
 bool
 MM_ConcurrentGCStats::switchExecutionMode(MM_EnvironmentBase *env, uintptr_t oldMode, uintptr_t newMode)
 {
-	OMRPORT_ACCESS_FROM_ENVIRONMENT(env);
-
 	bool retValue = (oldMode == MM_AtomicOperations::lockCompareExchange(&_executionMode, oldMode, newMode));
 
+#if defined(OMR_GC_MODRON_CONCURRENT_MARK)
 	if (retValue && env->getExtensions()->debugConcurrentMark) {
+		OMRPORT_ACCESS_FROM_ENVIRONMENT(env);
 		omrtty_printf("switchExecutionMode %zu -> %zu\n", oldMode, newMode);
 	}
+#endif /* defined(OMR_GC_MODRON_CONCURRENT_MARK) */
 
 	return retValue;
 }

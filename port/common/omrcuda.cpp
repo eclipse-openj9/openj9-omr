@@ -975,7 +975,10 @@ openDriver(OMRPortLibrary *portLibrary)
 			goto fail;
 		}
 
-		if (CUDA_SUCCESS != driverInit(0)) {
+		CUresult result = driverInit(0);
+
+		if (CUDA_SUCCESS != result) {
+			Trc_PRT_cuda_fail("cuInit", result);
 			goto fail;
 		}
 	}
@@ -994,7 +997,10 @@ openDriver(OMRPortLibrary *portLibrary)
 			goto fail;
 		}
 
-		if (CUDA_SUCCESS != driverGetVersion(&version)) {
+		CUresult result = driverGetVersion(&version);
+
+		if (CUDA_SUCCESS != result) {
+			Trc_PRT_cuda_fail("cuDriverGetVersion", result);
 			goto fail;
 		}
 
@@ -1003,6 +1009,7 @@ openDriver(OMRPortLibrary *portLibrary)
 		 * the version of the toolkit used at compile time.
 		 */
 		if (version < CUDA_VERSION) {
+			Trc_PRT_cuda_bad_version(version, CUDA_VERSION);
 			goto fail;
 		}
 	}
@@ -1021,7 +1028,10 @@ openDriver(OMRPortLibrary *portLibrary)
 			goto fail;
 		}
 
-		if (CUDA_SUCCESS != deviceGetCount(&deviceCount)) {
+		CUresult result = deviceGetCount(&deviceCount);
+
+		if (CUDA_SUCCESS != result) {
+			Trc_PRT_cuda_fail("deviceGetCount", result);
 			goto fail;
 		}
 

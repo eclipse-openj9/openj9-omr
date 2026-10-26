@@ -1087,12 +1087,7 @@ bool OMR::X86::CodeGenerator::getSupportsOpCodeForAutoSIMD(TR::CPU *cpu, TR::ILO
         case TR::vabs:
             if (!et.isFloatingPoint())
                 break;
-            // Intentional fallthrough. FP vabs requires special handling and cannot be mapped to a single instruction.
-        case TR::b2m:
-        case TR::s2m:
-        case TR::i2m:
-        case TR::l2m:
-        case TR::v2m:
+            // FP vabs requires special handling and cannot be mapped to a single instruction.
             switch (ot.getVectorLength()) {
                 case TR::VectorLength128:
                     return true;
